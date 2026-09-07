@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/app-shell";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { Calendar, FolderOpen, ArrowRight } from "lucide-react";
+import { FolderOpen, ArrowRight } from "lucide-react";
 
 const MONTH_NAMES = [
   "", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -89,9 +90,9 @@ export default async function ArsipLaporanPage() {
                           <p className="mb-4 text-sm text-muted-foreground">
                             Minggu ke-{report.weekOfMonth}
                           </p>
-                          <button className="mt-auto flex items-center justify-center gap-1 rounded-lg border py-2 text-sm font-medium hover:bg-accent">
+                          <Link href={`/laporan/${report.id}`} className="mt-auto flex items-center justify-center gap-1 rounded-lg border py-2 text-sm font-medium hover:bg-accent">
                             Lihat Detail <ArrowRight size={16} />
-                          </button>
+                          </Link>
                         </div>
                       ))}
                     </div>

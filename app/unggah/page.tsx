@@ -12,7 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CloudUpload, ImagePlus, AlertTriangle } from "lucide-react";
+import Link from "next/link";
+import { CloudUpload, ImagePlus, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 type UserOption = { id: string; name: string; role: string };
 
@@ -25,6 +26,7 @@ export default function UnggahLaporanPage() {
   const [uploadedById, setUploadedById] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     fetch("/api/users")
@@ -43,6 +45,7 @@ export default function UnggahLaporanPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setSaved(false);
 
     if (!file || !reportDate || !uploadedById) {
       setError("Foto, tanggal, dan pengunggah wajib diisi");
@@ -59,7 +62,11 @@ export default function UnggahLaporanPage() {
     setLoading(false);
 
     if (res.ok) {
-      router.push("/");
+      setSaved(true);
+      setFile(null);
+      setPreview(null);
+      setReportDate("");
+      setUploadedById("");
       router.refresh();
     } else {
       const data = await res.json();
@@ -75,6 +82,13 @@ export default function UnggahLaporanPage() {
           Tambahkan dokumen keuangan baru ke arsip komunitas. Pastikan gambar jelas dan terang.
         </p>
       </div>
+
+      {saved && (
+        <div className="mb-6 flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 p-4 text-primary">
+          <CheckCircle2 size={22} />
+          <div><p className="font-semibold">Laporan Berhasil Disimpan</p><Link href="/" className="text-sm underline">Lihat di Arsip</Link></div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <label className="relative flex h-80 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed bg-card text-center hover:border-primary">

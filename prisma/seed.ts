@@ -29,7 +29,7 @@ async function main() {
     await prisma.report.create({
       data: {
         reportDate,
-        photoUrl: `/uploads/reports/sample-${reportDate.toISOString().slice(0, 10)}.jpg`,
+        photoUrl: "/uploads/reports/aed5e497-c990-431f-804d-7b19583b0941.jpg",
         year,
         month,
         weekOfMonth,
