@@ -35,18 +35,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+    <div className="flex min-h-screen items-center justify-center bg-background">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm rounded-lg border bg-white p-8 shadow-sm"
+        className="w-full max-w-sm rounded-lg border bg-card p-8 shadow-sm"
       >
-        <h1 className="mb-1 text-2xl font-bold">Masjid Archive</h1>
-        <p className="mb-6 text-sm text-gray-500">
+        <h1 className="mb-1 text-2xl font-bold text-foreground">Masjid Archive</h1>
+        <p className="mb-6 text-sm text-muted-foreground">
           Sistem Arsip Digital DKM Masjid Al-Luqman
         </p>
 
         <div className="mb-4">
-          <label className="mb-1 block text-sm font-medium">Username</label>
+          <label className="mb-1 block text-sm font-medium text-foreground">Username</label>
           <Input
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -55,7 +55,7 @@ export default function LoginPage() {
         </div>
 
         <div className="mb-4">
-          <label className="mb-1 block text-sm font-medium">Kata Sandi</label>
+          <label className="mb-1 block text-sm font-medium text-foreground">Kata Sandi</label>
           <Input
             type="password"
             value={password}
@@ -65,14 +65,14 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <p className="mb-4 text-sm text-red-600">{error}</p>
+          <p className="mb-4 text-sm text-destructive">{error}</p>
         )}
 
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? "Memproses..." : "Masuk"}
         </Button>
 
-        <p className="mt-4 text-center text-xs text-gray-400">
+        <p className="mt-4 text-center text-xs text-muted-foreground">
           Hubungi Bendahara jika lupa kata sandi
         </p>
       </form>
