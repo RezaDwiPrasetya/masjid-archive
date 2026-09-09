@@ -29,7 +29,7 @@ async function main() {
     await prisma.report.create({
       data: {
         reportDate,
-        photoUrl: "/demo/contoh-laporan.jpg",
+        photoUrl: "/demo/contoh-laporan.png",
         year,
         month,
         weekOfMonth,
