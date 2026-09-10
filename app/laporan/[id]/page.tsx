@@ -34,7 +34,8 @@ export default async function DetailLaporanPage({
           </dl>
         <Button render={<a href={report.photoUrl} download />} nativeButton={false} className="mt-6 w-full">
         <Download size={16} /> Unduh Foto
-        </Button>        </aside>
+        </Button>        
+        </aside>
       </div>
     </AppShell>
   );
