@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { derivePeriod } from "@/lib/derive-period";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { supabase } from "@/lib/supabase";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -77,8 +77,8 @@ export async function POST(request: NextRequest) {
     const ext = photo.name.split(".").pop() || "jpg";
     const filename = `${randomUUID()}.${ext}`;
     const storagePath = `reports/${filename}`;
-    const { error: uploadError } = await supabaseAdmin.storage
-      .from("reports")
+    const { error: uploadError } = await supabase.storage
+      .from("report-photos")
       .upload(storagePath, buffer, {
         contentType: photo.type,
         upsert: false,
@@ -88,8 +88,8 @@ export async function POST(request: NextRequest) {
       throw uploadError;
     }
 
-    const { data: publicUrlData } = supabaseAdmin.storage
-      .from("reports")
+    const { data: publicUrlData } = supabase.storage
+      .from("report-photos")
       .getPublicUrl(storagePath);
 
     const { year, month, weekOfMonth } = derivePeriod(reportDate);
