@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { derivePeriod } from "@/lib/derive-period";
+import { supabase } from "@/lib/supabase";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -75,19 +74,30 @@ export async function POST(request: NextRequest) {
 
   try {
     const buffer = Buffer.from(await photo.arrayBuffer());
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "reports");
-    await mkdir(uploadDir, { recursive: true });
-
     const ext = photo.name.split(".").pop() || "jpg";
     const filename = `${randomUUID()}.${ext}`;
-    await writeFile(path.join(uploadDir, filename), buffer);
+    const storagePath = `reports/${filename}`;
+    const { error: uploadError } = await supabase.storage
+      .from("report-photos")
+      .upload(storagePath, buffer, {
+        contentType: photo.type,
+        upsert: false,
+      });
+
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from("report-photos")
+      .getPublicUrl(storagePath);
 
     const { year, month, weekOfMonth } = derivePeriod(reportDate);
 
     const report = await prisma.report.create({
       data: {
         reportDate,
-        photoUrl: `/uploads/reports/${filename}`,
+        photoUrl: publicUrlData.publicUrl,
         year,
         month,
         weekOfMonth,
