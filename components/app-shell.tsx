@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Archive, ImagePlus, Search } from "lucide-react";
+import { AuthButton } from "@/components/auth-button";
 
 const navItems = [
   { href: "/", label: "Laporan", icon: Archive },
@@ -44,10 +45,7 @@ export function AppShell({
 
       <div className="flex-1 lg:pl-64">
         <header className="sticky top-0 z-10 flex h-16 items-center justify-end border-b bg-background/90 px-6 backdrop-blur">
-          <div className="text-right">
-            <p className="text-sm font-medium">Bendahara</p>
-            <p className="text-xs text-muted-foreground">DKM Masjid Al-Luqman</p>
-          </div>
+          <AuthButton />
         </header>
 
         <main className="mx-auto max-w-5xl px-6 py-8 pb-24">{children}</main>

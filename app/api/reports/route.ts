@@ -3,6 +3,8 @@ import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { derivePeriod } from "@/lib/derive-period";
 import { supabase } from "@/lib/supabase";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -24,7 +26,7 @@ export async function GET(request: NextRequest) {
         const date = new Date(report.reportDate).toLocaleDateString("id-ID");
         return (
           date.toLowerCase().includes(keyword) ||
-          report.uploadedBy.name.toLowerCase().includes(keyword)
+          (report.uploadedBy.name?.toLowerCase().includes(keyword) ?? false)
         );
       })
     : reports;
@@ -33,16 +35,21 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const uploadedById = session.user.id;
+
   // ── #032 — Validasi server-side: ekstrak field ────────────────────────────
   const formData = await request.formData();
   const rawFiles = formData.getAll("files") as File[];
   const reportDateRaw = formData.get("reportDate") as string | null;
-  const uploadedById = formData.get("uploadedById") as string | null;
 
   // Guard: field wajib
-  if (rawFiles.length === 0 || !reportDateRaw || !uploadedById) {
+  if (rawFiles.length === 0 || !reportDateRaw) {
     return NextResponse.json(
-      { error: "Minimal satu file, tanggal laporan, dan pengunggah wajib diisi." },
+      { error: "Minimal satu file dan tanggal laporan wajib diisi." },
       { status: 400 }
     );
   }

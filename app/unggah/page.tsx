@@ -7,13 +7,6 @@ import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   CloudUpload,
   UploadCloud,
   AlertTriangle,
@@ -26,8 +19,6 @@ import {
 } from "lucide-react";
 
 // ─── Tipe & Konstanta ─────────────────────────────────────────────────────────
-
-type UserOption = { id: string; name: string; role: string };
 
 type FileEntry = {
   /** ID unik agar React key stabil */
@@ -77,21 +68,12 @@ export default function UnggahLaporanPage() {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [users, setUsers] = useState<UserOption[]>([]);
   const [files, setFiles] = useState<FileEntry[]>([]);
   const [reportDate, setReportDate] = useState("");
-  const [uploadedById, setUploadedById] = useState("");
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [submitError, setSubmitError] = useState("");
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
-
-  // Ambil daftar user untuk dropdown
-  useEffect(() => {
-    fetch("/api/users")
-      .then((res) => res.json())
-      .then((json) => setUsers(json.data ?? []));
-  }, []);
 
   // ── #028 & #029 & #031: handle pemilihan file ──────────────────────────────
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -159,16 +141,11 @@ export default function UnggahLaporanPage() {
       setSubmitError("Tanggal laporan wajib diisi.");
       return;
     }
-    if (!uploadedById) {
-      setSubmitError("Pilih nama pengunggah terlebih dahulu.");
-      return;
-    }
 
     setLoading(true);
     const formData = new FormData();
     files.forEach((entry) => formData.append("files", entry.file));
     formData.append("reportDate", reportDate);
-    formData.append("uploadedById", uploadedById);
 
     const res = await fetch("/api/reports", { method: "POST", body: formData });
     setLoading(false);
@@ -177,7 +154,6 @@ export default function UnggahLaporanPage() {
       setSaved(true);
       setFiles([]);
       setReportDate("");
-      setUploadedById("");
       setValidationErrors([]);
       router.refresh();
     } else {
@@ -339,34 +315,6 @@ export default function UnggahLaporanPage() {
             <p className="mt-1 text-xs text-muted-foreground">
               Pilih tanggal laporan ini dibacakan (biasanya hari Jumat)
             </p>
-          </div>
-
-          <div>
-            <label
-              htmlFor="uploader-select"
-              className="mb-1 block text-sm font-medium text-foreground"
-            >
-              Diunggah oleh
-            </label>
-            <Select
-              items={users.map((u) => ({
-                label: `${u.name} (${u.role})`,
-                value: u.id,
-              }))}
-              value={uploadedById}
-              onValueChange={(value) => setUploadedById(value ?? "")}
-            >
-              <SelectTrigger id="uploader-select" className="w-full">
-                <SelectValue placeholder="Pilih pengurus" />
-              </SelectTrigger>
-              <SelectContent>
-                {users.map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.name} ({user.role})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </div>
 
