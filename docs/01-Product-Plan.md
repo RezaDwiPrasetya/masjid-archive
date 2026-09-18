@@ -34,10 +34,10 @@ Bendahara tetap bekerja seperti biasa (mencatat manual, lalu unggah foto/file la
 | Fase | Fokus | Status |
 |---|---|---|
 | **V1** | Arsip visual dasar: unggah foto, arsip per periode, cari, detail, auth sederhana | ✅ Selesai |
-| **V2** | Dukungan multi-format file per laporan (gambar, PDF, Excel); satu laporan bisa punya beberapa lampiran | Sedang dikerjakan |
-| **V3** | Ekstraksi data: vision-LLM untuk gambar, parsing terstruktur untuk PDF/Excel → data mentah tersimpan di database | Direncanakan |
-| **V4** | Financial intelligence: tren keuangan, tracking donatur, visualisasi/dashboard | Direncanakan |
-| **V5** | Multi-user & manajemen peran: akun individual per pengurus, edit profil, role-based access | Direncanakan |
+| **V2** | Dukungan multi-format file per laporan (gambar, PDF, Excel); satu laporan bisa punya beberapa lampiran | ✅ Selesai |
+| **V3** | Autentikasi & Manajemen Pengguna (SSO): Login Google OAuth, keamanan rute, role-based access | Sedang dikerjakan |
+| **V4** | Ekstraksi data: vision-LLM untuk gambar, parsing terstruktur untuk PDF/Excel → data mentah tersimpan di database | Direncanakan |
+| **V5** | Financial intelligence: tren keuangan, tracking donatur, visualisasi/dashboard | Direncanakan |
 | **V6 (opsional, jangka panjang)** | Multi-tenant — mendukung lebih dari satu masjid, potensi monetisasi | Belum diprioritaskan |
 
 ## Out of Scope
@@ -51,13 +51,14 @@ Bendahara tetap bekerja seperti biasa (mencatat manual, lalu unggah foto/file la
 |---|---|
 | Laporan mingguan berhasil diunggah per bulan | Sesuai jumlah laporan Jumat aktual DKM |
 | Waktu pencarian arsip lama | Berkurang dibanding cara manual di buku |
-| Akurasi ekstraksi data OCR/parsing (V3) | Cukup akurat untuk angka besar, koreksi manual tetap dimungkinkan |
-| Adopsi fitur dashboard/tren oleh pengurus (V4) | Dievaluasi lewat user testing |
+| Adopsi sistem login mandiri (V3) | 100% pengurus aktif menggunakan akun Google pribadi/DKM untuk unggah laporan |
+| Akurasi ekstraksi data OCR/parsing (V4) | Cukup akurat untuk angka besar, koreksi manual tetap dimungkinkan |
+| Adopsi fitur dashboard/tren oleh pengurus (V5) | Dievaluasi lewat user testing |
 
 ## Timeline
 
 | Milestone | Status |
 |---|---|
-| V1 — Prototype MVP | ✅ Selesai, di-deploy ke Vercel |
-| V2 — Multi-format upload | In Progress |
-| V3-V5 | Belum mulai |
+| V1 & V2 — MVP & Multi-format | ✅ Selesai, di-deploy ke Vercel |
+| V3 — Google SSO Auth | Sedang dikerjakan (branch: `feature/v3-auth`) |
+| V4-V5 | Belum mulai |

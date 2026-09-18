@@ -2,7 +2,7 @@
 
 ## Overview
 
-Dokumen ini menjelaskan implementasi teknis Masjid Archive, mencakup kondisi produksi aktual (setelah deploy ke Vercel) dan spesifikasi teknis untuk V2 (multi-format upload).
+Dokumen ini menjelaskan implementasi teknis Masjid Archive, mencakup kondisi produksi aktual (setelah deploy ke Vercel) dan spesifikasi teknis dari Fase V1 hingga V3 (Autentikasi SSO).
 
 ## Tech Stack
 
@@ -15,7 +15,7 @@ Dokumen ini menjelaskan implementasi teknis Masjid Archive, mencakup kondisi pro
 | **Database** | **Vercel Postgres** (native integration, provider PostgreSQL) | Sebelumnya SQLite lokal (V1 development), lalu Supabase Postgres, kini Vercel Postgres native — SQLite tidak bisa dipakai di produksi karena lingkungan serverless Vercel bersifat read-only |
 | ORM | Prisma, versi **5.22.0** (sengaja dipin) | Versi 6+ memperkenalkan sistem konfigurasi baru (`prisma.config.ts`) yang lebih kompleks dan sempat menyebabkan error saat development — tidak di-upgrade kecuali ada kebutuhan spesifik |
 | **File Storage** (foto/lampiran laporan) | **Supabase Storage** (bucket `report-photos`) | Provider terpisah dari database — lihat penjelasan arsitektur di bawah |
-| Auth | Session cookie via `iron-session`, kredensial bersama dari environment variable | Direncanakan berubah ke multi-user di V5 |
+| **Auth** | **NextAuth.js (Auth.js)** | Menggunakan Google Provider (OAuth 2.0) dan `@auth/prisma-adapter` |
 | Hosting | Vercel | |
 
 ## Arsitektur: Kenapa Database dan File Storage Beda Provider?
@@ -26,16 +26,16 @@ Ini keputusan arsitektur yang disengaja, bukan solusi sementara:
 
 Pola ini disebut **separation of concerns**, umum dipakai di aplikasi production (kombinasi database + object storage terpisah). Tidak ada kebutuhan untuk menyatukan keduanya ke satu provider.
 
-## Auth Model
+## Auth Model (V3 Update)
 
-- Satu kredensial bersama untuk seluruh pengurus DKM (`AUTH_USERNAME`, `AUTH_PASSWORD` di environment variable)
-- Login memverifikasi kredensial → set session cookie (HTTP-only, via `iron-session`) → redirect ke halaman Arsip Laporan
-- Identitas individu (Bendahara 1/2/Pengurus) dipakai sebagai pilihan "Diunggah oleh" saat mengisi form Unggah Laporan, mengisi field `uploadedById`
-- Semua halaman selain `/login` dilindungi middleware yang mengecek session cookie
+- Beralih menggunakan **NextAuth.js (Auth.js)** dengan **Google Provider**.
+- Kredensial bersama statis sepenuhnya dihapus.
+- Data sesi dan identitas pengguna dikelola langsung di Vercel Postgres menggunakan `@auth/prisma-adapter`.
+- Middleware Next.js melindungi rute `/unggah`. Semua *endpoint* API mutasi (POST, DELETE) di bawah `/api/reports` divalidasi status sesinya secara *server-side* (menolak akses jika tidak ada sesi aktif).
 
 ## Environment Variables
 
-```
+```env
 # Database (Vercel Postgres)
 DATABASE_URL=
 
@@ -43,10 +43,11 @@ DATABASE_URL=
 SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
 
-# Auth
-AUTH_USERNAME=
-AUTH_PASSWORD=
-SESSION_SECRET=
+# NextAuth (V3)
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
 ```
 
 `SUPABASE_SERVICE_ROLE_KEY` hanya digunakan di server (API routes), tidak boleh diberi prefix `NEXT_PUBLIC_`, dan tidak boleh diekspos ke client.
@@ -75,6 +76,8 @@ export const dynamic = "force-dynamic";
 
 ## Prisma Schema (Ringkas — lihat 13. Data Model untuk detail lengkap)
 
+*Catatan: Model tambahan bawaan NextAuth (`Account`, `Session`, `VerificationToken`) sengaja tidak ditampilkan di sini untuk keringkasan. Lihat dokumen 13 untuk struktur lengkap.*
+
 ```prisma
 datasource db {
   provider = "postgresql"
@@ -82,10 +85,12 @@ datasource db {
 }
 
 model User {
-  id      String   @id @default(cuid())
-  name    String
-  role    String
-  reports Report[]
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  reports       Report[]
 }
 
 model Report {
@@ -150,6 +155,6 @@ const ALLOWED_TYPES = {
 
 Tidak ada library tambahan yang wajib untuk V2 dasar (native file input + FormData sudah cukup). Opsional: `react-dropzone` untuk UX drag-and-drop yang lebih modern.
 
-## Estimasi Biaya Fase Mendatang (Catatan untuk V3)
+## Estimasi Biaya Fase Mendatang (Catatan untuk V4 - OCR)
 
 Ekstraksi data via vision-LLM API (misalnya Claude) dikenakan biaya per pemanggilan, bukan biaya tetap. Untuk skala pemakaian 1 masjid dengan ±4-5 laporan/bulan, estimasi biaya berada di kisaran puluhan sen dolar per tahun — sangat rendah dibanding komponen biaya lain (hosting/storage). Perlu verifikasi harga terkini di halaman resmi provider sebelum implementasi, karena harga API dapat berubah.
