@@ -1,7 +1,7 @@
 import { AppShell } from "@/components/app-shell";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { FolderOpen, ArrowRight } from "lucide-react";
+import { FolderOpen, ArrowRight, FileText } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +13,7 @@ const MONTH_NAMES = [
 export default async function ArsipLaporanPage() {
   const reports = await prisma.report.findMany({
     orderBy: { reportDate: "desc" },
-    include: { uploadedBy: true },
+    include: { uploadedBy: true, attachments: true },
   });
 
   const groupedByYear = new Map<number, Map<number, typeof reports>>();
@@ -75,12 +75,21 @@ export default async function ArsipLaporanPage() {
                           key={report.id}
                           className="flex flex-col rounded-xl border bg-background p-4"
                         >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={report.photoUrl}
-                              alt={`Laporan ${report.reportDate}`}
-                              className="mb-3 aspect-[4/3] w-full rounded-lg object-cover"
-                            />
+                          {(() => {
+                            const thumb = report.attachments.find((a) => a.fileType === "image");
+                            return thumb ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={thumb.fileUrl}
+                                alt={`Laporan ${report.reportDate}`}
+                                className="mb-3 aspect-[4/3] w-full rounded-lg object-cover"
+                              />
+                            ) : (
+                              <div className="mb-3 flex aspect-[4/3] w-full items-center justify-center rounded-lg bg-secondary text-muted-foreground">
+                                <FileText size={48} className="opacity-50" />
+                              </div>
+                            );
+                          })()}
                           <h3 className="mb-1 font-medium text-foreground">
                             {new Date(report.reportDate).toLocaleDateString("id-ID", {
                               weekday: "long",

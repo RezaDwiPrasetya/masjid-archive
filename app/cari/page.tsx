@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, FileSearch, ArrowRight } from "lucide-react";
+import { Search, FileSearch, ArrowRight, FileText } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +31,7 @@ export default async function CariLaporanPage({
       ...(month ? { month: Number(month) } : {}),
     },
     orderBy: { reportDate: "desc" },
-    include: { uploadedBy: true },
+    include: { uploadedBy: true, attachments: true },
   });
   const filteredReports = keyword
     ? reports.filter((report) =>
@@ -81,8 +81,17 @@ export default async function CariLaporanPage({
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredReports.map((report) => (
             <article key={report.id} className="flex flex-col rounded-xl border bg-card p-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={report.photoUrl} alt={`Laporan ${report.reportDate}`} className="mb-3 aspect-[4/3] w-full rounded-lg object-cover" />
+              {(() => {
+                const thumb = report.attachments.find((a) => a.fileType === "image");
+                return thumb ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={thumb.fileUrl} alt={`Laporan ${report.reportDate}`} className="mb-3 aspect-[4/3] w-full rounded-lg object-cover" />
+                ) : (
+                  <div className="mb-3 flex aspect-[4/3] w-full items-center justify-center rounded-lg bg-secondary text-muted-foreground">
+                    <FileText size={48} className="opacity-50" />
+                  </div>
+                );
+              })()}
               <h2 className="font-medium">{new Date(report.reportDate).toLocaleDateString("id-ID", { dateStyle: "full" })}</h2>
               <p className="mt-1 text-sm text-muted-foreground">Diunggah oleh {report.uploadedBy.name}</p>
               <Link href={`/laporan/${report.id}`} className="mt-4 flex items-center justify-center gap-2 rounded-lg border py-2 text-sm font-medium hover:bg-accent">Lihat Detail <ArrowRight size={16} /></Link>

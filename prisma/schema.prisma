@@ -19,13 +19,24 @@ model User {
 }
 
 model Report {
-  id           String   @id @default(cuid())
+  id           String       @id @default(cuid())
   reportDate   DateTime
-  photoUrl     String
   year         Int
   month        Int
   weekOfMonth  Int
-  uploadedAt   DateTime @default(now())
+  uploadedAt   DateTime     @default(now())
   uploadedById String
-  uploadedBy   User     @relation(fields: [uploadedById], references: [id])
+  uploadedBy   User         @relation(fields: [uploadedById], references: [id])
+  attachments  Attachment[]
+}
+
+model Attachment {
+  id               String   @id @default(cuid())
+  reportId         String
+  report           Report   @relation(fields: [reportId], references: [id])
+  fileUrl          String
+  fileType         String   // "image" | "pdf" | "excel"
+  originalFileName String
+  fileSizeBytes    Int
+  uploadedAt       DateTime @default(now())
 }

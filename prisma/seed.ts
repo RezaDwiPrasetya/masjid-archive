@@ -29,11 +29,18 @@ async function main() {
     await prisma.report.create({
       data: {
         reportDate,
-        photoUrl: "/demo/contoh-laporan.png",
         year,
         month,
         weekOfMonth,
         uploadedById: kosasih.id,
+        attachments: {
+          create: {
+            fileUrl: "https://placehold.co/800x600/png",
+            fileType: "image",
+            originalFileName: "contoh-laporan.png",
+            fileSizeBytes: 102400,
+          },
+        },
       },
     });
   }
