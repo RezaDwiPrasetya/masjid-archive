@@ -1,10 +1,10 @@
-# 14. API Specification (Revisi — V2: Multi-Format Upload)
+# 14. API Specification (Revisi — V3: Autentikasi SSO)
 
-> **Catatan revisi:** Dokumen ini memperbarui API Specification awal untuk mendukung Fase V2. Perubahan utama mencakup transisi dari unggahan satu foto lokal menjadi unggahan multi-file (gambar, PDF, Excel) ke Supabase Storage, menggunakan entitas `Attachment`, dan dikelola lewat database transaction Vercel Postgres.
+> **Catatan revisi:** Dokumen ini memperbarui API Specification awal untuk mendukung Fase V2 (Multi-Format) dan Fase V3 (Autentikasi SSO). Perubahan utama mencakup transisi pengelolaan sesi ke NextAuth.js dan otomatisasi identitas pengunggah (*uploader*) berbasis sesi aktif, bukan input klien.
 
 ## Overview
 
-API di-implementasi sebagai Next.js Route Handlers (`app/api/**/route.ts`). Semua endpoint di bawah `/api/reports`, `/api/users` memerlukan session cookie valid (lihat [12. Technical Specification — Auth Model](./12-Technical-Specification.md#auth-model)), kecuali `/api/auth/login`.
+API di-implementasi sebagai Next.js Route Handlers (`app/api/**/route.ts`). Semua endpoint di bawah `/api/reports` dan `/api/users` **wajib** memiliki *session cookie* NextAuth yang valid. Akses tanpa sesi akan langsung ditolak dengan status `401 Unauthorized`.
 
 Format response standar:
 
@@ -18,33 +18,13 @@ Format response standar:
 
 ---
 
-## Auth
+## Auth (NextAuth V3)
 
-### `POST /api/auth/login`
+### `GET/POST /api/auth/[...nextauth]`
 
-Verifikasi kredensial bersama, set session cookie.
+Endpoint dinamis bawaan NextAuth.js. Menangani seluruh alur OAuth Google, *callback* verifikasi, dan manajemen sesi secara otomatis.
 
-**Request body**
-
-```json
-{ "username": "string", "password": "string" }
-```
-
-**Response 200**
-
-```json
-{ "data": { "success": true } }
-```
-
-**Response 401**
-
-```json
-{ "error": "Username atau kata sandi salah" }
-```
-
-### `POST /api/auth/logout`
-
-Hapus session cookie. Response 200 `{ "data": { "success": true } }`.
+*Catatan: Endpoint manual `/api/auth/login` dan `/api/auth/logout` dari V1 telah dihapus sepenuhnya.*
 
 ---
 
@@ -52,15 +32,15 @@ Hapus session cookie. Response 200 `{ "data": { "success": true } }`.
 
 ### `GET /api/users`
 
-Daftar pengurus DKM — dipakai untuk dropdown "Diunggah oleh" di form Unggah Laporan.
+Daftar pengguna (pengurus) yang terdaftar di sistem.
+*Catatan V3: Endpoint ini kini hanya digunakan untuk keperluan manajerial di dasbor admin, bukan lagi untuk dropdown form unggah, karena ID pengunggah kini otomatis diambil dari sesi aktif.*
 
 **Response 200**
 
 ```json
 {
   "data": [
-    { "id": "usr_1", "name": "Bapak Kosasih", "role": "Bendahara 2" },
-    { "id": "usr_2", "name": "Bapak Cecep", "role": "Bendahara 1" }
+    { "id": "clxyz123...", "name": "Bapak Kosasih", "email": "kosasih@gmail.com", "role": "Admin" }
   ]
 }
 ```
@@ -97,17 +77,12 @@ List laporan, terkelompok Tahun → Bulan (untuk Arsip Laporan), atau hasil filt
               "reportDate": "2026-08-14",
               "weekOfMonth": 2,
               "uploadedAt": "2026-08-14T10:00:00Z",
-              "uploadedBy": { "id": "usr_1", "name": "Bapak Kosasih" },
+              "uploadedBy": { "id": "clxyz123...", "name": "Bapak Kosasih", "image": "[https://lh3.googleusercontent.com/](https://lh3.googleusercontent.com/)..." },
               "attachments": [
                 {
                   "id": "att_1",
                   "fileType": "image",
                   "fileUrl": "https://[supabase-url]/storage/v1/object/public/report-photos/foto.jpg"
-                },
-                {
-                  "id": "att_2",
-                  "fileType": "pdf",
-                  "fileUrl": "https://[supabase-url]/storage/v1/object/public/report-photos/rekap.pdf"
                 }
               ]
             }
@@ -119,15 +94,10 @@ List laporan, terkelompok Tahun → Bulan (untuk Arsip Laporan), atau hasil filt
 }
 ```
 
-**Response 200 (kosong / tidak ditemukan)**
-
-```json
-{ "data": [] }
-```
-
 ### `POST /api/reports`
 
 Unggah laporan baru dengan banyak file pendukung. `multipart/form-data`.
+**Wajib: Request harus memiliki Sesi NextAuth yang valid.**
 
 **Form fields**
 
@@ -135,18 +105,16 @@ Unggah laporan baru dengan banyak file pendukung. `multipart/form-data`.
 | -------------- | ------------------- | ----- | ---------- |
 | `files`        | array of files      | Yes   | Mendukung `.jpg`, `.png`, `.pdf`, `.xlsx`. Minimal 1 file. |
 | `reportDate`   | date (`YYYY-MM-DD`) | Yes   | Tanggal laporan mingguan (harus hari Jumat). |
-| `uploadedById` | string (User id)    | Yes   | ID pengunggah (bendahara). |
 
-**Logika Transaksi (V2 Strict Rule):**
-1. API harus mengekstrak semua file dari *form data* dan memvalidasi tipe/ukuran tiap file.
-2. Cek duplikat: pastikan belum ada `Report` dengan `reportDate` yang sama — jika sudah ada, tolak di awal (sebelum upload apa pun dimulai) dengan status `409`.
-3. Gunakan `Promise.all` untuk mengunggah seluruh *file* secara paralel ke bucket **Supabase Storage**.
-4. Jika *semua* unggahan Supabase berhasil, susun array data lampiran (URL, nama asli, ukuran, tipe).
-5. Gunakan `prisma.$transaction` untuk melakukan *insert* ke tabel `Report` DAN `Attachment` secara atomik di **Vercel Postgres**.
-6. **Jika salah satu unggahan ke Supabase gagal:**
-   - Hapus (`storage.remove()`) semua file yang **sudah terlanjur berhasil** diupload di langkah 3 pada percobaan yang sama, agar tidak menyisakan file "yatim" (tidak punya `Attachment` terkait) di storage.
-   - Batalkan seluruh proses, jangan buat record apa pun di database.
-7. **Jika insert ke database (langkah 5) gagal** setelah upload storage berhasil (kasus langka, misal koneksi database terputus): hapus juga semua file yang sudah terupload di langkah 3, karena `prisma.$transaction` sudah otomatis rollback sisi database — storage harus disinkronkan manual (dibersihkan) karena berada di sistem terpisah dan tidak ikut ter-rollback otomatis.
+*Catatan V3: Field `uploadedById` telah dihapus dari form payload karena rentan dimanipulasi. Server kini mengekstrak ID pengguna secara langsung dari objek `session.user.id` NextAuth.*
+
+**Logika Transaksi Server-Side:**
+1. **Validasi Sesi**: API mengekstrak ID pengguna dari sesi NextAuth. Jika tidak ada, kembalikan `401`.
+2. Validasi file: Ekstrak file dari *form data* dan validasi tipe/ukuran.
+3. Cek duplikat `reportDate` di Vercel Postgres (kembalikan `409` jika duplikat).
+4. `Promise.all` unggah seluruh *file* secara paralel ke **Supabase Storage**.
+5. Jika berhasil, susun data lampiran dan eksekusi `prisma.$transaction` untuk *insert* ke tabel `Report` (dengan `uploadedById` dari sesi) DAN `Attachment` secara atomik di **Vercel Postgres**.
+6. Jika transaksi database gagal atau ada upload Supabase yang *error*, server otomatis menghapus (`storage.remove()`) file yang sempat terunggah agar tidak terjadi *orphan files* di bucket.
 
 **Response 201**
 
@@ -159,30 +127,17 @@ Unggah laporan baru dengan banyak file pendukung. `multipart/form-data`.
     "month": 8,
     "weekOfMonth": 2,
     "attachments": [
-      { "id": "att_1", "fileName": "foto-kas.jpg", "status": "uploaded" },
-      { "id": "att_2", "fileName": "data-donatur.xlsx", "status": "uploaded" }
+      { "id": "att_1", "fileName": "foto-kas.jpg", "status": "uploaded" }
     ]
   }
 }
 ```
 
-**Response 400** (Validasi gagal — file kosong, tipe ditolak, ukuran over-limit, bukan hari Jumat)
-
-```json
-{ "error": "Tipe file tidak didukung atau ukuran terlalu besar." }
-```
-
-**Response 409** (Duplikat tanggal — dicek di awal, sebelum proses upload dimulai)
-
-```json
-{ "error": "Laporan untuk tanggal tersebut sudah tersimpan" }
-```
-
-**Response 500** (Gagal transaksi Supabase/Prisma — file yang sempat terupload sudah dibersihkan otomatis sesuai langkah 6/7)
-
-```json
-{ "error": "Gagal menyimpan lampiran. Silakan coba lagi." }
-```
+**Response Error Umum:**
+- `401 Unauthorized`: Sesi NextAuth tidak valid atau kadaluarsa.
+- `400 Bad Request`: Validasi tipe file/ukuran gagal.
+- `409 Conflict`: Laporan untuk tanggal tersebut sudah tersimpan.
+- `500 Internal Server Error`: Gagal transaksi penyimpanan.
 
 ### `GET /api/reports/:id`
 
@@ -197,17 +152,10 @@ Detail satu laporan (untuk halaman Detail Laporan).
     "reportDate": "2026-08-14",
     "weekOfMonth": 2,
     "uploadedAt": "2026-08-14T09:00:00Z",
-    "uploadedBy": { "id": "usr_1", "name": "Bapak Kosasih", "role": "Bendahara 2" },
+    "uploadedBy": { "id": "clxyz123...", "name": "Bapak Kosasih", "image": "[https://lh3.google](https://lh3.google)..." },
     "attachments": [
       {
         "id": "att_1",
-        "fileType": "image",
-        "originalFileName": "foto-kas.jpg",
-        "fileSizeBytes": 2500000,
-        "fileUrl": "https://[supabase-url]/..."
-      },
-      {
-        "id": "att_2",
         "fileType": "pdf",
         "originalFileName": "laporan-rekap.pdf",
         "fileSizeBytes": 1200000,
@@ -218,21 +166,16 @@ Detail satu laporan (untuk halaman Detail Laporan).
 }
 ```
 
-**Response 404**
-
-```json
-{ "error": "Laporan tidak ditemukan" }
-```
-
 ---
 
-## Ringkasan Endpoint
+## Ringkasan Endpoint V3
 
-| Method | Path               | Fungsi                         | Terkait Issue          |
-| ------ | ------------------- | --------------------------------- | ------------------------- |
-| POST   | `/api/auth/login`  | Login akun bersama             | (Task 04 Entry)        |
-| POST   | `/api/auth/logout` | Logout                         | (Task 04 Entry)        |
-| GET    | `/api/users`       | Daftar pengurus untuk dropdown | #002                   |
-| GET    | `/api/reports`     | List/kelompok/cari laporan     | #011, #016             |
-| POST   | `/api/reports`     | Unggah laporan (Multi-File)    | #026, #027             |
-| GET    | `/api/reports/:id` | Detail laporan beserta lampiran| #021, #028             |
+| Method | Path                           | Fungsi                         | Akses Publik |
+| ------ | ------------------------------ | ------------------------------ | ------------ |
+| GET/POST| `/api/auth/[...nextauth]`      | Alur SSO & Sesi NextAuth       | Ya           |
+| GET    | `/api/users`                   | Daftar pengguna (admin)        | Tidak        |
+| GET    | `/api/reports`                 | List/kelompok/cari laporan     | Ya (Baca)    |
+| POST   | `/api/reports`                 | Unggah laporan (Multi-File)    | **Tidak**    |
+| GET    | `/api/reports/:id`             | Detail laporan & lampiran      | Ya (Baca)    |
+| DELETE | `/api/reports/:id`             | Hapus laporan beserta lampiran | **Tidak**    |
+| DELETE | `/api/reports/:id/attachments` | Hapus satu lampiran spesifik   | **Tidak**    |
