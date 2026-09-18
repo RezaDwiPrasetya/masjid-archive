@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
@@ -62,11 +62,15 @@ function FileIcon({ mime }: { mime: string }) {
   return <File size={20} className="shrink-0 text-muted-foreground" />;
 }
 
+import { useSession } from "next-auth/react";
+import { ShieldAlert } from "lucide-react";
+
 // ─── Komponen utama ───────────────────────────────────────────────────────────
 
 export default function UnggahLaporanPage() {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
+  const { data: session, status } = useSession();
 
   const [files, setFiles] = useState<FileEntry[]>([]);
   const [reportDate, setReportDate] = useState("");
@@ -74,6 +78,36 @@ export default function UnggahLaporanPage() {
   const [submitError, setSubmitError] = useState("");
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  if (status === "loading") {
+    return (
+      <AppShell active="/unggah">
+        <div className="flex h-[50vh] items-center justify-center text-muted-foreground">Memuat...</div>
+      </AppShell>
+    );
+  }
+
+  // Hanya BENDAHARA dan ADMIN yang bisa akses
+  const allowedRoles = ["ADMIN", "BENDAHARA"];
+  const userRole = session?.user?.role;
+  
+  if (!userRole || !allowedRoles.includes(userRole)) {
+    return (
+      <AppShell active="/unggah">
+        <div className="flex flex-col items-center justify-center py-16">
+          <div className="w-full max-w-md rounded-3xl border bg-card p-8 text-center shadow-sm">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10">
+              <ShieldAlert className="h-10 w-10 text-destructive" />
+            </div>
+            <h1 className="mb-2 text-2xl font-bold text-foreground">Akses Ditolak</h1>
+            <p className="text-sm text-muted-foreground">
+              Hanya pengurus DKM (Bendahara atau Admin) yang dapat mengunggah laporan.
+            </p>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
 
   // ── #028 & #029 & #031: handle pemilihan file ──────────────────────────────
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {

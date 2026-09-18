@@ -1,81 +1,57 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
+import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { LogIn, ShieldAlert } from "lucide-react";
+import { Suspense } from "react";
 
-export default function LoginPage() {
-  const router = useRouter();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+function LoginContent() {
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    });
-
-    setLoading(false);
-
-    if (res.ok) {
-      router.push("/");
-      router.refresh();
-    } else {
-      const data = await res.json();
-      setError(data.error || "Terjadi kesalahan");
-    }
-  }
+  let activePath: "/" | "/unggah" | "/cari" = "/";
+  if (callbackUrl.includes("/unggah")) activePath = "/unggah";
+  else if (callbackUrl.includes("/cari")) activePath = "/cari";
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-sm rounded-lg border bg-card p-8 shadow-sm"
-      >
-        <h1 className="mb-1 text-2xl font-bold text-foreground">Masjid Archive</h1>
-        <p className="mb-6 text-sm text-muted-foreground">
-          Sistem Arsip Digital DKM Masjid Al-Luqman
-        </p>
+    <AppShell active={activePath}>
+      <div className="flex flex-col items-center justify-center py-16">
+        <div className="w-full max-w-md rounded-3xl border bg-card p-8 text-center shadow-sm">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
+            <ShieldAlert className="h-10 w-10 text-primary" />
+          </div>
+          
+          <h1 className="mb-2 text-2xl font-bold text-foreground">
+            Akses Dibatasi
+          </h1>
+          <p className="mb-8 text-sm text-muted-foreground">
+            Silakan masuk menggunakan akun Google Anda untuk melanjutkan ke halaman khusus pengurus DKM.
+          </p>
 
-        <div className="mb-4">
-          <label className="mb-1 block text-sm font-medium text-foreground">Username</label>
-          <Input
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
+          <Button 
+            size="lg" 
+            className="w-full rounded-xl"
+            onClick={() => signIn("google", { callbackUrl })}
+          >
+            <LogIn className="mr-2 h-5 w-5" />
+            Masuk dengan Google
+          </Button>
         </div>
+      </div>
+    </AppShell>
+  );
+}
 
-        <div className="mb-4">
-          <label className="mb-1 block text-sm font-medium text-foreground">Kata Sandi</label>
-          <Input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-
-        {error && (
-          <p className="mb-4 text-sm text-destructive">{error}</p>
-        )}
-
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Memproses..." : "Masuk"}
-        </Button>
-
-        <p className="mt-4 text-center text-xs text-muted-foreground">
-          Hubungi Bendahara jika lupa kata sandi
-        </p>
-      </form>
-    </div>
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <AppShell active="/">
+        <div className="py-16 text-center text-muted-foreground">Memuat...</div>
+      </AppShell>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }

@@ -9,6 +9,7 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string;
+      role?: string | null;
     } & DefaultSession["user"];
   }
 }
@@ -29,11 +30,25 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   callbacks: {
+    async jwt({ token, user, trigger, session }) {
+      if (user) {
+        token.id = user.id;
+      }
+      if (token.sub) {
+        const dbUser = await prisma.user.findUnique({ where: { id: token.sub } });
+        token.role = dbUser?.role || null;
+      }
+      return token;
+    },
     async session({ session, token }) {
       if (session.user && token.sub) {
-        session.user.id = token.sub;
+        session.user.id = token.id as string || token.sub;
+        session.user.role = token.role as string | null;
       }
       return session;
     },
+  },
+  pages: {
+    signIn: "/login",
   },
 };

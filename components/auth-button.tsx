@@ -1,11 +1,13 @@
 "use client";
 
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { LogOut, LogIn, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function AuthButton() {
   const { data: session, status } = useSession();
+  const router = useRouter();
 
   if (status === "loading") {
     return (
@@ -18,9 +20,9 @@ export function AuthButton() {
 
   if (status === "unauthenticated" || !session) {
     return (
-      <Button variant="default" size="sm" onClick={() => signIn("google")}>
-        <LogIn className="mr-2 h-4 w-4" />
-        Masuk dengan Google
+      <Button variant="default" size="sm" onClick={() => router.push("/login")} className="group rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-primary/20">
+        <LogIn className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
+        Masuk
       </Button>
     );
   }
@@ -43,7 +45,7 @@ export function AuthButton() {
         <span className="text-sm font-semibold">{session.user?.name}</span>
         <span className="text-xs text-muted-foreground">{session.user?.email}</span>
       </div>
-      <Button variant="ghost" size="sm" onClick={() => signOut()}>
+      <Button variant="ghost" size="sm" onClick={() => signOut()} className="rounded-xl transition-colors hover:bg-destructive/10 hover:text-destructive">
         <LogOut className="h-4 w-4 md:mr-2" />
         <span className="hidden md:inline">Keluar</span>
       </Button>
