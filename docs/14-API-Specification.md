@@ -1,4 +1,6 @@
-# 14. API Specification
+# 14. API Specification (Revisi — V2: Multi-Format Upload)
+
+> **Catatan revisi:** Dokumen ini memperbarui API Specification awal untuk mendukung Fase V2. Perubahan utama mencakup transisi dari unggahan satu foto lokal menjadi unggahan multi-file (gambar, PDF, Excel) ke Supabase Storage, menggunakan entitas `Attachment`, dan dikelola lewat database transaction Vercel Postgres.
 
 ## Overview
 
@@ -65,7 +67,7 @@ Daftar pengurus DKM — dipakai untuk dropdown "Diunggah oleh" di form Unggah La
 
 ---
 
-## Reports (Laporan)
+## Reports (Laporan) & Attachments (Lampiran)
 
 ### `GET /api/reports`
 
@@ -73,10 +75,10 @@ List laporan, terkelompok Tahun → Bulan (untuk Arsip Laporan), atau hasil filt
 
 **Query params**
 
-| Param     | Tipe   | Wajib | Keterangan                                    |
+| Param     | Tipe   | Wajib | Keterangan                                      |
 | --------- | ------ | ------ | ----------------------------------------------- |
-| `year`    | number | tidak | filter tahun                                  |
-| `month`   | number | tidak | filter bulan                                  |
+| `year`    | number | tidak | filter tahun                                    |
+| `month`   | number | tidak | filter bulan                                    |
 | `keyword` | string | tidak | cari berdasarkan tanggal/teks terkait laporan |
 
 **Response 200 (contoh tanpa filter — dikelompokkan)**
@@ -85,18 +87,29 @@ List laporan, terkelompok Tahun → Bulan (untuk Arsip Laporan), atau hasil filt
 {
   "data": [
     {
-      "year": 2024,
+      "year": 2026,
       "months": [
         {
-          "month": 10,
+          "month": 8,
           "reports": [
             {
               "id": "rpt_1",
-              "reportDate": "2024-10-25",
-              "weekOfMonth": 4,
-              "photoUrl": "/uploads/reports/rpt_1.jpg",
-              "uploadedAt": "2024-10-25T10:00:00Z",
-              "uploadedBy": { "id": "usr_1", "name": "Bapak Kosasih" }
+              "reportDate": "2026-08-14",
+              "weekOfMonth": 2,
+              "uploadedAt": "2026-08-14T10:00:00Z",
+              "uploadedBy": { "id": "usr_1", "name": "Bapak Kosasih" },
+              "attachments": [
+                {
+                  "id": "att_1",
+                  "fileType": "image",
+                  "fileUrl": "https://[supabase-url]/storage/v1/object/public/report-photos/foto.jpg"
+                },
+                {
+                  "id": "att_2",
+                  "fileType": "pdf",
+                  "fileUrl": "https://[supabase-url]/storage/v1/object/public/report-photos/rekap.pdf"
+                }
+              ]
             }
           ]
         }
@@ -112,21 +125,28 @@ List laporan, terkelompok Tahun → Bulan (untuk Arsip Laporan), atau hasil filt
 { "data": [] }
 ```
 
-*(UI menampilkan state "Belum ada laporan" atau "Laporan tidak ditemukan" tergantung konteks — lihat wireframe.)*
-
 ### `POST /api/reports`
 
-Unggah laporan baru. `multipart/form-data`.
+Unggah laporan baru dengan banyak file pendukung. `multipart/form-data`.
 
 **Form fields**
 
-| Field          | Tipe                | Wajib |
-| -------------- | -------------------- | ----- |
-| `photo`        | file (jpg/png)      | Yes   |
-| `reportDate`   | date (`YYYY-MM-DD`) | Yes   |
-| `uploadedById` | string (User id)    | Yes   |
+| Field          | Tipe                | Wajib | Keterangan |
+| -------------- | ------------------- | ----- | ---------- |
+| `files`        | array of files      | Yes   | Mendukung `.jpg`, `.png`, `.pdf`, `.xlsx`. Minimal 1 file. |
+| `reportDate`   | date (`YYYY-MM-DD`) | Yes   | Tanggal laporan mingguan (harus hari Jumat). |
+| `uploadedById` | string (User id)    | Yes   | ID pengunggah (bendahara). |
 
-Server menghitung `year`, `month`, `weekOfMonth` otomatis dari `reportDate` (tidak diterima dari client).
+**Logika Transaksi (V2 Strict Rule):**
+1. API harus mengekstrak semua file dari *form data* dan memvalidasi tipe/ukuran tiap file.
+2. Cek duplikat: pastikan belum ada `Report` dengan `reportDate` yang sama — jika sudah ada, tolak di awal (sebelum upload apa pun dimulai) dengan status `409`.
+3. Gunakan `Promise.all` untuk mengunggah seluruh *file* secara paralel ke bucket **Supabase Storage**.
+4. Jika *semua* unggahan Supabase berhasil, susun array data lampiran (URL, nama asli, ukuran, tipe).
+5. Gunakan `prisma.$transaction` untuk melakukan *insert* ke tabel `Report` DAN `Attachment` secara atomik di **Vercel Postgres**.
+6. **Jika salah satu unggahan ke Supabase gagal:**
+   - Hapus (`storage.remove()`) semua file yang **sudah terlanjur berhasil** diupload di langkah 3 pada percobaan yang sama, agar tidak menyisakan file "yatim" (tidak punya `Attachment` terkait) di storage.
+   - Batalkan seluruh proses, jangan buat record apa pun di database.
+7. **Jika insert ke database (langkah 5) gagal** setelah upload storage berhasil (kasus langka, misal koneksi database terputus): hapus juga semua file yang sudah terupload di langkah 3, karena `prisma.$transaction` sudah otomatis rollback sisi database — storage harus disinkronkan manual (dibersihkan) karena berada di sistem terpisah dan tidak ikut ter-rollback otomatis.
 
 **Response 201**
 
@@ -134,23 +154,34 @@ Server menghitung `year`, `month`, `weekOfMonth` otomatis dari `reportDate` (tid
 {
   "data": {
     "id": "rpt_25",
-    "reportDate": "2024-10-25",
-    "photoUrl": "/uploads/reports/rpt_25.jpg",
-    "year": 2024, "month": 10, "weekOfMonth": 4
+    "reportDate": "2026-08-14",
+    "year": 2026,
+    "month": 8,
+    "weekOfMonth": 2,
+    "attachments": [
+      { "id": "att_1", "fileName": "foto-kas.jpg", "status": "uploaded" },
+      { "id": "att_2", "fileName": "data-donatur.xlsx", "status": "uploaded" }
+    ]
   }
 }
 ```
 
-**Response 400** (validasi gagal — foto/tanggal kosong, format salah)
+**Response 400** (Validasi gagal — file kosong, tipe ditolak, ukuran over-limit, bukan hari Jumat)
 
 ```json
-{ "error": "Foto dan tanggal laporan wajib diisi" }
+{ "error": "Tipe file tidak didukung atau ukuran terlalu besar." }
 ```
 
-**Response 500** (gagal upload — koneksi/server)
+**Response 409** (Duplikat tanggal — dicek di awal, sebelum proses upload dimulai)
 
 ```json
-{ "error": "Gagal mengunggah foto. Periksa koneksi internet Anda dan coba lagi." }
+{ "error": "Laporan untuk tanggal tersebut sudah tersimpan" }
+```
+
+**Response 500** (Gagal transaksi Supabase/Prisma — file yang sempat terupload sudah dibersihkan otomatis sesuai langkah 6/7)
+
+```json
+{ "error": "Gagal menyimpan lampiran. Silakan coba lagi." }
 ```
 
 ### `GET /api/reports/:id`
@@ -163,11 +194,26 @@ Detail satu laporan (untuk halaman Detail Laporan).
 {
   "data": {
     "id": "rpt_1",
-    "reportDate": "2024-10-04",
-    "weekOfMonth": 1,
-    "photoUrl": "/uploads/reports/rpt_1.jpg",
-    "uploadedAt": "2024-10-04T09:00:00Z",
-    "uploadedBy": { "id": "usr_1", "name": "Bapak Kosasih", "role": "Bendahara 2" }
+    "reportDate": "2026-08-14",
+    "weekOfMonth": 2,
+    "uploadedAt": "2026-08-14T09:00:00Z",
+    "uploadedBy": { "id": "usr_1", "name": "Bapak Kosasih", "role": "Bendahara 2" },
+    "attachments": [
+      {
+        "id": "att_1",
+        "fileType": "image",
+        "originalFileName": "foto-kas.jpg",
+        "fileSizeBytes": 2500000,
+        "fileUrl": "https://[supabase-url]/..."
+      },
+      {
+        "id": "att_2",
+        "fileType": "pdf",
+        "originalFileName": "laporan-rekap.pdf",
+        "fileSizeBytes": 1200000,
+        "fileUrl": "https://[supabase-url]/..."
+      }
+    ]
   }
 }
 ```
@@ -188,5 +234,5 @@ Detail satu laporan (untuk halaman Detail Laporan).
 | POST   | `/api/auth/logout` | Logout                         | (Task 04 Entry)        |
 | GET    | `/api/users`       | Daftar pengurus untuk dropdown | #002                   |
 | GET    | `/api/reports`     | List/kelompok/cari laporan     | #011, #016             |
-| POST   | `/api/reports`     | Unggah laporan baru            | #006, #007, #008, #010 |
-| GET    | `/api/reports/:id` | Detail laporan                 | #021                   |
+| POST   | `/api/reports`     | Unggah laporan (Multi-File)    | #026, #027             |
+| GET    | `/api/reports/:id` | Detail laporan beserta lampiran| #021, #028             |
