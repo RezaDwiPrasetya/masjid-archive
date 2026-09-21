@@ -122,6 +122,8 @@ model Attachment {
   extractionRawResponse  Json?     // V4
   extractionError        String?   // V4
   extractedAt            DateTime? // V4
+  initialBalance         Decimal?  // V4 — Saldo awal / saldo lalu yang tertulis di kertas
+  finalBalance           Decimal?  // V4 — Saldo kas akhir yang tertulis di kertas
   uploadedAt             DateTime  @default(now())
 }
 ```
@@ -166,40 +168,48 @@ Tidak ada library tambahan yang wajib untuk V2 dasar (native file input + FormDa
 
 ## V4 — Spesifikasi Teknis: Ekstraksi Data (Vision-LLM)
 
-### Model yang Dipakai
+### Model yang Dipakai & Ketahanan Sistem (Auto-Fallback)
 
-**`gemini-3.6-flash`** (via Google AI Studio / Gemini Developer API, package `@google/generative-ai`).
+**`gemini-3.6-flash`** dengan cadangan otomatis (**auto-fallback**) ke **`gemini-3.5-flash`** (via Google Generative AI SDK `@google/generative-ai`).
 
-> **Riwayat keputusan:** dokumen ini awalnya menetapkan `gemini-2.5-flash`, tapi model tersebut sudah tidak tersedia untuk pengguna baru per pengujian runtime (September 2026) — Google mengarahkan ke `gemini-3.6-flash` sebagai penerusnya. Sudah diuji langsung dengan foto asli buku kas dan hasilnya akurat (6/6 transaksi terbaca benar, subtotal/saldo tidak ikut terekstrak sebagai transaksi).
+> **Riwayat keputusan & ketahanan runtime:**
+> 1. Awalnya direncanakan `gemini-2.5-flash`, tetapi Google sudah mendeprekasinya per September 2026.
+> 2. Model utama ditetapkan ke `gemini-3.6-flash`.
+> 3. Dalam pengujian beban, server Google untuk model `3.6-flash` terkadang mengalami lonjakan antrean (*high demand spike / 503 Service Unavailable*) yang bisa menahan koneksi hingga 5 menit jika tanpa batas waktu.
+> 4. **Solusi:** Sistem menerapkan batas waktu **timeout 25 detik** via `AbortController`. Jika `gemini-3.6-flash` terkena timeout atau error 503/429, sistem **secara otomatis langsung beralih ke `gemini-3.5-flash`** di latar belakang. Hasil pengujian riil membuktikan `gemini-3.5-flash` mampu menyelesaikan ekstraksi secara stabil dalam **15–16 detik**.
 
-Alasan pemilihan (tetap berlaku untuk `gemini-3.6-flash`):
-- Volume pemakaian sangat rendah (±4–5 laporan/bulan → maksimal beberapa kali panggilan API per minggu), jadi batas kuota free tier (RPM/RPD) bukan kendala — prioritas diberikan ke **akurasi**, bukan kecepatan/volume. Varian `-lite` (mis. `gemini-3.5-flash-lite`) sengaja dihindari karena dioptimalkan untuk volume tinggi/latensi rendah dengan trade-off akurasi, sementara kasus kita (baca tulisan tangan) butuh akurasi maksimal.
-- Mendukung input gambar (vision) langsung tanpa preprocessing.
-- Mendukung **structured output** (JSON mode) — lihat di bawah.
-
-> **Catatan implementasi (dari pengujian runtime):** gambar dikirim sebagai `inlineData` (base64), bukan URL langsung — karena Gemini API tidak bisa mengakses URL Supabase Storage yang butuh autentikasi. Server men-fetch gambar dulu dari Supabase, lalu mengirimkannya sebagai binary base64 ke Gemini.
-
-> **Catatan free tier:** batas RPM/TPM/RPD di Gemini API free tier bersifat per-project dan bisa berubah — cek langsung di Google AI Studio project masing-masing sebelum implementasi, jangan berpatokan pada angka dari dokumen manapun yang bisa jadi sudah usang.
-
-> **Catatan privasi (penting untuk dev → produksi):** pada free tier, data yang dikirim ke Gemini API **dapat dipakai Google untuk meningkatkan produk mereka** (beda dengan paid tier). Untuk tahap development ini oke, tapi sebelum go-live produksi sungguhan, pertimbangkan upgrade ke paid tier (billing aktif) supaya data laporan keuangan masjid tidak ikut dipakai untuk training pihak ketiga.
+Alasan pemilihan:
+- Volume pemakaian rendah (±4–5 laporan/bulan), prioritas diberikan ke akurasi tulisan tangan.
+- Mendukung input gambar langsung via base64 `inlineData`.
+- Mendukung **structured output** (JSON mode terjamin).
 
 ### Structured Output (JSON Mode)
 
-Alih-alih meminta Gemini "tolong jawab dalam format JSON" lewat teks prompt biasa (rawan gagal parsing), gunakan fitur `responseMimeType: "application/json"` dan `responseSchema` dari Gemini API, supaya API menjamin balasan berupa JSON valid sesuai skema yang kita tentukan:
+Menggunakan fitur `responseMimeType: "application/json"` dan `responseSchema` dari Gemini API untuk mengekstrak transaksi dan catatan saldo fisik buku kas:
 
 ```typescript
 const schema = {
   type: "object",
   properties: {
+    initialBalance: {
+      type: "integer",
+      nullable: true,
+      description: "Saldo awal / saldo lalu yang tertulis di bagian atas",
+    },
+    finalBalance: {
+      type: "integer",
+      nullable: true,
+      description: "Total saldo kas akhir yang tertulis di bagian bawah",
+    },
     transactions: {
       type: "array",
       items: {
         type: "object",
         properties: {
           type: { type: "string", enum: ["pemasukan", "pengeluaran"] },
-          amount: { type: "number" },
+          amount: { type: "integer" },
           description: { type: "string" },
-          transactionDate: { type: "string", nullable: true }, // ISO date, jika tanggal terbaca
+          transactionDate: { type: "string", nullable: true }, // ISO date
         },
         required: ["type", "amount", "description"],
       },
@@ -209,14 +219,6 @@ const schema = {
 };
 ```
 
-### Desain Prompt
-
-Prompt disusun untuk:
-- Menjelaskan konteks (foto buku kas masjid, tulisan tangan, format kolom "PEMASUKAN KAS MESJID" / "PENGELUARAN KAS MESJID")
-- Meminta model memisahkan tiap baris transaksi jadi satu entri, bukan menjumlahkan/meringkas
-- Meminta model **tidak mengarang** angka yang tidak terbaca jelas — lebih baik description diisi catatan seperti "tulisan tidak terbaca jelas" daripada menebak angka
-- Contoh format tanggal yang diharapkan (`YYYY-MM-DD`), dengan instruksi eksplisit boleh `null` jika tanggal per baris tidak tercantum di foto (misalnya hanya ada satu tanggal laporan mingguan di header)
-
 ### Alur API — Ekstraksi
 
 **`POST /api/attachments/:id/extract`**
@@ -224,15 +226,18 @@ Prompt disusun untuk:
 **Wajib: Request harus memiliki Sesi NextAuth yang valid.**
 
 **Logika Server-Side:**
-1. Validasi sesi — 401 jika tidak ada
-2. Ambil `Attachment` berdasarkan `id`; tolak dengan `400` jika `fileType !== "image"` atau status sedang `processing`
-3. Update `extractionStatus` → `processing`
-4. Ambil file gambar dari `fileUrl` (Supabase Storage), kirim sebagai inline data ke Gemini API bersama prompt + schema
+1. Validasi sesi — 401 jika tidak ada.
+2. Ambil `Attachment` berdasarkan `:id`; tolak dengan `400` jika `fileType !== "image"` atau status sedang `processing`.
+3. Update `extractionStatus` → `processing`.
+4. Ambil file gambar dari `fileUrl` (Supabase Storage), kirim sebagai inline data base64 ke Gemini API dengan timeout 25s dan auto-fallback ke `gemini-3.5-flash`.
 5. **Jika berhasil:**
-   - Parse response JSON (`transactions[]`)
-   - `prisma.$transaction`: hapus `Transaction` lama pada attachment ini yang `isVerified = false` (sisa percobaan sebelumnya), lalu insert `Transaction` baru per item hasil ekstraksi, dan update `Attachment` (`extractionStatus = "done"`, `extractionModel`, `extractionRawResponse`, `extractedAt`, `extractionError = null`)
-6. **Jika gagal** (error API, response tidak sesuai schema, dsb.):
-   - Update `Attachment` (`extractionStatus = "failed"`, `extractionError` diisi pesan singkat yang ramah pengguna)
+   - Parse response JSON (`transactions[]`, `initialBalance`, `finalBalance`).
+   - `prisma.$transaction`:
+     - Hapus transaksi lama yang **belum diverifikasi** (`where: { attachmentId: id, isVerified: false }`). Transaksi `isVerified = true` tetap utuh.
+     - Insert transaksi baru hasil ekstraksi (`isVerified: false`).
+     - Update `Attachment` (`extractionStatus = "done"`, `initialBalance`, `finalBalance`, `extractionModel`, `extractionRawResponse`, `extractedAt`, `extractionError = null`).
+6. **Jika gagal**:
+   - Update `Attachment` (`extractionStatus = "failed"`, `extractionError` diisi pesan singkat ramah pengguna).
 
 **Response 200 (berhasil)**
 
@@ -241,25 +246,27 @@ Prompt disusun untuk:
   "data": {
     "attachmentId": "att_1",
     "extractionStatus": "done",
-    "transactionsCreated": 6
+    "transactionsCreated": 4,
+    "initialBalance": 1485000,
+    "finalBalance": 1605000
   }
 }
 ```
 
-**Response Error Umum:**
-- `401 Unauthorized`: Sesi tidak valid
-- `400 Bad Request`: Attachment bukan gambar, atau sedang diproses
-- `502 Bad Gateway`: Gemini API gagal merespons/error (attachment tetap ditandai `failed`, bukan 500, karena ini kegagalan dependensi eksternal bukan bug server)
+### Rekonsiliasi Kas Mingguan Otomatis
 
-### Alur API — Review & Verifikasi Transaksi
+Di halaman detail laporan, sistem menghitung:
+* `totalMasuk` = `sum(amount)` transaksi terverifikasi bertipe `pemasukan`
+* `totalKeluar` = `sum(amount)` transaksi terverifikasi bertipe `pengeluaran`
+* `netChange` = `totalMasuk - totalKeluar`
+* `calculatedFinal` = `initialBalance + netChange`
+* **Pencocokan**: Jika `Math.abs(calculatedFinal - finalBalance) < 1`, lencana hijau **"Perhitungan buku kas seimbang"** muncul. Jika berbeda, alert selisih ditampilkan untuk membantu pengecekan.
 
-**`GET /api/reports/:id/transactions`** — daftar transaksi (verified & unverified) untuk satu laporan, dipakai UI review.
+### Proteksi Penghapusan (409 Conflict)
 
-**`PATCH /api/transactions/:id`** — edit field (`type`, `amount`, `description`, `transactionDate`) SEBELUM konfirmasi. Hanya diizinkan jika `isVerified = false`.
-
-**`POST /api/transactions/:id/confirm`** — menandai `isVerified = true`, `verifiedById` dari sesi aktif, `verifiedAt = now()`. Menolak (`409`) jika transaksi sudah `isVerified = true` sebelumnya.
-
-**`DELETE /api/transactions/:id`** — hapus baris transaksi. Menolak (`403`) jika `isVerified = true` (sesuai business rule F-012 — transaksi terverifikasi tidak bisa dihapus lewat alur normal).
+* `DELETE /api/reports/:id` dan `DELETE /api/attachments/:id` dilengkapi perlindungan integritas data:
+  Jika terdapat transaksi yang sudah diverifikasi (`isVerified = true`), API merespons dengan `409 Conflict` dan payload `{ hasVerifiedTransactions: true, verifiedCount: N }`.
+  Penghapusan paksa hanya diizinkan jika menyertakan query parameter `?force=true` setelah dikonfirmasi eksplisit lewat `AlertDialog`.
 
 Semua endpoint di atas wajib sesi NextAuth valid (`401` jika tidak).
 

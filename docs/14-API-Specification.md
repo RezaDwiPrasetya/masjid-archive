@@ -168,6 +168,45 @@ Detail satu laporan (untuk halaman Detail Laporan).
 }
 ```
 
+### `DELETE /api/reports/:id`
+
+Menghapus seluruh laporan beserta lampiran file di Supabase Storage dan seluruh data transaksi terkait di database.
+**Wajib: Sesi NextAuth yang valid.**
+
+**Query params:**
+- `force` (boolean, opsional): Jika `true`, memaksa penghapusan meskipun terdapat transaksi yang sudah diverifikasi.
+
+**Logika Server-Side:**
+1. Cek keberadaan transaksi terverifikasi (`isVerified = true`) pada laporan ini.
+2. Jika ada dan `force !== "true"`, sistem mengembalikan `409 Conflict` dengan payload `{ error: "...", hasVerifiedTransactions: true, verifiedCount: X }`.
+3. Jika tidak ada transaksi terverifikasi atau `force === "true"`: hapus seluruh file lampiran dari Supabase Storage dan hapus record laporan via `prisma.report.delete` (cascade delete di Postgres).
+
+**Response 200**
+```json
+{ "data": { "id": "rpt_1", "deleted": true } }
+```
+
+**Response Error:**
+- `401 Unauthorized`: Sesi tidak valid
+- `404 Not Found`: Laporan tidak ditemukan
+- `409 Conflict`: Memiliki transaksi terverifikasi, butuh konfirmasi lanjutan (`?force=true`)
+
+### `DELETE /api/attachments/:id`
+
+Menghapus satu file lampiran tertentu dari suatu laporan.
+**Wajib: Sesi NextAuth yang valid.**
+
+**Query params:**
+- `force` (boolean, opsional): Jika `true`, memaksa penghapusan meskipun terdapat transaksi yang sudah diverifikasi pada lampiran ini.
+
+**Logika Server-Side:**
+1. Cek keberadaan transaksi terverifikasi (`isVerified = true`) pada lampiran ini.
+2. Jika ada dan `force !== "true"`, sistem mengembalikan `409 Conflict` dengan payload `{ error: "...", hasVerifiedTransactions: true, verifiedCount: X }`.
+3. Jika tidak ada transaksi terverifikasi atau `force === "true"`: hapus file dari Supabase Storage dan hapus record attachment via `prisma.attachment.delete`.
+
+**Response Error:**
+- `409 Conflict`: Memiliki transaksi terverifikasi, butuh konfirmasi lanjutan (`?force=true`)
+
 ---
 
 ## Ekstraksi Data (V4)
@@ -181,8 +220,11 @@ Memicu ekstraksi data transaksi dari satu lampiran bergambar menggunakan vision-
 1. Validasi sesi — `401` jika tidak ada.
 2. Ambil `Attachment` sesuai `:id`. Tolak `400` jika `fileType !== "image"`, atau `409` jika `extractionStatus` sedang `processing` (mencegah trigger ganda).
 3. Update `extractionStatus` → `processing`.
-4. Kirim gambar (dari `fileUrl`) + prompt terstruktur ke Gemini API dengan `responseSchema` (lihat 12-Technical-Specification.md).
-5. **Sukses**: hapus `Transaction` lama pada attachment ini yang `isVerified = false`, insert `Transaction` baru per item hasil ekstraksi, update `Attachment` (`extractionStatus: "done"`, `extractionModel`, `extractionRawResponse`, `extractedAt`, `extractionError: null`).
+4. Kirim gambar (dari `fileUrl`) + prompt terstruktur ke Gemini API dengan `responseSchema` (timeout 25s dengan auto-fallback dari `gemini-3.6-flash` ke `gemini-3.5-flash`).
+5. **Sukses**:
+   - Hapus transaksi lama pada attachment ini yang **belum diverifikasi** (`isVerified = false`). Transaksi yang sudah `isVerified = true` tetap dipertahankan.
+   - Insert baris `Transaction` baru hasil ekstraksi (`isVerified: false`).
+   - Update `Attachment` (`extractionStatus: "done"`, `initialBalance`, `finalBalance`, `extractionModel`, `extractionRawResponse`, `extractedAt`, `extractionError: null`).
 6. **Gagal**: update `Attachment` (`extractionStatus: "failed"`, `extractionError`: pesan singkat ramah pengguna).
 
 **Response 200 (sukses)**
@@ -192,7 +234,9 @@ Memicu ekstraksi data transaksi dari satu lampiran bergambar menggunakan vision-
   "data": {
     "attachmentId": "att_1",
     "extractionStatus": "done",
-    "transactionsCreated": 6
+    "transactionsCreated": 4,
+    "initialBalance": 1485000,
+    "finalBalance": 1605000
   }
 }
 ```
