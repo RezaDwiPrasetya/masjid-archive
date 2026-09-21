@@ -22,7 +22,7 @@ export async function GET(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
@@ -40,6 +40,30 @@ export async function DELETE(
 
   if (!report) {
     return NextResponse.json({ error: "Laporan tidak ditemukan" }, { status: 404 });
+  }
+
+  // Cek apakah ada query param ?force=true
+  const { searchParams } = new URL(request.url);
+  const force = searchParams.get("force") === "true";
+
+  // Cek apakah ada transaksi yang sudah diverifikasi pada laporan ini
+  const verifiedTransactionsCount = await prisma.transaction.count({
+    where: {
+      reportId: id,
+      isVerified: true,
+    },
+  });
+
+  if (verifiedTransactionsCount > 0 && !force) {
+    return NextResponse.json(
+      {
+        error:
+          "Laporan tidak dapat dihapus karena memiliki transaksi yang sudah diverifikasi.",
+        hasVerifiedTransactions: true,
+        verifiedCount: verifiedTransactionsCount,
+      },
+      { status: 409 }
+    );
   }
 
   // Ekstrak storage path dari setiap fileUrl
@@ -70,9 +94,10 @@ export async function DELETE(
     }
   }
 
-  // Hapus data DB secara atomik: Attachment dulu, baru Report
+  // Hapus data DB secara atomik: Transaksi (unverified) dulu, Attachment, baru Report
   try {
     await prisma.$transaction([
+      prisma.transaction.deleteMany({ where: { reportId: id } }),
       prisma.attachment.deleteMany({ where: { reportId: id } }),
       prisma.report.delete({ where: { id } }),
     ]);

@@ -1,10 +1,10 @@
-# 14. API Specification (Revisi — V3: Autentikasi SSO)
+# 14. API Specification (Revisi — V4: Ekstraksi Data)
 
-> **Catatan revisi:** Dokumen ini memperbarui API Specification awal untuk mendukung Fase V2 (Multi-Format) dan Fase V3 (Autentikasi SSO). Perubahan utama mencakup transisi pengelolaan sesi ke NextAuth.js dan otomatisasi identitas pengunggah (*uploader*) berbasis sesi aktif, bukan input klien.
+> **Catatan revisi:** Dokumen ini memperbarui API Specification untuk mendukung Fase V4 (Ekstraksi Data via Vision-LLM & Review/Verifikasi Transaksi), melanjutkan revisi V3 (Autentikasi SSO) sebelumnya.
 
 ## Overview
 
-API di-implementasi sebagai Next.js Route Handlers (`app/api/**/route.ts`). Semua endpoint di bawah `/api/reports` dan `/api/users` **wajib** memiliki *session cookie* NextAuth yang valid. Akses tanpa sesi akan langsung ditolak dengan status `401 Unauthorized`.
+API di-implementasi sebagai Next.js Route Handlers (`app/api/**/route.ts`). Semua endpoint di bawah `/api/reports`, `/api/users`, `/api/attachments`, dan `/api/transactions` **wajib** memiliki *session cookie* NextAuth yang valid. Akses tanpa sesi akan langsung ditolak dengan status `401 Unauthorized`.
 
 Format response standar:
 
@@ -77,12 +77,13 @@ List laporan, terkelompok Tahun → Bulan (untuk Arsip Laporan), atau hasil filt
               "reportDate": "2026-08-14",
               "weekOfMonth": 2,
               "uploadedAt": "2026-08-14T10:00:00Z",
-              "uploadedBy": { "id": "clxyz123...", "name": "Bapak Kosasih", "image": "[https://lh3.googleusercontent.com/](https://lh3.googleusercontent.com/)..." },
+              "uploadedBy": { "id": "clxyz123...", "name": "Bapak Kosasih", "image": "https://lh3.googleusercontent.com/..." },
               "attachments": [
                 {
                   "id": "att_1",
                   "fileType": "image",
-                  "fileUrl": "https://[supabase-url]/storage/v1/object/public/report-photos/foto.jpg"
+                  "fileUrl": "https://[supabase-url]/storage/v1/object/public/report-photos/foto.jpg",
+                  "extractionStatus": "not_extracted"
                 }
               ]
             }
@@ -113,7 +114,7 @@ Unggah laporan baru dengan banyak file pendukung. `multipart/form-data`.
 2. Validasi file: Ekstrak file dari *form data* dan validasi tipe/ukuran.
 3. Cek duplikat `reportDate` di Vercel Postgres (kembalikan `409` jika duplikat).
 4. `Promise.all` unggah seluruh *file* secara paralel ke **Supabase Storage**.
-5. Jika berhasil, susun data lampiran dan eksekusi `prisma.$transaction` untuk *insert* ke tabel `Report` (dengan `uploadedById` dari sesi) DAN `Attachment` secara atomik di **Vercel Postgres**.
+5. Jika berhasil, susun data lampiran dan eksekusi `prisma.$transaction` untuk *insert* ke tabel `Report` (dengan `uploadedById` dari sesi) DAN `Attachment` (dengan `extractionStatus` default `not_extracted`) secara atomik di **Vercel Postgres**.
 6. Jika transaksi database gagal atau ada upload Supabase yang *error*, server otomatis menghapus (`storage.remove()`) file yang sempat terunggah agar tidak terjadi *orphan files* di bucket.
 
 **Response 201**
@@ -152,14 +153,15 @@ Detail satu laporan (untuk halaman Detail Laporan).
     "reportDate": "2026-08-14",
     "weekOfMonth": 2,
     "uploadedAt": "2026-08-14T09:00:00Z",
-    "uploadedBy": { "id": "clxyz123...", "name": "Bapak Kosasih", "image": "[https://lh3.google](https://lh3.google)..." },
+    "uploadedBy": { "id": "clxyz123...", "name": "Bapak Kosasih", "image": "https://lh3.google..." },
     "attachments": [
       {
         "id": "att_1",
         "fileType": "pdf",
         "originalFileName": "laporan-rekap.pdf",
         "fileSizeBytes": 1200000,
-        "fileUrl": "https://[supabase-url]/..."
+        "fileUrl": "https://[supabase-url]/...",
+        "extractionStatus": "not_extracted"
       }
     ]
   }
@@ -168,7 +170,144 @@ Detail satu laporan (untuk halaman Detail Laporan).
 
 ---
 
-## Ringkasan Endpoint V3
+## Ekstraksi Data (V4)
+
+### `POST /api/attachments/:id/extract`
+
+Memicu ekstraksi data transaksi dari satu lampiran bergambar menggunakan vision-LLM (Gemini). **Hanya berlaku untuk `fileType = "image"`.**
+**Wajib: Request harus memiliki Sesi NextAuth yang valid.**
+
+**Logika Server-Side:**
+1. Validasi sesi — `401` jika tidak ada.
+2. Ambil `Attachment` sesuai `:id`. Tolak `400` jika `fileType !== "image"`, atau `409` jika `extractionStatus` sedang `processing` (mencegah trigger ganda).
+3. Update `extractionStatus` → `processing`.
+4. Kirim gambar (dari `fileUrl`) + prompt terstruktur ke Gemini API dengan `responseSchema` (lihat 12-Technical-Specification.md).
+5. **Sukses**: hapus `Transaction` lama pada attachment ini yang `isVerified = false`, insert `Transaction` baru per item hasil ekstraksi, update `Attachment` (`extractionStatus: "done"`, `extractionModel`, `extractionRawResponse`, `extractedAt`, `extractionError: null`).
+6. **Gagal**: update `Attachment` (`extractionStatus: "failed"`, `extractionError`: pesan singkat ramah pengguna).
+
+**Response 200 (sukses)**
+
+```json
+{
+  "data": {
+    "attachmentId": "att_1",
+    "extractionStatus": "done",
+    "transactionsCreated": 6
+  }
+}
+```
+
+**Response 200 (gagal, tetap 200 karena permintaan diterima & diproses — bukan error server)**
+
+```json
+{
+  "data": {
+    "attachmentId": "att_1",
+    "extractionStatus": "failed",
+    "extractionError": "Gambar terlalu buram untuk dibaca, coba unggah ulang foto yang lebih jelas"
+  }
+}
+```
+
+**Response Error Umum:**
+- `401 Unauthorized`: Sesi tidak valid
+- `400 Bad Request`: Lampiran bukan bertipe gambar
+- `409 Conflict`: Lampiran sedang dalam status `processing`
+- `502 Bad Gateway`: Gemini API tidak bisa dihubungi sama sekali (bukan gagal parsing — itu masuk kategori `extractionStatus: "failed"` di atas)
+
+---
+
+## Review & Verifikasi Transaksi (V4)
+
+### `GET /api/reports/:id/transactions`
+
+Daftar seluruh transaksi (baik yang sudah maupun belum diverifikasi) untuk satu laporan tertentu — dipakai UI review di halaman Detail Laporan.
+
+**Response 200**
+
+```json
+{
+  "data": [
+    {
+      "id": "txn_1",
+      "attachmentId": "att_1",
+      "type": "pemasukan",
+      "amount": 500000,
+      "description": "Infaq Jumat",
+      "transactionDate": "2026-08-14",
+      "isVerified": false,
+      "verifiedBy": null,
+      "verifiedAt": null
+    }
+  ]
+}
+```
+
+### `PATCH /api/transactions/:id`
+
+Mengedit field transaksi hasil ekstraksi sebelum dikonfirmasi. **Hanya diizinkan jika `isVerified = false`.**
+
+**Body**
+
+```json
+{
+  "type": "pemasukan",
+  "amount": 500000,
+  "description": "Infaq Jumat (dikoreksi)",
+  "transactionDate": "2026-08-14"
+}
+```
+
+**Response 200**
+
+```json
+{ "data": { "id": "txn_1", "amount": 500000, "description": "Infaq Jumat (dikoreksi)" } }
+```
+
+**Response Error:**
+- `409 Conflict`: Transaksi sudah `isVerified = true`, tidak bisa diedit lewat endpoint ini.
+
+### `POST /api/transactions/:id/confirm`
+
+Mengonfirmasi satu baris transaksi sebagai data resmi.
+
+**Logika Server-Side:** set `isVerified = true`, `verifiedById` dari `session.user.id`, `verifiedAt = now()`.
+
+**Response 200**
+
+```json
+{ "data": { "id": "txn_1", "isVerified": true, "verifiedBy": "Bapak Kosasih", "verifiedAt": "2026-09-21T10:00:00Z" } }
+```
+
+**Response Error:**
+- `409 Conflict`: Transaksi sudah dikonfirmasi sebelumnya.
+
+### `DELETE /api/transactions/:id`
+
+Menghapus baris transaksi yang tidak valid (salah baca, duplikat, dll).
+
+**Response 200**
+
+```json
+{ "data": { "id": "txn_1", "deleted": true } }
+```
+
+**Response Error:**
+- `403 Forbidden`: Transaksi sudah `isVerified = true` — tidak bisa dihapus lewat alur normal ini (sesuai business rule F-012).
+
+---
+
+## Ringkasan Endpoint V4
+
+| Method | Path                                   | Fungsi                                   | Akses Publik |
+| ------ | -------------------------------------- | ----------------------------------------- | ------------ |
+| POST   | `/api/attachments/:id/extract`         | Memicu ekstraksi data (vision-LLM)        | **Tidak**    |
+| GET    | `/api/reports/:id/transactions`        | Daftar transaksi (verified & unverified)  | Ya (Baca)    |
+| PATCH  | `/api/transactions/:id`                | Edit transaksi sebelum konfirmasi         | **Tidak**    |
+| POST   | `/api/transactions/:id/confirm`        | Konfirmasi transaksi (`isVerified=true`)  | **Tidak**    |
+| DELETE | `/api/transactions/:id`                | Hapus transaksi (hanya jika belum verified)| **Tidak**   |
+
+## Ringkasan Endpoint V3 (Referensi)
 
 | Method | Path                           | Fungsi                         | Akses Publik |
 | ------ | ------------------------------ | ------------------------------ | ------------ |

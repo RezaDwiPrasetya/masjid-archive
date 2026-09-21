@@ -50,3 +50,6 @@ prisma/dev.db
 
 # Uploaded report photos
 /public/uploads/*
+
+# Scratch test scripts
+scratch/

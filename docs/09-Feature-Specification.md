@@ -12,8 +12,10 @@
 | F-006 | Tampilan Multi-Lampiran di Detail Laporan | Must | ✅ Done (V2) |
 | F-007 | Validasi Tipe & Ukuran File per Jenis | Must | ✅ Done (V2) |
 | F-008 | Manajemen Lampiran (Hapus & Tambah Susulan) | Should | ✅ Done (V2) |
-| F-009 | Login Google SSO (NextAuth) | Must | Planned (V3) |
-| F-010 | Proteksi Rute & Aksi (Role-Based Access) | Must | Planned (V3) |
+| F-009 | Login Google SSO (NextAuth) | Must | ✅ Done (V3) |
+| F-010 | Proteksi Rute & Aksi (Role-Based Access) | Must | ✅ Done (V3) |
+| F-011 | Ekstraksi Data Laporan (Vision-LLM) | Must | Planned (V4) |
+| F-012 | Review & Verifikasi Transaksi | Must | Planned (V4) |
 
 ## Feature Details — V1
 
@@ -120,18 +122,65 @@
 **User:** Pengurus DKM
 **Process:** Pengguna menekan tombol "Masuk dengan Google". Sistem mengautentikasi via Google OAuth 2.0 dan menyimpan data profil (nama, email, avatar) ke dalam tabel `User` di Vercel Postgres. Sesi dikelola secara otomatis oleh NextAuth.
 **Acceptance Criteria:**
-- [ ] Terdapat tombol "Masuk dengan Google" di menu navigasi bagi pengunjung (Guest).
-- [ ] Pengguna berhasil login menggunakan akun Google dan data profil tersimpan ke dalam database.
-- [ ] Avatar dan nama Google pengguna tampil di antarmuka jika sesi sedang aktif.
-- [ ] Sesi login persisten dan pengguna bisa mengakhirinya dengan menekan tombol "Keluar".
+- [x] Terdapat tombol "Masuk dengan Google" di menu navigasi bagi pengunjung (Guest).
+- [x] Pengguna berhasil login menggunakan akun Google dan data profil tersimpan ke dalam database.
+- [x] Avatar dan nama Google pengguna tampil di antarmuka jika sesi sedang aktif.
+- [x] Sesi login persisten dan pengguna bisa mengakhirinya dengan menekan tombol "Keluar".
 
 ### F-010 — Proteksi Rute & Aksi (Role-Based Access)
 
 **Objective:** Mencegah publik mengotak-atik arsip laporan dan membatasi hak akses operasional hanya kepada pengurus yang memiliki sesi login valid.
 **User:** Sistem / Publik / Pengurus
-**Process:** Next.js Middleware mencegat *request* ke halaman terproteksi. Komponen antarmuka (UI) mengecek status sesi sebelum merender tombol aksi mutasi.
+**Process:** Proxy Next.js (`proxy.ts`) mencegat *request* ke halaman terproteksi. Komponen antarmuka (UI) mengecek status sesi sebelum merender tombol aksi mutasi.
 **Acceptance Criteria:**
-- [ ] Publik (Guest) tetap bisa mengakses halaman Beranda (Arsip), Pencarian, dan Detail Laporan (mode baca).
-- [ ] Publik akan diblokir dan dikembalikan ke halaman utama jika mencoba mengakses rute `/unggah`.
-- [ ] Endpoint API untuk mutasi data (POST / DELETE) merespons dengan status `401 Unauthorized` jika diakses tanpa sesi yang valid.
-- [ ] Tombol aksi destruktif ("Hapus Laporan", "Hapus Lampiran") dan konstruktif ("+ Tambah Lampiran") disembunyikan dari UI jika pengguna tidak memiliki sesi login aktif.
+- [x] Publik (Guest) tetap bisa mengakses halaman Beranda (Arsip), Pencarian, dan Detail Laporan (mode baca).
+- [x] Publik akan diblokir dan dikembalikan ke halaman utama jika mencoba mengakses rute `/unggah`.
+- [x] Endpoint API untuk mutasi data (POST / DELETE) merespons dengan status `401 Unauthorized` jika diakses tanpa sesi yang valid.
+- [x] Tombol aksi destruktif ("Hapus Laporan", "Hapus Lampiran") dan konstruktif ("+ Tambah Lampiran") disembunyikan dari UI jika pengguna tidak memiliki sesi login aktif.
+
+---
+
+## Feature Details — V4 (Ekstraksi Data)
+
+> **Catatan scope:** Fase V4 ini fokus pada lampiran bertipe **gambar** (foto laporan tulisan tangan), karena itu yang jadi bentuk laporan utama DKM saat ini. Parsing terstruktur untuk PDF/Excel disebut di Product Plan sebagai bagian dari visi V4, tapi belum ditetapkan cakupannya di sini — perlu didiskusikan apakah masuk peningkatan berikutnya di V4 atau digeser jadi sub-fase terpisah setelah alur ekstraksi gambar terbukti jalan.
+
+### F-011 — Ekstraksi Data Laporan (Vision-LLM)
+
+**Objective:** Memungkinkan bendahara mengubah foto laporan (tulisan tangan) menjadi data transaksi terstruktur, tanpa perlu mengetik ulang manual.
+**User:** Bendahara DKM
+**Input:** Lampiran bertipe gambar yang berstatus `not_extracted` atau `failed`
+**Process:**
+- Bendahara membuka halaman Detail Laporan, menekan tombol "Ekstrak Data" pada satu lampiran gambar
+- Status `Attachment.extractionStatus` berubah jadi `processing`
+- Server mengirim gambar ke vision-LLM (Gemini) dengan prompt terstruktur, meminta output JSON berisi daftar transaksi (tipe, jumlah, deskripsi, tanggal jika ada)
+- Respons mentah disimpan ke `Attachment.extractionRawResponse`, lalu diparsing jadi baris-baris `Transaction` baru dengan `isVerified = false`
+- Status berubah jadi `done` (berhasil, minimal 1 transaksi terbentuk) atau `failed` (error API, atau respons tidak bisa diparsing)
+**Output:** Daftar transaksi baru (belum diverifikasi) siap ditinjau lewat F-012
+**Business Rules:**
+- Ekstraksi hanya bisa dipicu satu attachment dalam satu waktu (tidak ada bulk-extract di V4 awal, untuk menjaga kesederhanaan & kuota API gratis)
+- Ekstraksi ulang (re-extract) pada attachment yang sudah `done` akan mengganti transaksi lama yang belum diverifikasi; transaksi yang sudah diverifikasi tidak ikut terhapus (lihat Data Model)
+**Acceptance Criteria:**
+- [ ] Tombol "Ekstrak Data" hanya tampil pada lampiran gambar berstatus `not_extracted` atau `failed`
+- [ ] Setelah diklik, UI menampilkan status loading/processing, tombol nonaktif sementara proses berjalan
+- [ ] Jika berhasil, transaksi baru langsung terlihat di daftar "Belum Diverifikasi" pada laporan tersebut
+- [ ] Jika gagal, status menjadi `failed` dengan pesan error yang jelas (bukan pesan teknis mentah), dan tombol berubah jadi "Coba Lagi"
+
+### F-012 — Review & Verifikasi Transaksi
+
+**Objective:** Memberi bendahara kendali penuh untuk meninjau, mengoreksi, dan mengonfirmasi data hasil ekstraksi sebelum dihitung sebagai data resmi.
+**User:** Bendahara DKM
+**Input:** Baris `Transaction` dengan `isVerified = false`
+**Process:**
+- Baris transaksi hasil ekstraksi ditampilkan dalam daftar yang jelas ditandai "Belum Diverifikasi", dikelompokkan per laporan
+- Bendahara bisa mengedit field (`type`, `amount`, `description`, `transactionDate`) langsung di daftar tersebut sebelum konfirmasi
+- Tombol **"Konfirmasi"**: menandai `isVerified = true`, mencatat `verifiedById` (dari sesi aktif) dan `verifiedAt`
+- Tombol **"Hapus"**: membuang baris yang salah/duplikat/tidak relevan (misal LLM salah membaca coretan sebagai transaksi)
+**Business Rules:**
+- Transaksi yang sudah `isVerified = true` tidak bisa dihapus lewat alur normal ini (butuh aksi terpisah, di luar scope V4 awal, untuk mencegah penghapusan data resmi secara tidak sengaja)
+- Transaksi dengan `isVerified = false` tidak muncul di perhitungan mana pun sampai V5 dibangun
+**Acceptance Criteria:**
+- [ ] Semua transaksi `isVerified = false` tampil jelas ditandai "Belum Diverifikasi", terpisah dari (nanti) yang sudah diverifikasi
+- [ ] Bendahara bisa mengedit field transaksi sebelum menekan "Konfirmasi"
+- [ ] Menekan "Konfirmasi" mengubah `isVerified` jadi `true` dan mencatat `verifiedById` + `verifiedAt`
+- [ ] Menekan "Hapus" pada transaksi yang belum diverifikasi langsung membuang baris tersebut
+- [ ] Transaksi yang sudah diverifikasi tidak menampilkan tombol "Hapus" di alur ini

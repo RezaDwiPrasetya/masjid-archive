@@ -58,7 +58,7 @@ Bendahara membuka form Unggah → memilih beberapa file sekaligus (kombinasi gam
 
 ---
 
-## V3 — Autentikasi SSO & Role-Based Access (Sedang Dikerjakan)
+## V3 — Autentikasi SSO & Role-Based Access (Selesai)
 
 ### MVP Objective (V3)
 
@@ -80,9 +80,49 @@ Membuktikan bahwa sistem dapat mengamankan rute operasional (mutasi data) dan me
 Pengunjung masuk sebagai publik → hanya bisa melihat arsip. Pengurus menekan tombol "Masuk dengan Google" → otorisasi akun Google berhasil → UI menampilkan nama/avatar → menu unggah terbuka → saat mengunggah, ID pengurus otomatis tertaut ke laporan.
 
 ### MVP Success Criteria (V3)
-- [ ] Pengurus berhasil login menggunakan akun Google dan profilnya tersimpan di database.
-- [ ] Pengunjung (publik) tidak dapat memaksa masuk ke rute `/unggah` atau melihat tombol hapus.
-- [ ] Endpoint API menolak permintaan (menghasilkan 401 Unauthorized) jika tidak ada sesi yang valid.
+- [x] Pengurus berhasil login menggunakan akun Google dan profilnya tersimpan di database.
+- [x] Pengunjung (publik) tidak dapat memaksa masuk ke rute `/unggah` atau melihat tombol hapus.
+- [x] Endpoint API menolak permintaan (menghasilkan 401 Unauthorized) jika tidak ada sesi yang valid.
+
+---
+
+## V4 — Ekstraksi Data (Vision-LLM) (Sedang Dikerjakan)
+
+### MVP Objective (V4)
+
+Membuktikan bahwa foto laporan tulisan tangan bisa diubah jadi data transaksi terstruktur lewat vision-LLM, dengan alur verifikasi manual yang membuat bendahara tetap merasa punya kendali penuh atas keakuratan data — bukan cuma "percaya mentah-mentah" hasil AI.
+
+### Must Have (V4)
+- Tombol "Ekstrak Data" pada lampiran gambar yang berstatus `not_extracted`/`failed` (F-011)
+- Pemanggilan vision-LLM (Gemini, free tier untuk tahap development) yang mengembalikan data transaksi terstruktur (tipe, jumlah, deskripsi, tanggal jika ada)
+- Penyimpanan hasil mentah (`extractionRawResponse`) untuk audit/debug
+- Daftar transaksi hasil ekstraksi berstatus "Belum Diverifikasi", dikelompokkan per laporan (F-012)
+- Kemampuan mengedit field transaksi sebelum konfirmasi
+- Tombol "Konfirmasi" (menandai `isVerified = true`) dan "Hapus" untuk baris yang belum diverifikasi
+- Indikator status ekstraksi per lampiran (`processing`/`done`/`failed`) yang terlihat jelas di UI
+
+### Should Have (V4)
+- Tombol "Coba Lagi" saat status `failed`, tanpa perlu reload halaman
+- Pesan error yang ramah (bukan error teknis mentah) saat ekstraksi gagal
+
+### Could Have (V4)
+- Highlight/badge jumlah transaksi yang berhasil terdeteksi per lampiran, sebelum dibuka detailnya
+
+### Not Now (V4 — tetap di luar scope, dibahas terpisah nanti)
+- Ekstraksi/parsing untuk lampiran PDF dan Excel — ditunda, fokus gambar dulu (lihat catatan scope di 09-Feature-Specification.md)
+- Bulk-extract (proses banyak lampiran sekaligus) — satu attachment satu kali proses dulu, demi kesederhanaan & menjaga kuota API gratis
+- Financial intelligence (tren, dashboard, donatur) — scope V5, baru relevan setelah data `Transaction` terkumpul & terverifikasi
+- Multi-user role granular (Admin vs Guest dengan hak berbeda untuk verifikasi) — semua pengguna yang login diperlakukan setara dulu di V4
+
+### MVP Core Flow (V4)
+
+Bendahara membuka Detail Laporan → menekan "Ekstrak Data" pada lampiran gambar → menunggu status berubah dari `processing` ke `done` → transaksi hasil ekstraksi muncul dalam daftar "Belum Diverifikasi" → bendahara meninjau tiap baris, mengoreksi jika perlu → menekan "Konfirmasi" satu per satu (atau "Hapus" jika baris tidak valid) → transaksi yang sudah dikonfirmasi tersimpan sebagai data resmi, siap dipakai di V5.
+
+### MVP Success Criteria (V4)
+- [ ] Bendahara berhasil mengekstrak minimal satu lampiran gambar dan mendapatkan transaksi dalam status "Belum Diverifikasi"
+- [ ] Bendahara berhasil mengedit dan mengonfirmasi minimal satu transaksi hingga `isVerified = true`
+- [ ] Kegagalan ekstraksi (mis. foto buram, API error) ditangani dengan pesan jelas, tidak membuat halaman error/crash
+- [ ] Transaksi yang belum diverifikasi tidak pernah tampak seolah-olah sudah final di UI manapun
 
 ---
 
@@ -90,5 +130,5 @@ Pengunjung masuk sebagai publik → hanya bisa melihat arsip. Pengurus menekan t
 
 | Fase | Fokus |
 |---|---|
-| V4 | Ekstraksi data (vision-LLM untuk gambar, parsing untuk PDF/Excel) |
 | V5 | Financial intelligence: tren, tracking donatur, visualisasi |
+| V6 | Multi-tenant (opsional, jangka panjang) |
