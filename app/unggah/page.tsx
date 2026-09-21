@@ -1,18 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   CloudUpload,
   UploadCloud,
@@ -26,8 +19,6 @@ import {
 } from "lucide-react";
 
 // ─── Tipe & Konstanta ─────────────────────────────────────────────────────────
-
-type UserOption = { id: string; name: string; role: string };
 
 type FileEntry = {
   /** ID unik agar React key stabil */
@@ -71,27 +62,52 @@ function FileIcon({ mime }: { mime: string }) {
   return <File size={20} className="shrink-0 text-muted-foreground" />;
 }
 
+import { useSession } from "next-auth/react";
+import { ShieldAlert } from "lucide-react";
+
 // ─── Komponen utama ───────────────────────────────────────────────────────────
 
 export default function UnggahLaporanPage() {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
+  const { data: session, status } = useSession();
 
-  const [users, setUsers] = useState<UserOption[]>([]);
   const [files, setFiles] = useState<FileEntry[]>([]);
   const [reportDate, setReportDate] = useState("");
-  const [uploadedById, setUploadedById] = useState("");
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [submitError, setSubmitError] = useState("");
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  // Ambil daftar user untuk dropdown
-  useEffect(() => {
-    fetch("/api/users")
-      .then((res) => res.json())
-      .then((json) => setUsers(json.data ?? []));
-  }, []);
+  if (status === "loading") {
+    return (
+      <AppShell active="/unggah">
+        <div className="flex h-[50vh] items-center justify-center text-muted-foreground">Memuat...</div>
+      </AppShell>
+    );
+  }
+
+  // Hanya BENDAHARA dan ADMIN yang bisa akses
+  const allowedRoles = ["ADMIN", "BENDAHARA"];
+  const userRole = session?.user?.role;
+  
+  if (!userRole || !allowedRoles.includes(userRole)) {
+    return (
+      <AppShell active="/unggah">
+        <div className="flex flex-col items-center justify-center py-16">
+          <div className="w-full max-w-md rounded-3xl border bg-card p-8 text-center shadow-sm">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10">
+              <ShieldAlert className="h-10 w-10 text-destructive" />
+            </div>
+            <h1 className="mb-2 text-2xl font-bold text-foreground">Akses Ditolak</h1>
+            <p className="text-sm text-muted-foreground">
+              Hanya pengurus DKM (Bendahara atau Admin) yang dapat mengunggah laporan.
+            </p>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
 
   // ── #028 & #029 & #031: handle pemilihan file ──────────────────────────────
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -159,16 +175,11 @@ export default function UnggahLaporanPage() {
       setSubmitError("Tanggal laporan wajib diisi.");
       return;
     }
-    if (!uploadedById) {
-      setSubmitError("Pilih nama pengunggah terlebih dahulu.");
-      return;
-    }
 
     setLoading(true);
     const formData = new FormData();
     files.forEach((entry) => formData.append("files", entry.file));
     formData.append("reportDate", reportDate);
-    formData.append("uploadedById", uploadedById);
 
     const res = await fetch("/api/reports", { method: "POST", body: formData });
     setLoading(false);
@@ -177,7 +188,6 @@ export default function UnggahLaporanPage() {
       setSaved(true);
       setFiles([]);
       setReportDate("");
-      setUploadedById("");
       setValidationErrors([]);
       router.refresh();
     } else {
@@ -339,34 +349,6 @@ export default function UnggahLaporanPage() {
             <p className="mt-1 text-xs text-muted-foreground">
               Pilih tanggal laporan ini dibacakan (biasanya hari Jumat)
             </p>
-          </div>
-
-          <div>
-            <label
-              htmlFor="uploader-select"
-              className="mb-1 block text-sm font-medium text-foreground"
-            >
-              Diunggah oleh
-            </label>
-            <Select
-              items={users.map((u) => ({
-                label: `${u.name} (${u.role})`,
-                value: u.id,
-              }))}
-              value={uploadedById}
-              onValueChange={(value) => setUploadedById(value ?? "")}
-            >
-              <SelectTrigger id="uploader-select" className="w-full">
-                <SelectValue placeholder="Pilih pengurus" />
-              </SelectTrigger>
-              <SelectContent>
-                {users.map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.name} ({user.role})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </div>
 

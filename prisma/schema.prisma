@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
@@ -12,31 +12,100 @@ datasource db {
 }
 
 model User {
-  id      String   @id @default(cuid())
-  name    String
-  role    String
-  reports Report[]
+  id                   String        @id @default(cuid())
+  name                 String?
+  email                String?       @unique
+  emailVerified        DateTime?
+  image                String?
+  role                 String?       // "Admin" | "Guest" — dikelola manual oleh Superadmin
+  accounts             Account[]
+  sessions             Session[]
+  reports              Report[]
+  verifiedTransactions Transaction[] @relation("VerifiedBy")
 }
 
 model Report {
-  id           String       @id @default(cuid())
+  id           String        @id @default(cuid())
   reportDate   DateTime
   year         Int
   month        Int
   weekOfMonth  Int
-  uploadedAt   DateTime     @default(now())
+  uploadedAt   DateTime      @default(now())
   uploadedById String
-  uploadedBy   User         @relation(fields: [uploadedById], references: [id])
+  uploadedBy   User          @relation(fields: [uploadedById], references: [id])
   attachments  Attachment[]
+  transactions Transaction[]
 }
 
 model Attachment {
-  id               String   @id @default(cuid())
-  reportId         String
-  report           Report   @relation(fields: [reportId], references: [id])
-  fileUrl          String
-  fileType         String   // "image" | "pdf" | "excel"
-  originalFileName String
-  fileSizeBytes    Int
-  uploadedAt       DateTime @default(now())
+  id                    String        @id @default(cuid())
+  reportId              String
+  report                Report        @relation(fields: [reportId], references: [id])
+  fileUrl               String
+  fileType              String        // "image" | "pdf" | "excel"
+  originalFileName      String
+  fileSizeBytes         Int
+  // V4: Extraction fields — diisi hanya saat proses ekstraksi dijalankan manual
+  extractionStatus      String        @default("not_extracted") // "not_extracted" | "processing" | "done" | "failed"
+  extractionModel       String?       // Nama model yang dipakai, mis. "gemini-2.5-flash"
+  extractionRawResponse Json?         // Respons mentah dari LLM, untuk audit/debug
+  extractionError       String?       // Pesan error ramah pengguna jika status "failed"
+  extractedAt           DateTime?     // Waktu terakhir ekstraksi dijalankan
+  initialBalance        Decimal?      @db.Decimal(15, 2) // Saldo awal / saldo lalu yang tertera di buku kas
+  finalBalance          Decimal?      @db.Decimal(15, 2) // Saldo akhir kas yang tertera di buku kas
+  uploadedAt            DateTime      @default(now())
+  transactions          Transaction[]
+}
+
+// V4: Hasil ekstraksi dari vision-LLM — satu Attachment bisa menghasilkan banyak Transaction
+model Transaction {
+  id              String     @id @default(cuid())
+  attachmentId    String
+  attachment      Attachment @relation(fields: [attachmentId], references: [id])
+  reportId        String
+  report          Report     @relation(fields: [reportId], references: [id])
+  type            String     // "pemasukan" | "pengeluaran"
+  amount          Decimal    @db.Decimal(15, 2)
+  description     String?    // Keterangan hasil ekstraksi, bisa dirapikan manual
+  transactionDate DateTime?  // Tanggal transaksi jika berhasil diekstrak; null jika tidak ada di foto
+  donorId         String?    // V5: referensi ke Donor, belum dipakai sampai V5
+  isVerified      Boolean    @default(false) // false = belum dikonfirmasi bendahara, tidak dihitung di dashboard
+  verifiedById    String?    // ID User yang mengonfirmasi; diisi otomatis dari sesi saat konfirmasi
+  verifiedBy      User?      @relation("VerifiedBy", fields: [verifiedById], references: [id])
+  verifiedAt      DateTime?  // Waktu konfirmasi
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }

@@ -38,11 +38,11 @@ export default async function ArsipLaporanPage() {
       </div>
 
       {reports.length === 0 ? (
-        <div className="flex flex-col items-center rounded-2xl border bg-card p-12 text-center">
-          <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-secondary">
-            <FolderOpen className="text-primary" size={40} />
+        <div className="flex flex-col items-center rounded-3xl border border-white/20 bg-card/60 p-12 text-center shadow-lg backdrop-blur-xl">
+          <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-emerald-500/20 shadow-inner">
+            <FolderOpen className="text-primary" size={48} />
           </div>
-          <h2 className="mb-2 text-xl font-bold text-foreground">
+          <h2 className="mb-2 text-2xl font-bold text-foreground">
             Belum ada laporan yang diarsipkan
           </h2>
           <p className="max-w-md text-muted-foreground">
@@ -73,24 +73,26 @@ export default async function ArsipLaporanPage() {
                       {monthReports.map((report) => (
                         <div
                           key={report.id}
-                          className="flex flex-col rounded-xl border bg-background p-4"
+                          className="group flex flex-col rounded-3xl border border-white/40 bg-card/60 p-4 shadow-sm backdrop-blur-md transition-all duration-300 hover:-translate-y-1.5 hover:bg-card/90 hover:shadow-xl hover:shadow-primary/10"
                         >
                           {(() => {
                             const thumb = report.attachments.find((a) => a.fileType === "image");
                             return thumb ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                src={thumb.fileUrl}
-                                alt={`Laporan ${report.reportDate}`}
-                                className="mb-3 aspect-[4/3] w-full rounded-lg object-cover"
-                              />
+                              <div className="mb-4 aspect-[4/3] w-full overflow-hidden rounded-2xl">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={thumb.fileUrl}
+                                  alt={`Laporan ${report.reportDate}`}
+                                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                />
+                              </div>
                             ) : (
-                              <div className="mb-3 flex aspect-[4/3] w-full items-center justify-center rounded-lg bg-secondary text-muted-foreground">
-                                <FileText size={48} className="opacity-50" />
+                              <div className="mb-4 flex aspect-[4/3] w-full items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-100/50 to-teal-50 text-primary/40 transition-colors duration-300 group-hover:from-emerald-100 group-hover:to-teal-100">
+                                <FileText size={48} className="drop-shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:text-primary/60" />
                               </div>
                             );
                           })()}
-                          <h3 className="mb-1 font-medium text-foreground">
+                          <h3 className="mb-1 font-bold text-foreground">
                             {new Date(report.reportDate).toLocaleDateString("id-ID", {
                               weekday: "long",
                               day: "numeric",
@@ -98,11 +100,11 @@ export default async function ArsipLaporanPage() {
                               year: "numeric",
                             })}
                           </h3>
-                          <p className="mb-4 text-sm text-muted-foreground">
+                          <p className="mb-5 text-sm font-medium text-muted-foreground">
                             Minggu ke-{report.weekOfMonth}
                           </p>
-                          <Link href={`/laporan/${report.id}`} className="mt-auto flex items-center justify-center gap-1 rounded-lg border py-2 text-sm font-medium hover:bg-accent">
-                            Lihat Detail <ArrowRight size={16} />
+                          <Link href={`/laporan/${report.id}`} className="mt-auto flex items-center justify-center gap-1 rounded-xl border border-white/40 bg-white/50 py-2.5 text-sm font-bold transition-all duration-300 hover:bg-primary hover:text-primary-foreground hover:shadow-md">
+                            Lihat Detail <ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
                           </Link>
                         </div>
                       ))}
