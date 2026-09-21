@@ -50,6 +50,8 @@ Satu `Report` memiliki banyak `Attachment` (gambar, PDF, atau Excel).
 | extractionRawResponse | json | Optional (V4) | Respons mentah lengkap dari vision-LLM untuk satu kali pemanggilan ekstraksi — dipakai untuk debug/audit dan sebagai sumber saat parsing ulang jika diperlukan, tanpa perlu memanggil API lagi |
 | extractionError | text | Optional (V4) | Pesan error singkat & ramah pengguna saat `extractionStatus = failed`; dikosongkan lagi (`null`) begitu ekstraksi ulang berhasil |
 | extractedAt | timestamp | Optional (V4) | Waktu ekstraksi terakhir dijalankan |
+| initialBalance | decimal | Optional (V4) | Saldo awal / saldo lalu kas masjid yang tertulis di kertas laporan |
+| finalBalance | decimal | Optional (V4) | Saldo kas akhir yang tertulis di kertas laporan setelah mutasi |
 | uploadedAt | timestamp | Yes | |
 
 > **Catatan V4:** `extractionStatus` sengaja bukan `pending` di kondisi awal, untuk menghindari kesan "menunggu diproses otomatis". Nilai `not_extracted` menandaskan bahwa ekstraksi murni aksi manual yang dipicu bendahara, sejalan dengan keputusan alur kerja V4 (tombol "Ekstrak Data", bukan otomatis saat upload).

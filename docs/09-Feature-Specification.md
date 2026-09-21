@@ -14,8 +14,9 @@
 | F-008 | Manajemen Lampiran (Hapus & Tambah Susulan) | Should | ✅ Done (V2) |
 | F-009 | Login Google SSO (NextAuth) | Must | ✅ Done (V3) |
 | F-010 | Proteksi Rute & Aksi (Role-Based Access) | Must | ✅ Done (V3) |
-| F-011 | Ekstraksi Data Laporan (Vision-LLM) | Must | Planned (V4) |
-| F-012 | Review & Verifikasi Transaksi | Must | Planned (V4) |
+| F-011 | Ekstraksi Data Laporan (Vision-LLM) | Must | ✅ Done (V4) |
+| F-012 | Review & Verifikasi Transaksi | Must | ✅ Done (V4) |
+| F-013 | Ringkasan Kas & Rekonsiliasi Saldo Kas | Should | ✅ Done (V4) |
 
 ## Feature Details — V1
 
@@ -146,41 +147,66 @@
 
 ### F-011 — Ekstraksi Data Laporan (Vision-LLM)
 
-**Objective:** Memungkinkan bendahara mengubah foto laporan (tulisan tangan) menjadi data transaksi terstruktur, tanpa perlu mengetik ulang manual.
+**Objective:** Memungkinkan bendahara mengubah foto laporan (tulisan tangan) menjadi data transaksi terstruktur, saldo awal (saldo lalu), dan saldo akhir kas, tanpa perlu mengetik ulang manual.
 **User:** Bendahara DKM
 **Input:** Lampiran bertipe gambar yang berstatus `not_extracted` atau `failed`
 **Process:**
-- Bendahara membuka halaman Detail Laporan, menekan tombol "Ekstrak Data" pada satu lampiran gambar
-- Status `Attachment.extractionStatus` berubah jadi `processing`
-- Server mengirim gambar ke vision-LLM (Gemini) dengan prompt terstruktur, meminta output JSON berisi daftar transaksi (tipe, jumlah, deskripsi, tanggal jika ada)
-- Respons mentah disimpan ke `Attachment.extractionRawResponse`, lalu diparsing jadi baris-baris `Transaction` baru dengan `isVerified = false`
-- Status berubah jadi `done` (berhasil, minimal 1 transaksi terbentuk) atau `failed` (error API, atau respons tidak bisa diparsing)
-**Output:** Daftar transaksi baru (belum diverifikasi) siap ditinjau lewat F-012
+- Bendahara membuka halaman Detail Laporan, menekan tombol "Ekstrak Data" pada satu lampiran gambar.
+- Status `Attachment.extractionStatus` berubah jadi `processing`.
+- Server mengirim gambar ke vision-LLM (`gemini-3.6-flash`) dengan prompt terstruktur dan schema JSON (meminta daftar transaksi, serta `initialBalance` dan `finalBalance`).
+- Dilengkapi mekanisme timeout 25 detik dan **auto-fallback ke `gemini-3.5-flash`** jika model utama mengalami lonjakan antrean/503 Service Unavailable.
+- Respons mentah disimpan ke `Attachment.extractionRawResponse`, lalu diparsing jadi baris-baris `Transaction` baru dengan `isVerified = false`, serta saldo awal & akhir disimpan ke `Attachment`.
+- Status berubah jadi `done` (berhasil, transaksi terbentuk) atau `failed` (error koneksi atau gambar tidak terbaca).
+**Output:** Daftar transaksi baru (belum diverifikasi) siap ditinjau lewat F-012, serta ringkasan saldo kas pekanan siap ditinjau lewat F-013.
 **Business Rules:**
-- Ekstraksi hanya bisa dipicu satu attachment dalam satu waktu (tidak ada bulk-extract di V4 awal, untuk menjaga kesederhanaan & kuota API gratis)
-- Ekstraksi ulang (re-extract) pada attachment yang sudah `done` akan mengganti transaksi lama yang belum diverifikasi; transaksi yang sudah diverifikasi tidak ikut terhapus (lihat Data Model)
+- Ekstraksi dipicu manual per lampiran (tidak otomatis saat upload) untuk efisiensi dan menjaga kendali bendahara.
+- Ekstraksi ulang (re-extract) pada attachment yang sudah `done` hanya mengganti transaksi yang belum diverifikasi (`isVerified = false`). Transaksi yang sudah terverifikasi (`isVerified = true`) **dijamin tidak terhapus otomatis**.
 **Acceptance Criteria:**
-- [ ] Tombol "Ekstrak Data" hanya tampil pada lampiran gambar berstatus `not_extracted` atau `failed`
-- [ ] Setelah diklik, UI menampilkan status loading/processing, tombol nonaktif sementara proses berjalan
-- [ ] Jika berhasil, transaksi baru langsung terlihat di daftar "Belum Diverifikasi" pada laporan tersebut
-- [ ] Jika gagal, status menjadi `failed` dengan pesan error yang jelas (bukan pesan teknis mentah), dan tombol berubah jadi "Coba Lagi"
+- [x] Tombol "Ekstrak Data" hanya tampil pada lampiran gambar berstatus `not_extracted` atau `failed`.
+- [x] Setelah diklik, UI menampilkan status loading/processing, tombol nonaktif sementara proses berjalan.
+- [x] Jika berhasil, transaksi baru langsung terlihat di daftar "Menunggu Verifikasi" pada laporan tersebut.
+- [x] Jika gagal, status menjadi `failed` dengan pesan error yang jelas dan ramah pengguna, serta tombol berubah jadi "Coba Lagi".
+- [x] Deteksi otomatis saldo awal (`initialBalance`) dan saldo akhir kas (`finalBalance`) jika tertulis di dokumen kas.
+- [x] Dilengkapi proteksi timeout 25s dan auto-fallback model agar proses tidak menggantung berlarut-larut.
 
 ### F-012 — Review & Verifikasi Transaksi
 
-**Objective:** Memberi bendahara kendali penuh untuk meninjau, mengoreksi, dan mengonfirmasi data hasil ekstraksi sebelum dihitung sebagai data resmi.
+**Objective:** Memberi bendahara kendali penuh untuk meninjau, mengoreksi, dan mengonfirmasi data hasil ekstraksi sebelum dihitung sebagai data resmi kas masjid.
 **User:** Bendahara DKM
-**Input:** Baris `Transaction` dengan `isVerified = false`
+**Input:** Baris `Transaction` hasil ekstraksi
 **Process:**
-- Baris transaksi hasil ekstraksi ditampilkan dalam daftar yang jelas ditandai "Belum Diverifikasi", dikelompokkan per laporan
-- Bendahara bisa mengedit field (`type`, `amount`, `description`, `transactionDate`) langsung di daftar tersebut sebelum konfirmasi
-- Tombol **"Konfirmasi"**: menandai `isVerified = true`, mencatat `verifiedById` (dari sesi aktif) dan `verifiedAt`
-- Tombol **"Hapus"**: membuang baris yang salah/duplikat/tidak relevan (misal LLM salah membaca coretan sebagai transaksi)
+- Baris transaksi hasil ekstraksi ditampilkan dalam dua kelompok jelas: "Menunggu Verifikasi" dan "Sudah Diverifikasi".
+- Bendahara bisa mengedit field (`type`, `amount`, `description`, `transactionDate`) langsung di daftar tersebut sebelum konfirmasi.
+- Tombol **"Konfirmasi"**: menandai `isVerified = true`, mencatat `verifiedById` (dari sesi aktif pengurus) dan `verifiedAt`. Menggunakan pola *server-first verification* dengan penanganan error jaringan lengkap.
+- Tombol **"Hapus"**: membuang baris yang salah/duplikat/tidak relevan (misal LLM salah membaca coretan atau baris duplikat saat re-extract) dengan dialog konfirmasi modern `AlertDialog`.
 **Business Rules:**
-- Transaksi yang sudah `isVerified = true` tidak bisa dihapus lewat alur normal ini (butuh aksi terpisah, di luar scope V4 awal, untuk mencegah penghapusan data resmi secara tidak sengaja)
-- Transaksi dengan `isVerified = false` tidak muncul di perhitungan mana pun sampai V5 dibangun
+- Transaksi dengan `isVerified = false` tidak dihitung dalam saldo resmi maupun tren di V5.
+- Transaksi yang sudah `isVerified = true` tidak menampilkan tombol edit/hapus di alur biasa untuk mencegah ketidaksengajaan.
+- Jika pengguna ingin menghapus lampiran atau laporan yang memuat transaksi terverifikasi, sistem mengembalikan proteksi `409 Conflict` dan mewajibkan konfirmasi dua langkah via `AlertDialog`.
 **Acceptance Criteria:**
-- [ ] Semua transaksi `isVerified = false` tampil jelas ditandai "Belum Diverifikasi", terpisah dari (nanti) yang sudah diverifikasi
-- [ ] Bendahara bisa mengedit field transaksi sebelum menekan "Konfirmasi"
-- [ ] Menekan "Konfirmasi" mengubah `isVerified` jadi `true` dan mencatat `verifiedById` + `verifiedAt`
-- [ ] Menekan "Hapus" pada transaksi yang belum diverifikasi langsung membuang baris tersebut
-- [ ] Transaksi yang sudah diverifikasi tidak menampilkan tombol "Hapus" di alur ini
+- [x] Semua transaksi `isVerified = false` tampil jelas ditandai "Menunggu Verifikasi", terpisah dari yang sudah diverifikasi.
+- [x] Bendahara bisa mengedit field transaksi sebelum menekan "Konfirmasi".
+- [x] Menekan "Konfirmasi" mengubah `isVerified` jadi `true` dan mencatat `verifiedById` + `verifiedAt`.
+- [x] Menekan "Hapus" memunculkan dialog konfirmasi `AlertDialog` sebelum menghapus baris transaksi yang belum diverifikasi.
+- [x] Transaksi yang sudah diverifikasi tidak menampilkan tombol "Hapus" atau "Edit" di alur peninjauan standar.
+- [x] Sinkronisasi instan state React via `useEffect` saat terjadi mutasi atau ekstrak ulang.
+
+### F-013 — Ringkasan Kas Pekan Ini & Rekonsiliasi Saldo Kas
+
+**Objective:** Menyajikan rekapitulasi mutasi kas mingguan dan mencocokkan perhitungan sistem dengan angka saldo yang tertulis di buku kas fisik.
+**User:** Bendahara & Pengurus DKM
+**Output:**
+- Widget "Ringkasan Kas Pekan Ini" di bilah samping (sidebar) detail laporan.
+- Komponen rincian:
+  - **Saldo Lalu**: Saldo kas periode sebelumnya (dari `initialBalance` catatan fisik).
+  - **Pemasukan**: Total pemasukan dari transaksi yang telah diverifikasi.
+  - **Pengeluaran**: Total pengeluaran dari transaksi yang telah diverifikasi.
+  - **Selisih Pekan Ini**: `Pemasukan - Pengeluaran`.
+  - **Saldo Kas Akhir**: `Saldo Lalu + Selisih Pekan Ini`.
+- **Indikator Rekonsiliasi Otomatis**:
+  - Lencana hijau **"Perhitungan buku kas seimbang"** jika saldo akhir kalkulasi cocok dengan `finalBalance` yang tertulis di kertas.
+  - Peringatan warna amber jika terdapat selisih, menampilkan angka selisih secara transparan untuk membantu bendahara menemukan kesalahan pencatatan.
+**Acceptance Criteria:**
+- [x] Ringkasan kas tampil otomatis jika terdapat data transaksi terverifikasi atau saldo awal/akhir dari lampiran.
+- [x] Kalkulasi matematis akurat dan hanya menghitung transaksi yang telah diverifikasi (`isVerified = true`).
+- [x] Lencana rekonsiliasi kas mendeteksi kecocokan angka saldo fisik secara otomatis.
