@@ -337,8 +337,24 @@ Mengonfirmasi satu baris transaksi sebagai data resmi.
 **Response 200**
 
 ```json
-{ "data": { "id": "txn_1", "isVerified": true, "verifiedBy": "Bapak Kosasih", "verifiedAt": "2026-09-21T10:00:00Z", "donorId": "dnr_1" } }
+{
+  "data": {
+    "id": "txn_1",
+    "isVerified": true,
+    "verifiedBy": "Bapak Kosasih",
+    "verifiedAt": "2026-09-21T10:00:00Z",
+    "donorId": "dnr_1",
+    "donorNameRaw": "Bapak Kosasih",
+    "donor": { "id": "dnr_1", "name": "Bapak Kosasih" },
+    "matchingResult": {
+      "status": "existing",
+      "donorName": "Bapak Kosasih"
+    }
+  }
+}
 ```
+
+*Keterangan `matchingResult.status`: `"existing"` (ditautkan ke donatur yang sudah ada), `"created"` (donatur baru dibuat), `"anonymous"` (terdeteksi anonim, `donorId: null`), atau `"none"` (transaksi pengeluaran atau tanpa input donatur).*
 
 **Response Error:**
 - `409 Conflict`: Transaksi sudah dikonfirmasi sebelumnya.

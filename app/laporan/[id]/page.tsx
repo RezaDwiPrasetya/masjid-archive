@@ -47,6 +47,9 @@ export default async function DetailLaporanPage({
               verifiedBy: {
                 select: { id: true, name: true, email: true },
               },
+              donor: {
+                select: { id: true, name: true },
+              },
             },
             orderBy: [{ isVerified: "asc" }, { transactionDate: "asc" }],
           },
@@ -188,6 +191,11 @@ export default async function DetailLaporanPage({
                                   : null,
                                 verifiedAt: t.verifiedAt
                                   ? t.verifiedAt.toISOString()
+                                  : null,
+                                donorNameRaw: t.donorNameRaw,
+                                donorId: t.donorId,
+                                donor: t.donor
+                                  ? { id: t.donor.id, name: t.donor.name }
                                   : null,
                               }))}
                               hasSession={hasSession}

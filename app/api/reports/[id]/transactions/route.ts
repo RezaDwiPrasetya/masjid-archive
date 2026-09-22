@@ -32,6 +32,9 @@ export async function GET(
       verifiedBy: {
         select: { id: true, name: true, email: true },
       },
+      donor: {
+        select: { id: true, name: true },
+      },
     },
     orderBy: [
       // Unverified muncul pertama agar mudah ditinjau (hanya relevan untuk sesi bendahara)

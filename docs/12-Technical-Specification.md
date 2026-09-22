@@ -371,3 +371,15 @@ const monthlyTrend = await prisma.transaction.groupBy({
 ### Endpoint Publik & Isolasi dari Data Belum Terverifikasi
 
 Endpoint V5 (`GET /api/dashboard/trend`, `GET /api/donors`, `GET /api/donors/:id`) **tidak memerlukan sesi NextAuth** (publik), tetapi **setiap query di dalamnya WAJIB menyertakan `isVerified: true`** sebagai kondisi `WHERE` — tidak ada jalur kode yang mengembalikan transaksi `isVerified: false` dari endpoint-endpoint ini, baik untuk pengguna login maupun tidak (beda dengan `GET /api/reports/:id/transactions` di V4 yang memang dirancang menampilkan lebih banyak data untuk pengguna dengan sesi aktif — endpoint V5 ini sengaja tidak punya jalur "tampilkan semua" sama sekali, karena tujuannya murni tampilan publik).
+
+### Catatan Desain: `finalBalance` sebagai KPI Card Terpisah (Wajib untuk #051/#052)
+
+**Keputusan arsitektur:** `Report.finalBalance` (saldo akhir kas mingguan terakhir) **sengaja tidak dimasukkan** ke dalam response `GET /api/dashboard/trend` per-titik, karena saldo kas bukan agregasi per-periode — ia adalah nilai tunggal snapshot dari laporan terakhir.
+
+**Tanggung jawab tampilan ini DIPINDAH ke fase UI dashboard (#051/#052):**
+
+- Di halaman dashboard publik, `finalBalance` dari `Report` terbaru yang memiliki `finalBalance` tidak null WAJIB ditampilkan sebagai **KPI Card "Saldo Kas Terkini"** di atas grafik tren.
+- Sumber data: `GET /api/reports?limit=1` atau query langsung `prisma.report.findFirst({ where: { finalBalance: { not: null } }, orderBy: { reportDate: "desc" } })`.
+- **JANGAN biarkan informasi ini hilang total** hanya karena tidak ada di endpoint tren. Ini adalah salah satu informasi paling relevan bagi jemaah yang mengakses dashboard publik.
+- Referensi acceptance criteria: F-014 di `09-Feature-Specification.md` — *"Menampilkan total pemasukan vs pengeluaran per periode, plus saldo akhir kas (dari `Report.finalBalance`) sebagai referensi."*
+

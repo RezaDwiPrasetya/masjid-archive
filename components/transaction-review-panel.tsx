@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   CheckCircle2,
@@ -14,6 +14,10 @@ import {
   ClipboardCheck,
   AlertCircle,
   ShieldCheck,
+  User,
+  UserCheck,
+  UserPlus,
+  UserX,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +36,7 @@ import {
   AlertDialogTitle,
   AlertDialogDescription,
 } from "@/components/ui/alert-dialog";
+import { normalizeDonorName, isAnonymousDonor } from "@/lib/donor-matching";
 
 interface Transaction {
   id: string;
@@ -39,9 +44,16 @@ interface Transaction {
   amount: string | number;
   description: string | null;
   transactionDate: string | null;
+  donorNameRaw?: string | null;
+  donorId?: string | null;
+  donor?: { id: string; name: string } | null;
   isVerified: boolean;
   verifiedAt: string | null;
   verifiedBy?: { id: string; name: string | null; email: string | null } | null;
+  matchingFeedback?: {
+    status: "existing" | "created" | "anonymous" | "none";
+    donorName: string | null;
+  } | null;
 }
 
 interface TransactionReviewPanelProps {
@@ -77,7 +89,7 @@ function TransactionRow({
 }: {
   tx: Transaction;
   hasSession: boolean;
-  onConfirm: (id: string) => Promise<void>;
+  onConfirm: (id: string, donorNameRaw?: string | null) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   onEdit: (id: string, data: Partial<Transaction>) => Promise<void>;
 }) {
@@ -99,10 +111,23 @@ function TransactionRow({
     tx.transactionDate ? tx.transactionDate.slice(0, 10) : ""
   );
 
+  // Field nama donatur untuk baris belum diverifikasi
+  const [donorName, setDonorName] = useState(tx.donorNameRaw ?? "");
+  const [editDonorName, setEditDonorName] = useState(tx.donorNameRaw ?? "");
+  const [prevDonorNameRaw, setPrevDonorNameRaw] = useState(tx.donorNameRaw);
+
+  if (tx.donorNameRaw !== prevDonorNameRaw) {
+    setPrevDonorNameRaw(tx.donorNameRaw);
+    setDonorName(tx.donorNameRaw ?? "");
+    setEditDonorName(tx.donorNameRaw ?? "");
+  }
+
+  const isIncome = tx.type === "pemasukan";
+
   async function handleConfirm() {
     setConfirmLoading(true);
     try {
-      await onConfirm(tx.id);
+      await onConfirm(tx.id, isIncome ? donorName.trim() || null : null);
     } finally {
       setConfirmLoading(false);
     }
@@ -132,14 +157,14 @@ function TransactionRow({
         amount,
         description: editDesc || null,
         transactionDate: editDate || null,
+        donorNameRaw:
+          editType === "pemasukan" ? editDonorName.trim() || null : null,
       });
       setIsEditing(false);
     } finally {
       setSaveLoading(false);
     }
   }
-
-  const isIncome = tx.type === "pemasukan";
 
   if (isEditing) {
     return (
@@ -156,7 +181,12 @@ function TransactionRow({
           {/* Tipe */}
           <div className="space-y-1">
             <label className="text-xs text-muted-foreground font-medium">Tipe</label>
-            <Select value={editType} onValueChange={(v) => { if (v !== null) setEditType(v); }}>
+            <Select
+              value={editType}
+              onValueChange={(v) => {
+                if (v !== null) setEditType(v);
+              }}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -168,7 +198,9 @@ function TransactionRow({
           </div>
           {/* Nominal */}
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground font-medium">Nominal (Rp)</label>
+            <label className="text-xs text-muted-foreground font-medium">
+              Nominal (Rp)
+            </label>
             <Input
               type="number"
               min="1"
@@ -179,7 +211,9 @@ function TransactionRow({
           </div>
           {/* Keterangan */}
           <div className="col-span-2 space-y-1">
-            <label className="text-xs text-muted-foreground font-medium">Keterangan</label>
+            <label className="text-xs text-muted-foreground font-medium">
+              Keterangan
+            </label>
             <Input
               value={editDesc}
               onChange={(e) => setEditDesc(e.target.value)}
@@ -188,13 +222,30 @@ function TransactionRow({
           </div>
           {/* Tanggal */}
           <div className="col-span-2 space-y-1">
-            <label className="text-xs text-muted-foreground font-medium">Tanggal (opsional)</label>
+            <label className="text-xs text-muted-foreground font-medium">
+              Tanggal (opsional)
+            </label>
             <Input
               type="date"
               value={editDate}
               onChange={(e) => setEditDate(e.target.value)}
             />
           </div>
+          {/* Nama Donatur (khusus pemasukan) */}
+          {editType === "pemasukan" && (
+            <div className="col-span-2 space-y-1">
+              <label className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                <User size={12} className="text-muted-foreground" />
+                Nama Donatur (opsional)
+              </label>
+              <Input
+                value={editDonorName}
+                onChange={(e) => setEditDonorName(e.target.value)}
+                placeholder="Nama donatur (kosongkan jika tanpa donatur)"
+                className="text-xs"
+              />
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -203,7 +254,11 @@ function TransactionRow({
             onClick={handleSave}
             className="gap-1.5"
           >
-            {saveLoading ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
+            {saveLoading ? (
+              <Loader2 size={13} className="animate-spin" />
+            ) : (
+              <Check size={13} />
+            )}
             Simpan
           </Button>
           <Button
@@ -213,6 +268,7 @@ function TransactionRow({
             onClick={() => {
               setIsEditing(false);
               setEditError(null);
+              setEditDonorName(tx.donorNameRaw ?? "");
             }}
           >
             <X size={13} />
@@ -308,12 +364,108 @@ function TransactionRow({
         <p className="text-sm text-foreground/80">{tx.description}</p>
       )}
 
+      {/* Donatur tertaut (read-only) — untuk transaksi yang SUDAH diverifikasi */}
+      {tx.isVerified && isIncome && (
+        <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+          {tx.donor ? (
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-800 bg-emerald-100/80 border border-emerald-200/60 rounded-md px-2 py-0.5">
+              <User size={11} className="text-emerald-700" />
+              Donatur: <strong className="font-semibold">{tx.donor.name}</strong>
+            </span>
+          ) : isAnonymousDonor(normalizeDonorName(tx.donorNameRaw)) ? (
+            <span className="inline-flex items-center gap-1 text-xs text-stone-600 italic bg-stone-100 border border-stone-200/60 rounded-md px-2 py-0.5">
+              <UserX size={11} className="text-stone-500" />
+              Tercatat sebagai donasi anonim
+            </span>
+          ) : tx.donorNameRaw ? (
+            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-stone-100 border border-stone-200/60 rounded-md px-2 py-0.5">
+              <User size={11} />
+              {tx.donorNameRaw}
+            </span>
+          ) : null}
+        </div>
+      )}
+
+      {/* Feedback hasil matching langsung di kartu (setelah aksi konfirmasi) */}
+      {tx.matchingFeedback && (
+        <div
+          className={`mt-2.5 flex items-center gap-2 rounded-xl p-2.5 text-xs font-medium border animate-in fade-in duration-200 ${
+            tx.matchingFeedback.status === "existing"
+              ? "bg-emerald-100/90 text-emerald-900 border-emerald-300"
+              : tx.matchingFeedback.status === "created"
+              ? "bg-sky-50 text-sky-900 border-sky-200"
+              : tx.matchingFeedback.status === "anonymous"
+              ? "bg-stone-100 text-stone-700 border-stone-200"
+              : "bg-emerald-50 text-emerald-800 border-emerald-200"
+          }`}
+        >
+          {tx.matchingFeedback.status === "existing" && (
+            <UserCheck size={14} className="shrink-0 text-emerald-700" />
+          )}
+          {tx.matchingFeedback.status === "created" && (
+            <UserPlus size={14} className="shrink-0 text-sky-700" />
+          )}
+          {tx.matchingFeedback.status === "anonymous" && (
+            <UserX size={14} className="shrink-0 text-stone-600" />
+          )}
+          {tx.matchingFeedback.status === "none" && (
+            <CheckCircle2 size={14} className="shrink-0 text-emerald-600" />
+          )}
+          <span>
+            {tx.matchingFeedback.status === "existing" &&
+              `Ditautkan ke donatur: ${tx.matchingFeedback.donorName}`}
+            {tx.matchingFeedback.status === "created" &&
+              `Donatur baru dibuat: ${tx.matchingFeedback.donorName}`}
+            {tx.matchingFeedback.status === "anonymous" &&
+              "Tercatat sebagai donasi anonim"}
+            {tx.matchingFeedback.status === "none" &&
+              "Transaksi berhasil dikonfirmasi"}
+          </span>
+        </div>
+      )}
+
       {/* Verified by */}
       {tx.isVerified && tx.verifiedBy && (
         <p className="mt-2 text-xs text-muted-foreground">
           Dikonfirmasi oleh {tx.verifiedBy.name ?? tx.verifiedBy.email} ·{" "}
           {formatDate(tx.verifiedAt)}
         </p>
+      )}
+
+      {/* Input Nama Donatur — hanya untuk pemasukan & unverified */}
+      {!tx.isVerified && isIncome && (
+        <div className="mt-3 pt-2.5 border-t border-amber-200/50 space-y-1.5">
+          <div className="flex items-center justify-between">
+            <label
+              htmlFor={`donor-input-${tx.id}`}
+              className="text-xs font-medium text-amber-900/80 flex items-center gap-1.5"
+            >
+              <User size={12} className="text-amber-700" />
+              Nama Donatur
+              <span className="text-[10px] text-muted-foreground font-normal">
+                (opsional)
+              </span>
+            </label>
+            {donorName && (
+              <button
+                type="button"
+                onClick={() => setDonorName("")}
+                className="text-[10px] text-muted-foreground hover:text-destructive transition-colors font-medium"
+                title="Kosongkan nama donatur"
+              >
+                Kosongkan
+              </button>
+            )}
+          </div>
+          <Input
+            id={`donor-input-${tx.id}`}
+            value={donorName}
+            onChange={(e) => setDonorName(e.target.value)}
+            placeholder="Contoh: H. Kosasih (kosongkan jika tanpa donatur)"
+            className="h-8 text-xs bg-white/90 border-amber-200 focus-visible:ring-emerald-500 placeholder:text-muted-foreground/60"
+            disabled={confirmLoading || !hasSession}
+          />
+        </div>
       )}
 
       {/* Tombol Konfirmasi — hanya untuk unverified & ada sesi */}
@@ -341,7 +493,12 @@ function TransactionRow({
       )}
 
       {/* Dialog Konfirmasi Hapus Transaksi */}
-      <AlertDialog open={deleteOpen} onOpenChange={(v) => { if (!deleteLoading) setDeleteOpen(v); }}>
+      <AlertDialog
+        open={deleteOpen}
+        onOpenChange={(v) => {
+          if (!deleteLoading) setDeleteOpen(v);
+        }}
+      >
         <AlertDialogPopup>
           <AlertDialogHeader>
             <div className="flex items-center gap-3">
@@ -351,12 +508,15 @@ function TransactionRow({
               <div>
                 <AlertDialogTitle>Hapus Transaksi?</AlertDialogTitle>
                 <span className="text-xs text-muted-foreground">
-                  {isIncome ? "Pemasukan" : "Pengeluaran"} • {formatRupiah(tx.amount)}
+                  {isIncome ? "Pemasukan" : "Pengeluaran"} •{" "}
+                  {formatRupiah(tx.amount)}
                 </span>
               </div>
             </div>
             <AlertDialogDescription className="pt-2">
-              Baris transaksi hasil ekstraksi ini akan dihapus secara permanen. Tindakan ini cocok jika AI salah mengenali coretan atau baris yang bukan transaksi kas.
+              Baris transaksi hasil ekstraksi ini akan dihapus secara permanen.
+              Tindakan ini cocok jika AI salah mengenali coretan atau baris yang
+              bukan transaksi kas.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -392,26 +552,39 @@ export function TransactionReviewPanel({
   const router = useRouter();
   const [transactions, setTransactions] =
     useState<Transaction[]>(initialTransactions);
+  const [prevInitialTransactions, setPrevInitialTransactions] =
+    useState(initialTransactions);
   const [globalError, setGlobalError] = useState<string | null>(null);
+  const [confirmNotification, setConfirmNotification] = useState<{
+    id: string;
+    type: "existing" | "created" | "anonymous" | "none";
+    message: string;
+  } | null>(null);
 
-  useEffect(() => {
+  if (initialTransactions !== prevInitialTransactions) {
+    setPrevInitialTransactions(initialTransactions);
     setTransactions(initialTransactions);
-  }, [initialTransactions]);
+  }
 
   const unverified = transactions.filter((t) => !t.isVerified);
   const verified = transactions.filter((t) => t.isVerified);
 
-  async function handleConfirm(id: string) {
+  async function handleConfirm(id: string, donorNameRaw?: string | null) {
     setGlobalError(null);
     try {
       const res = await fetch(`/api/transactions/${id}/confirm`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ donorNameRaw: donorNameRaw ?? null }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setGlobalError(data.error ?? "Gagal mengonfirmasi transaksi.");
         return;
       }
+      const json = await res.json();
+      const confirmedData = json.data;
+
       // Update state lokal HANYA setelah server sukses memproses konfirmasi
       setTransactions((prev) =>
         prev.map((t) =>
@@ -419,14 +592,61 @@ export function TransactionReviewPanel({
             ? {
                 ...t,
                 isVerified: true,
-                verifiedAt: new Date().toISOString(),
+                verifiedAt:
+                  confirmedData?.verifiedAt ?? new Date().toISOString(),
+                verifiedBy: confirmedData?.verifiedBy
+                  ? { id: "", name: confirmedData.verifiedBy, email: null }
+                  : t.verifiedBy,
+                donorId: confirmedData?.donorId ?? null,
+                donorNameRaw: confirmedData?.donorNameRaw ?? null,
+                donor: confirmedData?.donor ?? null,
+                matchingFeedback: confirmedData?.matchingResult ?? null,
               }
             : t
         )
       );
+
+      // Tampilkan notifikasi tingkat panel
+      if (confirmedData?.matchingResult) {
+        const { status, donorName } = confirmedData.matchingResult;
+        if (status === "existing") {
+          setConfirmNotification({
+            id,
+            type: "existing",
+            message: `Ditautkan ke donatur: ${donorName}`,
+          });
+        } else if (status === "created") {
+          setConfirmNotification({
+            id,
+            type: "created",
+            message: `Donatur baru dibuat: ${donorName}`,
+          });
+        } else if (status === "anonymous") {
+          setConfirmNotification({
+            id,
+            type: "anonymous",
+            message: "Tercatat sebagai donasi anonim",
+          });
+        } else {
+          setConfirmNotification({
+            id,
+            type: "none",
+            message: "Transaksi berhasil dikonfirmasi",
+          });
+        }
+      } else {
+        setConfirmNotification({
+          id,
+          type: "none",
+          message: "Transaksi berhasil dikonfirmasi",
+        });
+      }
+
       router.refresh();
     } catch {
-      setGlobalError("Tidak dapat terhubung ke server saat mengonfirmasi transaksi.");
+      setGlobalError(
+        "Tidak dapat terhubung ke server saat mengonfirmasi transaksi."
+      );
     }
   }
 
@@ -455,9 +675,14 @@ export function TransactionReviewPanel({
         body: JSON.stringify({
           ...(data.type !== undefined && { type: data.type }),
           ...(data.amount !== undefined && { amount: data.amount }),
-          ...(data.description !== undefined && { description: data.description }),
+          ...(data.description !== undefined && {
+            description: data.description,
+          }),
           ...(data.transactionDate !== undefined && {
             transactionDate: data.transactionDate,
+          }),
+          ...(data.donorNameRaw !== undefined && {
+            donorNameRaw: data.donorNameRaw,
           }),
         }),
       });
@@ -476,12 +701,18 @@ export function TransactionReviewPanel({
                 amount: json.data?.amount ?? t.amount,
                 description: json.data?.description ?? t.description,
                 transactionDate: json.data?.transactionDate ?? t.transactionDate,
+                donorNameRaw:
+                  json.data?.donorNameRaw !== undefined
+                    ? json.data?.donorNameRaw
+                    : t.donorNameRaw,
               }
             : t
         )
       );
     } catch {
-      setGlobalError("Tidak dapat terhubung ke server saat menyimpan perubahan.");
+      setGlobalError(
+        "Tidak dapat terhubung ke server saat menyimpan perubahan."
+      );
     }
   }
 
@@ -499,6 +730,49 @@ export function TransactionReviewPanel({
         <div className="flex items-center gap-2 rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
           <AlertCircle size={15} className="shrink-0" />
           {globalError}
+        </div>
+      )}
+
+      {/* Pemberitahuan Hasil Konfirmasi */}
+      {confirmNotification && (
+        <div
+          className={`flex items-center justify-between gap-2 rounded-xl px-4 py-2.5 text-sm border transition-all animate-in fade-in duration-200 ${
+            confirmNotification.type === "existing"
+              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+              : confirmNotification.type === "created"
+              ? "bg-sky-50 text-sky-800 border-sky-200"
+              : confirmNotification.type === "anonymous"
+              ? "bg-stone-100 text-stone-800 border-stone-200"
+              : "bg-emerald-50 text-emerald-800 border-emerald-200"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {confirmNotification.type === "existing" && (
+              <UserCheck size={16} className="text-emerald-600 shrink-0" />
+            )}
+            {confirmNotification.type === "created" && (
+              <UserPlus size={16} className="text-sky-600 shrink-0" />
+            )}
+            {confirmNotification.type === "anonymous" && (
+              <UserX size={16} className="text-stone-600 shrink-0" />
+            )}
+            {confirmNotification.type === "none" && (
+              <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+            )}
+            <span>
+              Transaksi terkonfirmasi.{" "}
+              <strong className="font-semibold">
+                {confirmNotification.message}
+              </strong>
+            </span>
+          </div>
+          <button
+            onClick={() => setConfirmNotification(null)}
+            className="text-muted-foreground hover:text-foreground p-1 rounded-md transition-colors"
+            title="Tutup pemberitahuan"
+          >
+            <X size={14} />
+          </button>
         </div>
       )}
 

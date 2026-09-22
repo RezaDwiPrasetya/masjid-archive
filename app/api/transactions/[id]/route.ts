@@ -39,6 +39,7 @@ export async function PATCH(
     amount?: number;
     description?: string;
     transactionDate?: string | null;
+    donorNameRaw?: string | null;
   };
 
   // Hanya izinkan field yang ada di spec — tidak ada mass-assignment
@@ -53,6 +54,9 @@ export async function PATCH(
           ? new Date(body.transactionDate)
           : null,
       }),
+      ...(body.donorNameRaw !== undefined && {
+        donorNameRaw: body.donorNameRaw ? body.donorNameRaw.trim() : null,
+      }),
     },
   });
 
@@ -63,6 +67,7 @@ export async function PATCH(
       amount: updated.amount,
       description: updated.description,
       transactionDate: updated.transactionDate,
+      donorNameRaw: updated.donorNameRaw,
     },
   });
 }

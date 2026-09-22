@@ -16,7 +16,7 @@ type User = {
 export default function PenggunaPage() {
   const { data: session, status } = useSession();
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [hasFetched, setHasFetched] = useState(false);
 
   useEffect(() => {
     if (session?.user?.role === "ADMIN") {
@@ -27,16 +27,17 @@ export default function PenggunaPage() {
         })
         .then((data) => {
           setUsers(data);
-          setLoading(false);
+          setHasFetched(true);
         })
         .catch((err) => {
           console.error(err);
-          setLoading(false);
+          setHasFetched(true);
         });
-    } else if (status !== "loading") {
-      setLoading(false);
     }
-  }, [session, status]);
+  }, [session]);
+
+  const loading =
+    status === "loading" || (session?.user?.role === "ADMIN" && !hasFetched);
 
   const handleRoleChange = async (userId: string, newRole: string | null) => {
     // Optimistic UI update
@@ -56,7 +57,7 @@ export default function PenggunaPage() {
       if (!res.ok) {
         throw new Error("Gagal mengubah role");
       }
-    } catch (error) {
+    } catch {
       alert("Terjadi kesalahan saat mengubah hak akses.");
       // Revert in real app
     }
@@ -129,7 +130,7 @@ export default function PenggunaPage() {
                         const val = e.target.value;
                         handleRoleChange(user.id, val === "" ? null : val);
                       }}
-                      disabled={user.id === session.user.id} 
+                      disabled={user.id === session.user.id}
                     >
                       <option value="">Jamaah (Read-only)</option>
                       <option value="BENDAHARA">Bendahara (Upload)</option>
