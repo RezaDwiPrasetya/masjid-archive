@@ -25,16 +25,19 @@ model User {
 }
 
 model Report {
-  id           String        @id @default(cuid())
-  reportDate   DateTime
-  year         Int
-  month        Int
-  weekOfMonth  Int
-  uploadedAt   DateTime      @default(now())
-  uploadedById String
-  uploadedBy   User          @relation(fields: [uploadedById], references: [id])
-  attachments  Attachment[]
-  transactions Transaction[]
+  id             String        @id @default(cuid())
+  reportDate     DateTime
+  year           Int
+  month          Int
+  weekOfMonth    Int
+  uploadedAt     DateTime      @default(now())
+  uploadedById   String
+  uploadedBy     User          @relation(fields: [uploadedById], references: [id])
+  attachments    Attachment[]
+  transactions   Transaction[]
+  // V4: Saldo kas mingguan — properti laporan, bukan lampiran individual
+  initialBalance Decimal?      @db.Decimal(15, 2) // Saldo lalu / saldo awal pekan ini yang tertera di buku kas
+  finalBalance   Decimal?      @db.Decimal(15, 2) // Saldo akhir kas yang tertera di buku kas
 }
 
 model Attachment {
@@ -51,8 +54,6 @@ model Attachment {
   extractionRawResponse Json?         // Respons mentah dari LLM, untuk audit/debug
   extractionError       String?       // Pesan error ramah pengguna jika status "failed"
   extractedAt           DateTime?     // Waktu terakhir ekstraksi dijalankan
-  initialBalance        Decimal?      @db.Decimal(15, 2) // Saldo awal / saldo lalu yang tertera di buku kas
-  finalBalance          Decimal?      @db.Decimal(15, 2) // Saldo akhir kas yang tertera di buku kas
   uploadedAt            DateTime      @default(now())
   transactions          Transaction[]
 }

@@ -30,8 +30,12 @@ Untuk mendukung Google SSO melalui `@auth/prisma-adapter`, tabel `User` dirombak
 | year / month / weekOfMonth | number (diturunkan otomatis dari reportDate) | Yes | |
 | uploadedAt | timestamp | Yes | |
 | uploadedById | reference ke User | Yes | Terhubung langsung ke ID User dari hasil login Google SSO |
+| initialBalance | decimal | Optional (V4) | Saldo lalu / saldo awal kas masjid yang tertulis di kertas laporan minggu ini |
+| finalBalance | decimal | Optional (V4) | Saldo kas akhir yang tertulis di kertas laporan setelah mutasi |
 
 > **Perubahan dari V1:** field `photoUrl` dihapus dari `Report` — sebuah laporan kini bisa memiliki banyak file lewat entity `Attachment` di bawah, bukan satu foto tunggal.
+
+> **Perubahan dari V4 awal:** `initialBalance` dan `finalBalance` sempat disimpan di `Attachment`. Ini dipindahkan ke `Report` di migration `20260922012300_move_balance_to_report` karena saldo kas mingguan adalah properti **laporan** (satu laporan = satu minggu = satu saldo awal/akhir), bukan properti **file lampiran**. Penyimpanan di `Attachment` ambigu ketika satu laporan memiliki lebih dari satu foto.
 
 ### Attachment (Lampiran File) — V2, diperluas V4
 
@@ -46,12 +50,10 @@ Satu `Report` memiliki banyak `Attachment` (gambar, PDF, atau Excel).
 | originalFileName | text | Yes | Nama file asli saat diunggah |
 | fileSizeBytes | number | Yes | |
 | extractionStatus | enum (`not_extracted` / `processing` / `done` / `failed`) | V4 | Default `not_extracted` — **tidak** dimulai otomatis saat upload. Berubah ke `processing` hanya saat bendahara menekan tombol "Ekstrak Data" secara manual |
-| extractionModel | text | Optional (V4) | Nama model yang dipakai saat ekstraksi (mis. `gemini-2.0-flash-lite`), untuk audit jika model diganti di kemudian hari |
+| extractionModel | text | Optional (V4) | Nama model yang dipakai saat ekstraksi (mis. `gemini-3.6-flash`), untuk audit. Jika tampil badge "Model Cadangan" di UI, artinya model utama gagal dan sistem otomatis beralih ke model fallback |
 | extractionRawResponse | json | Optional (V4) | Respons mentah lengkap dari vision-LLM untuk satu kali pemanggilan ekstraksi — dipakai untuk debug/audit dan sebagai sumber saat parsing ulang jika diperlukan, tanpa perlu memanggil API lagi |
 | extractionError | text | Optional (V4) | Pesan error singkat & ramah pengguna saat `extractionStatus = failed`; dikosongkan lagi (`null`) begitu ekstraksi ulang berhasil |
 | extractedAt | timestamp | Optional (V4) | Waktu ekstraksi terakhir dijalankan |
-| initialBalance | decimal | Optional (V4) | Saldo awal / saldo lalu kas masjid yang tertulis di kertas laporan |
-| finalBalance | decimal | Optional (V4) | Saldo kas akhir yang tertulis di kertas laporan setelah mutasi |
 | uploadedAt | timestamp | Yes | |
 
 > **Catatan V4:** `extractionStatus` sengaja bukan `pending` di kondisi awal, untuk menghindari kesan "menunggu diproses otomatis". Nilai `not_extracted` menandaskan bahwa ekstraksi murni aksi manual yang dipicu bendahara, sejalan dengan keputusan alur kerja V4 (tombol "Ekstrak Data", bukan otomatis saat upload).
@@ -110,6 +112,7 @@ Donor
 - `reportDate` harus hari Jumat, dan tidak boleh duplikat antar laporan
 - `year`, `month`, `weekOfMonth` selalu diturunkan dari `reportDate`, tidak diinput manual
 - `Attachment.extractionStatus` (V4) dimulai dari `not_extracted`, hanya berubah ke `processing` saat dipicu manual oleh bendahara, lalu ke `done`/`failed`
+- Saat ekstraksi berhasil membaca `initialBalance`/`finalBalance`, nilai disimpan ke **`Report` induk** (bukan `Attachment`) — saldo kas mingguan adalah properti laporan, bukan lampiran individual. Jika satu laporan memiliki banyak lampiran, nilai yang disimpan adalah dari lampiran mana pun yang Gemini berhasil baca.
 - Ekstraksi ulang (re-extract) pada `Attachment` yang sudah `done` akan menghapus `Transaction` lama yang belum diverifikasi (`isVerified = false`) dari attachment tersebut sebelum menyimpan hasil baru — `Transaction` yang sudah `isVerified = true` tidak boleh terhapus otomatis oleh proses re-extract, harus dihapus manual jika memang perlu
 - `Transaction` (V4) yang `isVerified = false` tidak dihitung dalam kalkulasi tren/dashboard di V5
 - `Donor` (V5) dicocokkan berdasarkan nama (fuzzy matching sederhana), bisa digabung manual oleh bendahara jika ada duplikat/typo
@@ -119,6 +122,6 @@ Donor
 Struktur ini modular per fase:
 - **V2** fokus pada `Attachment`.
 - **V3** fokus merombak `User` dan menambah infrastruktur NextAuth (`Account`, `Session`).
-- **V4** menambahkan field ekstraksi di `Attachment` dan entity `Transaction` baru.
+- **V4** menambahkan field ekstraksi di `Attachment`, entity `Transaction` baru, serta `initialBalance`/`finalBalance` di `Report`.
 - **V5** baru membutuhkan `Donor`.
 Sehingga tidak perlu migrasi besar ulang tiap fase, cukup menambah tabel/kolom baru.

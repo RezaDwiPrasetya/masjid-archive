@@ -98,15 +98,18 @@ model User {
 }
 
 model Report {
-  id           String       @id @default(cuid())
-  reportDate   DateTime
-  year         Int
-  month        Int
-  weekOfMonth  Int
-  uploadedAt   DateTime     @default(now())
-  uploadedById String
-  uploadedBy   User         @relation(fields: [uploadedById], references: [id])
-  attachments  Attachment[]
+  id             String       @id @default(cuid())
+  reportDate     DateTime
+  year           Int
+  month          Int
+  weekOfMonth    Int
+  uploadedAt     DateTime     @default(now())
+  uploadedById   String
+  uploadedBy     User         @relation(fields: [uploadedById], references: [id])
+  attachments    Attachment[]
+  // V4: saldo kas mingguan — properti laporan, bukan lampiran individual
+  initialBalance Decimal?     // Saldo lalu / saldo awal pekan ini
+  finalBalance   Decimal?     // Saldo akhir yang tertera di buku kas
 }
 
 model Attachment {
@@ -122,8 +125,6 @@ model Attachment {
   extractionRawResponse  Json?     // V4
   extractionError        String?   // V4
   extractedAt            DateTime? // V4
-  initialBalance         Decimal?  // V4 — Saldo awal / saldo lalu yang tertulis di kertas
-  finalBalance           Decimal?  // V4 — Saldo kas akhir yang tertulis di kertas
   uploadedAt             DateTime  @default(now())
 }
 ```
@@ -235,7 +236,9 @@ const schema = {
    - `prisma.$transaction`:
      - Hapus transaksi lama yang **belum diverifikasi** (`where: { attachmentId: id, isVerified: false }`). Transaksi `isVerified = true` tetap utuh.
      - Insert transaksi baru hasil ekstraksi (`isVerified: false`).
-     - Update `Attachment` (`extractionStatus = "done"`, `initialBalance`, `finalBalance`, `extractionModel`, `extractionRawResponse`, `extractedAt`, `extractionError = null`).
+     - Update `Attachment` (`extractionStatus = "done"`, `extractionModel`, `extractionRawResponse`, `extractedAt`, `extractionError = null`).
+     - Jika `initialBalance` atau `finalBalance` berhasil dibaca oleh Gemini: Update `Report` induk dengan nilai saldo tersebut (bukan `Attachment` — saldo adalah properti laporan, bukan file).
+     - Jika model yang dipakai adalah model cadangan (bukan model utama), badge **"Model Cadangan"** tampil di UI di samping status ekstraksi.
 6. **Jika gagal**:
    - Update `Attachment` (`extractionStatus = "failed"`, `extractionError` diisi pesan singkat ramah pengguna).
 

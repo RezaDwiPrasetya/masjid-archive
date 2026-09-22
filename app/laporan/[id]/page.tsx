@@ -156,6 +156,7 @@ export default async function DetailLaporanPage({
                                   | "failed"
                               }
                               extractionError={att.extractionError}
+                              extractionModel={att.extractionModel}
                               transactionCount={txCount}
                               verifiedCount={verifiedCount}
                             />
@@ -311,15 +312,12 @@ export default async function DetailLaporanPage({
                 a.transactions.filter((t) => !t.isVerified)
               );
 
-              // Cari attachment yang memiliki catatan saldo tertera di buku
-              const attWithBalance = report.attachments.find(
-                (a) => a.initialBalance !== null || a.finalBalance !== null
-              );
-              const initialBalance = attWithBalance?.initialBalance
-                ? parseFloat(attWithBalance.initialBalance.toString())
+              // Baca saldo langsung dari Report — tidak lagi dari Attachment (sudah dimigrasikan)
+              const initialBalance = report.initialBalance
+                ? parseFloat(report.initialBalance.toString())
                 : null;
-              const finalBalance = attWithBalance?.finalBalance
-                ? parseFloat(attWithBalance.finalBalance.toString())
+              const finalBalance = report.finalBalance
+                ? parseFloat(report.finalBalance.toString())
                 : null;
 
               if (

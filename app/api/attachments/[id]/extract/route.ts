@@ -77,7 +77,7 @@ export async function POST(
           isVerified: false,
         })),
       }),
-      // Update metadata attachment & saldo tertera di buku
+      // Update metadata attachment (status, model, rawResponse, dll)
       prisma.attachment.update({
         where: { id },
         data: {
@@ -86,16 +86,28 @@ export async function POST(
           extractionRawResponse: rawResponse as Prisma.InputJsonValue,
           extractionError: null,
           extractedAt: new Date(),
-          initialBalance:
-            initialBalance !== null && initialBalance !== undefined
-              ? initialBalance
-              : null,
-          finalBalance:
-            finalBalance !== null && finalBalance !== undefined
-              ? finalBalance
-              : null,
         },
       }),
+      // Simpan saldo ke Report induk (bukan Attachment) —
+      // saldo kas mingguan adalah properti laporan, bukan file individual.
+      // Hanya update jika Gemini berhasil membaca setidaknya satu saldo.
+      ...(initialBalance !== null || finalBalance !== null
+        ? [
+            prisma.report.update({
+              where: { id: attachment.reportId },
+              data: {
+                initialBalance:
+                  initialBalance !== null && initialBalance !== undefined
+                    ? initialBalance
+                    : undefined,
+                finalBalance:
+                  finalBalance !== null && finalBalance !== undefined
+                    ? finalBalance
+                    : undefined,
+              },
+            }),
+          ]
+        : []),
     ]);
 
     return NextResponse.json({

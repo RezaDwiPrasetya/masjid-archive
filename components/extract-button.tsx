@@ -7,10 +7,14 @@ import { Button } from "@/components/ui/button";
 
 type ExtractionStatus = "not_extracted" | "processing" | "done" | "failed";
 
+// Model utama yang dipakai sistem — harus sinkron dengan GEMINI_MODEL di lib/gemini.ts
+const PRIMARY_MODEL = "gemini-3.6-flash";
+
 interface ExtractButtonProps {
   attachmentId: string;
   extractionStatus: ExtractionStatus;
   extractionError?: string | null;
+  extractionModel?: string | null;
   transactionCount?: number;
   verifiedCount?: number;
 }
@@ -45,6 +49,7 @@ export function ExtractButton({
   attachmentId,
   extractionStatus,
   extractionError,
+  extractionModel,
   transactionCount,
 }: ExtractButtonProps) {
   const router = useRouter();
@@ -106,6 +111,18 @@ export function ExtractButton({
             <span className="ml-1">· {transactionCount} transaksi</span>
           )}
         </span>
+
+        {/* Badge model fallback — tampil hanya jika model yang dipakai bukan model utama */}
+        {currentStatus === "done" &&
+          extractionModel &&
+          extractionModel !== PRIMARY_MODEL && (
+            <span
+              title={`Model yang dipakai: ${extractionModel} (model cadangan)`}
+              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-200/70 dark:border-amber-800/40"
+            >
+              <span aria-hidden="true">&#9888;</span> Model Cadangan
+            </span>
+          )}
 
         {/* Tombol Ekstrak / Coba Lagi */}
         {(extractionStatus === "not_extracted" || extractionStatus === "failed") && (
