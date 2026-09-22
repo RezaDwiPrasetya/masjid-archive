@@ -130,9 +130,53 @@ Bendahara membuka Detail Laporan → menekan "Ekstrak Data" pada lampiran gambar
 
 ---
 
+## V5 — Financial Intelligence (Sedang Dikerjakan)
+
+### MVP Objective (V5)
+
+Membuktikan bahwa data transaksi terverifikasi yang sudah terkumpul dari V4 bisa diubah jadi wawasan yang berguna: tren keuangan dari waktu ke waktu dan riwayat kontribusi donatur — ditampilkan terbuka ke publik sebagai kelanjutan digital dari budaya transparansi mading fisik.
+
+### Must Have (V5)
+- Dashboard tren keuangan publik dengan toggle "Mingguan"/"Bulanan" (F-014), pakai Recharts/shadcn-ui Charts
+- Halaman Daftar Donatur publik: nama, total kontribusi terverifikasi, jumlah kali menyumbang (F-015)
+- Halaman Detail Donatur: riwayat transaksi individual dengan tautan ke laporan asalnya
+- Kartu agregat "Infaq Anonim" terpisah untuk donasi tanpa nama (F-015)
+- Field nama donatur (pre-filled dari ekstraksi) yang bisa diedit bendahara di panel review sebelum konfirmasi (F-016)
+- Fuzzy matching otomatis (normalisasi + hapus prefix gelar) saat transaksi dikonfirmasi
+- Seluruh perhitungan/tampilan HANYA dari `Transaction.isVerified = true`, tanpa pengecualian
+
+### Should Have (V5)
+- Indikator loading/skeleton saat dashboard publik memuat data (karena diakses tanpa auth, kemungkinan traffic lebih variatif)
+- Rentang default dashboard: 12 minggu terakhir (mode Mingguan) atau 12 bulan terakhir (mode Bulanan) — bisa diperluas nanti kalau dibutuhkan
+
+### Could Have (V5)
+- Export data tren jadi gambar/PDF untuk dibagikan manual ke grup WA (di luar unduh laporan asli yang sudah ada)
+- Pencarian/filter nama donatur di halaman Daftar Donatur (kalau daftarnya sudah cukup panjang)
+
+### Not Now (V5 — tetap di luar scope, dibahas terpisah nanti)
+- UI penggabungan manual `Donor` yang lolos dari fuzzy matching (mis. beda ejaan total, "Kosasih" vs "Kosasi") — untuk V5 awal, penggabungan seperti ini belum ada alur UI-nya; dicatat sebagai keterbatasan yang diterima
+- Ekstraksi/parsing untuk lampiran PDF dan Excel — tetap ditunda sejak V4, tidak berubah di V5
+- Proyeksi/prediksi kas ke depan (forecasting) — murni tren historis dulu, bukan prediksi
+- Filter dashboard berdasarkan rentang tanggal custom (selain toggle Mingguan/Bulanan bawaan) — bisa jadi peningkatan lanjutan
+- Notifikasi/alert otomatis (mis. WhatsApp) saat tren pengeluaran melonjak — di luar scope, murni tampilan pasif dulu
+
+### MVP Core Flow (V5)
+
+**Alur bendahara (assign donatur):** Saat mengonfirmasi transaksi bertipe pemasukan di panel review (F-016, kelanjutan dari V4) → bendahara cek/edit nama donatur yang pre-filled dari ekstraksi → tekan "Konfirmasi" → sistem otomatis mencocokkan ke `Donor` yang sudah ada atau membuat baru.
+
+**Alur publik (jemaah):** Buka halaman dashboard tanpa login → lihat grafik tren pemasukan/pengeluaran, toggle antara tampilan Mingguan/Bulanan → buka halaman Daftar Donatur → lihat total kontribusi tiap donatur atau klik untuk riwayat detail → lihat kartu "Infaq Anonim" untuk total donasi tanpa nama.
+
+### MVP Success Criteria (V5)
+- [ ] Dashboard tren dapat diakses publik tanpa login dan menampilkan data yang benar (cocok dengan penjumlahan manual dari laporan yang sudah diverifikasi)
+- [ ] Toggle Mingguan/Bulanan berfungsi dan mengubah agregasi data secara benar
+- [ ] Minimal satu donatur berhasil ter-*match* secara otomatis ke entity `Donor` yang sama meski ditulis dengan variasi nama berbeda (mis. "Bpk Kosasih" vs "Bapak Kosasih")
+- [ ] Donasi anonim ("Hamba Allah") tidak pernah muncul sebagai profil donatur individual, hanya sebagai agregat
+- [ ] Tidak ada satu pun transaksi `isVerified = false` yang bocor ke dashboard publik maupun halaman donatur, di UI maupun lewat pemanggilan API langsung
+
+---
+
 ## Roadmap Fase Berikutnya (Referensi)
 
 | Fase | Fokus |
 |---|---|
-| V5 | Financial intelligence: tren, tracking donatur, visualisasi |
 | V6 | Multi-tenant (opsional, jangka panjang) |

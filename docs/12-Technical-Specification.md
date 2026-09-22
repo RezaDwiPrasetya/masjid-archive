@@ -2,7 +2,7 @@
 
 ## Overview
 
-Dokumen ini menjelaskan implementasi teknis Masjid Archive, mencakup kondisi produksi aktual (setelah deploy ke Vercel) dan spesifikasi teknis dari Fase V1 hingga V4 (Ekstraksi Data).
+Dokumen ini menjelaskan implementasi teknis Masjid Archive, mencakup kondisi produksi aktual (setelah deploy ke Vercel) dan spesifikasi teknis dari Fase V1 hingga V5 (Financial Intelligence).
 
 ## Tech Stack
 
@@ -17,6 +17,7 @@ Dokumen ini menjelaskan implementasi teknis Masjid Archive, mencakup kondisi pro
 | **File Storage** (foto/lampiran laporan) | **Supabase Storage** (bucket `report-photos`) | Provider terpisah dari database — lihat penjelasan arsitektur di bawah |
 | **Auth** | **NextAuth.js (Auth.js)** | Menggunakan Google Provider (OAuth 2.0) dan `@auth/prisma-adapter` |
 | **Vision-LLM (V4)** | **Google Gemini API** (`@google/generative-ai`) | Free tier untuk tahap development — lihat bagian V4 di bawah |
+| **Visualisasi (V5)** | **Recharts** (via `shadcn/ui` Charts, yang membungkus Recharts) | Lihat bagian V5 di bawah |
 | Hosting | Vercel | |
 
 ## Arsitektur: Kenapa Database dan File Storage Beda Provider?
@@ -276,3 +277,97 @@ Semua endpoint di atas wajib sesi NextAuth valid (`401` jika tidak).
 ## Estimasi Biaya Fase Mendatang (Catatan V4)
 
 Ekstraksi via Gemini API free tier: **Rp 0** untuk tahap development (dengan catatan privasi di atas). Jika nanti perlu upgrade ke paid tier untuk produksi, estimasi biaya tetap sangat rendah untuk skala 1 masjid (±4–5 laporan/bulan) — perlu verifikasi harga terkini di halaman resmi Gemini API sebelum go-live, karena harga & struktur tier dapat berubah.
+
+## V5 — Spesifikasi Teknis: Financial Intelligence
+
+### Library Chart: Recharts (via shadcn/ui Charts)
+
+Menggunakan komponen chart shadcn/ui (`<ChartContainer>`, `<ChartTooltip>`, dll) yang secara internal membungkus **Recharts**. Alasan: konsisten dengan komponen shadcn/ui lain yang sudah dipakai di seluruh aplikasi (Button, Card, Dialog), dan Recharts sudah cukup matang untuk kebutuhan grafik batang/garis sederhana tanpa perlu library charting yang lebih berat (D3 mentah, Chart.js, dll).
+
+```bash
+npx shadcn@latest add chart
+```
+
+### Skema Prisma Tambahan
+
+```prisma
+model Donor {
+  id             String        @id @default(cuid())
+  name           String        // Nama tampilan (canonical)
+  normalizedName String        @unique // Kunci pencocokan fuzzy — lowercase, whitespace rapi, prefix gelar dihapus
+  contact        String?
+  transactions   Transaction[]
+}
+
+model Transaction {
+  // ...field V4 sebelumnya tetap sama...
+  donorNameRaw String?  // V5: nama mentah hasil ekstraksi/input manual, sebelum matching
+  donorId      String?  // V5: null jika belum di-assign, kosong, atau anonim
+  donor        Donor?   @relation(fields: [donorId], references: [id])
+}
+```
+
+### Fungsi Normalisasi Nama (Fuzzy Matching)
+
+```typescript
+const DONOR_PREFIXES = [
+  "bpk", "bapak", "ibu", "sdr", "sdri", "mas", "mbak",
+  "h.", "hj.", "ust", "ustadz", "ustadzah",
+];
+
+const ANONYMOUS_PATTERNS = ["hamba allah", "anonim", "tanpa nama"];
+
+function normalizeDonorName(raw: string): string {
+  let normalized = raw.trim().toLowerCase().replace(/\s+/g, " ");
+  for (const prefix of DONOR_PREFIXES) {
+    const pattern = new RegExp(`^${prefix}\\.?\\s+`, "i");
+    normalized = normalized.replace(pattern, "");
+  }
+  return normalized.trim();
+}
+
+function isAnonymousDonor(normalized: string): boolean {
+  return ANONYMOUS_PATTERNS.some((pattern) => normalized.includes(pattern));
+}
+```
+
+### Alur Matching Saat Konfirmasi Transaksi
+
+Diterapkan sebagai perluasan pada `POST /api/transactions/:id/confirm` (endpoint yang sama dari V4, bukan endpoint baru):
+
+1. Ambil `donorNameRaw` dari body request (opsional, cuma relevan untuk `type: "pemasukan"`)
+2. Jika kosong atau `null` → lanjut konfirmasi seperti biasa, `donorId` tetap `null`
+3. Normalisasi via `normalizeDonorName()`. Jika `isAnonymousDonor()` bernilai true → `donorId` tetap `null` (donasi dihitung sebagai agregat "Infaq Anonim", bukan `Donor` individual)
+4. Cari `Donor` dengan `normalizedName` yang cocok persis:
+   - **Ketemu** → `donorId` = id `Donor` tersebut
+   - **Tidak ketemu** → buat `Donor` baru (`name` = teks asli sebelum normalisasi, `normalizedName` = hasil normalisasi)
+5. Set `isVerified = true`, `verifiedById`, `verifiedAt` (logika V4 yang sudah ada, tidak berubah)
+
+### Query Agregasi Tren (Dashboard Publik)
+
+```typescript
+// Contoh agregasi bulanan — hanya transaksi terverifikasi
+const monthlyTrend = await prisma.transaction.groupBy({
+  by: ["type"],
+  where: {
+    isVerified: true,
+    transactionDate: { gte: startDate, lte: endDate },
+  },
+  _sum: { amount: true },
+  // dikelompokkan lebih lanjut per bulan di level aplikasi
+  // (Prisma groupBy tidak mendukung date_trunc langsung;
+  //  gunakan raw query $queryRaw untuk agregasi per periode kalender)
+});
+```
+
+> **Catatan implementasi:** untuk agregasi per-minggu/per-bulan yang presisi (mengelompokkan berdasarkan kalender, bukan cuma `type`), gunakan `prisma.$queryRaw` dengan `DATE_TRUNC('week', "transactionDate")` atau `DATE_TRUNC('month', "transactionDate")` di PostgreSQL — `groupBy` bawaan Prisma tidak mendukung truncation tanggal secara native.
+
+### Rentang Default Dashboard
+
+- Mode Mingguan: 12 minggu terakhir dari hari ini
+- Mode Bulanan: 12 bulan terakhir dari bulan ini
+- Query selalu difilter `isVerified: true` — tidak ada mode/flag apa pun yang bisa menampilkan transaksi belum terverifikasi di endpoint publik ini
+
+### Endpoint Publik & Isolasi dari Data Belum Terverifikasi
+
+Endpoint V5 (`GET /api/dashboard/trend`, `GET /api/donors`, `GET /api/donors/:id`) **tidak memerlukan sesi NextAuth** (publik), tetapi **setiap query di dalamnya WAJIB menyertakan `isVerified: true`** sebagai kondisi `WHERE` — tidak ada jalur kode yang mengembalikan transaksi `isVerified: false` dari endpoint-endpoint ini, baik untuk pengguna login maupun tidak (beda dengan `GET /api/reports/:id/transactions` di V4 yang memang dirancang menampilkan lebih banyak data untuk pengguna dengan sesi aktif — endpoint V5 ini sengaja tidak punya jalur "tampilkan semua" sama sekali, karena tujuannya murni tampilan publik).

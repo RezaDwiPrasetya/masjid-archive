@@ -17,6 +17,9 @@
 | F-011 | Ekstraksi Data Laporan (Vision-LLM) | Must | ✅ Done (V4) |
 | F-012 | Review & Verifikasi Transaksi | Must | ✅ Done (V4) |
 | F-013 | Ringkasan Kas & Rekonsiliasi Saldo Kas | Should | ✅ Done (V4) |
+| F-014 | Dashboard Tren Keuangan (Publik) | Must | Planned (V5) |
+| F-015 | Tracking & Profil Donatur (Publik) | Must | Planned (V5) |
+| F-016 | Assign Nama Donatur saat Review Transaksi | Should | Planned (V5) |
 
 ## Feature Details — V1
 
@@ -210,3 +213,63 @@
 - [x] Ringkasan kas tampil otomatis jika terdapat data transaksi terverifikasi atau saldo awal/akhir dari lampiran.
 - [x] Kalkulasi matematis akurat dan hanya menghitung transaksi yang telah diverifikasi (`isVerified = true`).
 - [x] Lencana rekonsiliasi kas mendeteksi kecocokan angka saldo fisik secara otomatis.
+
+---
+
+## Feature Details — V5 (Financial Intelligence)
+
+> **Catatan scope:** V5 murni membaca data yang sudah ada dari V4 (`Transaction`, `Report`) — tidak ada perubahan pada alur ekstraksi/verifikasi. Semua kalkulasi dan tampilan di sini **hanya** menghitung dari `Transaction.isVerified = true`, tidak ada pengecualian.
+
+### F-014 — Dashboard Tren Keuangan (Publik)
+
+**Objective:** Menyajikan visualisasi tren pemasukan/pengeluaran kas masjid dari waktu ke waktu, sebagai kelanjutan digital dari transparansi mading fisik yang sudah berjalan.
+**User:** Publik (jemaah), Pengurus DKM
+**Input:** Toggle granularitas ("Mingguan" / "Bulanan")
+**Process:**
+- Sistem mengagregasi seluruh `Transaction` dengan `isVerified = true`, dikelompokkan per minggu atau per bulan sesuai toggle yang dipilih
+- Grafik dirender pakai Recharts (atau shadcn/ui Charts yang berbasis Recharts)
+- Menampilkan total pemasukan vs pengeluaran per periode, plus saldo akhir kas (dari `Report.finalBalance`) sebagai referensi
+**Output:** Grafik batang/garis interaktif, dapat diakses siapa pun tanpa login
+**Business Rules:**
+- Hanya menghitung transaksi `isVerified = true` — tanpa pengecualian
+- Tidak ada gating sesi/login untuk mengakses halaman ini
+**Acceptance Criteria:**
+- [ ] Dashboard dapat diakses publik tanpa login
+- [ ] Toggle "Mingguan"/"Bulanan" mengubah granularitas grafik secara langsung
+- [ ] Grafik menampilkan minimal beberapa periode terakhir secara default (rentang pasti ditentukan di 10-MVP-Scope.md)
+- [ ] Transaksi yang belum diverifikasi tidak pernah memengaruhi angka yang ditampilkan
+
+### F-015 — Tracking & Profil Donatur (Publik)
+
+**Objective:** Menampilkan daftar donatur beserta riwayat dan total kontribusi mereka dari waktu ke waktu, konsisten dengan budaya keterbukaan nama donatur di mading fisik.
+**User:** Publik (jemaah), Pengurus DKM
+**Process:**
+- Halaman "Daftar Donatur" menampilkan setiap `Donor` beserta total kontribusi terverifikasi (dihitung on-the-fly) dan jumlah kali menyumbang
+- Klik satu donatur → menampilkan riwayat transaksi (tanggal, nominal, laporan terkait)
+- Donasi yang tertulis anonim ("Hamba Allah"/"Anonim"/"Tanpa Nama") ditampilkan terpisah sebagai **agregat "Infaq Anonim"**, tanpa profil individual
+**Output:** Daftar donatur + halaman detail per donatur + satu kartu agregat "Infaq Anonim"
+**Business Rules:**
+- Hanya transaksi `isVerified = true` yang dihitung ke `totalContribution` maupun riwayat
+- Donasi anonim tidak pernah muncul sebagai entitas `Donor` individual (lihat aturan di 13-Data-Model.md)
+**Acceptance Criteria:**
+- [ ] Halaman Daftar Donatur dapat diakses publik tanpa login
+- [ ] Tiap donatur menampilkan total kontribusi terverifikasi & jumlah transaksi
+- [ ] Detail donatur menampilkan riwayat transaksi individual dengan tautan ke laporan asalnya
+- [ ] Kartu "Infaq Anonim" menampilkan total agregat tanpa memecah per nama
+- [ ] Tidak ada satu pun transaksi `isVerified = false` yang bocor ke halaman ini (baik di daftar maupun endpoint API-nya)
+
+### F-016 — Assign/Edit Nama Donatur saat Review Transaksi
+
+**Objective:** Memberi bendahara kendali untuk mengonfirmasi atau mengoreksi nama donatur sebelum transaksi difinalisasi, memicu proses pencocokan (fuzzy matching) ke entity `Donor`.
+**User:** Bendahara DKM
+**Process:**
+- Pada panel review transaksi (`TransactionReviewPanel`), transaksi bertipe `pemasukan` menampilkan field nama donatur yang bisa diedit — pre-filled dari `donorNameRaw` hasil ekstraksi jika ada
+- Field ini disembunyikan/tidak relevan untuk transaksi bertipe `pengeluaran`
+- Saat bendahara menekan "Konfirmasi", sistem menjalankan proses fuzzy matching (normalisasi + hapus prefix gelar) terhadap `Donor.normalizedName` yang sudah ada — cocok → ditautkan; tidak cocok → `Donor` baru dibuat; kosong/pola anonim → `donorId` tetap `null`
+**Business Rules:**
+- Fuzzy matching hanya dijalankan sekali, pada saat konfirmasi (bukan tiap kali baris diedit), untuk menghindari donatur baru dibuat berulang-ulang saat bendahara masih mengetik
+**Acceptance Criteria:**
+- [ ] Field nama donatur muncul & dapat diedit hanya untuk transaksi tipe `pemasukan`
+- [ ] Nilai pre-filled dari `donorNameRaw` bisa diubah/dikosongkan sebelum konfirmasi
+- [ ] Setelah konfirmasi, transaksi tertaut ke `Donor` yang benar (baik yang sudah ada maupun baru dibuat) sesuai aturan matching
+- [ ] Menuliskan variasi nama seorang donatur yang sudah pernah tercatat (mis. "Bpk Kosasih" setelah sebelumnya "Bapak Kosasih") tidak menciptakan `Donor` duplikat

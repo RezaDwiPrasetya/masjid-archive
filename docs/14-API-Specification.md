@@ -224,8 +224,7 @@ Memicu ekstraksi data transaksi dari satu lampiran bergambar menggunakan vision-
 5. **Sukses**:
    - Hapus transaksi lama pada attachment ini yang **belum diverifikasi** (`isVerified = false`). Transaksi yang sudah `isVerified = true` tetap dipertahankan.
    - Insert baris `Transaction` baru hasil ekstraksi (`isVerified: false`).
-   - Update `Attachment` (`extractionStatus: "done"`, `extractionModel`, `extractionRawResponse`, `extractedAt`, `extractionError: null`).
-   - Update `Report` induk dengan `initialBalance` dan `finalBalance` jika terdeteksi (Issue #047).
+   - Update `Attachment` (`extractionStatus: "done"`, `initialBalance`, `finalBalance`, `extractionModel`, `extractionRawResponse`, `extractedAt`, `extractionError: null`).
 6. **Gagal**: update `Attachment` (`extractionStatus: "failed"`, `extractionError`: pesan singkat ramah pengguna).
 
 **Response 200 (sukses)**
@@ -266,11 +265,13 @@ Memicu ekstraksi data transaksi dari satu lampiran bergambar menggunakan vision-
 
 ### `GET /api/reports/:id/transactions`
 
-Daftar transaksi untuk satu laporan tertentu. Endpoint ini memiliki perlindungan akses berbasis sesi:
-- **Pengguna login (Pengurus/Bendahara):** Mengembalikan seluruh transaksi (baik yang sudah diverifikasi maupun yang masih draft/unverified) untuk keperluan review dan verifikasi di UI.
-- **Tanpa sesi (Publik/Jemaah):** Hanya mengembalikan transaksi yang sudah diverifikasi (`isVerified = true`). Transaksi draft/unverified difilter di query database (`...(session ? {} : { isVerified: true })`) agar data mentah tidak bocor ke publik sebelum dikonfirmasi.
+Daftar transaksi untuk satu laporan tertentu — dipakai UI review di halaman Detail Laporan.
 
-**Response 200**
+**Wajib diperhatikan:** endpoint ini **tidak menolak** akses tanpa sesi (`401`), tapi **hasilnya difilter berdasarkan status sesi**:
+- **Tanpa sesi valid**: hanya mengembalikan transaksi dengan `isVerified = true`
+- **Dengan sesi valid**: mengembalikan semua transaksi (verified & unverified), untuk keperluan review bendahara
+
+**Response 200 (dengan sesi — semua transaksi)**
 
 ```json
 {
@@ -318,12 +319,25 @@ Mengedit field transaksi hasil ekstraksi sebelum dikonfirmasi. **Hanya diizinkan
 
 Mengonfirmasi satu baris transaksi sebagai data resmi.
 
-**Logika Server-Side:** set `isVerified = true`, `verifiedById` dari `session.user.id`, `verifiedAt = now()`.
+**Body (opsional, V5)**
+
+```json
+{ "donorNameRaw": "Bapak Kosasih" }
+```
+
+`donorNameRaw` hanya relevan untuk transaksi bertipe `pemasukan`. Boleh dikosongkan (`null`/tidak dikirim) jika transaksi memang tidak punya nama donatur tertulis.
+
+**Logika Server-Side:**
+1. Jika `donorNameRaw` dikirim dan tidak kosong:
+   - Normalisasi nama (lihat `normalizeDonorName()` di 12-Technical-Specification.md)
+   - Jika hasil normalisasi cocok pola anonim ("hamba allah"/"anonim"/"tanpa nama") → `donorId` tetap `null`
+   - Jika tidak, cari `Donor.normalizedName` yang cocok persis → tautkan; jika tidak ada, buat `Donor` baru
+2. Set `isVerified = true`, `verifiedById` dari `session.user.id`, `verifiedAt = now()` (logika V4, tidak berubah)
 
 **Response 200**
 
 ```json
-{ "data": { "id": "txn_1", "isVerified": true, "verifiedBy": "Bapak Kosasih", "verifiedAt": "2026-09-21T10:00:00Z" } }
+{ "data": { "id": "txn_1", "isVerified": true, "verifiedBy": "Bapak Kosasih", "verifiedAt": "2026-09-21T10:00:00Z", "donorId": "dnr_1" } }
 ```
 
 **Response Error:**
@@ -344,15 +358,91 @@ Menghapus baris transaksi yang tidak valid (salah baca, duplikat, dll).
 
 ---
 
+## Financial Intelligence (V5)
+
+> Seluruh endpoint di bagian ini **tidak memerlukan sesi NextAuth** (publik), tetapi setiap query di dalamnya **selalu** memfilter `isVerified: true` tanpa pengecualian — tidak ada parameter atau kondisi apa pun yang membuka akses ke transaksi belum terverifikasi dari endpoint-endpoint ini.
+
+### `GET /api/dashboard/trend`
+
+Data tren pemasukan/pengeluaran untuk grafik dashboard publik (F-014).
+
+**Query params**
+
+| Param | Tipe | Wajib | Keterangan |
+|---|---|---|---|
+| `granularity` | `"weekly"` \| `"monthly"` | tidak (default `"weekly"`) | Menentukan pengelompokan periode |
+| `periods` | number | tidak (default `12`) | Jumlah periode terakhir yang ditampilkan |
+
+**Response 200**
+
+```json
+{
+  "data": {
+    "granularity": "weekly",
+    "points": [
+      { "period": "2026-08-10", "pemasukan": 1250000, "pengeluaran": 680000 },
+      { "period": "2026-08-17", "pemasukan": 980000, "pengeluaran": 720000 }
+    ]
+  }
+}
+```
+
+### `GET /api/donors`
+
+Daftar seluruh donatur beserta total kontribusi terverifikasi (F-015). Mencakup satu entri agregat khusus untuk donasi anonim.
+
+**Response 200**
+
+```json
+{
+  "data": {
+    "donors": [
+      { "id": "dnr_1", "name": "Bapak Kosasih", "totalContribution": 2400000, "donationCount": 8 }
+    ],
+    "anonymous": { "totalContribution": 1150000, "donationCount": 14 }
+  }
+}
+```
+
+### `GET /api/donors/:id`
+
+Riwayat transaksi terverifikasi milik satu donatur tertentu.
+
+**Response 200**
+
+```json
+{
+  "data": {
+    "donor": { "id": "dnr_1", "name": "Bapak Kosasih", "totalContribution": 2400000 },
+    "history": [
+      { "transactionId": "txn_1", "amount": 300000, "transactionDate": "2026-08-14", "reportId": "rpt_1" }
+    ]
+  }
+}
+```
+
+**Response Error:**
+- `404 Not Found`: `id` donatur tidak ditemukan
+
+---
+
 ## Ringkasan Endpoint V4
 
 | Method | Path                                   | Fungsi                                   | Akses Publik |
 | ------ | -------------------------------------- | ----------------------------------------- | ------------ |
 | POST   | `/api/attachments/:id/extract`         | Memicu ekstraksi data (vision-LLM)        | **Tidak**    |
-| GET    | `/api/reports/:id/transactions`        | Daftar transaksi (hanya verified jika publik) | Ya (Baca)    |
+| GET    | `/api/reports/:id/transactions`        | Daftar transaksi — tanpa sesi hanya `isVerified=true`, dengan sesi semua | Ya (terbatas tanpa sesi) |
 | PATCH  | `/api/transactions/:id`                | Edit transaksi sebelum konfirmasi         | **Tidak**    |
-| POST   | `/api/transactions/:id/confirm`        | Konfirmasi transaksi (`isVerified=true`)  | **Tidak**    |
+| POST   | `/api/transactions/:id/confirm`        | Konfirmasi transaksi + assign donatur (V5)| **Tidak**    |
 | DELETE | `/api/transactions/:id`                | Hapus transaksi (hanya jika belum verified)| **Tidak**   |
+
+## Ringkasan Endpoint V5
+
+| Method | Path                     | Fungsi                                      | Akses Publik |
+| ------ | ------------------------ | -------------------------------------------- | ------------ |
+| GET    | `/api/dashboard/trend`   | Data tren pemasukan/pengeluaran (F-014)      | Ya           |
+| GET    | `/api/donors`            | Daftar donatur + agregat anonim (F-015)      | Ya           |
+| GET    | `/api/donors/:id`        | Riwayat transaksi satu donatur (F-015)       | Ya           |
 
 ## Ringkasan Endpoint V3 (Referensi)
 

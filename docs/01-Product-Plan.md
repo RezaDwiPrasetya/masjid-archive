@@ -8,7 +8,7 @@ Mengubah arsip laporan keuangan masjid dari sekadar salinan visual pasif menjadi
 
 1. **Mempertahankan** kemudahan alur kerja bendahara yang sudah terbukti di MVP (foto/unggah laporan tanpa mengubah cara pencatatan manual sehari-hari)
 2. **Menambahkan lapisan kecerdasan**: sistem mengekstrak data mentah dari file yang diunggah (vision-LLM untuk gambar, parsing untuk PDF/Excel), sehingga data laporan tidak lagi sekadar "gambar", tapi juga **data terstruktur** yang bisa diolah — dengan tetap membuka ruang **verifikasi manual** oleh bendahara sebelum data dianggap final
-3. **Menyediakan wawasan**: tren pemasukan/pengeluaran dari waktu ke waktu, tracking kontribusi donatur, visualisasi (grafik/dashboard)
+3. **Menyediakan wawasan**: tren pemasukan/pengeluaran dari waktu ke waktu, tracking kontribusi donatur, visualisasi (grafik/dashboard) — ditampilkan secara terbuka ke jemaah, sejalan dengan budaya transparansi yang sudah ada lewat mading fisik
 4. **Mendukung banyak pengguna** dengan peran berbeda (bukan lagi 1 kredensial bersama), termasuk manajemen profil pengurus
 5. Menjaga potensi **skalabilitas & monetisasi** — desain data & arsitektur mempertimbangkan kemungkinan dipakai lebih dari satu masjid di masa depan (multi-tenant), meski belum jadi prioritas fase awal
 
@@ -16,7 +16,7 @@ Mengubah arsip laporan keuangan masjid dari sekadar salinan visual pasif menjadi
 
 - **Bendahara** (primary): mencatat transaksi manual di buku kas, menyusun laporan mingguan, memasang di mading, dan mengunggah salinannya ke sistem; kini juga mendapat manfaat dari wawasan otomatis (tren, ringkasan)
 - **Pengurus DKM lain**: bisa melihat dashboard/tren tanpa harus menelusuri laporan satu per satu; turut membagikan laporan ke jemaah lewat kanal komunikasi (WhatsApp)
-- **(Potensial, jangka panjang)** Donatur/jemaah: kemungkinan akses terbatas untuk transparansi (belum masuk scope dekat)
+- **Donatur/jemaah**: sejak V5, memiliki akses langsung ke dashboard tren keuangan dan riwayat donasi tanpa perlu login — kelanjutan digital dari budaya transparansi mading fisik yang sudah berjalan sejak awal
 
 ## Problem
 
@@ -24,10 +24,11 @@ Mengubah arsip laporan keuangan masjid dari sekadar salinan visual pasif menjadi
 - Data di dalam laporan (angka pemasukan/pengeluaran, nama donatur) tidak bisa dianalisis karena masih berupa gambar/scan, bukan data terstruktur
 - Pengurus tidak punya cara cepat melihat tren keuangan dari waktu ke waktu tanpa membuka & menjumlahkan laporan manual satu-satu
 - Sistem kredensial bersama (1 akun untuk semua) tidak mencerminkan struktur organisasi yang sebenarnya (ada peran berbeda: Bendahara 1, Bendahara 2, Pengurus lain)
+- Transparansi ke jemaah selama ini terbatas pada mading fisik yang cuma bisa dilihat sesaat di lokasi — tidak ada cara jemaah melihat tren keuangan masjid dari waktu ke waktu
 
 ## Value Proposition
 
-Bendahara tetap bekerja seperti biasa (mencatat manual, lalu unggah foto/file laporan), tapi sistem sekarang bekerja lebih keras di baliknya — mengarsipkan laporan secara aman, membantu membaca angka darinya lewat vision-LLM, dan menyajikannya sebagai data yang bisa dicari & dianalisis. Bendahara tetap memegang kendali penuh: hasil ekstraksi ditinjau dan dikonfirmasi secara manual sebelum dihitung dalam insight (tren, grafik, ringkasan donatur) — sehingga otomatisasi mempercepat pekerjaan tanpa mengorbankan akurasi.
+Bendahara tetap bekerja seperti biasa (mencatat manual, lalu unggah foto/file laporan), tapi sistem sekarang bekerja lebih keras di baliknya — mengarsipkan laporan secara aman, membantu membaca angka darinya lewat vision-LLM, dan menyajikannya sebagai data yang bisa dicari & dianalisis. Bendahara tetap memegang kendali penuh: hasil ekstraksi ditinjau dan dikonfirmasi secara manual sebelum dihitung dalam insight (tren, grafik, ringkasan donatur) — sehingga otomatisasi mempercepat pekerjaan tanpa mengorbankan akurasi. Insight yang terkumpul kemudian ditampilkan terbuka lewat dashboard publik, memperluas jangkauan transparansi yang selama ini terbatas pada mading fisik.
 
 ## Strategi Peluncuran (Bertahap)
 
@@ -36,13 +37,14 @@ Bendahara tetap bekerja seperti biasa (mencatat manual, lalu unggah foto/file la
 | **V1** | Arsip visual dasar: unggah foto, arsip per periode, cari, detail, auth sederhana | ✅ Selesai |
 | **V2** | Dukungan multi-format file per laporan (gambar, PDF, Excel); satu laporan bisa punya beberapa lampiran | ✅ Selesai |
 | **V3** | Autentikasi & Manajemen Pengguna (SSO): Login Google OAuth, keamanan rute, role-based access | ✅ Selesai |
-| **V4** | Ekstraksi data: vision-LLM untuk gambar (dipicu manual oleh bendahara), parsing terstruktur untuk PDF/Excel → data transaksi, saldo awal/akhir, rekonsiliasi buku kas, dan verifikasi manual | ✅ Selesai |
-| **V5** | Financial intelligence: tren keuangan, tracking donatur, visualisasi/dashboard | Direncanakan |
+| **V4** | Ekstraksi data: vision-LLM untuk gambar (dipicu manual oleh bendahara), data mentah tersimpan sebagai `Transaction`, menunggu verifikasi manual sebelum final | ✅ Selesai |
+| **V5** | Financial intelligence: tren keuangan (mingguan/bulanan), tracking & riwayat donatur, dashboard publik — seluruhnya dihitung hanya dari transaksi yang sudah terverifikasi | Sedang dikerjakan |
 | **V6 (opsional, jangka panjang)** | Multi-tenant — mendukung lebih dari satu masjid, potensi monetisasi | Belum diprioritaskan |
 
 ## Out of Scope
 
 - Integrasi pembayaran online / donasi digital langsung — belum masuk scope manapun saat ini
+- Ekstraksi data dari lampiran PDF/Excel — tetap di luar scope V4 maupun V5, hanya disimpan sebagai lampiran biasa
 - Multi-masjid / multi-tenant — tetap out of scope untuk fase dekat, dipertimbangkan di V6
 
 ## Success Metrics
@@ -53,7 +55,7 @@ Bendahara tetap bekerja seperti biasa (mencatat manual, lalu unggah foto/file la
 | Waktu pencarian arsip lama | Berkurang dibanding cara manual di buku |
 | Adopsi sistem login mandiri (V3) | 100% pengurus aktif menggunakan akun Google pribadi/DKM untuk unggah laporan |
 | Akurasi ekstraksi data vision-LLM (V4) | Cukup akurat untuk angka besar, koreksi manual tetap dimungkinkan lewat alur verifikasi sebelum data dianggap final |
-| Adopsi fitur dashboard/tren oleh pengurus (V5) | Dievaluasi lewat user testing |
+| Adopsi fitur dashboard/tren oleh pengurus & jemaah (V5) | Dievaluasi lewat user testing setelah dashboard publik dirilis |
 
 ## Timeline
 
@@ -61,5 +63,5 @@ Bendahara tetap bekerja seperti biasa (mencatat manual, lalu unggah foto/file la
 |---|---|
 | V1 & V2 — MVP & Multi-format | ✅ Selesai, di-deploy ke Vercel |
 | V3 — Google SSO Auth | ✅ Selesai (branch `feature/v3-auth`) |
-| V4 — Ekstraksi Data (Vision-LLM) & Verifikasi | ✅ Selesai (branch `feature/v4-extraction`) |
-| V5 | Belum mulai |
+| V4 — Ekstraksi Data (Vision-LLM) | ✅ Selesai |
+| V5 — Financial Intelligence (Dashboard Publik) | Sedang dikerjakan |
