@@ -59,6 +59,7 @@ model Attachment {
 }
 
 // V4: Hasil ekstraksi dari vision-LLM — satu Attachment bisa menghasilkan banyak Transaction
+// V5: Diperluas dengan donorNameRaw (nama mentah sebelum matching) dan relasi FK ke Donor
 model Transaction {
   id              String     @id @default(cuid())
   attachmentId    String
@@ -69,11 +70,23 @@ model Transaction {
   amount          Decimal    @db.Decimal(15, 2)
   description     String?    // Keterangan hasil ekstraksi, bisa dirapikan manual
   transactionDate DateTime?  // Tanggal transaksi jika berhasil diekstrak; null jika tidak ada di foto
-  donorId         String?    // V5: referensi ke Donor, belum dipakai sampai V5
+  // V5: Tracking donatur
+  donorNameRaw    String?    // Nama mentah hasil ekstraksi/input manual, sebelum matching — null untuk pengeluaran
+  donorId         String?    // null jika belum di-assign, kosong, atau donasi anonim
+  donor           Donor?     @relation(fields: [donorId], references: [id])
   isVerified      Boolean    @default(false) // false = belum dikonfirmasi bendahara, tidak dihitung di dashboard
   verifiedById    String?    // ID User yang mengonfirmasi; diisi otomatis dari sesi saat konfirmasi
   verifiedBy      User?      @relation("VerifiedBy", fields: [verifiedById], references: [id])
   verifiedAt      DateTime?  // Waktu konfirmasi
+}
+
+// V5: Entity donatur lintas periode — satu donatur bisa muncul di banyak laporan/minggu
+model Donor {
+  id             String        @id @default(cuid())
+  name           String        // Nama tampilan (canonical) — dari teks asli sebelum normalisasi
+  normalizedName String        @unique // Kunci pencocokan: lowercase, whitespace rapi, prefix gelar dihapus
+  contact        String?       // Diisi manual oleh pengurus jika diperlukan
+  transactions   Transaction[]
 }
 
 model Account {
