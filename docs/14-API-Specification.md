@@ -224,7 +224,8 @@ Memicu ekstraksi data transaksi dari satu lampiran bergambar menggunakan vision-
 5. **Sukses**:
    - Hapus transaksi lama pada attachment ini yang **belum diverifikasi** (`isVerified = false`). Transaksi yang sudah `isVerified = true` tetap dipertahankan.
    - Insert baris `Transaction` baru hasil ekstraksi (`isVerified: false`).
-   - Update `Attachment` (`extractionStatus: "done"`, `initialBalance`, `finalBalance`, `extractionModel`, `extractionRawResponse`, `extractedAt`, `extractionError: null`).
+   - Update `Attachment` (`extractionStatus: "done"`, `extractionModel`, `extractionRawResponse`, `extractedAt`, `extractionError: null`).
+   - Update `Report` induk dengan `initialBalance` dan `finalBalance` jika terdeteksi (Issue #047).
 6. **Gagal**: update `Attachment` (`extractionStatus: "failed"`, `extractionError`: pesan singkat ramah pengguna).
 
 **Response 200 (sukses)**
@@ -265,7 +266,9 @@ Memicu ekstraksi data transaksi dari satu lampiran bergambar menggunakan vision-
 
 ### `GET /api/reports/:id/transactions`
 
-Daftar seluruh transaksi (baik yang sudah maupun belum diverifikasi) untuk satu laporan tertentu — dipakai UI review di halaman Detail Laporan.
+Daftar transaksi untuk satu laporan tertentu. Endpoint ini memiliki perlindungan akses berbasis sesi:
+- **Pengguna login (Pengurus/Bendahara):** Mengembalikan seluruh transaksi (baik yang sudah diverifikasi maupun yang masih draft/unverified) untuk keperluan review dan verifikasi di UI.
+- **Tanpa sesi (Publik/Jemaah):** Hanya mengembalikan transaksi yang sudah diverifikasi (`isVerified = true`). Transaksi draft/unverified difilter di query database (`...(session ? {} : { isVerified: true })`) agar data mentah tidak bocor ke publik sebelum dikonfirmasi.
 
 **Response 200**
 
@@ -346,7 +349,7 @@ Menghapus baris transaksi yang tidak valid (salah baca, duplikat, dll).
 | Method | Path                                   | Fungsi                                   | Akses Publik |
 | ------ | -------------------------------------- | ----------------------------------------- | ------------ |
 | POST   | `/api/attachments/:id/extract`         | Memicu ekstraksi data (vision-LLM)        | **Tidak**    |
-| GET    | `/api/reports/:id/transactions`        | Daftar transaksi (verified & unverified)  | Ya (Baca)    |
+| GET    | `/api/reports/:id/transactions`        | Daftar transaksi (hanya verified jika publik) | Ya (Baca)    |
 | PATCH  | `/api/transactions/:id`                | Edit transaksi sebelum konfirmasi         | **Tidak**    |
 | POST   | `/api/transactions/:id/confirm`        | Konfirmasi transaksi (`isVerified=true`)  | **Tidak**    |
 | DELETE | `/api/transactions/:id`                | Hapus transaksi (hanya jika belum verified)| **Tidak**   |
