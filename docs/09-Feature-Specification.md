@@ -226,18 +226,22 @@
 **User:** Publik (jemaah), Pengurus DKM
 **Input:** Toggle granularitas ("Mingguan" / "Bulanan")
 **Process:**
-- Sistem mengagregasi seluruh `Transaction` dengan `isVerified = true`, dikelompokkan per minggu atau per bulan sesuai toggle yang dipilih
-- Grafik dirender pakai Recharts (atau shadcn/ui Charts yang berbasis Recharts)
-- Menampilkan total pemasukan vs pengeluaran per periode, plus saldo akhir kas (dari `Report.finalBalance`) sebagai referensi
-**Output:** Grafik batang/garis interaktif, dapat diakses siapa pun tanpa login
+- Sistem mengagregasi seluruh `Transaction` dengan `isVerified = true`, dikelompokkan per minggu (berbasis `Report.reportDate` hari Jumat) atau per bulan sesuai toggle yang dipilih
+- Grafik dirender pakai Recharts (shadcn/ui Charts) dengan label nominal Rupiah jelas di sumbu Y dan di atas batang (> 0)
+- Menampilkan total pemasukan vs pengeluaran per periode, plus saldo akhir kas (dari `Report.finalBalance`) sebagai KPI Card referensi
+- Rentang waktu bersifat dinamis: dimulai dari laporan kas pertama yang ada di database hingga maksimal 12 periode (menghindari grafik kosong di awal)
+- Tooltip menampilkan rentang tanggal mingguan penuh (mis. "Periode: 12-18 Sep 2026") atau nama bulan penuh ("Periode: September 2026")
+- Terdapat banner informatif non-intrusive di bagian atas dashboard saat data masih tahap pengumpulan awal
+**Output:** Grafik batang interaktif + KPI cards, dapat diakses siapa pun tanpa login
 **Business Rules:**
 - Hanya menghitung transaksi `isVerified = true` — tanpa pengecualian
 - Tidak ada gating sesi/login untuk mengakses halaman ini
 **Acceptance Criteria:**
-- [ ] Dashboard dapat diakses publik tanpa login
-- [ ] Toggle "Mingguan"/"Bulanan" mengubah granularitas grafik secara langsung
-- [ ] Grafik menampilkan minimal beberapa periode terakhir secara default (rentang pasti ditentukan di 10-MVP-Scope.md)
-- [ ] Transaksi yang belum diverifikasi tidak pernah memengaruhi angka yang ditampilkan
+- [x] Dashboard dapat diakses publik tanpa login
+- [x] Toggle "Mingguan"/"Bulanan" mengubah granularitas grafik secara langsung
+- [x] Grafik menampilkan rentang dinamis dari data pertama hingga maksimal 12 periode
+- [x] Transaksi yang belum diverifikasi tidak pernah memengaruhi angka yang ditampilkan
+- [x] Tooltip menampilkan rentang tanggal 7 hari (mingguan) atau nama bulan penuh (bulanan)
 
 ### F-015 — Tracking & Profil Donatur (Publik)
 
@@ -252,11 +256,11 @@
 - Hanya transaksi `isVerified = true` yang dihitung ke `totalContribution` maupun riwayat
 - Donasi anonim tidak pernah muncul sebagai entitas `Donor` individual (lihat aturan di 13-Data-Model.md)
 **Acceptance Criteria:**
-- [ ] Halaman Daftar Donatur dapat diakses publik tanpa login
-- [ ] Tiap donatur menampilkan total kontribusi terverifikasi & jumlah transaksi
-- [ ] Detail donatur menampilkan riwayat transaksi individual dengan tautan ke laporan asalnya
-- [ ] Kartu "Infaq Anonim" menampilkan total agregat tanpa memecah per nama
-- [ ] Tidak ada satu pun transaksi `isVerified = false` yang bocor ke halaman ini (baik di daftar maupun endpoint API-nya)
+- [x] Halaman Daftar Donatur dapat diakses publik tanpa login
+- [x] Tiap donatur menampilkan total kontribusi terverifikasi & jumlah transaksi
+- [x] Detail donatur menampilkan riwayat transaksi individual dengan tautan ke laporan asalnya
+- [x] Kartu "Infaq Anonim" menampilkan total agregat tanpa memecah per nama
+- [x] Tidak ada satu pun transaksi `isVerified = false` yang bocor ke halaman ini (baik di daftar maupun endpoint API-nya)
 
 ### F-016 — Assign/Edit Nama Donatur saat Review Transaksi
 
@@ -269,7 +273,18 @@
 **Business Rules:**
 - Fuzzy matching hanya dijalankan sekali, pada saat konfirmasi (bukan tiap kali baris diedit), untuk menghindari donatur baru dibuat berulang-ulang saat bendahara masih mengetik
 **Acceptance Criteria:**
-- [ ] Field nama donatur muncul & dapat diedit hanya untuk transaksi tipe `pemasukan`
-- [ ] Nilai pre-filled dari `donorNameRaw` bisa diubah/dikosongkan sebelum konfirmasi
-- [ ] Setelah konfirmasi, transaksi tertaut ke `Donor` yang benar (baik yang sudah ada maupun baru dibuat) sesuai aturan matching
-- [ ] Menuliskan variasi nama seorang donatur yang sudah pernah tercatat (mis. "Bpk Kosasih" setelah sebelumnya "Bapak Kosasih") tidak menciptakan `Donor` duplikat
+- [x] Field nama donatur muncul & dapat diedit hanya untuk transaksi tipe `pemasukan`
+- [x] Nilai pre-filled dari `donorNameRaw` bisa diubah/dikosongkan sebelum konfirmasi
+- [x] Setelah konfirmasi, transaksi tertaut ke `Donor` yang benar (baik yang sudah ada maupun baru dibuat) sesuai aturan matching
+- [x] Menuliskan variasi nama seorang donatur yang sudah pernah tercatat (mis. "Bpk Kosasih" setelah sebelumnya "Bapak Kosasih") tidak menciptakan `Donor` duplikat
+
+### F-017 — Penyempurnaan Alur Verifikasi (Edit Donatur & Batalkan Verifikasi)
+
+**Objective:** Memberikan fleksibilitas pada bendahara untuk mengoreksi nama donatur atau membatalkan status verifikasi transaksi jika terjadi kekeliruan tanpa merusak integritas kas.
+**User:** Bendahara DKM
+**Process:**
+- **Koreksi Donatur Terverifikasi**: Pada transaksi pemasukan yang sudah berstatus `isVerified = true`, bendahara dapat mengklik tombol edit nama donatur untuk mengoreksi typo atau mengubah nama donatur via endpoint `PATCH /api/transactions/:id/donor`. Sistem memperbarui tautan `Donor` dan menghitung ulang total donatur terkait tanpa mengubah nominal kas.
+- **Batalkan Verifikasi**: Pada transaksi yang sudah terverifikasi, bendahara dapat menekan tombol "Batalkan Verifikasi" via `POST /api/transactions/:id/unverify`. Status dikembalikan ke `isVerified = false`, transaksi dikeluarkan dari dashboard publik, dan saldo kas/kontribusi donatur diperbarui secara otomatis.
+**Acceptance Criteria:**
+- [x] Bendahara dapat mengoreksi nama donatur pada transaksi yang sudah terverifikasi
+- [x] Pembatalan verifikasi berhasil mengembalikan transaksi ke antrean verifikasi dan mengeluarkan nominal dari dashboard publik

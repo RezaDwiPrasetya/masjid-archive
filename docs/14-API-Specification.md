@@ -1,6 +1,6 @@
-# 14. API Specification (Revisi — V4: Ekstraksi Data)
+# 14. API Specification (Revisi — V5: Financial Intelligence & Dashboard Publik)
 
-> **Catatan revisi:** Dokumen ini memperbarui API Specification untuk mendukung Fase V4 (Ekstraksi Data via Vision-LLM & Review/Verifikasi Transaksi), melanjutkan revisi V3 (Autentikasi SSO) sebelumnya.
+> **Catatan revisi:** Dokumen ini memperbarui API Specification untuk mendukung Fase V5 (Financial Intelligence, Dashboard Publik, Tracking Donatur, serta Penyempurnaan Alur Verifikasi Transaksi dari Issue #051 dan #053).
 
 ## Overview
 
@@ -372,32 +372,85 @@ Menghapus baris transaksi yang tidak valid (salah baca, duplikat, dll).
 **Response Error:**
 - `403 Forbidden`: Transaksi sudah `isVerified = true` — tidak bisa dihapus lewat alur normal ini (sesuai business rule F-012).
 
----
+### `POST /api/transactions/:id/unverify` (Issue #051)
 
-## Financial Intelligence (V5)
+Membatalkan status verifikasi transaksi yang sebelumnya telah dikonfirmasi. Mengembalikan `isVerified = false`, memperbarui total donatur (jika transaksi memiliki donatur), dan otomatis mengeluarkan transaksi dari dashboard publik.
 
-> Seluruh endpoint di bagian ini **tidak memerlukan sesi NextAuth** (publik), tetapi setiap query di dalamnya **selalu** memfilter `isVerified: true` tanpa pengecualian — tidak ada parameter atau kondisi apa pun yang membuka akses ke transaksi belum terverifikasi dari endpoint-endpoint ini.
-
-### `GET /api/dashboard/trend`
-
-Data tren pemasukan/pengeluaran untuk grafik dashboard publik (F-014).
-
-**Query params**
-
-| Param | Tipe | Wajib | Keterangan |
-|---|---|---|---|
-| `granularity` | `"weekly"` \| `"monthly"` | tidak (default `"weekly"`) | Menentukan pengelompokan periode |
-| `periods` | number | tidak (default `12`) | Jumlah periode terakhir yang ditampilkan |
+**Auth:** Wajib sesi NextAuth (Bendahara / Admin).
 
 **Response 200**
 
 ```json
 {
   "data": {
+    "id": "txn_1",
+    "isVerified": false,
+    "verifiedById": null,
+    "verifiedAt": null
+  }
+}
+```
+
+### `PATCH /api/transactions/:id/donor` (Issue #051)
+
+Mengedit nama donatur khusus pada transaksi pemasukan yang sudah berstatus `isVerified = true` tanpa mengubah nominal kas ataupun integritas pembukuan lainnya.
+
+**Auth:** Wajib sesi NextAuth (Bendahara / Admin).
+
+**Body Request**
+
+```json
+{
+  "donorNameRaw": "Bapak Kosasih"
+}
+```
+
+**Response 200**
+
+```json
+{
+  "data": {
+    "id": "txn_1",
+    "donorNameRaw": "Bapak Kosasih",
+    "donorId": "dnr_1",
+    "donor": {
+      "id": "dnr_1",
+      "name": "Bapak Kosasih"
+    }
+  }
+}
+```
+
+---
+
+## Financial Intelligence (V5)
+
+> Seluruh endpoint di bagian ini **tidak memerlukan sesi NextAuth** (publik), tetapi setiap query di dalamnya **selalu** memfilter `isVerified: true` tanpa pengecualian — tidak ada parameter atau kondisi apa pun yang membuka akses ke transaksi belum terverifikasi dari endpoint-endpoint ini.
+
+### `GET /api/dashboard/trend` (Revisi Issue #053)
+
+Data tren pemasukan/pengeluaran untuk grafik dashboard publik (F-014).
+- **Pengelompokan Mingguan:** Berbasis `Report.reportDate` (hari Jumat) sehingga selaras 100% dengan lembar laporan kas fisik mingguan.
+- **Rentang Dinamis:** Dimulai dari laporan pertama di database hingga maksimal `periods` periode terakhir (menghindari deretan batang kosong Rp 0 di awal).
+- **Database Kosong:** Jika tidak ada transaksi terverifikasi, mengembalikan `{ data: { granularity, points: [] } }`.
+
+**Query params**
+
+| Param | Tipe | Wajib | Keterangan |
+|---|---|---|---|
+| `granularity` | `"weekly"` \| `"monthly"` | tidak (default `"weekly"`) | Menentukan pengelompokan periode (mingguan Jumat atau bulanan) |
+| `periods` | number | tidak (default `12`) | Jumlah periode maksimum yang ditampilkan |
+
+**Response 200 (Contoh Mingguan Berbasis Jumat)**
+
+```json
+{
+  "data": {
     "granularity": "weekly",
     "points": [
-      { "period": "2026-08-10", "pemasukan": 1250000, "pengeluaran": 680000 },
-      { "period": "2026-08-17", "pemasukan": 980000, "pengeluaran": 720000 }
+      { "period": "2026-04-03", "pemasukan": 440000, "pengeluaran": 720000 },
+      { "period": "2026-07-31", "pemasukan": 370000, "pengeluaran": 250000 },
+      { "period": "2026-09-18", "pemasukan": 470000, "pengeluaran": 150000 }
     ]
   }
 }
@@ -442,23 +495,25 @@ Riwayat transaksi terverifikasi milik satu donatur tertentu.
 
 ---
 
-## Ringkasan Endpoint V4
+## Ringkasan Endpoint Mutasi & Transaksi (V4 & V5)
 
-| Method | Path                                   | Fungsi                                   | Akses Publik |
-| ------ | -------------------------------------- | ----------------------------------------- | ------------ |
-| POST   | `/api/attachments/:id/extract`         | Memicu ekstraksi data (vision-LLM)        | **Tidak**    |
-| GET    | `/api/reports/:id/transactions`        | Daftar transaksi — tanpa sesi hanya `isVerified=true`, dengan sesi semua | Ya (terbatas tanpa sesi) |
-| PATCH  | `/api/transactions/:id`                | Edit transaksi sebelum konfirmasi         | **Tidak**    |
-| POST   | `/api/transactions/:id/confirm`        | Konfirmasi transaksi + assign donatur (V5)| **Tidak**    |
-| DELETE | `/api/transactions/:id`                | Hapus transaksi (hanya jika belum verified)| **Tidak**   |
+| Method | Path                                   | Fungsi                                           | Akses Publik |
+| ------ | -------------------------------------- | ------------------------------------------------- | ------------ |
+| POST   | `/api/attachments/:id/extract`         | Memicu ekstraksi data (vision-LLM)                | **Tidak**    |
+| GET    | `/api/reports/:id/transactions`        | Daftar transaksi (publik hanya yang terverifikasi)| Ya (terbatas)|
+| PATCH  | `/api/transactions/:id`                | Edit transaksi sebelum konfirmasi                 | **Tidak**    |
+| POST   | `/api/transactions/:id/confirm`        | Konfirmasi transaksi + assign donatur (V5)        | **Tidak**    |
+| POST   | `/api/transactions/:id/unverify`       | Batalkan verifikasi transaksi (#051)              | **Tidak**    |
+| PATCH  | `/api/transactions/:id/donor`          | Edit nama donatur transaksi terverifikasi (#051)  | **Tidak**    |
+| DELETE | `/api/transactions/:id`                | Hapus transaksi (hanya jika belum verified)       | **Tidak**    |
 
-## Ringkasan Endpoint V5
+## Ringkasan Endpoint Publik V5 (Financial Intelligence)
 
-| Method | Path                     | Fungsi                                      | Akses Publik |
-| ------ | ------------------------ | -------------------------------------------- | ------------ |
-| GET    | `/api/dashboard/trend`   | Data tren pemasukan/pengeluaran (F-014)      | Ya           |
-| GET    | `/api/donors`            | Daftar donatur + agregat anonim (F-015)      | Ya           |
-| GET    | `/api/donors/:id`        | Riwayat transaksi satu donatur (F-015)       | Ya           |
+| Method | Path                     | Fungsi                                              | Akses Publik |
+| ------ | ------------------------ | ---------------------------------------------------- | ------------ |
+| GET    | `/api/dashboard/trend`   | Data tren kas mingguan (Jumat)/bulanan (F-014, #053) | Ya           |
+| GET    | `/api/donors`            | Daftar donatur + agregat anonim (F-015)              | Ya           |
+| GET    | `/api/donors/:id`        | Riwayat transaksi satu donatur (F-015)               | Ya           |
 
 ## Ringkasan Endpoint V3 (Referensi)
 
@@ -466,6 +521,7 @@ Riwayat transaksi terverifikasi milik satu donatur tertentu.
 | ------ | ------------------------------ | ------------------------------ | ------------ |
 | GET/POST| `/api/auth/[...nextauth]`      | Alur SSO & Sesi NextAuth       | Ya           |
 | GET    | `/api/users`                   | Daftar pengguna (admin)        | Tidak        |
+| PATCH  | `/api/users`                   | Update role pengguna (admin)   | Tidak        |
 | GET    | `/api/reports`                 | List/kelompok/cari laporan     | Ya (Baca)    |
 | POST   | `/api/reports`                 | Unggah laporan (Multi-File)    | **Tidak**    |
 | GET    | `/api/reports/:id`             | Detail laporan & lampiran      | Ya (Baca)    |

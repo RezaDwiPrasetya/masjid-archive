@@ -38,7 +38,7 @@ Bendahara tetap bekerja seperti biasa (mencatat manual, lalu unggah foto/file la
 | **V2** | Dukungan multi-format file per laporan (gambar, PDF, Excel); satu laporan bisa punya beberapa lampiran | ✅ Selesai |
 | **V3** | Autentikasi & Manajemen Pengguna (SSO): Login Google OAuth, keamanan rute, role-based access | ✅ Selesai |
 | **V4** | Ekstraksi data: vision-LLM untuk gambar (dipicu manual oleh bendahara), data mentah tersimpan sebagai `Transaction`, menunggu verifikasi manual sebelum final | ✅ Selesai |
-| **V5** | Financial intelligence: tren keuangan (mingguan/bulanan), tracking & riwayat donatur, dashboard publik — seluruhnya dihitung hanya dari transaksi yang sudah terverifikasi | Sedang dikerjakan |
+| **V5** | Financial intelligence: tren keuangan (mingguan/bulanan), tracking & riwayat donatur, dashboard publik — seluruhnya dihitung hanya dari transaksi yang sudah terverifikasi | ✅ Selesai |
 | **V6 (opsional, jangka panjang)** | Multi-tenant — mendukung lebih dari satu masjid, potensi monetisasi | Belum diprioritaskan |
 
 ## Out of Scope
@@ -64,4 +64,4 @@ Bendahara tetap bekerja seperti biasa (mencatat manual, lalu unggah foto/file la
 | V1 & V2 — MVP & Multi-format | ✅ Selesai, di-deploy ke Vercel |
 | V3 — Google SSO Auth | ✅ Selesai (branch `feature/v3-auth`) |
 | V4 — Ekstraksi Data (Vision-LLM) | ✅ Selesai |
-| V5 — Financial Intelligence (Dashboard Publik) | Sedang dikerjakan |
+| V5 — Financial Intelligence (Dashboard Publik) | ✅ Selesai |

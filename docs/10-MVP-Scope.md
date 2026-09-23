@@ -147,11 +147,13 @@ Membuktikan bahwa data transaksi terverifikasi yang sudah terkumpul dari V4 bisa
 
 ### Should Have (V5)
 - Indikator loading/skeleton saat dashboard publik memuat data (karena diakses tanpa auth, kemungkinan traffic lebih variatif)
-- Rentang default dashboard: 12 minggu terakhir (mode Mingguan) atau 12 bulan terakhir (mode Bulanan) — bisa diperluas nanti kalau dibutuhkan
+- Rentang dinamis dashboard: dimulai dari laporan/transaksi pertama yang ada di database hingga maksimal 12 periode (menghindari grafik kosong berlebih di tahap awal)
+- Pengelompokan mingguan berbasis `Report.reportDate` (hari Jumat) agar selaras 100% dengan lembar laporan kas fisik
 
 ### Could Have (V5)
 - Export data tren jadi gambar/PDF untuk dibagikan manual ke grup WA (di luar unduh laporan asli yang sudah ada)
 - Pencarian/filter nama donatur di halaman Daftar Donatur (kalau daftarnya sudah cukup panjang)
+- Banner informatif non-intrusive bahwa data masih tahap pengumpulan awal (sementara)
 
 ### Not Now (V5 — tetap di luar scope, dibahas terpisah nanti)
 - UI penggabungan manual `Donor` yang lolos dari fuzzy matching (mis. beda ejaan total, "Kosasih" vs "Kosasi") — untuk V5 awal, penggabungan seperti ini belum ada alur UI-nya; dicatat sebagai keterbatasan yang diterima
@@ -162,16 +164,16 @@ Membuktikan bahwa data transaksi terverifikasi yang sudah terkumpul dari V4 bisa
 
 ### MVP Core Flow (V5)
 
-**Alur bendahara (assign donatur):** Saat mengonfirmasi transaksi bertipe pemasukan di panel review (F-016, kelanjutan dari V4) → bendahara cek/edit nama donatur yang pre-filled dari ekstraksi → tekan "Konfirmasi" → sistem otomatis mencocokkan ke `Donor` yang sudah ada atau membuat baru.
+**Alur bendahara (assign & verifikasi donatur):** Saat mengonfirmasi transaksi bertipe pemasukan di panel review (F-016, kelanjutan dari V4) → bendahara cek/edit nama donatur yang pre-filled dari ekstraksi → tekan "Konfirmasi" → sistem otomatis mencocokkan ke `Donor` yang sudah ada atau membuat baru. Jika terjadi salah konfirmasi, bendahara dapat membatalkan verifikasi atau mengoreksi nama donatur pada transaksi terverifikasi tanpa merusak integritas angka kas.
 
-**Alur publik (jemaah):** Buka halaman dashboard tanpa login → lihat grafik tren pemasukan/pengeluaran, toggle antara tampilan Mingguan/Bulanan → buka halaman Daftar Donatur → lihat total kontribusi tiap donatur atau klik untuk riwayat detail → lihat kartu "Infaq Anonim" untuk total donasi tanpa nama.
+**Alur publik (jemaah):** Buka halaman dashboard tanpa login → lihat grafik tren pemasukan/pengeluaran mingguan (Jumat) atau bulanan → buka halaman Daftar Donatur → lihat total kontribusi tiap donatur atau klik untuk riwayat detail → lihat kartu "Infaq Anonim" untuk total donasi tanpa nama.
 
 ### MVP Success Criteria (V5)
-- [ ] Dashboard tren dapat diakses publik tanpa login dan menampilkan data yang benar (cocok dengan penjumlahan manual dari laporan yang sudah diverifikasi)
-- [ ] Toggle Mingguan/Bulanan berfungsi dan mengubah agregasi data secara benar
-- [ ] Minimal satu donatur berhasil ter-*match* secara otomatis ke entity `Donor` yang sama meski ditulis dengan variasi nama berbeda (mis. "Bpk Kosasih" vs "Bapak Kosasih")
-- [ ] Donasi anonim ("Hamba Allah") tidak pernah muncul sebagai profil donatur individual, hanya sebagai agregat
-- [ ] Tidak ada satu pun transaksi `isVerified = false` yang bocor ke dashboard publik maupun halaman donatur, di UI maupun lewat pemanggilan API langsung
+- [x] Dashboard tren dapat diakses publik tanpa login dan menampilkan data yang benar (cocok dengan penjumlahan manual dari laporan yang sudah diverifikasi)
+- [x] Toggle Mingguan/Bulanan berfungsi dan mengubah agregasi data secara benar
+- [x] Minimal satu donatur berhasil ter-*match* secara otomatis ke entity `Donor` yang sama meski ditulis dengan variasi nama berbeda (mis. "Bpk Kosasih" vs "Bapak Kosasih")
+- [x] Donasi anonim ("Hamba Allah") tidak pernah muncul sebagai profil donatur individual, hanya sebagai agregat
+- [x] Tidak ada satu pun transaksi `isVerified = false` yang bocor ke dashboard publik maupun halaman donatur, di UI maupun lewat pemanggilan API langsung
 
 ---
 

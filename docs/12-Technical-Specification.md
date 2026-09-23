@@ -343,30 +343,38 @@ Diterapkan sebagai perluasan pada `POST /api/transactions/:id/confirm` (endpoint
    - **Tidak ketemu** → buat `Donor` baru (`name` = teks asli sebelum normalisasi, `normalizedName` = hasil normalisasi)
 5. Set `isVerified = true`, `verifiedById`, `verifiedAt` (logika V4 yang sudah ada, tidak berubah)
 
-### Query Agregasi Tren (Dashboard Publik)
+### Query Agregasi Tren (Dashboard Publik — Revisi Issue #053)
+
+Dalam revisi Issue #053, pengelompokan mingguan diselaraskan 100% dengan lembar kas fisik masjid:
+- **Mingguan (Jumat)**: Agregasi dikelompokkan langsung berdasarkan entity `Report` (`reportId` & `r.reportDate` hari Jumat), bukan men-truncate `transactionDate`. Hal ini memastikan seluruh transaksi dalam satu lembar laporan mingguan tidak terpecah dan jumlahnya identik dengan fisik.
+- **Bulanan**: Agregasi dikelompokkan berdasarkan bulan terbit laporan (`DATE_TRUNC('month', r."reportDate")`).
 
 ```typescript
-// Contoh agregasi bulanan — hanya transaksi terverifikasi
-const monthlyTrend = await prisma.transaction.groupBy({
-  by: ["type"],
+// Agregasi mingguan berbasis Report.reportDate (Jumat)
+const aggregated = await prisma.transaction.groupBy({
+  by: ["reportId", "type"],
   where: {
     isVerified: true,
-    transactionDate: { gte: startDate, lte: endDate },
+    reportId: { in: reportIds },
   },
   _sum: { amount: true },
-  // dikelompokkan lebih lanjut per bulan di level aplikasi
-  // (Prisma groupBy tidak mendukung date_trunc langsung;
-  //  gunakan raw query $queryRaw untuk agregasi per periode kalender)
 });
 ```
 
-> **Catatan implementasi:** untuk agregasi per-minggu/per-bulan yang presisi (mengelompokkan berdasarkan kalender, bukan cuma `type`), gunakan `prisma.$queryRaw` dengan `DATE_TRUNC('week', "transactionDate")` atau `DATE_TRUNC('month', "transactionDate")` di PostgreSQL — `groupBy` bawaan Prisma tidak mendukung truncation tanggal secara native.
+### Rentang Dinamis Dashboard (Issue #053)
 
-### Rentang Default Dashboard
+- **Bukan mundur dari hari ini**: Alih-alih selalu mengenerate 12 slot mundur dari tanggal hari ini (`now`) yang membuat grafik didominasi slot kosong di tahap awal, sistem mencari laporan kas terverifikasi yang ada di database secara kronologis ascending (maksimal 12 periode terakhir).
+- Jika baru ada 3 laporan (misal 3 Apr, 31 Jul, 18 Sep), grafik menampilkan 3 periode tersebut secara presisi.
+- Jika database kosong total, endpoint mengembalikan array kosong `{ data: { granularity, points: [] } }` dan UI menampilkan empty state yang jelas.
 
-- Mode Mingguan: 12 minggu terakhir dari hari ini
-- Mode Bulanan: 12 bulan terakhir dari bulan ini
-- Query selalu difilter `isVerified: true` — tidak ada mode/flag apa pun yang bisa menampilkan transaksi belum terverifikasi di endpoint publik ini
+### Endpoint Mutasi Tambahan V5 (Issue #051)
+
+1. **`PATCH /api/transactions/:id/donor`**:
+   - Memungkinkan pengubahan nama donatur khusus pada transaksi yang sudah berstatus `isVerified = true`.
+   - Mengubah `donorNameRaw`, menjalankan ulang matching/tuntasan ke `Donor`, dan mengupdate total kontribusi donatur lama dan baru tanpa mengutak-atik angka kas (`amount`).
+2. **`POST /api/transactions/:id/unverify`**:
+   - Membatalkan status verifikasi transaksi (`isVerified = false`).
+   - Mengurangi kontribusi donatur terkait (jika pemasukan berdonatur) dan menyesuaikan saldo/kalkulasi kas. Transaksi otomatis keluar dari dashboard publik dan kembali ke antrean review bendahara.
 
 ### Endpoint Publik & Isolasi dari Data Belum Terverifikasi
 
