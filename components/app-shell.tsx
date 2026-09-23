@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Archive, ImagePlus, Search, Users } from "lucide-react";
+import { Archive, HeartHandshake, ImagePlus, LayoutDashboard, Search, Users } from "lucide-react";
 import { AuthButton } from "@/components/auth-button";
 import { useSession } from "next-auth/react";
 
@@ -10,14 +10,16 @@ export function AppShell({
   active,
 }: {
   children: React.ReactNode;
-  active: "/" | "/unggah" | "/cari" | "/pengguna";
+  active: "/" | "/unggah" | "/cari" | "/pengguna" | "/dashboard" | "/donatur";
 }) {
   const { data: session } = useSession();
 
   const navItems = [
     { href: "/", label: "Laporan", icon: Archive },
-    { href: "/unggah", label: "Unggah", icon: ImagePlus },
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/donatur", label: "Donatur", icon: HeartHandshake },
     { href: "/cari", label: "Cari", icon: Search },
+    { href: "/unggah", label: "Unggah", icon: ImagePlus },
   ];
 
   if (session?.user?.role === "ADMIN") {
