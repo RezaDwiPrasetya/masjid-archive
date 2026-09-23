@@ -32,16 +32,59 @@ Endpoint dinamis bawaan NextAuth.js. Menangani seluruh alur OAuth Google, *callb
 
 ### `GET /api/users`
 
-Daftar pengguna (pengurus) yang terdaftar di sistem.
-*Catatan V3: Endpoint ini kini hanya digunakan untuk keperluan manajerial di dasbor admin, bukan lagi untuk dropdown form unggah, karena ID pengunggah kini otomatis diambil dari sesi aktif.*
+Daftar pengguna terdaftar di sistem beserta ringkasan jejak audit (`_count` laporan dan verifikasi). Khusus Administrator.
 
 **Response 200**
 
 ```json
+[
+  {
+    "id": "clxyz123...",
+    "name": "Bapak Kosasih",
+    "email": null,
+    "image": null,
+    "role": "BENDAHARA",
+    "_count": {
+      "reports": 3,
+      "verifiedTransactions": 0
+    }
+  }
+]
+```
+
+### `PATCH /api/users`
+
+Memperbarui hak akses (role) pengguna (`ADMIN`, `BENDAHARA`, atau `null` untuk Jamaah). Khusus Administrator.
+
+**Request Body**
+
+```json
 {
-  "data": [
-    { "id": "clxyz123...", "name": "Bapak Kosasih", "email": "kosasih@gmail.com", "role": "Admin" }
-  ]
+  "userId": "clxyz123...",
+  "role": "BENDAHARA"
+}
+```
+
+### `DELETE /api/users?userId={id}` *(Issue #054)*
+
+Menghapus akun pengguna permanen dengan proteksi jejak audit keuangan:
+- **Dilarang**: Menghapus akun admin sendiri (`400 Bad Request`).
+- **Dilarang**: Menghapus pengguna yang memiliki riwayat `reports > 0` atau `verifiedTransactions > 0` (`400 Bad Request: HAS_AUDIT_HISTORY`) demi menjaga keutuhan bukti audit kas.
+- **Diizinkan**: Menghapus akun bersih yang tidak memiliki riwayat laporan kas (mis. akun jamaah yang tidak sengaja login).
+
+**Response 200 (Berhasil)**
+```json
+{
+  "success": true,
+  "message": "Pengguna Bapak Cecep berhasil dihapus."
+}
+```
+
+**Response 400 (Ditolak karena Riwayat Audit)**
+```json
+{
+  "code": "HAS_AUDIT_HISTORY",
+  "error": "Pengguna tidak dapat dihapus karena memiliki riwayat 3 unggahan laporan dan 0 transaksi terverifikasi. Demi menjaga keutuhan jejak audit, pengguna ini tidak dapat dihapus. Silakan ubah perannya menjadi Jamaah jika ingin mencabut akses."
 }
 ```
 
@@ -522,6 +565,7 @@ Riwayat transaksi terverifikasi milik satu donatur tertentu.
 | GET/POST| `/api/auth/[...nextauth]`      | Alur SSO & Sesi NextAuth       | Ya           |
 | GET    | `/api/users`                   | Daftar pengguna (admin)        | Tidak        |
 | PATCH  | `/api/users`                   | Update role pengguna (admin)   | Tidak        |
+| DELETE | `/api/users`                   | Hapus pengguna dgn proteksi audit | Tidak     |
 | GET    | `/api/reports`                 | List/kelompok/cari laporan     | Ya (Baca)    |
 | POST   | `/api/reports`                 | Unggah laporan (Multi-File)    | **Tidak**    |
 | GET    | `/api/reports/:id`             | Detail laporan & lampiran      | Ya (Baca)    |
