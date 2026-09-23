@@ -448,39 +448,44 @@ export default function PenggunaPage() {
                         </select>
                       </td>
 
-                      {/* Kolom Aksi Hapus */}
+                      {/* Kolom Aksi */}
                       <td className="px-6 py-4 text-right">
-                        {isSelf ? (
-                          <span
-                            className="inline-flex cursor-not-allowed items-center text-xs text-muted-foreground/50"
-                            title="Tidak dapat menghapus akun yang sedang aktif digunakan"
-                          >
-                            <Lock className="mr-1 h-3.5 w-3.5" />
-                            Aktif
-                          </span>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setDialogError(null);
-                            }}
-                            className={`h-8 px-2.5 text-xs transition-colors ${
-                              hasHistory
-                                ? "text-muted-foreground hover:bg-muted hover:text-foreground"
-                                : "text-destructive hover:bg-destructive/10 hover:text-destructive"
-                            }`}
-                            title={
-                              hasHistory
-                                ? "Pengguna memiliki jejak audit"
-                                : "Hapus pengguna"
-                            }
-                          >
-                            <Trash2 className="mr-1 h-3.5 w-3.5" />
-                            Hapus
-                          </Button>
-                        )}
+                        <div className="flex items-center justify-end">
+                          {isSelf ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled
+                              className="h-8 gap-1.5 border-dashed border-border/80 bg-muted/30 px-3 text-xs text-muted-foreground/70 disabled:cursor-not-allowed disabled:opacity-100"
+                              title="Akun Anda yang sedang aktif digunakan (tidak dapat dihapus)"
+                            >
+                              <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+                              <span>Akun Anda</span>
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setDialogError(null);
+                              }}
+                              className={`h-8 gap-1.5 px-3 text-xs transition-colors ${
+                                hasHistory
+                                  ? "border-border/80 text-muted-foreground hover:border-border hover:bg-muted/50 hover:text-foreground"
+                                  : "border-destructive/30 text-destructive hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
+                              }`}
+                              title={
+                                hasHistory
+                                  ? "Pengguna memiliki jejak audit (tidak dapat dihapus)"
+                                  : "Hapus pengguna permanen"
+                              }
+                            >
+                              <Trash2 className="h-3.5 w-3.5 shrink-0" />
+                              <span>Hapus</span>
+                            </Button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
