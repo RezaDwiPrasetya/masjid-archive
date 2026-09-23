@@ -74,6 +74,10 @@ export async function POST(
           transactionDate: txn.transactionDate
             ? new Date(txn.transactionDate)
             : null,
+          donorNameRaw:
+            txn.type === "pemasukan" && txn.donorName
+              ? txn.donorName.trim() || null
+              : null,
           isVerified: false,
         })),
       }),

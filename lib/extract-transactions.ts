@@ -40,6 +40,12 @@ const transactionSchema = {
             type: SchemaType.STRING,
             nullable: true,
           },
+          donorName: {
+            type: SchemaType.STRING,
+            nullable: true,
+            description:
+              "Nama pemberi donasi jika tertulis jelas di baris pemasukan ini — bisa berupa nama perorangan (contoh: 'Bapak Kosasih', 'H. Ahmad') MAUPUN nama usaha/institusi (contoh: 'Toko Berkah', 'Laundry Niji', 'PT Sejahtera'). Selalu null untuk pengeluaran. Kembalikan null jika tidak ada identitas pemberi yang spesifik (misal deskripsi generik: 'Kotak Amal', 'Infaq Jumat'). Jangan mengarang nama.",
+          },
         },
         required: ["type", "amount", "description"],
       },
@@ -63,6 +69,9 @@ Tugasmu:
    - "amount": angka bulat integer dalam satuan Rupiah (tanpa titik, koma, atau garis)
    - "description": teks keterangan transaksi dari kertas tersebut
    - "transactionDate": tanggal transaksi jika tertulis per baris (format ISO YYYY-MM-DD), atau null jika tidak ada
+   - "donorName": Ekstrak nama pemberi donasi (donorName) jika tertulis jelas berdampingan dengan nominal pemasukan — bisa berupa nama perorangan (contoh: "INFAK BAPAK KOSASIH" -> "Bapak Kosasih", "DARI IBU SITI" -> "Ibu Siti", "H. RIDWAN" -> "H. Ridwan") ATAU nama usaha/institusi (contoh: "INFAK TOKO BERKAH" -> "Toko Berkah", "DONASI LAUNDRY NIJI" -> "Laundry Niji"). Salin nama persis sebagaimana tertulis, dengan kapitalisasi yang wajar.
+     * Untuk transaksi "pengeluaran", "donorName" SELALU null.
+     * Kembalikan null HANYA jika baris pemasukan memang tidak menyebutkan identitas pemberi yang spesifik (misal deskripsi generik: "KAS MASJID", "KOTAK AMAL", "TROMOL JUMAT", "INFAQ UMUM", "SUMBANGAN HAMBA ALLAH"). JANGAN pernah mengarang atau menebak nama jika tidak tertulis jelas di foto.
 3. Ekstrak saldo pembukuan:
    - "initialBalance": Saldo awal / saldo kas pekan lalu yang tertulis di bagian atas (misal: "TOTAL SALDO TGL...", "SALDO LALU", "SALDO AWAL"). Ambil nilai nominalnya sebagai angka bulat integer biasa (misal: 1485000). Abaikan garis bawah atau tanda sama dengan di bawah angka. Jika tidak ada, isi null.
    - "finalBalance": Total saldo akhir kas masjid yang tertulis di bagian bawah setelah dihitung dengan pemasukan dan pengeluaran (misal: "TOTAL KAS MESJID TGL...", "SALDO AKHIR"). Ambil nominal hasil akhirnya sebagai angka bulat integer biasa (misal: 1605000). Abaikan garis bawah atau tanda sama dengan di bawah angka. Jika tidak ada, isi null.
@@ -76,6 +85,7 @@ export type ExtractedTransaction = {
   amount: number;
   description: string;
   transactionDate: string | null;
+  donorName?: string | null;
 };
 
 export type ExtractionResult = {

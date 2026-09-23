@@ -67,6 +67,22 @@ export default async function DetailLaporanPage({
       : att.transactions.filter((t) => t.isVerified),
   }));
 
+  // Kumpulkan seluruh transaksi terverifikasi di seluruh lampiran laporan ini untuk deteksi duplikat lintas attachment
+  const allVerifiedInReport = report.attachments
+    .flatMap((a) => a.transactions)
+    .filter((t) => t.isVerified)
+    .map((t) => ({
+      ...t,
+      amount: t.amount.toString(),
+      transactionDate: t.transactionDate
+        ? t.transactionDate.toISOString()
+        : null,
+      verifiedAt: t.verifiedAt ? t.verifiedAt.toISOString() : null,
+      donorNameRaw: t.donorNameRaw,
+      donorId: t.donorId,
+      donor: t.donor ? { id: t.donor.id, name: t.donor.name } : null,
+    }));
+
   return (
     <AppShell active="/">
       <Link
@@ -167,16 +183,14 @@ export default async function DetailLaporanPage({
                         )}
 
                         {/* ── Panel Review Transaksi (F-012) ── */}
-                        {(txCount > 0 ||
-                          (hasSession &&
-                            att.extractionStatus === "done")) && (
-                          <div className="rounded-xl border border-border/60 p-3 space-y-3">
+                        {txCount > 0 && (
+                          <div className="space-y-3 pt-2">
                             <div className="flex items-center justify-between">
-                              <p className="text-xs font-semibold text-foreground/70 uppercase tracking-wide">
-                                Transaksi Hasil Ekstraksi
-                              </p>
+                              <h2 className="text-base font-semibold">
+                                Transaksi Kas ({txCount})
+                              </h2>
                               {hasSession && unverifiedCount > 0 && (
-                                <span className="text-xs text-amber-600 font-medium">
+                                <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
                                   {unverifiedCount} perlu dikonfirmasi
                                 </span>
                               )}
@@ -199,6 +213,7 @@ export default async function DetailLaporanPage({
                                   : null,
                               }))}
                               hasSession={hasSession}
+                              allVerifiedTransactions={allVerifiedInReport}
                             />
                           </div>
                         )}

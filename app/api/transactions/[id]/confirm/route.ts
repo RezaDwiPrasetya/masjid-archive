@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { normalizeDonorName, isAnonymousDonor } from "@/lib/donor-matching";
+import { matchAndAssignDonor } from "@/lib/donor-service";
 
 // POST /api/transactions/:id/confirm
 // Mengonfirmasi satu baris transaksi sebagai data resmi (isVerified = true)
@@ -58,59 +58,9 @@ export async function POST(
       ? donorNameRawFromBody
       : transaction.donorNameRaw;
 
-  let donorId: string | null = null;
-  let finalDonorNameRaw: string | null = null;
-  let matchingResult: {
-    status: "existing" | "created" | "anonymous" | "none";
-    donorName: string | null;
-  } = {
-    status: "none",
-    donorName: null,
-  };
-
-  // Matching donor hanya relevan untuk transaksi pemasukan
-  if (
-    transaction.type === "pemasukan" &&
-    rawInput &&
-    rawInput.trim().length > 0
-  ) {
-    const trimmedRaw = rawInput.trim();
-    finalDonorNameRaw = trimmedRaw;
-    const normalized = normalizeDonorName(trimmedRaw);
-
-    // Jika anonim ("hamba allah", "hamba alloh", "anonim", "tanpa nama") atau kosong setelah normalisasi:
-    // donorId tetap null (JANGAN buat entitas Donor baru)
-    if (isAnonymousDonor(normalized) || normalized.length === 0) {
-      matchingResult = {
-        status: "anonymous",
-        donorName: null,
-      };
-    } else {
-      const existingDonor = await prisma.donor.findUnique({
-        where: { normalizedName: normalized },
-      });
-
-      if (existingDonor) {
-        donorId = existingDonor.id;
-        matchingResult = {
-          status: "existing",
-          donorName: existingDonor.name,
-        };
-      } else {
-        const newDonor = await prisma.donor.create({
-          data: {
-            name: trimmedRaw, // Nama asli sebelum normalisasi sebagai nama canonical
-            normalizedName: normalized,
-          },
-        });
-        donorId = newDonor.id;
-        matchingResult = {
-          status: "created",
-          donorName: newDonor.name,
-        };
-      }
-    }
-  }
+  // Jalankan logika pencocokan donatur menggunakan shared service
+  const { donorId, finalDonorNameRaw, matchingResult } =
+    await matchAndAssignDonor(transaction.type, rawInput);
 
   const confirmed = await prisma.transaction.update({
     where: { id },
