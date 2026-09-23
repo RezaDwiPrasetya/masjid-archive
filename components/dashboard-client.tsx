@@ -19,6 +19,7 @@ import {
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
+  LabelList,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -63,16 +64,24 @@ function formatRupiah(amount: number): string {
 }
 
 function formatShortRupiah(val: number): string {
-  if (val >= 1_000_000_000) {
-    return `${(val / 1_000_000_000).toFixed(1)} M`;
+  if (val === 0) return "Rp 0";
+  const abs = Math.abs(val);
+  const sign = val < 0 ? "-" : "";
+  if (abs >= 1_000_000_000) {
+    const formatted = (abs / 1_000_000_000).toFixed(
+      abs % 1_000_000_000 === 0 ? 0 : 1
+    );
+    return `${sign}Rp ${formatted} M`;
   }
-  if (val >= 1_000_000) {
-    return `${(val / 1_000_000).toFixed(1)} jt`;
+  if (abs >= 1_000_000) {
+    const formatted = (abs / 1_000_000).toFixed(abs % 1_000_000 === 0 ? 0 : 1);
+    return `${sign}Rp ${formatted} jt`;
   }
-  if (val >= 1_000) {
-    return `${(val / 1_000).toFixed(0)} rb`;
+  if (abs >= 1_000) {
+    const formatted = (abs / 1_000).toFixed(abs % 1_000 === 0 ? 0 : 1);
+    return `${sign}Rp ${formatted} rb`;
   }
-  return val.toString();
+  return `${sign}Rp ${abs}`;
 }
 
 function formatPeriodLabel(
@@ -182,6 +191,27 @@ export function DashboardClient({
     pemasukan: p.pemasukan,
     pengeluaran: p.pengeluaran,
   }));
+
+  const renderBarLabel = (props: {
+    x?: number | string;
+    y?: number | string;
+    width?: number | string;
+    value?: unknown;
+  }) => {
+    const { x, y, width, value } = props;
+    const num = Number(value);
+    if (!num || num <= 0) return null;
+    return (
+      <text
+        x={Number(x || 0) + Number(width || 0) / 2}
+        y={Number(y || 0) - 6}
+        textAnchor="middle"
+        className="fill-muted-foreground text-[10px] font-medium"
+      >
+        {formatShortRupiah(num)}
+      </text>
+    );
+  };
 
   return (
     <div className="space-y-8">
@@ -356,10 +386,10 @@ export function DashboardClient({
           <div>
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-primary" />
-              Tren Pemasukan vs Pengeluaran
+              Pemasukan dan Pengeluaran Kas
             </h2>
             <p className="text-sm text-muted-foreground">
-              Perbandingan arus kas masuk dan kas keluar per periode (hanya data terverifikasi).
+              Perbandingan uang masuk dan uang keluar kas masjid (hanya transaksi terverifikasi).
             </p>
           </div>
 
@@ -415,7 +445,7 @@ export function DashboardClient({
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={chartData}
-                  margin={{ top: 10, right: 10, left: 10, bottom: 20 }}
+                  margin={{ top: 20, right: 10, left: 10, bottom: 20 }}
                   barGap={4}
                 >
                   <CartesianGrid
@@ -435,8 +465,15 @@ export function DashboardClient({
                     axisLine={false}
                     tickMargin={8}
                     tickFormatter={formatShortRupiah}
+                    domain={[
+                      0,
+                      (dataMax: number) =>
+                        dataMax > 0
+                          ? Math.ceil((dataMax * 1.15) / 50000) * 50000
+                          : "auto",
+                    ]}
                     className="text-xs fill-muted-foreground"
-                    width={56}
+                    width={80}
                   />
                   <ChartTooltip
                     content={
@@ -451,16 +488,29 @@ export function DashboardClient({
                     fill="hsl(150, 65%, 40%)"
                     radius={[6, 6, 0, 0]}
                     maxBarSize={40}
-                  />
+                  >
+                    <LabelList
+                      dataKey="pemasukan"
+                      content={renderBarLabel}
+                    />
+                  </Bar>
                   <Bar
                     dataKey="pengeluaran"
                     fill="hsl(0, 72%, 56%)"
                     radius={[6, 6, 0, 0]}
                     maxBarSize={40}
-                  />
+                  >
+                    <LabelList
+                      dataKey="pengeluaran"
+                      content={renderBarLabel}
+                    />
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
+            <p className="mt-3 text-center text-xs text-muted-foreground">
+              Hijau menunjukkan uang masuk, merah menunjukkan uang keluar.
+            </p>
           </div>
         )}
       </Card>
