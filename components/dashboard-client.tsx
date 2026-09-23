@@ -11,6 +11,7 @@ import {
   ArrowDownRight,
   Scale,
   FileText,
+  Info,
 } from "lucide-react";
 import {
   BarChart,
@@ -24,6 +25,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   ChartContainer,
   ChartTooltip,
@@ -100,12 +102,59 @@ function formatPeriodLabel(
       });
     }
 
-    // Weekly: tampilkan tanggal dan bulan awal pekan
+    // Weekly: tampilkan tanggal dan bulan laporan kas (Jumat)
     return date.toLocaleDateString("id-ID", {
       day: "numeric",
       month: "short",
       timeZone: "UTC",
     });
+  } catch {
+    return dateString;
+  }
+}
+
+function formatTooltipPeriod(
+  dateString: string,
+  granularity: "weekly" | "monthly"
+): string {
+  try {
+    const date = new Date(dateString + "T00:00:00Z");
+    if (isNaN(date.getTime())) return dateString;
+
+    if (granularity === "monthly") {
+      // Format bulanan: "September 2026"
+      return date.toLocaleDateString("id-ID", {
+        month: "long",
+        year: "numeric",
+        timeZone: "UTC",
+      });
+    }
+
+    // Weekly: period adalah tanggal Jumat laporan.
+    // Siklus mingguan mencakup 7 hari (dari 6 hari sebelum Jumat hingga hari Jumat)
+    const startDate = new Date(date.getTime());
+    startDate.setUTCDate(startDate.getUTCDate() - 6);
+
+    const startDay = startDate.getUTCDate();
+    const endDay = date.getUTCDate();
+    const startMonth = startDate.toLocaleDateString("id-ID", {
+      month: "short",
+      timeZone: "UTC",
+    });
+    const endMonth = date.toLocaleDateString("id-ID", {
+      month: "short",
+      timeZone: "UTC",
+    });
+    const startYear = startDate.getUTCFullYear();
+    const endYear = date.getUTCFullYear();
+
+    if (startYear !== endYear) {
+      return `${startDay} ${startMonth} ${startYear} - ${endDay} ${endMonth} ${endYear}`;
+    }
+    if (startMonth !== endMonth) {
+      return `${startDay} ${startMonth} - ${endDay} ${endMonth} ${endYear}`;
+    }
+    return `${startDay}-${endDay} ${endMonth} ${endYear}`;
   } catch {
     return dateString;
   }
@@ -188,6 +237,7 @@ export function DashboardClient({
   const chartData = points.map((p) => ({
     period: p.period,
     label: formatPeriodLabel(p.period, granularity),
+    tooltipLabel: formatTooltipPeriod(p.period, granularity),
     pemasukan: p.pemasukan,
     pengeluaran: p.pengeluaran,
   }));
@@ -215,6 +265,19 @@ export function DashboardClient({
 
   return (
     <div className="space-y-8">
+      {/* 
+        TODO: Hapus banner ini setelah data historis laporan kas masjid sudah terkumpul lengkap dan runut.
+      */}
+      <Alert
+        variant="info"
+        className="flex items-center gap-2.5 py-2.5 px-4 text-xs"
+      >
+        <Info className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+        <AlertDescription className="text-xs text-emerald-950 dark:text-emerald-100 font-medium">
+          Data masih dalam tahap pengumpulan awal — sebagian periode mungkin belum lengkap.
+        </AlertDescription>
+      </Alert>
+
       {/* Header Halaman */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
@@ -391,6 +454,11 @@ export function DashboardClient({
             <p className="text-sm text-muted-foreground">
               Perbandingan uang masuk dan uang keluar kas masjid (hanya transaksi terverifikasi).
             </p>
+            <p className="mt-1 text-xs text-muted-foreground/80">
+              {granularity === "weekly"
+                ? "Setiap titik mewakili total transaksi terverifikasi dalam satu periode mingguan (laporan kas Jumat)."
+                : "Setiap titik mewakili total transaksi terverifikasi dalam satu periode bulanan."}
+            </p>
           </div>
 
           <div className="flex items-center gap-4 text-xs">
@@ -433,7 +501,7 @@ export function DashboardClient({
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <Wallet className="h-12 w-12 text-muted-foreground/40 mb-3" />
             <p className="text-base font-semibold text-foreground">
-              Belum ada data transaksi terverifikasi
+              Belum ada data transaksi terverifikasi untuk ditampilkan
             </p>
             <p className="text-sm text-muted-foreground max-w-sm mt-1">
               Data grafik tren akan otomatis tampil setelah pengurus memverifikasi transaksi laporan kas mingguan.
@@ -478,7 +546,12 @@ export function DashboardClient({
                   <ChartTooltip
                     content={
                       <ChartTooltipContent
-                        labelFormatter={(lbl) => `Periode: ${lbl}`}
+                        labelFormatter={(_, payload) => {
+                          const item = payload?.[0]?.payload as
+                            | { tooltipLabel?: string }
+                            | undefined;
+                          return `Periode: ${item?.tooltipLabel || ""}`;
+                        }}
                         valueFormatter={(val) => formatRupiah(val)}
                       />
                     }

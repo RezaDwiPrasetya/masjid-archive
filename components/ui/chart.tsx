@@ -104,7 +104,10 @@ type ChartTooltipContentProps = {
   indicator?: "line" | "dot" | "dashed";
   hideLabel?: boolean;
   label?: string;
-  labelFormatter?: (label: string) => React.ReactNode;
+  labelFormatter?: (
+    label: string,
+    payload?: ChartTooltipContentProps["payload"]
+  ) => React.ReactNode;
   valueFormatter?: (value: number) => string;
 };
 
@@ -133,7 +136,7 @@ function ChartTooltipContent({
     >
       {!hideLabel && (
         <div className="font-medium text-foreground">
-          {labelFormatter ? labelFormatter(label ?? "") : label}
+          {labelFormatter ? labelFormatter(label ?? "", payload) : label}
         </div>
       )}
       <div className="grid gap-1.5">
