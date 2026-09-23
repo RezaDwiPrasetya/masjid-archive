@@ -270,10 +270,10 @@ export function DashboardClient({
       */}
       <Alert
         variant="info"
-        className="flex items-center gap-2.5 py-2.5 px-4 text-xs"
+        className="flex items-center gap-2.5 py-2.5 px-4 text-xs rounded-xl shadow-none"
       >
         <Info className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-        <AlertDescription className="text-xs text-emerald-950 dark:text-emerald-100 font-medium">
+        <AlertDescription className="text-xs text-emerald-950 dark:text-emerald-100 font-medium leading-none">
           Data masih dalam tahap pengumpulan awal — sebagian periode mungkin belum lengkap.
         </AlertDescription>
       </Alert>
