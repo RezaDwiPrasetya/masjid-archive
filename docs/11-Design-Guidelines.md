@@ -6,125 +6,131 @@
 2. Clear — foto laporan dan tanggal harus mudah terbaca
 3. Trustworthy — warna hijau tua & krem memberi kesan tenang dan dapat dipercaya (cocok untuk konteks keagamaan)
 4. Accessible — kontras tinggi, ukuran teks cukup besar
-5. **Berlapis (baru)** — setiap permukaan (halaman, kartu, sidebar) harus punya kedalaman visual yang jelas lewat kontras warna & bayangan halus, bukan menyatu jadi satu bidang datar
+5. **Satu momen berani, sisanya tenang** — setiap halaman punya SATU elemen yang menonjol (hero band, angka besar) untuk menarik perhatian; elemen lain di sekitarnya sengaja dibuat tenang/disiplin. Jangan menyebar penekanan visual ke semua elemen sekaligus — itu yang membuat halaman terasa "kotak-kotak generik"
+6. **List, bukan grid kartu, untuk data berulang** — daftar donatur, riwayat transaksi, dan konten sejenis yang berulang-ulang TIDAK dibungkus jadi kartu identik berjajar (pola dashboard SaaS generik). Gunakan format list dengan pembatas garis tipis, lebih dekat ke nuansa "buku besar/rekening koran" yang sesuai konteks pembukuan keuangan
 
-> **Kenapa poin 5 ditambahkan:** versi sebelumnya cuma punya satu warna latar (`#fafaf4`) untuk SEMUA permukaan — halaman, kartu, dan sidebar semua kelihatan sama. Ini yang membuat aplikasi terasa "datar/polos" meski secara fungsional sudah matang. Poin ini menegaskan bahwa kedalaman visual (bukan cuma warna) adalah bagian dari identitas "trustworthy" — institusi keuangan yang dipercaya biasanya punya presentasi visual yang solid, bukan cuma fungsional.
+> **Kenapa poin 5 & 6 ditambahkan:** revisi sebelumnya cuma menambah token warna & shadow, tapi struktur layout-nya tetap grid kotak seragam — pola paling umum dan gampang terasa hambar (template "SaaS-card kit"). Perbaikan sebenarnya ada di LAYOUT, bukan cuma nilai warna.
 
 ## Color Palette
 
 | Token                     | Hex       | Penggunaan                                                        |
 | ------------------------- | --------- | ------------------------------------------------------------------ |
-| primary                   | `#154212` | Aksi utama, tombol, ikon aktif, sidebar item terpilih             |
-| primary-container         | `#2d5a27` | Elemen pendukung primary (hover state tombol utama)                |
-| primary-fixed             | `#bcf0ae` | Aksen terang, highlight ringan                                     |
-| **surface**               | `#fafaf4` | Latar halaman TERLUAR (paling belakang, krem hangat) — **baru diberi nama eksplisit** |
-| **surface-container**     | `#ffffff` | Latar kartu, sidebar, panel — **BEDA dari surface**, putih bersih supaya menonjol di atas krem |
-| **surface-container-high**| `#f0f2ec` | Latar untuk elemen di dalam kartu yang perlu dibedakan lagi (baris tabel selang-seling, badge non-status) |
+| primary                   | `#154212` | Hero band (latar penuh), tombol utama, ikon aktif, sidebar item terpilih |
+| primary-container         | `#2d5a27` | Hover state tombol utama, elemen di dalam hero band                |
+| primary-fixed             | `#bcf0ae` | Teks/aksen di atas hero band gelap                                  |
+| **accent-gold** (baru)    | `#b8860b` | HANYA untuk 1 angka paling penting per halaman (mis. peringkat #1 di daftar donatur, atau garis bawah tipis di angka hero) — JANGAN dipakai berulang di banyak tempat, sekali per halaman maksimal |
+| surface                   | `#fafaf4` | Latar halaman (krem hangat)                                        |
+| surface-container         | `#ffffff` | HANYA untuk komponen form/input/dialog (Upload zone, modal konfirmasi) — BUKAN untuk membungkus daftar berulang |
 | on-surface                | `#1a1c19` | Teks utama                                                          |
 | on-surface-variant        | `#42493e` | Teks sekunder (metadata, caption)                                   |
-| error                     | `#ba1a1a` | Pesan error/validasi, badge "Pengeluaran"                          |
-| **success**               | `#154212` | Badge "Terverifikasi", indikator positif (sama dengan primary — konsisten, bukan warna baru) |
-| **warning**                | `#a15c00` | Badge "Belum Diverifikasi", "Model Cadangan", peringatan duplikat |
-| outline-variant           | `#c2c9bb` | Border, pembatas antar section                                     |
-| **outline**                | `#8a9382` | Border kartu/sidebar yang butuh definisi lebih tegas dari outline-variant |
+| on-primary                | `#fafaf4` | Teks di atas latar `primary` (hero band)                            |
+| error                     | `#ba1a1a` | Pesan error/validasi, indikator pengeluaran                        |
+| warning                   | `#a15c00` | Badge "Belum Diverifikasi", "Model Cadangan"                       |
+| outline-variant           | `#c2c9bb` | Garis pembatas list (baris donatur/transaksi), border form         |
 
-**Aturan pemakaian (baru, wajib diikuti):**
-- Halaman (`<body>`) SELALU pakai `surface` (`#fafaf4`)
-- Kartu, sidebar, dialog, popover SELALU pakai `surface-container` (`#ffffff`) + border tipis `outline-variant` + shadow halus (lihat bagian Elevation)
-- JANGAN pernah kartu dan halaman pakai warna yang sama — ini aturan yang dilanggar di implementasi saat ini dan jadi penyebab utama tampilan terasa datar
+**Aturan pemakaian (revisi total):**
+- Daftar berulang (donatur, transaksi, riwayat) **TIDAK** dibungkus kartu putih satu-satu — gunakan `surface` sebagai latar, garis `outline-variant` 1px sebagai pembatas ANTAR baris (bukan border mengelilingi tiap item)
+- Kartu (`surface-container` + border + shadow) HANYA dipakai untuk: form input, dialog/modal konfirmasi, upload zone — elemen yang secara alami memang butuh terasa seperti "objek terpisah yang bisa diisi/ditutup", bukan untuk menampilkan data baca-saja yang berulang
+- `accent-gold` dipakai SANGAT hemat — kalau dipakai di banyak tempat sekaligus, itu artinya disalahgunakan sebagai warna dekorasi, bukan penanda "yang paling penting"
 
-## Elevation (Bayangan) — Bagian Baru
+## Motif Geometris (Baru)
 
-Karena tidak ada `elevation`/shadow di versi sebelumnya, berikut standarnya:
-
-| Level | box-shadow | Dipakai untuk |
-|---|---|---|
-| level-0 | none | Halaman itu sendiri |
-| level-1 | `0 1px 2px rgba(26,28,25,0.06)` | Kartu biasa (laporan, donatur, transaksi) |
-| level-2 | `0 2px 8px rgba(26,28,25,0.10)` | Sidebar, dialog, popover, dropdown |
-| level-3 | `0 4px 16px rgba(26,28,25,0.14)` | Modal/AlertDialog konfirmasi (mis. hapus paksa, batalkan verifikasi) |
-
-Gabungkan SELALU dengan border 1px `outline-variant` di bawah shadow — shadow saja di palet warna terang sering kurang terlihat, border memberi definisi tegas tambahan.
+Satu elemen visual dekoratif, dipakai **maksimal 1 kali per halaman**, sebagai garis pembatas di bawah hero band — pola garis geometris sederhana terinspirasi lattice/jali arsitektur masjid (bentuk berulang segi delapan atau garis diagonal bersilang), digambar sebagai SVG tipis 1 warna (`primary-fixed` di atas latar `primary`), tinggi maksimal 12px, HANYA sebagai pemisah dekoratif antara hero band dan konten di bawahnya. Ini SATU-SATUNYA penggunaan motif dekoratif di seluruh aplikasi — jangan diulang di tempat lain, supaya tetap terasa istimewa, bukan wallpaper berulang.
 
 ## Typography
 
 - Font: **Outfit**
-- Display (judul halaman besar): 48px / line-height 56px, weight 600 — **HANYA untuk 1 judul per halaman** (mis. "Arsip Laporan"), jangan dipakai berulang
+- **Hero number (baru)**: 56px / line-height 64px, weight 600, warna `on-primary` — KHUSUS untuk satu angka utama di dalam hero band (mis. total kontribusi, saldo kas). Dipakai di dalam hero band SAJA, tidak di tempat lain
+- Display (judul halaman): 40px / 48px, weight 600 — diturunkan dari 48px sebelumnya, supaya hero number (56px) tetap jadi elemen paling menonjol di halaman
 - Headline (judul section): 28px / 36px, weight 500
 - Headline kecil: 22px / 28px, weight 500
 - Body besar: 20px / 32px, weight 400
 - Body normal: 18px / 28px, weight 400
 - Label (tombol, nav): 16px / 20px, weight 600
 - Caption (metadata kecil): 14px / 20px, weight 400
-- **Angka finansial besar (baru)**: 32px / 40px, weight 600, tabular-nums — dipakai KHUSUS untuk nominal uang di KPI card (mis. "Rp 1.380.000" di Dashboard) supaya angka besar tidak memakai skala Display yang terlalu masif untuk konteks kartu kecil
-
-> **Catatan tabular-nums:** properti CSS `font-variant-numeric: tabular-nums` WAJIB dipakai di semua tempat yang menampilkan nominal uang berjajar (tabel transaksi, daftar donatur) — supaya digit-digit sejajar rapi secara vertikal, bukan lebar berbeda-beda per digit yang membuat angka terlihat "goyang" saat dibandingkan.
+- Nominal uang di dalam list (baris donatur/transaksi): 20px, weight 600, `font-variant-numeric: tabular-nums`
 
 ## Icons
 
-- Material Symbols Outlined (spesifikasi awal) — implementasi memakai **Lucide Icons** sebagai padanan (lihat 12-Technical-Specification.md)
-- **Ukuran konsisten (baru)**: 16px untuk ikon inline di teks/badge, 20px untuk ikon di tombol, 24px untuk ikon navigasi sidebar — JANGAN campur ukuran ikon dalam satu komponen yang sama
+- Lucide Icons (implementasi aktual)
+- Ukuran: 16px inline, 20px tombol, 24px navigasi sidebar
+- **Ranking di daftar donatur**: JANGAN pakai ikon trofi/medali berulang di tiap baris (kesan gamifikasi, tidak sesuai nuansa "buku besar keuangan") — ganti dengan angka urutan sederhana (1, 2, 3...) dalam lingkaran kecil `outline-variant`, HANYA baris pertama (#1) yang boleh pakai warna `accent-gold` pada lingkarannya
+
+## Layout — Konsep Baru per Halaman
+
+### Halaman Publik (Dashboard, Donatur)
+
+```
+┌──────────────────────────────────────────────┐
+│  PRIMARY (hijau tua, full-width, padding besar)│
+│                                                │
+│  Label kecil (Caption, primary-fixed)          │
+│  Rp 1.030.000                    <- Hero number│
+│  Keterangan singkat (Body, primary-fixed)      │
+│  ╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲ <- motif geometris tipis│
+├──────────────────────────────────────────────┤
+│  (latar surface krem, konten mulai di sini)   │
+│                                                │
+│  Headline section                             │
+│                                                │
+│  1  Nama donatur              Rp xxx.xxx      │
+│  ───────────────────────────────────────      │
+│  2  Nama donatur              Rp xxx.xxx      │
+│  ───────────────────────────────────────      │
+│  3  Nama donatur              Rp xxx.xxx      │
+│                                                │
+└──────────────────────────────────────────────┘
+```
+
+- Dashboard: hero number = Saldo Kas Terkini. 3 angka sekunder (Total Pemasukan, Total Pengeluaran, Arus Kas Bersih) ditampilkan sebagai baris teks sejajar horizontal DI BAWAH hero band (bukan 4 kotak KPI sejajar rata seperti sebelumnya) — Caption + angka Body besar, dipisah garis vertikal tipis antar angka, BUKAN kartu terpisah
+- Grafik tren tetap dalam bentuk yang sudah ada (Recharts), tapi HILANGKAN border/shadow kartu di sekelilingnya — biarkan menyatu langsung dengan latar `surface`, cukup judul + subjudul di atasnya tanpa bingkai
+
+### Halaman Arsip Laporan
+
+Grid foto laporan (BUKAN list, karena ini konten visual/gambar, list garis tidak cocok untuk thumbnail foto) — tapi perbaiki proporsinya:
+- 3-4 kolom di desktop (bukan 1 kolom penuh seperti sebelumnya), gap 16px
+- Rasio foto tetap terjaga (aspect-ratio: 3/4), caption tanggal di bawah foto langsung tanpa kartu putih pembungkus terpisah — foto + caption dianggap satu unit visual
 
 ## Spacing
 
-Unit dasar: 8px. Skala lengkap (baru, menggantikan 3-tingkat sebelumnya yang terlalu abstrak):
+Unit dasar: 8px.
 
 | Token | Nilai | Kapan dipakai |
 |---|---|---|
-| space-1 | 4px | Jarak antar ikon & teks dalam satu badge/label |
-| space-2 | 8px | Jarak antar elemen sangat rapat (dalam satu baris data) |
-| space-3 | 12px | Jarak antar field dalam satu form/kartu kecil |
-| space-4 | 16px | **Padding internal kartu (default)**, jarak antar kartu dalam satu grid |
-| space-6 | 24px | Padding internal kartu besar (KPI card, panel review), gutter antar kolom |
-| space-8 | 32px | Jarak antar kelompok konten dalam satu section |
-| space-12 | 48px | Jarak antar section besar (mis. antara header halaman dan konten utama) |
-| space-16 | 64px | Jarak vertikal antara section-section utama di halaman panjang (Dashboard) |
+| space-1 | 4px | Jarak ikon-teks dalam badge |
+| space-2 | 8px | Jarak antar elemen dalam satu baris list |
+| space-4 | 16px | Padding internal form/dialog, gap grid foto Arsip |
+| space-6 | 24px | Padding horizontal hero band (mobile), padding form besar |
+| space-8 | 32px | Padding vertikal hero band, jarak antar section |
+| space-12 | 48px | Padding horizontal hero band (desktop) |
+| space-16 | 64px | Jarak antara hero band dan section berikutnya |
 
-**Aturan spesifik yang menjawab kritik "space antar elemen kebanyakan":**
-- Kartu laporan foto (halaman Arsip): padding internal `space-4` (16px), BUKAN dibiarkan kartu jadi sangat lebar dengan foto kecil di tengah — foto harus mengisi penuh lebar kartu dikurangi padding
-- Grid kartu (Arsip, Donatur, KPI Dashboard): gap antar kartu `space-4` (16px), maksimal 4 kolom di desktop, JANGAN biarkan 1 kartu sendirian memenuhi 1 baris penuh kalau lebar layar cukup untuk 2-3 kartu — pakai `grid-template-columns: repeat(auto-fill, minmax(240px, 1fr))` atau setara
+**Aturan list (baru, menjawab "space kebanyakan"):** tiap baris dalam list (donatur/transaksi) tinggi tetap ~56-64px, padding vertikal `space-2` (8px) SAJA — TIDAK ada padding besar antar baris seperti kartu, cukup garis pembatas 1px. Densitas ini disengaja — daftar keuangan boleh terasa "padat berisi", bukan lega seperti kartu marketing.
 
-- Gutter antar kolom: `space-6` (24px)
-- Margin mobile: 20px (tidak berubah)
-- Lebar konten maksimum: 1120px (tidak berubah)
-- **Sidebar (baru)**: lebar tetap 260px desktop, padding internal `space-6` (24px), jarak antar item nav `space-2` (8px)
+- Sidebar: lebar tetap 260px, `surface-container` (putih) + border kanan 1px `outline-variant` (TANPA shadow — shadow terlalu "mengambang" untuk elemen struktural permanen seperti sidebar)
+- Lebar konten maksimum: 1120px
 
 ## Border Radius
 
-- Default: 0.25rem
+- Default: 0.25rem (form input, badge)
 - Large: 0.5rem
-- Extra large (card): 0.75rem
-- Full (tombol bulat, avatar): 9999px
-
-**Aturan konsistensi (baru):** Kartu SELALU pakai radius "Extra large" (0.75rem) — jangan campur radius berbeda antar jenis kartu (laporan, donatur, KPI) dalam halaman yang sama, ini salah satu penyebab "SaaS-card generik" yang terlihat asal-asalan kalau tidak konsisten.
+- Extra large (dialog, upload zone): 0.75rem
+- Full (tombol bulat, avatar, lingkaran ranking): 9999px
+- **List/hero band: 0 (tanpa radius)** — elemen full-width/full-bleed tidak pakai radius, supaya terasa seperti "lembar/halaman", bukan kartu mengambang
 
 ## Components
 
-Komponen dasar (dari versi awal):
-- Sidebar (desktop, lebar 260px, `surface-container` + shadow level-2) / bottom navigation (mobile)
-- Card hasil pencarian dengan foto, tanggal, tombol aksi
-- Upload zone dengan preview foto & drag/tap area
-- Accordion bertingkat (Tahun > Bulan) untuk halaman Arsip
-
-**Komponen baru (V3-V5, belum pernah didokumentasikan — ini gap utama yang menyebabkan implementasi tidak konsisten):**
-
-- **KPI Card (Dashboard)**: `surface-container`, radius extra large, padding `space-6`, shadow level-1. Layout: label kecil (Caption, `on-surface-variant`) di atas, nominal besar (skala "Angka finansial besar") di tengah, keterangan tambahan (Caption) di bawah. Grid 4 kolom desktop, 2 kolom tablet, 1 kolom mobile.
-- **Status Badge**: radius Full, padding horizontal `space-3` vertikal `space-1`, ikon 16px + label. Warna sesuai makna: `success` (Terverifikasi), `warning` (Belum Diverifikasi / Model Cadangan), `error` (Pengeluaran, kalau perlu dibedakan dari badge tipe transaksi hijau/merah yang sudah ada).
-- **Chart Container**: `surface-container`, padding `space-6`, shadow level-1. Judul (Headline kecil) + subjudul (Caption, `on-surface-variant`) di atas grafik, legend di kanan atas (tidak di bawah, supaya tidak menambah tinggi vertikal yang tidak perlu).
-- **Donor Card**: `surface-container`, radius extra large, padding `space-4`, layout horizontal (avatar/ikon kiri, nama + jumlah donasi tengah, chevron kanan) — konsisten dengan pola yang sudah ada di screenshot, TIDAK perlu diubah, cuma perlu didokumentasikan biar konsisten ke depan.
-- **Transaction Review Panel**: baris transaksi = `surface-container-high` (BUKAN `surface-container` polos) di dalam kartu attachment yang lebih besar — memberi kedalaman berlapis (kartu attachment > baris transaksi di dalamnya).
-- **Alert/Banner (mis. "data masih tahap awal")**: `primary-fixed` sebagai latar (bukan warna solid `warning`, supaya tidak terkesan seperti error), ikon info, radius large, padding `space-4`.
+- **Hero Band**: latar `primary`, teks `on-primary`, hero number di tengah/kiri, motif geometris di bagian bawah sebagai pembatas
+- **List Row** (donatur, transaksi, riwayat): latar `surface`, border-bottom 1px `outline-variant`, padding vertikal `space-2`, layout horizontal (ranking/ikon kiri — nama tengah — nominal kanan, tabular-nums)
+- **Sidebar**: `surface-container`, border kanan 1px, TANPA shadow, lebar 260px
+- **Upload Zone / Form Card**: `surface-container`, border 1px `outline-variant`, radius extra large, padding `space-6` — ini SATU-SATUNYA tempat kartu putih berbingkai masih relevan
+- **Status Badge**: radius Full, ikon 16px + label, warna sesuai makna (success/warning/error)
+- **Alert/Banner** ("data masih tahap awal"): latar `primary-fixed`, radius large, padding `space-4`
+- **Grid Foto (Arsip Laporan)**: 3-4 kolom, gap `space-4`, tanpa kartu pembungkus terpisah — foto + caption sebagai satu unit
 
 ## States
 
-Setiap komponen interaktif mempertimbangkan:
+- Default, Hover, Focus, Loading, Empty, Error, Success — semua tetap berlaku
+- **List Row hover (baru)**: latar berubah jadi `surface-container` (bukan shadow naik seperti kartu) — memberi kesan "baris disorot", bukan "kartu terangkat"
 
-- Default
-- Hover (desktop) — **baru: hover kartu = shadow naik satu level (level-1 → level-2), bukan cuma perubahan warna**
-- Focus
-- Loading (saat upload/simpan) — pakai Skeleton dengan warna `surface-container-high`, BUKAN abu-abu generik
-- Empty (arsip/pencarian kosong)
-- Error (upload gagal, validasi)
-- Success (konfirmasi tersimpan)
-
-> **Catatan implementasi:** ikon di guideline ini merujuk Material Symbols (wireframe). Sesuai [12. Technical Specification](./12-Technical-Specification.md), implementasi prototype memakai **Lucide Icons** sebagai padanannya.
+> **Catatan implementasi:** ikon di guideline ini merujuk Material Symbols (wireframe awal), implementasi aktual memakai **Lucide Icons** — lihat [12. Technical Specification](./12-Technical-Specification.md).

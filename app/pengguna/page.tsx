@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { AppShell } from "@/components/app-shell";
+import { PageShell } from "@/components/page-shell";
 import { useSession } from "next-auth/react";
 import {
   ShieldAlert,
@@ -188,10 +189,12 @@ export default function PenggunaPage() {
   if (status === "loading" || loading) {
     return (
       <AppShell active="/pengguna">
-        <div className="flex h-[50vh] items-center justify-center gap-2 text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin" />
-          <span>Memuat data pengguna...</span>
-        </div>
+        <PageShell>
+          <div className="flex h-[50vh] items-center justify-center gap-2 text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span>Memuat data pengguna...</span>
+          </div>
+        </PageShell>
       </AppShell>
     );
   }
@@ -199,17 +202,19 @@ export default function PenggunaPage() {
   if (session?.user?.role !== "ADMIN") {
     return (
       <AppShell active="/pengguna">
-        <div className="flex flex-col items-center justify-center py-16">
-          <div className="w-full max-w-md rounded-3xl border bg-card p-8 text-center shadow-sm">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10">
-              <ShieldAlert className="h-10 w-10 text-destructive" />
+        <PageShell>
+          <div className="flex flex-col items-center justify-center py-16">
+            <div className="w-full max-w-md rounded-3xl border bg-card p-8 text-center shadow-sm">
+              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10">
+                <ShieldAlert className="h-10 w-10 text-destructive" />
+              </div>
+              <h1 className="mb-2 text-2xl font-bold text-foreground">Akses Ditolak</h1>
+              <p className="text-sm text-muted-foreground">
+                Halaman ini khusus untuk Administrator sistem.
+              </p>
             </div>
-            <h1 className="mb-2 text-2xl font-bold text-foreground">Akses Ditolak</h1>
-            <p className="text-sm text-muted-foreground">
-              Halaman ini khusus untuk Administrator sistem.
-            </p>
           </div>
-        </div>
+        </PageShell>
       </AppShell>
     );
   }
@@ -221,7 +226,8 @@ export default function PenggunaPage() {
 
   return (
     <AppShell active="/pengguna">
-      <div className="space-y-6 pb-12">
+      <PageShell>
+        <div className="space-y-6 pb-12">
         {/* Header Title */}
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
@@ -258,52 +264,44 @@ export default function PenggunaPage() {
           </div>
         )}
 
-        {/* Statistik Kartu Ringkas */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-          <div className="rounded-xl border bg-card p-4 shadow-2xs">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">
-                Total Pengguna
-              </span>
-              <Users className="h-4 w-4 text-muted-foreground" />
+        {/* Statistik Angka Sekunder Sejajar Horizontal Terpisah Garis Vertikal (Tanpa Kotak/Shadow) */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-outline-variant py-4 border-y border-outline-variant">
+          <div className="py-2 sm:py-0 sm:px-4 first:sm:pl-0">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-on-surface-variant">
+              <Users className="h-4 w-4" />
+              <span>Total Pengguna</span>
             </div>
-            <p className="mt-2 text-2xl font-bold text-foreground">
+            <p className="mt-1 text-2xl font-bold text-on-surface tabular-nums">
               {stats.total}
             </p>
           </div>
 
-          <div className="rounded-xl border bg-card p-4 shadow-2xs">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">
-                Administrator
-              </span>
+          <div className="py-2 sm:py-0 sm:px-4">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-on-surface-variant">
               <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              <span>Administrator</span>
             </div>
-            <p className="mt-2 text-2xl font-bold text-foreground">
+            <p className="mt-1 text-2xl font-bold text-on-surface tabular-nums">
               {stats.admin}
             </p>
           </div>
 
-          <div className="rounded-xl border bg-card p-4 shadow-2xs">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">
-                Bendahara
-              </span>
+          <div className="py-2 sm:py-0 sm:px-4">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-on-surface-variant">
               <UserCheck className="h-4 w-4 text-primary" />
+              <span>Bendahara</span>
             </div>
-            <p className="mt-2 text-2xl font-bold text-foreground">
+            <p className="mt-1 text-2xl font-bold text-on-surface tabular-nums">
               {stats.bendahara}
             </p>
           </div>
 
-          <div className="rounded-xl border bg-card p-4 shadow-2xs">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">
-                Jamaah
-              </span>
-              <User className="h-4 w-4 text-muted-foreground" />
+          <div className="py-2 sm:py-0 sm:px-4 last:sm:pr-0">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-on-surface-variant">
+              <User className="h-4 w-4 text-on-surface-variant" />
+              <span>Jamaah</span>
             </div>
-            <p className="mt-2 text-2xl font-bold text-foreground">
+            <p className="mt-1 text-2xl font-bold text-on-surface tabular-nums">
               {stats.jamaah}
             </p>
           </div>
@@ -312,18 +310,18 @@ export default function PenggunaPage() {
         {/* Toolbar Pencarian dan Filter */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-on-surface-variant" />
             <input
               type="text"
               placeholder="Cari nama atau email pengguna..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-10 w-full rounded-xl border border-input bg-card pl-9 pr-8 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="h-10 w-full rounded-lg border border-outline-variant bg-surface-container pl-9 pr-8 text-sm text-on-surface placeholder:text-on-surface-variant/60 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary shadow-xs"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -334,7 +332,7 @@ export default function PenggunaPage() {
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="h-10 rounded-xl border border-input bg-card px-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="h-10 rounded-lg border border-outline-variant bg-surface-container px-3 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary shadow-xs"
             >
               <option value="ALL">Semua Role ({users.length})</option>
               <option value="ADMIN">Administrator ({stats.admin})</option>
@@ -344,11 +342,11 @@ export default function PenggunaPage() {
           </div>
         </div>
 
-        {/* Tabel Daftar Pengguna */}
-        <div className="overflow-hidden rounded-2xl border bg-card shadow-xs">
+        {/* Tabel Daftar Pengguna (Border 1px tanpa shadow mengambang) */}
+        <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="border-b bg-muted/40 text-xs font-semibold uppercase text-muted-foreground">
+              <thead className="border-b border-outline-variant bg-surface-container-high text-xs font-semibold uppercase text-on-surface-variant">
                 <tr>
                   <th className="px-6 py-3.5">Pengguna</th>
                   <th className="px-6 py-3.5">Email</th>
@@ -627,6 +625,7 @@ export default function PenggunaPage() {
           )}
         </AlertDialogPopup>
       </AlertDialog>
+      </PageShell>
     </AppShell>
   );
 }

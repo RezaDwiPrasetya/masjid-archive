@@ -3,17 +3,13 @@
 import * as React from "react";
 import Link from "next/link";
 import {
-  HeartHandshake,
   Search,
   UserCheck,
   ChevronRight,
-  Trophy,
   ShieldAlert,
-  Sparkles,
-  HandCoins,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PageShell } from "@/components/page-shell";
 
 export interface DonorItem {
   id: string;
@@ -44,6 +40,7 @@ function formatRupiah(amount: number): string {
 export function DonorsClient({ donors, anonymous }: DonorsClientProps) {
   const [search, setSearch] = React.useState("");
 
+  // Live filter real-time saat mengetik
   const filteredDonors = React.useMemo(() => {
     if (!search.trim()) return donors;
     const q = search.toLowerCase();
@@ -56,166 +53,150 @@ export function DonorsClient({ donors, anonymous }: DonorsClientProps) {
   );
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          Daftar Donatur
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Transparansi catatan infaq dan kontribusi para donatur terverifikasi kas masjid.
-        </p>
-      </div>
+    <PageShell>
+      <div className="space-y-8">
+        {/* Page Title Header */}
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Daftar Donatur</h1>
+          <p className="text-muted-foreground text-sm">
+            Transparansi catatan infaq dan kontribusi para donatur terverifikasi kas masjid.
+          </p>
+        </div>
 
-      {/* Top Cards Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {/* Total Donatur Terdaftar */}
-        <Card className="border-primary/20 bg-gradient-to-br from-emerald-500/10 via-card/70 to-card/50 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-semibold text-primary flex items-center gap-1.5">
-              <UserCheck className="h-4 w-4" />
-              Donatur Terdata
-            </CardTitle>
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
-              Terverifikasi
-            </span>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">
-              {donors.length} Donatur
+        {/* 1. DUA KARTU KPI SIMETRIS (50:50) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Card 1: Donatur Terdaftar */}
+          <div className="rounded-2xl border border-outline-variant bg-surface-container/70 p-6 shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
+                Donatur Terdata
+              </span>
+              <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                Terverifikasi
+              </span>
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Total kontribusi: {formatRupiah(totalNamedDonations)}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* KARTU TERPISAH: Infaq Anonim (Hamba Allah) */}
-        <Card className="border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-card/70 to-card/50 shadow-sm sm:col-span-2 lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-semibold text-amber-700 flex items-center gap-1.5">
-              <Sparkles className="h-4 w-4 text-amber-600" />
-              Infaq Anonim (Hamba Allah)
-            </CardTitle>
-            <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
-              Tanpa Profil
-            </span>
-          </CardHeader>
-          <CardContent className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <div className="text-2xl font-bold text-foreground">
-                {formatRupiah(anonymous.totalContribution)}
+              <div className="text-3xl font-bold text-on-surface tabular-nums">
+                {donors.length} Donatur
               </div>
-              <p className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
-                <HandCoins className="h-3.5 w-3.5 text-amber-600" />
-                <span>
-                  Akumulasi dari <strong>{anonymous.donationCount} kali</strong> sedekah tanpa nama atau atas nama &quot;Hamba Allah&quot;.
-                </span>
+              <p className="text-sm text-on-surface-variant mt-1.5">
+                Total kontribusi: <span className="font-semibold text-primary tabular-nums">{formatRupiah(totalNamedDonations)}</span>
               </p>
             </div>
-            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs text-muted-foreground max-w-xs">
-              Mencakup seluruh infaq tromol/kotak amal yang tidak mencantumkan nama individual.
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Donor List Section */}
-      <div className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2">
-            <HeartHandshake className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-bold text-foreground">
-              Daftar Profil Donatur
-            </h2>
-            <span className="text-xs font-medium text-muted-foreground">
-              ({filteredDonors.length} orang/lembaga)
-            </span>
           </div>
 
-          {/* Search Input */}
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          {/* Card 2: Infaq Anonim / Tromol */}
+          <div className="rounded-2xl border border-outline-variant bg-surface-container/70 p-6 shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
+                Infaq Anonim (Tromol / Kotak Amal)
+              </span>
+              <span className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                Tanpa Profil
+              </span>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-on-surface tabular-nums">
+                {formatRupiah(anonymous.totalContribution)}
+              </div>
+              <p className="text-sm text-on-surface-variant mt-1.5">
+                Akumulasi dari <span className="font-semibold text-on-surface tabular-nums">{anonymous.donationCount} kali</span> infaq tromol / kotak amal tanpa nama individual.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. HEADER DAFTAR & SEARCH BAR */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-2">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h2 className="text-xl font-bold tracking-tight text-on-surface">
+                Daftar Profil Donatur
+              </h2>
+              <span className="rounded-full bg-surface-container-high px-2.5 py-0.5 text-xs font-semibold text-on-surface-variant border border-outline-variant">
+                {filteredDonors.length} Donatur
+              </span>
+            </div>
+            <p className="text-xs text-on-surface-variant mt-1">
+              Urutan berdasarkan kontribusi infaq tertinggi ke terendah
+            </p>
+          </div>
+
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant h-4 w-4" />
             <Input
               type="text"
               placeholder="Cari nama donatur..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-9 text-sm rounded-xl bg-card/60 backdrop-blur-md"
+              className="pl-9 h-10 text-sm rounded-xl border-outline-variant bg-surface-container shadow-sm"
             />
           </div>
         </div>
 
-        {/* List Cards */}
+        {/* 3. DAFTAR KARTU LIST PROFIL DONATUR */}
         {filteredDonors.length === 0 ? (
-          <Card className="p-8 text-center">
-            <ShieldAlert className="h-10 w-10 text-muted-foreground/40 mx-auto mb-2" />
-            <p className="text-base font-semibold text-foreground">
+          <div className="p-12 text-center rounded-2xl border border-dashed border-outline-variant bg-surface/50">
+            <ShieldAlert className="h-10 w-10 text-on-surface-variant/40 mx-auto mb-3" />
+            <p className="text-base font-semibold text-on-surface">
               {search ? "Donatur tidak ditemukan" : "Belum ada donatur terdata"}
             </p>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-on-surface-variant mt-1">
               {search
-                ? `Tidak ada donatur dengan kata kunci "${search}".`
-                : "Nama donatur yang diverifikasi oleh pengurus akan otomatis muncul di sini."}
+                ? `Tidak ada profil donatur yang cocok dengan kata kunci "${search}".`
+                : "Nama donatur yang diverifikasi oleh pengurus DKM akan otomatis muncul di sini."}
             </p>
-          </Card>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="rounded-2xl border border-outline-variant bg-surface-container/60 shadow-sm overflow-hidden divide-y divide-outline-variant">
             {filteredDonors.map((donor, idx) => {
-              const isTopThree = idx < 3 && !search;
+              const rank = idx + 1;
+              const isRankOne = rank === 1 && !search;
               return (
                 <Link
                   key={donor.id}
                   href={`/donatur/${donor.id}`}
-                  className="group block"
+                  className="group flex items-center justify-between gap-4 p-4 sm:p-5 hover:bg-surface-container-high transition-all duration-150"
                 >
-                  <Card className="h-full border-white/20 bg-card/60 transition-all duration-300 hover:-translate-y-1 hover:bg-card/90 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/40">
-                    <CardContent className="p-4 flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        {/* Rank or Avatar Badge */}
-                        <div
-                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl font-bold text-sm ${
-                            isTopThree
-                              ? idx === 0
-                                ? "bg-amber-100 text-amber-800 shadow-sm"
-                                : idx === 1
-                                ? "bg-slate-200 text-slate-800"
-                                : "bg-orange-100 text-orange-800"
-                              : "bg-muted text-muted-foreground"
-                          }`}
-                        >
-                          {isTopThree ? (
-                            <Trophy className="h-4 w-4" />
-                          ) : (
-                            <span>#{idx + 1}</span>
-                          )}
-                        </div>
+                  <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
+                    {/* Badge Nomor Urut */}
+                    <div
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold transition-transform group-hover:scale-105 ${
+                        isRankOne
+                          ? "border border-amber-500/30 text-amber-800 dark:text-amber-200 bg-amber-500/15"
+                          : "border border-outline-variant text-on-surface-variant bg-surface"
+                      }`}
+                    >
+                      #{rank}
+                    </div>
 
-                        {/* Name & Details */}
-                        <div className="min-w-0 flex-1">
-                          <h3 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
-                            {donor.name}
-                          </h3>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-xs font-semibold text-primary">
-                              {formatRupiah(donor.totalContribution)}
-                            </span>
-                            <span className="text-[11px] text-muted-foreground">
-                              • {donor.donationCount}x donasi
-                            </span>
-                          </div>
-                        </div>
+                    {/* Nama Donatur (Tanpa truncate agar tidak terpotong) */}
+                    <div className="min-w-0">
+                      <div className="font-semibold text-sm sm:text-base text-on-surface group-hover:text-primary transition-colors leading-snug">
+                        {donor.name}
                       </div>
+                      <div className="text-xs text-on-surface-variant mt-1 flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2 py-0.5 border border-outline-variant text-[11px] font-medium">
+                          <UserCheck className="h-3 w-3 text-primary" />
+                          {donor.donationCount} kali infaq terverifikasi
+                        </span>
+                      </div>
+                    </div>
+                  </div>
 
-                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 transition-transform group-hover:translate-x-1 group-hover:text-primary" />
-                    </CardContent>
-                  </Card>
+                  {/* Nominal Uang di Sisi Kanan (Tabular Nums) + Chevron */}
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-base sm:text-lg font-bold text-on-surface tabular-nums group-hover:text-primary transition-colors">
+                      {formatRupiah(donor.totalContribution)}
+                    </span>
+                    <ChevronRight className="h-4 w-4 text-on-surface-variant/60 group-hover:text-primary group-hover:translate-x-1 transition-transform duration-150" />
+                  </div>
                 </Link>
               );
             })}
           </div>
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }

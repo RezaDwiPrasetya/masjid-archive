@@ -22,10 +22,10 @@ import {
   ResponsiveContainer,
   LabelList,
 } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { PageShell } from "@/components/page-shell";
 import {
   ChartContainer,
   ChartTooltip,
@@ -160,14 +160,39 @@ function formatTooltipPeriod(
   }
 }
 
+// Hook untuk animasi count-up halus (~600ms, easing ease-out cubic)
+function useCountUp(target: number, duration: number = 600) {
+  const [count, setCount] = React.useState(0);
+
+  React.useEffect(() => {
+    let startTimestamp: number | null = null;
+    let animationFrameId: number;
+
+    const step = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.round(easedProgress * target));
+
+      if (progress < 1) {
+        animationFrameId = requestAnimationFrame(step);
+      }
+    };
+
+    animationFrameId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [target, duration]);
+
+  return count;
+}
+
 export function DashboardClient({
   initialFinalBalance,
   latestReportDate,
   latestReportId,
 }: DashboardClientProps) {
-  const [granularity, setGranularity] = React.useState<"weekly" | "monthly">(
-    "weekly"
-  );
+  const [granularity, setGranularity] = React.useState<"weekly" | "monthly">("weekly");
+  const animatedBalance = useCountUp(initialFinalBalance ?? 0, 600);
   const [points, setPoints] = React.useState<TrendPoint[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -263,330 +288,310 @@ export function DashboardClient({
     );
   };
 
-  return (
-    <div className="space-y-8">
-      {/* 
-        TODO: Hapus banner ini setelah data historis laporan kas masjid sudah terkumpul lengkap dan runut.
-      */}
-      <Alert
-        variant="info"
-        className="flex items-center gap-2.5 py-2.5 px-4 text-xs rounded-xl shadow-none"
-      >
-        <Info className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-        <AlertDescription className="text-xs text-emerald-950 dark:text-emerald-100 font-medium leading-none">
-          Data masih dalam tahap pengumpulan awal — sebagian periode mungkin belum lengkap.
-        </AlertDescription>
-      </Alert>
-
-      {/* Header Halaman */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Dashboard Keuangan
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Transparansi pergerakan kas dan tren keuangan kas masjid dari waktu ke waktu.
-          </p>
-        </div>
-
-        {/* Granularity Toggle */}
-        <div className="inline-flex items-center rounded-2xl border border-white/30 bg-card/60 p-1.5 shadow-sm backdrop-blur-md self-start md:self-auto">
-          <Button
-            size="sm"
-            variant={granularity === "weekly" ? "default" : "ghost"}
-            onClick={() => handleGranularityChange("weekly")}
-            className="rounded-xl px-4 font-medium transition-all"
-            disabled={loading}
-          >
-            Mingguan (12 Pekan)
-          </Button>
-          <Button
-            size="sm"
-            variant={granularity === "monthly" ? "default" : "ghost"}
-            onClick={() => handleGranularityChange("monthly")}
-            className="rounded-xl px-4 font-medium transition-all"
-            disabled={loading}
-          >
-            Bulanan (12 Bulan)
-          </Button>
-        </div>
+  const heroContent = (
+    <div>
+      <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed">
+        <Wallet className="h-4 w-4 shrink-0" />
+        <span>Saldo Kas Terkini • Buku Kas Terverifikasi</span>
       </div>
 
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* KPI UTAMA: Saldo Kas Terkini (Report.finalBalance) */}
-        <Card className="relative overflow-hidden border-primary/20 bg-gradient-to-br from-emerald-500/10 via-card/70 to-teal-500/5 shadow-md">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-semibold text-primary flex items-center gap-1.5">
-              <Wallet className="h-4 w-4" />
-              Saldo Kas Terkini
-            </CardTitle>
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
-              Buku Kas
-            </span>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tracking-tight text-foreground">
-              {initialFinalBalance !== null
-                ? formatRupiah(initialFinalBalance)
-                : "Belum Ada"}
-            </div>
-            {latestReportDate ? (
-              <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Calendar className="h-3 w-3 shrink-0" />
-                <span>
-                  Laporan:{" "}
-                  {new Date(latestReportDate).toLocaleDateString("id-ID", {
-                    dateStyle: "medium",
-                  })}
-                </span>
-                {latestReportId && (
-                  <Link
-                    href={`/laporan/${latestReportId}`}
-                    className="inline-flex items-center text-primary hover:underline ml-auto"
-                    title="Lihat Laporan Asal"
-                  >
-                    <FileText className="h-3 w-3" />
-                  </Link>
-                )}
-              </div>
-            ) : (
-              <p className="mt-2 text-xs text-muted-foreground">
-                Belum ada laporan dengan saldo kas terverifikasi.
-              </p>
-            )}
-          </CardContent>
-        </Card>
+      <div className="mt-3 text-4xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary">
+        {initialFinalBalance !== null
+          ? formatRupiah(animatedBalance)
+          : "Belum Ada"}
+      </div>
 
-        {/* Total Pemasukan Periode */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
-              <ArrowUpRight className="h-4 w-4 text-emerald-600" />
-              Total Pemasukan
-            </CardTitle>
-            <span className="text-[11px] text-muted-foreground capitalize">
-              {granularity === "weekly" ? "12 Pekan" : "12 Bulan"}
+      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs md:text-sm text-primary-fixed/80">
+        {latestReportDate ? (
+          <>
+            <Calendar className="h-3.5 w-3.5 shrink-0" />
+            <span>
+              Laporan terakhir:{" "}
+              {new Date(latestReportDate).toLocaleDateString("id-ID", {
+                dateStyle: "medium",
+              })}
             </span>
-          </CardHeader>
-          <CardContent>
+            {latestReportId && (
+              <Link
+                href={`/laporan/${latestReportId}`}
+                className="inline-flex items-center gap-1 text-primary-fixed hover:underline ml-1"
+              >
+                <span>(Lihat Dokumen)</span>
+                <FileText className="h-3 w-3" />
+              </Link>
+            )}
+          </>
+        ) : (
+          <span>Belum ada laporan dengan saldo kas terverifikasi.</span>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <PageShell heroBand={heroContent}>
+      <div className="space-y-8">
+        {/* Banner Status Pengumpulan Data */}
+        <Alert
+          variant="info"
+          className="flex items-center gap-2.5 py-2.5 px-4 text-xs rounded-lg shadow-none"
+        >
+          <Info className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+          <AlertDescription className="text-xs text-emerald-950 dark:text-emerald-100 font-medium leading-none">
+            Data masih dalam tahap pengumpulan awal — sebagian periode mungkin belum lengkap.
+          </AlertDescription>
+        </Alert>
+
+        {/* Header Section & Toggle Granularity */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-on-surface">
+              Ringkasan Kas & Tren
+            </h1>
+            <p className="text-sm text-on-surface-variant mt-0.5">
+              Pergerakan kas masuk, kas keluar, dan arus kas bersih kas masjid.
+            </p>
+          </div>
+
+          <div className="inline-flex items-center rounded-lg border border-outline-variant bg-surface-container p-1 self-start sm:self-auto">
+            <Button
+              size="sm"
+              variant={granularity === "weekly" ? "default" : "ghost"}
+              onClick={() => handleGranularityChange("weekly")}
+              className="rounded-md px-3.5 text-xs font-medium transition-all"
+              disabled={loading}
+            >
+              Mingguan (12 Pekan)
+            </Button>
+            <Button
+              size="sm"
+              variant={granularity === "monthly" ? "default" : "ghost"}
+              onClick={() => handleGranularityChange("monthly")}
+              className="rounded-md px-3.5 text-xs font-medium transition-all"
+              disabled={loading}
+            >
+              Bulanan (12 Bulan)
+            </Button>
+          </div>
+        </div>
+
+        {/* 3 Angka Sekunder Sejajar Horizontal Terpisah Garis Vertikal (BUKAN KOTAK KARTU) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-outline-variant py-4 border-y border-outline-variant">
+          {/* Total Pemasukan */}
+          <div className="py-3 sm:py-0 sm:px-6 first:sm:pl-0">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-on-surface-variant">
+              <ArrowUpRight className="h-4 w-4 text-emerald-600 shrink-0" />
+              <span>
+                Total Pemasukan ({granularity === "weekly" ? "12 Pekan" : "12 Bulan"})
+              </span>
+            </div>
             {loading ? (
-              <Skeleton className="h-8 w-32" />
+              <Skeleton className="h-8 w-32 mt-2 rounded bg-surface-container-high" />
             ) : (
-              <div className="text-2xl font-bold text-emerald-700">
+              <div className="mt-1 text-2xl font-semibold text-emerald-700 tabular-nums">
                 {formatRupiah(totalPemasukan)}
               </div>
             )}
-            <p className="mt-2 text-xs text-muted-foreground">
+            <p className="mt-0.5 text-xs text-on-surface-variant">
               Akumulasi infaq & pemasukan terverifikasi
             </p>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Total Pengeluaran Periode */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
-              <ArrowDownRight className="h-4 w-4 text-rose-500" />
-              Total Pengeluaran
-            </CardTitle>
-            <span className="text-[11px] text-muted-foreground capitalize">
-              {granularity === "weekly" ? "12 Pekan" : "12 Bulan"}
-            </span>
-          </CardHeader>
-          <CardContent>
+          {/* Total Pengeluaran */}
+          <div className="py-3 sm:py-0 sm:px-6">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-on-surface-variant">
+              <ArrowDownRight className="h-4 w-4 text-rose-500 shrink-0" />
+              <span>
+                Total Pengeluaran ({granularity === "weekly" ? "12 Pekan" : "12 Bulan"})
+              </span>
+            </div>
             {loading ? (
-              <Skeleton className="h-8 w-32" />
+              <Skeleton className="h-8 w-32 mt-2 rounded bg-surface-container-high" />
             ) : (
-              <div className="text-2xl font-bold text-rose-600">
+              <div className="mt-1 text-2xl font-semibold text-rose-600 tabular-nums">
                 {formatRupiah(totalPengeluaran)}
               </div>
             )}
-            <p className="mt-2 text-xs text-muted-foreground">
+            <p className="mt-0.5 text-xs text-on-surface-variant">
               Akumulasi biaya operasional & pengeluaran
             </p>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Arus Kas Bersih (Net Change) */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
-              <Scale className="h-4 w-4" />
-              Arus Kas Bersih
-            </CardTitle>
-            {netChange >= 0 ? (
-              <TrendingUp className="h-4 w-4 text-emerald-600" />
-            ) : (
-              <TrendingDown className="h-4 w-4 text-rose-500" />
-            )}
-          </CardHeader>
-          <CardContent>
+          {/* Arus Kas Bersih */}
+          <div className="py-3 sm:py-0 sm:px-6 last:sm:pr-0">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-on-surface-variant">
+              <Scale className="h-4 w-4 shrink-0" />
+              <span>Arus Kas Bersih</span>
+              {netChange >= 0 ? (
+                <TrendingUp className="h-3.5 w-3.5 text-emerald-600 ml-auto" />
+              ) : (
+                <TrendingDown className="h-3.5 w-3.5 text-rose-500 ml-auto" />
+              )}
+            </div>
             {loading ? (
-              <Skeleton className="h-8 w-32" />
+              <Skeleton className="h-8 w-32 mt-2 rounded bg-surface-container-high" />
             ) : (
               <div
-                className={`text-2xl font-bold ${
-                  netChange >= 0 ? "text-emerald-700" : "text-rose-600"
-                }`}
+                className={`mt-1 text-2xl font-semibold tabular-nums ${netChange >= 0 ? "text-emerald-700" : "text-rose-600"
+                  }`}
               >
                 {netChange >= 0 ? "+" : ""}
                 {formatRupiah(netChange)}
               </div>
             )}
-            <p className="mt-2 text-xs text-muted-foreground">
+            <p className="mt-0.5 text-xs text-on-surface-variant">
               {netChange >= 0
                 ? "Surplus kas pada periode ini"
                 : "Defisit kas pada periode ini"}
             </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Grafik Tren Keuangan */}
-      <Card className="p-6">
-        <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              Pemasukan dan Pengeluaran Kas
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Perbandingan uang masuk dan uang keluar kas masjid (hanya transaksi terverifikasi).
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground/80">
-              {granularity === "weekly"
-                ? "Setiap titik mewakili total transaksi terverifikasi dalam satu periode mingguan (laporan kas Jumat)."
-                : "Setiap titik mewakili total transaksi terverifikasi dalam satu periode bulanan."}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-4 text-xs">
-            <div className="flex items-center gap-1.5">
-              <span className="h-3 w-3 rounded-sm bg-[hsl(150,65%,40%)]" />
-              <span className="font-medium text-muted-foreground">Pemasukan</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="h-3 w-3 rounded-sm bg-[hsl(0,72%,56%)]" />
-              <span className="font-medium text-muted-foreground">Pengeluaran</span>
-            </div>
           </div>
         </div>
 
-        {error ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <p className="text-sm text-destructive">{error}</p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRetry}
-              className="mt-4"
-            >
-              Coba Lagi
-            </Button>
-          </div>
-        ) : loading ? (
-          <div className="space-y-4 py-8">
-            <Skeleton className="h-[280px] w-full rounded-2xl" />
-            <div className="flex justify-between px-4">
-              <Skeleton className="h-4 w-12" />
-              <Skeleton className="h-4 w-12" />
-              <Skeleton className="h-4 w-12" />
-              <Skeleton className="h-4 w-12" />
-              <Skeleton className="h-4 w-12" />
-              <Skeleton className="h-4 w-12" />
+        {/* 3. GRAFIK TREN KEUANGAN: Menyatu dengan latar halaman (Tanpa Kartu/Border/Shadow) */}
+        <section className="space-y-4 pt-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-on-surface flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                Pemasukan dan Pengeluaran Kas
+              </h2>
+              <p className="text-sm text-on-surface-variant mt-0.5">
+                Perbandingan uang masuk dan uang keluar kas masjid (hanya transaksi terverifikasi).
+              </p>
+              <p className="mt-0.5 text-xs text-on-surface-variant/80">
+                {granularity === "weekly"
+                  ? "Setiap titik mewakili total transaksi terverifikasi dalam satu periode mingguan (laporan kas Jumat)."
+                  : "Setiap titik mewakili total transaksi terverifikasi dalam satu periode bulanan."}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-4 text-xs font-medium shrink-0">
+              <div className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-full bg-emerald-600" />
+                <span className="text-on-surface">Pemasukan</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-full bg-rose-500" />
+                <span className="text-on-surface">Pengeluaran</span>
+              </div>
             </div>
           </div>
-        ) : points.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Wallet className="h-12 w-12 text-muted-foreground/40 mb-3" />
-            <p className="text-base font-semibold text-foreground">
-              Belum ada data transaksi terverifikasi untuk ditampilkan
-            </p>
-            <p className="text-sm text-muted-foreground max-w-sm mt-1">
-              Data grafik tren akan otomatis tampil setelah pengurus memverifikasi transaksi laporan kas mingguan.
-            </p>
-          </div>
-        ) : (
-          <div className="w-full pt-2">
-            <ChartContainer config={chartConfig} className="h-[360px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={chartData}
-                  margin={{ top: 20, right: 10, left: 10, bottom: 20 }}
-                  barGap={4}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                    className="stroke-muted/50"
-                  />
-                  <XAxis
-                    dataKey="label"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={10}
-                    className="text-xs fill-muted-foreground font-medium"
-                  />
-                  <YAxis
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    tickFormatter={formatShortRupiah}
-                    domain={[
-                      0,
-                      (dataMax: number) =>
-                        dataMax > 0
-                          ? Math.ceil((dataMax * 1.15) / 50000) * 50000
-                          : "auto",
-                    ]}
-                    className="text-xs fill-muted-foreground"
-                    width={80}
-                  />
-                  <ChartTooltip
-                    content={
-                      <ChartTooltipContent
-                        labelFormatter={(_, payload) => {
-                          const item = payload?.[0]?.payload as
-                            | { tooltipLabel?: string }
-                            | undefined;
-                          return `Periode: ${item?.tooltipLabel || ""}`;
-                        }}
-                        valueFormatter={(val) => formatRupiah(val)}
-                      />
-                    }
-                  />
-                  <Bar
-                    dataKey="pemasukan"
-                    fill="hsl(150, 65%, 40%)"
-                    radius={[6, 6, 0, 0]}
-                    maxBarSize={40}
+
+          {error ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center rounded-lg border border-dashed border-destructive/40 bg-surface/50">
+              <p className="text-sm text-destructive">{error}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRetry}
+                className="mt-4"
+              >
+                Coba Lagi
+              </Button>
+            </div>
+          ) : loading ? (
+            <div className="space-y-4 py-8">
+              <Skeleton className="h-[280px] w-full rounded-lg bg-surface-container-high" />
+              <div className="flex justify-between px-4">
+                <Skeleton className="h-4 w-12 bg-surface-container-high" />
+                <Skeleton className="h-4 w-12 bg-surface-container-high" />
+                <Skeleton className="h-4 w-12 bg-surface-container-high" />
+                <Skeleton className="h-4 w-12 bg-surface-container-high" />
+                <Skeleton className="h-4 w-12 bg-surface-container-high" />
+                <Skeleton className="h-4 w-12 bg-surface-container-high" />
+              </div>
+            </div>
+          ) : points.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center rounded-lg border border-dashed border-outline-variant bg-surface/50">
+              <Wallet className="h-12 w-12 text-on-surface-variant/40 mb-3" />
+              <p className="text-base font-semibold text-on-surface">
+                Belum ada data transaksi terverifikasi untuk ditampilkan
+              </p>
+              <p className="text-sm text-on-surface-variant max-w-sm mt-1">
+                Data grafik tren akan otomatis tampil setelah pengurus memverifikasi transaksi laporan kas mingguan.
+              </p>
+            </div>
+          ) : (
+            <div className="w-full pt-2">
+              <ChartContainer config={chartConfig} className="h-[360px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={chartData}
+                    margin={{ top: 20, right: 10, left: 10, bottom: 20 }}
+                    barGap={4}
                   >
-                    <LabelList
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      className="stroke-outline-variant/60"
+                    />
+                    <XAxis
+                      dataKey="label"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={10}
+                      className="text-xs fill-on-surface-variant font-medium"
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      tickFormatter={formatShortRupiah}
+                      domain={[
+                        0,
+                        (dataMax: number) =>
+                          dataMax > 0
+                            ? Math.ceil((dataMax * 1.15) / 50000) * 50000
+                            : "auto",
+                      ]}
+                      className="text-xs fill-on-surface-variant"
+                      width={80}
+                    />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          labelFormatter={(_, payload) => {
+                            const item = payload?.[0]?.payload as
+                              | { tooltipLabel?: string }
+                              | undefined;
+                            return `Periode: ${item?.tooltipLabel || ""}`;
+                          }}
+                          valueFormatter={(val) => formatRupiah(val)}
+                        />
+                      }
+                    />
+                    <Bar
                       dataKey="pemasukan"
-                      content={renderBarLabel}
-                    />
-                  </Bar>
-                  <Bar
-                    dataKey="pengeluaran"
-                    fill="hsl(0, 72%, 56%)"
-                    radius={[6, 6, 0, 0]}
-                    maxBarSize={40}
-                  >
-                    <LabelList
+                      fill="hsl(150, 65%, 40%)"
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={40}
+                    >
+                      <LabelList
+                        dataKey="pemasukan"
+                        content={renderBarLabel}
+                      />
+                    </Bar>
+                    <Bar
                       dataKey="pengeluaran"
-                      content={renderBarLabel}
-                    />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-            <p className="mt-3 text-center text-xs text-muted-foreground">
-              Hijau menunjukkan uang masuk, merah menunjukkan uang keluar.
-            </p>
-          </div>
-        )}
-      </Card>
-    </div>
+                      fill="hsl(0, 72%, 56%)"
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={40}
+                    >
+                      <LabelList
+                        dataKey="pengeluaran"
+                        content={renderBarLabel}
+                      />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+              <p className="mt-3 text-center text-xs text-on-surface-variant">
+                Hijau menunjukkan uang masuk, merah menunjukkan uang keluar.
+              </p>
+            </div>
+          )}
+        </section>
+      </div>
+    </PageShell>
   );
 }

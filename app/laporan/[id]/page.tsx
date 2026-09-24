@@ -12,6 +12,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { DeleteReportButton } from "@/components/delete-report-button";
 import { DeleteAttachmentButton } from "@/components/delete-attachment-button";
@@ -85,12 +86,13 @@ export default async function DetailLaporanPage({
 
   return (
     <AppShell active="/">
-      <Link
-        href="/"
-        className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-      >
-        <ArrowLeft size={16} /> Kembali ke Arsip
-      </Link>
+      <PageShell>
+        <Link
+          href="/"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+        >
+          <ArrowLeft size={16} /> Kembali ke Arsip
+        </Link>
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Detail Laporan</h1>
         <p className="text-muted-foreground">
@@ -122,7 +124,7 @@ export default async function DetailLaporanPage({
               return (
                 <div
                   key={att.id}
-                  className="rounded-2xl border border-white/40 bg-card/60 backdrop-blur-sm shadow-sm overflow-hidden"
+                  className="rounded-xl border border-outline-variant bg-surface-container shadow-level-1 overflow-hidden"
                 >
                   {/* ── Gambar ── */}
                   {att.fileType === "image" && (
@@ -138,7 +140,7 @@ export default async function DetailLaporanPage({
                       <div className="p-4 space-y-3 border-t border-border/50">
                         {/* Meta + aksi file */}
                         <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <p className="truncate text-sm text-muted-foreground max-w-[180px]">
+                          <p className="truncate text-sm text-muted-foreground">
                             {att.originalFileName}
                           </p>
                           <div className="flex items-center gap-2 shrink-0">
@@ -169,10 +171,10 @@ export default async function DetailLaporanPage({
                               attachmentId={att.id}
                               extractionStatus={
                                 att.extractionStatus as
-                                  | "not_extracted"
-                                  | "processing"
-                                  | "done"
-                                  | "failed"
+                                | "not_extracted"
+                                | "processing"
+                                | "done"
+                                | "failed"
                               }
                               extractionError={att.extractionError}
                               extractionModel={att.extractionModel}
@@ -296,7 +298,7 @@ export default async function DetailLaporanPage({
         </div>
 
         {/* Sidebar: metadata laporan */}
-        <aside className="h-fit rounded-2xl border bg-card p-5">
+        <aside className="h-fit rounded-xl border border-outline-variant bg-surface-container p-6 shadow-level-1">
           <dl className="space-y-4 text-sm">
             <div>
               <dt className="text-muted-foreground">Tanggal laporan</dt>
@@ -381,7 +383,7 @@ export default async function DetailLaporanPage({
                 }).format(n);
 
               return (
-                <div className="border-t pt-4 space-y-3">
+                <div className="border-t border-outline-variant pt-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
                       Ringkasan Kas Pekan Ini
@@ -389,7 +391,7 @@ export default async function DetailLaporanPage({
                   </div>
 
                   {allUnverified.length > 0 && (
-                    <p className="text-xs text-amber-600 font-medium bg-amber-50 rounded-lg px-2.5 py-1.5 dark:bg-amber-950/30 dark:text-amber-400">
+                    <p className="text-xs text-amber-700 font-medium bg-amber-500/10 border border-amber-300/60 rounded-lg px-2.5 py-1.5 dark:bg-amber-950/30 dark:text-amber-400">
                       {allUnverified.length} transaksi menunggu verifikasi
                     </p>
                   )}
@@ -399,7 +401,7 @@ export default async function DetailLaporanPage({
                     {initialBalance !== null && (
                       <div className="flex justify-between items-baseline">
                         <span className="text-muted-foreground">Saldo Lalu</span>
-                        <span className="font-semibold text-foreground">
+                        <span className="font-semibold text-foreground tabular-nums">
                           {fmt(initialBalance)}
                         </span>
                       </div>
@@ -407,14 +409,14 @@ export default async function DetailLaporanPage({
 
                     <div className="flex justify-between items-baseline">
                       <span className="text-muted-foreground">Pemasukan</span>
-                      <span className="font-medium text-emerald-700 dark:text-emerald-400">
+                      <span className="font-medium text-emerald-700 dark:text-emerald-400 tabular-nums">
                         + {fmt(totalMasuk)}
                       </span>
                     </div>
 
                     <div className="flex justify-between items-baseline">
                       <span className="text-muted-foreground">Pengeluaran</span>
-                      <span className="font-medium text-rose-600 dark:text-rose-400">
+                      <span className="font-medium text-rose-600 dark:text-rose-400 tabular-nums">
                         - {fmt(totalKeluar)}
                       </span>
                     </div>
@@ -424,11 +426,10 @@ export default async function DetailLaporanPage({
                       <div className="flex justify-between items-baseline py-1 border-t border-dashed border-border/70 text-xs">
                         <span className="text-muted-foreground">Selisih Pekan Ini</span>
                         <span
-                          className={`font-semibold ${
-                            netChange >= 0
+                          className={`font-semibold tabular-nums ${netChange >= 0
                               ? "text-emerald-700 dark:text-emerald-400"
                               : "text-rose-600 dark:text-rose-400"
-                          }`}
+                            }`}
                         >
                           {netChange > 0 ? `+ ${fmt(netChange)}` : fmt(netChange)}
                         </span>
@@ -439,7 +440,7 @@ export default async function DetailLaporanPage({
                     {initialBalance !== null ? (
                       <div className="flex justify-between items-baseline border-t border-border/80 pt-2">
                         <span className="font-bold text-foreground">Saldo Kas Akhir</span>
-                        <span className="font-extrabold text-base text-primary">
+                        <span className="font-extrabold text-base text-primary tabular-nums">
                           {fmt(calculatedFinal!)}
                         </span>
                       </div>
@@ -447,11 +448,10 @@ export default async function DetailLaporanPage({
                       <div className="flex justify-between items-baseline border-t border-border/80 pt-2">
                         <span className="font-semibold text-foreground">Selisih Kas</span>
                         <span
-                          className={`font-bold ${
-                            netChange >= 0
+                          className={`font-bold ${netChange >= 0
                               ? "text-emerald-700 dark:text-emerald-400"
                               : "text-rose-600 dark:text-rose-400"
-                          }`}
+                            }`}
                         >
                           {fmt(netChange)}
                         </span>
@@ -496,6 +496,7 @@ export default async function DetailLaporanPage({
           )}
         </aside>
       </div>
+      </PageShell>
     </AppShell>
   );
 }

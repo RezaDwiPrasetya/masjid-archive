@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/app-shell";
+import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, FileSearch, ArrowRight, FileText } from "lucide-react";
@@ -44,26 +45,27 @@ export default async function CariLaporanPage({
 
   return (
     <AppShell active="/cari">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Cari Arsip</h1>
-        <p className="text-muted-foreground">Temukan laporan berdasarkan tanggal atau pengurus.</p>
-      </div>
+      <PageShell>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground">Cari Arsip</h1>
+          <p className="text-muted-foreground">Temukan laporan berdasarkan tanggal atau pengurus.</p>
+        </div>
 
-      <form className="mb-8 grid gap-4 rounded-2xl border bg-card p-5 md:grid-cols-[1fr_180px_180px_auto] md:items-end">
+      <form className="mb-8 grid gap-4 rounded-xl border border-outline-variant bg-surface-container p-6 md:grid-cols-[1fr_180px_180px_auto] md:items-end">
         <div>
-          <label htmlFor="keyword" className="mb-2 block text-sm font-medium">Kata kunci</label>
-          <Input id="keyword" name="keyword" defaultValue={keyword} placeholder="Contoh: Kosasih atau 12/1/2025" />
+          <label htmlFor="keyword" className="mb-2 block text-sm font-medium text-on-surface">Kata kunci</label>
+          <Input id="keyword" name="keyword" defaultValue={keyword} placeholder="Contoh: Kosasih atau 12/1/2025" className="border-outline-variant bg-surface-container" />
         </div>
         <div>
-          <label htmlFor="year" className="mb-2 block text-sm font-medium">Tahun</label>
-          <select id="year" name="year" defaultValue={year} className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm">
+          <label htmlFor="year" className="mb-2 block text-sm font-medium text-on-surface">Tahun</label>
+          <select id="year" name="year" defaultValue={year} className="h-8 w-full rounded-lg border border-outline-variant bg-surface-container px-2.5 text-sm text-on-surface">
             <option value="">Semua tahun</option>
             {years.map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
         </div>
         <div>
-          <label htmlFor="month" className="mb-2 block text-sm font-medium">Bulan</label>
-          <select id="month" name="month" defaultValue={month} className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm">
+          <label htmlFor="month" className="mb-2 block text-sm font-medium text-on-surface">Bulan</label>
+          <select id="month" name="month" defaultValue={month} className="h-8 w-full rounded-lg border border-outline-variant bg-surface-container px-2.5 text-sm text-on-surface">
             <option value="">Semua bulan</option>
             {MONTH_NAMES.map((item, index) => <option key={item} value={index + 1}>{item}</option>)}
           </select>
@@ -72,33 +74,57 @@ export default async function CariLaporanPage({
       </form>
 
       {filteredReports.length === 0 ? (
-        <div className="flex flex-col items-center rounded-2xl border bg-card p-12 text-center">
+        <div className="flex flex-col items-center rounded-xl border border-outline-variant bg-surface-container p-12 text-center">
           <FileSearch className="mb-4 text-primary" size={40} />
-          <h2 className="text-xl font-semibold">Laporan tidak ditemukan</h2>
-          <p className="mt-2 text-muted-foreground">Coba ubah kata kunci atau filter periode.</p>
+          <h2 className="text-xl font-semibold text-on-surface">Laporan tidak ditemukan</h2>
+          <p className="mt-2 text-sm text-on-surface-variant">Coba ubah kata kunci atau filter periode.</p>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredReports.map((report) => (
-            <article key={report.id} className="flex flex-col rounded-xl border bg-card p-4">
-              {(() => {
-                const thumb = report.attachments.find((a) => a.fileType === "image");
-                return thumb ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={thumb.fileUrl} alt={`Laporan ${report.reportDate}`} className="mb-3 aspect-[4/3] w-full rounded-lg object-cover" />
-                ) : (
-                  <div className="mb-3 flex aspect-[4/3] w-full items-center justify-center rounded-lg bg-secondary text-muted-foreground">
-                    <FileText size={48} className="opacity-50" />
-                  </div>
-                );
-              })()}
-              <h2 className="font-medium">{new Date(report.reportDate).toLocaleDateString("id-ID", { dateStyle: "full" })}</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Diunggah oleh {report.uploadedBy.name}</p>
-              <Link href={`/laporan/${report.id}`} className="mt-4 flex items-center justify-center gap-2 rounded-lg border py-2 text-sm font-medium hover:bg-accent">Lihat Detail <ArrowRight size={16} /></Link>
-            </article>
-          ))}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
+          {filteredReports.map((report) => {
+            const thumb = report.attachments.find((a) => a.fileType === "image");
+            return (
+              <Link
+                key={report.id}
+                href={`/laporan/${report.id}`}
+                className="group flex flex-col focus:outline-hidden"
+              >
+                {/* Visual Unit: Photo container with 3:4 aspect ratio and rounded-xl */}
+                <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl border border-outline-variant bg-surface-container-high transition-transform duration-200 group-hover:scale-[1.02]">
+                  {thumb ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={thumb.fileUrl}
+                      alt={`Laporan ${report.reportDate}`}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-primary/40">
+                      <FileText size={40} className="text-primary/60" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Caption directly under photo, no separate card box */}
+                <div className="mt-2 space-y-0.5">
+                  <h2 className="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors line-clamp-1">
+                    {new Date(report.reportDate).toLocaleDateString("id-ID", {
+                      weekday: "short",
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </h2>
+                  <p className="text-xs text-on-surface-variant">
+                    Diunggah oleh {report.uploadedBy.name}
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       )}
+      </PageShell>
     </AppShell>
   );
 }

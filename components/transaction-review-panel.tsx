@@ -211,7 +211,7 @@ function TransactionRow({
 
   if (isEditing) {
     return (
-      <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4 space-y-3">
+      <div className="rounded-xl border border-primary/30 bg-surface-container-high p-4 space-y-3">
         <p className="text-xs font-semibold text-primary uppercase tracking-wide">
           Edit Transaksi
         </p>
@@ -324,10 +324,10 @@ function TransactionRow({
 
   return (
     <div
-      className={`group relative rounded-2xl border p-4 transition-all duration-200 ${
+      className={`group relative rounded-xl border p-4 transition-all duration-200 ${
         tx.isVerified
-          ? "border-emerald-200/80 bg-emerald-50/60"
-          : "border-amber-200/80 bg-amber-50/50 hover:border-amber-300"
+          ? "border-outline-variant bg-surface-container-high"
+          : "border-amber-300/80 bg-surface-container-high hover:border-amber-400"
       }`}
     >
       {/* Status pill */}
@@ -430,7 +430,7 @@ function TransactionRow({
       {/* Nominal & keterangan */}
       <div className="flex items-baseline gap-3 mb-1">
         <span
-          className={`text-lg font-bold ${
+          className={`text-lg font-bold tabular-nums ${
             isIncome ? "text-emerald-700" : "text-rose-700"
           }`}
         >

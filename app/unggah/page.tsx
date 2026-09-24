@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
+import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -82,7 +83,9 @@ export default function UnggahLaporanPage() {
   if (status === "loading") {
     return (
       <AppShell active="/unggah">
-        <div className="flex h-[50vh] items-center justify-center text-muted-foreground">Memuat...</div>
+        <PageShell>
+          <div className="flex h-[50vh] items-center justify-center text-muted-foreground">Memuat...</div>
+        </PageShell>
       </AppShell>
     );
   }
@@ -94,17 +97,19 @@ export default function UnggahLaporanPage() {
   if (!userRole || !allowedRoles.includes(userRole)) {
     return (
       <AppShell active="/unggah">
-        <div className="flex flex-col items-center justify-center py-16">
-          <div className="w-full max-w-md rounded-3xl border bg-card p-8 text-center shadow-sm">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10">
-              <ShieldAlert className="h-10 w-10 text-destructive" />
+        <PageShell>
+          <div className="flex flex-col items-center justify-center py-16">
+            <div className="w-full max-w-md rounded-3xl border bg-card p-8 text-center shadow-sm">
+              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10">
+                <ShieldAlert className="h-10 w-10 text-destructive" />
+              </div>
+              <h1 className="mb-2 text-2xl font-bold text-foreground">Akses Ditolak</h1>
+              <p className="text-sm text-muted-foreground">
+                Hanya pengurus DKM (Bendahara atau Admin) yang dapat mengunggah laporan.
+              </p>
             </div>
-            <h1 className="mb-2 text-2xl font-bold text-foreground">Akses Ditolak</h1>
-            <p className="text-sm text-muted-foreground">
-              Hanya pengurus DKM (Bendahara atau Admin) yang dapat mengunggah laporan.
-            </p>
           </div>
-        </div>
+        </PageShell>
       </AppShell>
     );
   }
@@ -200,12 +205,13 @@ export default function UnggahLaporanPage() {
 
   return (
     <AppShell active="/unggah">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Unggah Laporan Baru</h1>
-        <p className="text-muted-foreground">
-          Lampirkan satu atau beberapa file (gambar, PDF, Excel) untuk laporan mingguan ini.
-        </p>
-      </div>
+      <PageShell>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground">Unggah Laporan Baru</h1>
+          <p className="text-muted-foreground">
+            Lampirkan satu atau beberapa file (gambar, PDF, Excel) untuk laporan mingguan ini.
+          </p>
+        </div>
 
       {/* Banner sukses */}
       {saved && (
@@ -225,7 +231,7 @@ export default function UnggahLaporanPage() {
         {/* ── #028: Drop zone multi-file ── */}
         <label
           htmlFor="file-input"
-          className="relative flex min-h-48 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed bg-card text-center transition-colors hover:border-primary"
+          className="relative flex min-h-48 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-outline-variant bg-surface-container p-6 shadow-level-1 text-center transition-colors hover:border-primary"
         >
           <input
             id="file-input"
@@ -236,18 +242,18 @@ export default function UnggahLaporanPage() {
             className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
             onChange={handleFileChange}
           />
-          <div className="pointer-events-none flex flex-col items-center gap-3 px-6 py-8">
+          <div className="pointer-events-none flex flex-col items-center gap-3">
             <div className="rounded-full bg-primary/10 p-4 text-primary">
               <UploadCloud size={32} />
             </div>
             <div>
-              <p className="font-semibold text-foreground">
+              <p className="font-semibold text-on-surface">
                 Ketuk atau seret file ke sini
               </p>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm text-on-surface-variant">
                 Gambar (maks 5 MB) · PDF (maks 10 MB) · Excel (maks 5 MB)
               </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
+              <p className="mt-0.5 text-xs text-on-surface-variant/80">
                 .jpg · .png · .pdf · .xlsx · .xls
               </p>
             </div>
@@ -275,13 +281,13 @@ export default function UnggahLaporanPage() {
 
         {/* ── #029 & #030: Daftar file terpilih ── */}
         {files.length > 0 && (
-          <div className="rounded-2xl border bg-card">
-            <div className="border-b px-4 py-3">
-              <p className="text-sm font-semibold text-foreground">
+          <div className="rounded-xl border border-outline-variant bg-surface-container shadow-level-1 overflow-hidden">
+            <div className="border-b border-outline-variant px-4 py-3 bg-surface-container-high/50">
+              <p className="text-sm font-semibold text-on-surface">
                 File Terpilih ({files.length})
               </p>
             </div>
-            <ul className="divide-y">
+            <ul className="divide-y divide-outline-variant">
               {files.map((entry) => (
                 <li
                   key={entry.id}
@@ -289,10 +295,10 @@ export default function UnggahLaporanPage() {
                 >
                   <FileIcon mime={entry.file.type} />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-foreground">
+                    <p className="truncate text-sm font-medium text-on-surface">
                       {entry.file.name}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-on-surface-variant">
                       {formatBytes(entry.file.size)}
                     </p>
                   </div>
@@ -300,7 +306,7 @@ export default function UnggahLaporanPage() {
                   <button
                     type="button"
                     onClick={() => removeFile(entry.id)}
-                    className="shrink-0 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                    className="shrink-0 rounded-lg p-1.5 text-on-surface-variant transition-colors hover:bg-destructive/10 hover:text-destructive"
                     aria-label={`Hapus ${entry.file.name}`}
                   >
                     <X size={16} />
@@ -309,7 +315,7 @@ export default function UnggahLaporanPage() {
               ))}
             </ul>
             {/* Tombol tambah lebih banyak file */}
-            <div className="border-t px-4 py-3">
+            <div className="border-t border-outline-variant px-4 py-3 bg-surface-container">
               <label
                 htmlFor="file-input"
                 className="cursor-pointer text-sm font-medium text-primary hover:underline"
@@ -329,8 +335,8 @@ export default function UnggahLaporanPage() {
         )}
 
         {/* Detail laporan */}
-        <div className="space-y-4 rounded-2xl border bg-card p-6">
-          <h3 className="font-semibold text-foreground">Detail Laporan</h3>
+        <div className="space-y-4 rounded-xl border border-outline-variant bg-surface-container p-6 shadow-level-1">
+          <h3 className="font-semibold text-on-surface">Detail Laporan</h3>
 
           <div>
             <label
@@ -366,6 +372,7 @@ export default function UnggahLaporanPage() {
             : `Simpan ke Arsip (${files.length} file)`}
         </Button>
       </form>
+      </PageShell>
     </AppShell>
   );
 }
