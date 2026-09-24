@@ -36,7 +36,7 @@ function AlertDialogPopup({
       <AlertDialogPrimitive.Popup
         data-slot="alert-dialog-popup"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-2xl border border-border/80 bg-background/95 p-6 shadow-2xl backdrop-blur-md transition-all duration-200 data-[ending-style]:scale-95 data-[ending-style]:opacity-0 data-[starting-style]:scale-95 data-[starting-style]:opacity-0 sm:max-w-lg",
+          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl border border-outline-variant bg-surface-container p-6 shadow-level-3 transition-all duration-200 data-[ending-style]:scale-95 data-[ending-style]:opacity-0 data-[starting-style]:scale-95 data-[starting-style]:opacity-0 sm:max-w-lg text-on-surface",
           className
         )}
         {...props}
@@ -54,7 +54,7 @@ function AlertDialogHeader({
   return (
     <div
       data-slot="alert-dialog-header"
-      className={cn("flex flex-col gap-2 text-left", className)}
+      className={cn("flex flex-col gap-1.5 text-left", className)}
       {...props}
     />
   );
@@ -68,7 +68,7 @@ function AlertDialogFooter({
     <div
       data-slot="alert-dialog-footer"
       className={cn(
-        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-2.5 pt-2",
+        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-2.5 pt-4 border-t border-outline-variant/50 mt-2",
         className
       )}
       {...props}
@@ -83,7 +83,7 @@ function AlertDialogTitle({
   return (
     <AlertDialogPrimitive.Title
       data-slot="alert-dialog-title"
-      className={cn("text-lg font-semibold tracking-tight text-foreground", className)}
+      className={cn("text-lg font-bold tracking-tight text-on-surface", className)}
       {...props}
     />
   );
@@ -96,7 +96,7 @@ function AlertDialogDescription({
   return (
     <AlertDialogPrimitive.Description
       data-slot="alert-dialog-description"
-      className={cn("text-sm text-muted-foreground leading-relaxed", className)}
+      className={cn("text-sm text-on-surface-variant leading-relaxed", className)}
       {...props}
     />
   );

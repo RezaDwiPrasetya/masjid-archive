@@ -4,7 +4,7 @@ import { AppShell } from "@/components/app-shell";
 import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, FileSearch, ArrowRight, FileText } from "lucide-react";
+import { Search, FileSearch, FileText } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 

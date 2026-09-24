@@ -18,10 +18,11 @@
   --color-accent-gold: var(--accent-gold);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-error: var(--error);
 
-  --shadow-level-1: 0 1px 2px rgba(26, 28, 25, 0.06);
-  --shadow-level-2: 0 2px 8px rgba(26, 28, 25, 0.10);
-  --shadow-level-3: 0 4px 16px rgba(26, 28, 25, 0.14);
+  --shadow-level-1: 0 1px 3px rgba(26, 28, 25, 0.05);
+  --shadow-level-2: 0 3px 10px rgba(26, 28, 25, 0.08);
+  --shadow-level-3: 0 8px 24px rgba(26, 28, 25, 0.12);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -81,6 +82,7 @@
   --accent-gold: #b8860b;
   --success: #154212;
   --warning: #a15c00;
+  --error: #ba1a1a;
 
   /* Semantic Mappings */
   --background: #fafaf4;
@@ -129,6 +131,7 @@
   --primary-container: #154212;
   --success: #63d35c;
   --warning: #f59e0b;
+  --error: #ffb4ab;
 
   --background: #141713;
   --foreground: #e2e4dd;
