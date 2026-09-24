@@ -204,12 +204,14 @@ export default function PenggunaPage() {
       <AppShell active="/pengguna">
         <PageShell>
           <div className="flex flex-col items-center justify-center py-16">
-            <div className="w-full max-w-md rounded-3xl border bg-card p-8 text-center shadow-sm">
-              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10">
-                <ShieldAlert className="h-10 w-10 text-destructive" />
+            <div className="w-full max-w-md rounded-2xl border border-outline-variant bg-surface-container p-8 text-center shadow-xs">
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+                <ShieldAlert className="h-8 w-8" />
               </div>
-              <h1 className="mb-2 text-2xl font-bold text-foreground">Akses Ditolak</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="mb-2 text-2xl font-bold tracking-tight text-on-surface font-sans">
+                Akses Ditolak
+              </h1>
+              <p className="text-sm text-on-surface-variant">
                 Halaman ini khusus untuk Administrator sistem.
               </p>
             </div>
@@ -229,11 +231,11 @@ export default function PenggunaPage() {
       <PageShell>
         <div className="space-y-6 pb-12">
         {/* Header Title */}
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight text-on-surface font-sans">
             Kelola Pengguna
           </h1>
-          <p className="text-muted-foreground mt-1 text-sm md:text-base">
+          <p className="text-sm text-on-surface-variant">
             Atur hak akses, pencarian, dan manajemen akun pengguna Masjid Archive.
           </p>
         </div>
@@ -343,10 +345,10 @@ export default function PenggunaPage() {
         </div>
 
         {/* Tabel Daftar Pengguna (Border 1px tanpa shadow mengambang) */}
-        <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container">
+        <div className="overflow-hidden rounded-2xl border border-outline-variant bg-surface-container shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-outline-variant bg-surface-container-high text-xs font-semibold uppercase text-on-surface-variant">
+              <thead className="border-b border-outline-variant bg-surface-container-high/70 text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
                 <tr>
                   <th className="px-6 py-3.5">Pengguna</th>
                   <th className="px-6 py-3.5">Email</th>
@@ -355,7 +357,7 @@ export default function PenggunaPage() {
                   <th className="px-6 py-3.5 text-right">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-outline-variant">
                 {filteredUsers.map((user) => {
                   const isSelf = user.id === session.user.id;
                   const reportCount = user._count?.reports ?? 0;
@@ -365,19 +367,19 @@ export default function PenggunaPage() {
                   return (
                     <tr
                       key={user.id}
-                      className="bg-card transition-colors hover:bg-muted/30"
+                      className="transition-colors hover:bg-surface-container-high/50"
                     >
                       {/* Kolom Pengguna */}
-                      <td className="px-6 py-4 font-medium text-foreground">
+                      <td className="px-6 py-4 font-medium text-on-surface">
                         <div className="flex items-center gap-3">
                           {user.image ? (
                             <img
                               src={user.image}
                               alt=""
-                              className="h-9 w-9 rounded-full border border-border object-cover"
+                              className="h-9 w-9 rounded-full border border-outline-variant object-cover"
                             />
                           ) : (
-                            <div className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-primary/10">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full border border-outline-variant bg-primary/10">
                               <UserCog className="h-4 w-4 text-primary" />
                             </div>
                           )}
@@ -385,12 +387,12 @@ export default function PenggunaPage() {
                             <div className="flex items-center gap-2">
                               <span>{user.name || "Anonim"}</span>
                               {isSelf && (
-                                <span className="rounded-md bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
+                                <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary border border-primary/20">
                                   Anda
                                 </span>
                               )}
                             </div>
-                            <span className="text-xs text-muted-foreground sm:hidden">
+                            <span className="text-xs text-on-surface-variant sm:hidden">
                               {user.email || "Tanpa email"}
                             </span>
                           </div>
@@ -398,9 +400,9 @@ export default function PenggunaPage() {
                       </td>
 
                       {/* Kolom Email */}
-                      <td className="px-6 py-4 text-muted-foreground">
+                      <td className="px-6 py-4 text-on-surface-variant">
                         {user.email || (
-                          <span className="italic text-muted-foreground/60">
+                          <span className="italic text-on-surface-variant/60">
                             Tidak tertera
                           </span>
                         )}
@@ -409,8 +411,8 @@ export default function PenggunaPage() {
                       {/* Kolom Status & Riwayat Audit */}
                       <td className="px-6 py-4">
                         {hasHistory ? (
-                          <div className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-xs text-amber-800 dark:text-amber-300">
-                            <FileText className="h-3.5 w-3.5 shrink-0" />
+                          <div className="inline-flex items-center gap-1.5 rounded-lg border border-outline-variant bg-surface px-2.5 py-1 text-xs text-on-surface-variant font-medium">
+                            <FileText className="h-3.5 w-3.5 shrink-0 text-primary" />
                             <span>
                               {reportCount > 0 && `${reportCount} Laporan`}
                               {reportCount > 0 && verifiedCount > 0 && " • "}
@@ -418,7 +420,7 @@ export default function PenggunaPage() {
                             </span>
                           </div>
                         ) : (
-                          <span className="text-xs text-muted-foreground/80">
+                          <span className="text-xs text-on-surface-variant/70">
                             Belum ada riwayat
                           </span>
                         )}
@@ -427,7 +429,7 @@ export default function PenggunaPage() {
                       {/* Kolom Dropdown Role */}
                       <td className="px-6 py-4">
                         <select
-                          className="inline-block cursor-pointer rounded-lg border border-input bg-background p-2 text-sm text-foreground outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-70"
+                          className="inline-block cursor-pointer rounded-lg border border-outline-variant bg-surface px-3 py-1.5 text-sm text-on-surface outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-70 shadow-xs"
                           value={user.role || ""}
                           onChange={(e) => {
                             const val = e.target.value;
@@ -454,10 +456,10 @@ export default function PenggunaPage() {
                               variant="outline"
                               size="sm"
                               disabled
-                              className="h-8 gap-1.5 border-dashed border-border/80 bg-muted/30 px-3 text-xs text-muted-foreground/70 disabled:cursor-not-allowed disabled:opacity-100"
+                              className="h-8 gap-1.5 border-dashed border-outline-variant bg-surface px-3 text-xs text-on-surface-variant/70 disabled:cursor-not-allowed disabled:opacity-100"
                               title="Akun Anda yang sedang aktif digunakan (tidak dapat dihapus)"
                             >
-                              <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+                              <Lock className="h-3.5 w-3.5 shrink-0 text-on-surface-variant/60" />
                               <span>Akun Anda</span>
                             </Button>
                           ) : (
@@ -470,7 +472,7 @@ export default function PenggunaPage() {
                               }}
                               className={`h-8 gap-1.5 px-3 text-xs transition-colors ${
                                 hasHistory
-                                  ? "border-border/80 text-muted-foreground hover:border-border hover:bg-muted/50 hover:text-foreground"
+                                  ? "border-outline-variant text-on-surface-variant hover:border-outline hover:bg-surface-container hover:text-on-surface"
                                   : "border-destructive/30 text-destructive hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
                               }`}
                               title={

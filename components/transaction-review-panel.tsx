@@ -324,10 +324,10 @@ function TransactionRow({
 
   return (
     <div
-      className={`group relative rounded-xl border p-4 transition-all duration-200 ${
+      className={`group relative rounded-xl border p-4 transition-all duration-200 shadow-xs ${
         tx.isVerified
-          ? "border-outline-variant bg-surface-container-high"
-          : "border-amber-300/80 bg-surface-container-high hover:border-amber-400"
+          ? "border-outline-variant bg-surface-container hover:bg-surface-container-high/40"
+          : "border-amber-300 bg-surface-container hover:border-amber-400"
       }`}
     >
       {/* Status pill */}
@@ -335,10 +335,10 @@ function TransactionRow({
         <div className="flex items-center gap-2 flex-wrap">
           {/* Tipe badge */}
           <span
-            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
               isIncome
-                ? "bg-emerald-100 text-emerald-700"
-                : "bg-rose-100 text-rose-700"
+                ? "bg-emerald-500/15 border-emerald-300 text-emerald-800"
+                : "bg-rose-500/15 border-rose-300 text-rose-800"
             }`}
           >
             {isIncome ? (
@@ -351,12 +351,12 @@ function TransactionRow({
 
           {/* Verified badge */}
           {tx.isVerified ? (
-            <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-emerald-100 text-emerald-700">
+            <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium border bg-emerald-500/15 border-emerald-300 text-emerald-800">
               <ShieldCheck size={11} />
               Terverifikasi
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">
+            <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium border bg-amber-500/15 border-amber-300 text-amber-800">
               <ClipboardCheck size={11} />
               Belum Diverifikasi
             </span>
@@ -367,14 +367,14 @@ function TransactionRow({
         {hasSession && !tx.isVerified && (
           <div className="flex items-center gap-1.5 shrink-0">
             <button
-              className="rounded-lg p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+              className="rounded-lg p-1.5 text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-colors"
               title="Edit transaksi"
               onClick={() => setIsEditing(true)}
             >
               <Pencil size={14} />
             </button>
             <button
-              className="rounded-lg p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50"
+              className="rounded-lg p-1.5 text-on-surface-variant hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50"
               title="Hapus transaksi"
               onClick={() => setDeleteOpen(true)}
               disabled={deleteLoading}
@@ -391,8 +391,10 @@ function TransactionRow({
         {/* Actions — khusus transaksi terverifikasi: Batalkan Verifikasi */}
         {hasSession && tx.isVerified && onUnverify && (
           <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-amber-700 bg-amber-100/70 hover:bg-amber-200/80 border border-amber-300/70 transition-colors disabled:opacity-50"
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs gap-1 border-amber-300 text-amber-800 hover:bg-amber-50 hover:text-amber-900 disabled:opacity-50"
               title="Batalkan Verifikasi transaksi ini"
               onClick={() => setUnverifyOpen(true)}
               disabled={unverifyLoading}
@@ -403,17 +405,17 @@ function TransactionRow({
                 <RotateCcw size={12} />
               )}
               <span>Batalkan Verifikasi</span>
-            </button>
+            </Button>
           </div>
         )}
       </div>
 
       {/* Peringatan Visual Duplikat (khusus baris belum diverifikasi) */}
       {!tx.isVerified && duplicateWarning && (
-        <div className="mb-2.5 flex items-start gap-2 rounded-xl bg-amber-500/10 border border-amber-300/80 p-2.5 text-xs text-amber-900 font-medium">
-          <AlertTriangle size={15} className="text-amber-600 shrink-0 mt-0.5" />
+        <div className="mb-2.5 flex items-start gap-2.5 rounded-xl bg-amber-500/15 border border-amber-300/90 p-3 text-xs text-amber-900 font-medium">
+          <AlertTriangle size={15} className="text-amber-700 shrink-0 mt-0.5" />
           <div className="space-y-0.5">
-            <p className="font-semibold text-amber-800">
+            <p className="font-semibold text-amber-900">
               ⚠️ Kemungkinan duplikat dari transaksi terverifikasi
             </p>
             <p className="text-[11px] text-amber-900/80 font-normal">
@@ -586,15 +588,15 @@ function TransactionRow({
 
       {/* Input Nama Donatur — hanya untuk pemasukan & unverified */}
       {!tx.isVerified && isIncome && (
-        <div className="mt-3 pt-2.5 border-t border-amber-200/50 space-y-1.5">
+        <div className="mt-3 pt-2.5 border-t border-outline-variant/60 space-y-1.5">
           <div className="flex items-center justify-between">
             <label
               htmlFor={`donor-input-${tx.id}`}
-              className="text-xs font-medium text-amber-900/80 flex items-center gap-1.5"
+              className="text-xs font-medium text-on-surface-variant flex items-center gap-1.5"
             >
-              <User size={12} className="text-amber-700" />
+              <User size={12} className="text-on-surface-variant" />
               Nama Donatur
-              <span className="text-[10px] text-muted-foreground font-normal">
+              <span className="text-[10px] text-on-surface-variant/70 font-normal">
                 (opsional)
               </span>
             </label>
@@ -602,7 +604,7 @@ function TransactionRow({
               <button
                 type="button"
                 onClick={() => setDonorName("")}
-                className="text-[10px] text-muted-foreground hover:text-destructive transition-colors font-medium"
+                className="text-[10px] text-on-surface-variant hover:text-destructive transition-colors font-medium"
                 title="Kosongkan nama donatur"
               >
                 Kosongkan
@@ -614,7 +616,7 @@ function TransactionRow({
             value={donorName}
             onChange={(e) => setDonorName(e.target.value)}
             placeholder="Contoh: H. Kosasih (kosongkan jika tanpa donatur)"
-            className="h-8 text-xs bg-white/90 border-amber-200 focus-visible:ring-emerald-500 placeholder:text-muted-foreground/60"
+            className="h-8 text-xs bg-surface border-outline-variant focus-visible:ring-primary placeholder:text-on-surface-variant/60"
             disabled={confirmLoading || !hasSession}
           />
         </div>
@@ -622,12 +624,12 @@ function TransactionRow({
 
       {/* Tombol Konfirmasi — hanya untuk unverified & ada sesi */}
       {hasSession && !tx.isVerified && (
-        <div className="mt-3 pt-3 border-t border-amber-200/60">
+        <div className="mt-3 pt-3 border-t border-outline-variant/60">
           <Button
             size="sm"
             disabled={confirmLoading}
             onClick={handleConfirm}
-            className="w-full gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white border-0"
+            className="w-full gap-1.5"
           >
             {confirmLoading ? (
               <>
@@ -637,7 +639,7 @@ function TransactionRow({
             ) : (
               <>
                 <CheckCircle2 size={13} />
-                Konfirmasi
+                Konfirmasi Transaksi
               </>
             )}
           </Button>
@@ -1121,10 +1123,10 @@ export function TransactionReviewPanel({
       {unverified.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold text-amber-700">
+            <p className="text-sm font-semibold text-amber-800">
               Menunggu Verifikasi
             </p>
-            <span className="inline-flex items-center justify-center rounded-full bg-amber-100 text-amber-700 text-xs font-bold h-5 min-w-5 px-1.5">
+            <span className="inline-flex items-center justify-center rounded-full bg-amber-500/15 border border-amber-300 text-amber-800 text-xs font-bold h-5 min-w-5 px-1.5">
               {unverified.length}
             </span>
           </div>
@@ -1150,10 +1152,10 @@ export function TransactionReviewPanel({
       {verified.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold text-emerald-700">
+            <p className="text-sm font-semibold text-emerald-800">
               Sudah Diverifikasi
             </p>
-            <span className="inline-flex items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold h-5 min-w-5 px-1.5">
+            <span className="inline-flex items-center justify-center rounded-full bg-emerald-500/15 border border-emerald-300 text-emerald-800 text-xs font-bold h-5 min-w-5 px-1.5">
               {verified.length}
             </span>
           </div>

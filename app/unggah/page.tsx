@@ -99,12 +99,14 @@ export default function UnggahLaporanPage() {
       <AppShell active="/unggah">
         <PageShell>
           <div className="flex flex-col items-center justify-center py-16">
-            <div className="w-full max-w-md rounded-3xl border bg-card p-8 text-center shadow-sm">
-              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10">
-                <ShieldAlert className="h-10 w-10 text-destructive" />
+            <div className="w-full max-w-md rounded-2xl border border-outline-variant bg-surface-container p-8 text-center shadow-xs">
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+                <ShieldAlert className="h-8 w-8" />
               </div>
-              <h1 className="mb-2 text-2xl font-bold text-foreground">Akses Ditolak</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="mb-2 text-2xl font-bold tracking-tight text-on-surface font-sans">
+                Akses Ditolak
+              </h1>
+              <p className="text-sm text-on-surface-variant">
                 Hanya pengurus DKM (Bendahara atau Admin) yang dapat mengunggah laporan.
               </p>
             </div>
@@ -206,32 +208,34 @@ export default function UnggahLaporanPage() {
   return (
     <AppShell active="/unggah">
       <PageShell>
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Unggah Laporan Baru</h1>
-          <p className="text-muted-foreground">
+        <div className="mb-8 space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight text-on-surface font-sans">
+            Unggah Laporan Baru
+          </h1>
+          <p className="text-sm text-on-surface-variant">
             Lampirkan satu atau beberapa file (gambar, PDF, Excel) untuk laporan mingguan ini.
           </p>
         </div>
 
-      {/* Banner sukses */}
-      {saved && (
-        <div className="mb-6 flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 p-4 text-primary">
-          <CheckCircle2 size={22} />
-          <div>
-            <p className="font-semibold">Laporan Berhasil Disimpan</p>
-            <Link href="/" className="text-sm underline">
-              Lihat di Arsip
-            </Link>
+        {/* Banner sukses */}
+        {saved && (
+          <div className="mb-6 flex items-center gap-3 rounded-2xl border border-primary/30 bg-primary/10 p-4 text-primary">
+            <CheckCircle2 size={22} className="shrink-0" />
+            <div>
+              <p className="font-semibold text-sm">Laporan Berhasil Disimpan</p>
+              <Link href="/" className="text-xs underline hover:text-primary-container">
+                Lihat di Arsip Laporan &rarr;
+              </Link>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
 
         {/* ── #028: Drop zone multi-file ── */}
         <label
           htmlFor="file-input"
-          className="relative flex min-h-48 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-outline-variant bg-surface-container p-6 shadow-level-1 text-center transition-colors hover:border-primary"
+          className="relative flex min-h-52 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant bg-surface-container/70 p-8 shadow-xs text-center transition-colors hover:border-primary/80 hover:bg-surface-container"
         >
           <input
             id="file-input"
@@ -247,14 +251,14 @@ export default function UnggahLaporanPage() {
               <UploadCloud size={32} />
             </div>
             <div>
-              <p className="font-semibold text-on-surface">
-                Ketuk atau seret file ke sini
+              <p className="font-semibold text-base text-on-surface">
+                Ketuk atau seret file laporan ke sini
               </p>
               <p className="mt-1 text-sm text-on-surface-variant">
                 Gambar (maks 5 MB) · PDF (maks 10 MB) · Excel (maks 5 MB)
               </p>
-              <p className="mt-0.5 text-xs text-on-surface-variant/80">
-                .jpg · .png · .pdf · .xlsx · .xls
+              <p className="mt-1 text-xs text-on-surface-variant/80">
+                Format: .jpg · .png · .pdf · .xlsx · .xls
               </p>
             </div>
           </div>
@@ -262,7 +266,7 @@ export default function UnggahLaporanPage() {
 
         {/* ── #031: Error validasi tipe/ukuran ── */}
         {validationErrors.length > 0 && (
-          <div className="space-y-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4">
+          <div className="space-y-2 rounded-2xl border border-destructive/30 bg-destructive/10 p-4">
             <div className="flex items-center gap-2 text-destructive">
               <AlertTriangle size={18} />
               <p className="text-sm font-semibold">
@@ -281,8 +285,8 @@ export default function UnggahLaporanPage() {
 
         {/* ── #029 & #030: Daftar file terpilih ── */}
         {files.length > 0 && (
-          <div className="rounded-xl border border-outline-variant bg-surface-container shadow-level-1 overflow-hidden">
-            <div className="border-b border-outline-variant px-4 py-3 bg-surface-container-high/50">
+          <div className="rounded-2xl border border-outline-variant bg-surface-container shadow-xs overflow-hidden">
+            <div className="border-b border-outline-variant px-5 py-3.5 bg-surface-container-high/60">
               <p className="text-sm font-semibold text-on-surface">
                 File Terpilih ({files.length})
               </p>
@@ -291,14 +295,14 @@ export default function UnggahLaporanPage() {
               {files.map((entry) => (
                 <li
                   key={entry.id}
-                  className="flex items-center gap-3 px-4 py-3"
+                  className="flex items-center gap-3 px-5 py-3.5 hover:bg-surface-container-high/40 transition-colors"
                 >
                   <FileIcon mime={entry.file.type} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-on-surface">
                       {entry.file.name}
                     </p>
-                    <p className="text-xs text-on-surface-variant">
+                    <p className="text-xs text-on-surface-variant mt-0.5">
                       {formatBytes(entry.file.size)}
                     </p>
                   </div>
@@ -315,12 +319,12 @@ export default function UnggahLaporanPage() {
               ))}
             </ul>
             {/* Tombol tambah lebih banyak file */}
-            <div className="border-t border-outline-variant px-4 py-3 bg-surface-container">
+            <div className="border-t border-outline-variant px-5 py-3 bg-surface-container/70">
               <label
                 htmlFor="file-input"
-                className="cursor-pointer text-sm font-medium text-primary hover:underline"
+                className="cursor-pointer text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1"
               >
-                + Tambah file lain
+                + Tambah berkas lain
               </label>
             </div>
           </div>
@@ -328,20 +332,22 @@ export default function UnggahLaporanPage() {
 
         {/* Error submit */}
         {submitError && (
-          <div className="flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-4">
+          <div className="flex items-center gap-3 rounded-2xl border border-destructive/30 bg-destructive/10 p-4">
             <AlertTriangle className="shrink-0 text-destructive" size={20} />
             <p className="text-sm font-medium text-destructive">{submitError}</p>
           </div>
         )}
 
         {/* Detail laporan */}
-        <div className="space-y-4 rounded-xl border border-outline-variant bg-surface-container p-6 shadow-level-1">
-          <h3 className="font-semibold text-on-surface">Detail Laporan</h3>
+        <div className="space-y-3 rounded-2xl border border-outline-variant bg-surface-container/70 p-6 shadow-xs">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-on-surface-variant">
+            Detail Laporan
+          </h3>
 
           <div>
             <label
               htmlFor="report-date"
-              className="mb-1 block text-sm font-medium text-foreground"
+              className="mb-1.5 block text-sm font-medium text-on-surface"
             >
               Tanggal Laporan
             </label>
@@ -351,9 +357,10 @@ export default function UnggahLaporanPage() {
               value={reportDate}
               onChange={(e) => setReportDate(e.target.value)}
               required
+              className="bg-surface border-outline-variant max-w-sm"
             />
-            <p className="mt-1 text-xs text-muted-foreground">
-              Pilih tanggal laporan ini dibacakan (biasanya hari Jumat)
+            <p className="mt-1.5 text-xs text-on-surface-variant">
+              Pilih tanggal laporan ini dibacakan di hadapan jamaah (biasanya hari Jumat)
             </p>
           </div>
         </div>
@@ -361,7 +368,7 @@ export default function UnggahLaporanPage() {
         <Button
           type="submit"
           size="lg"
-          className="w-full"
+          className="w-full h-11 text-base font-semibold gap-2"
           disabled={loading || files.length === 0}
         >
           <CloudUpload size={20} />

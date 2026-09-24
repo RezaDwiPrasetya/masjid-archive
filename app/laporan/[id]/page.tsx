@@ -170,8 +170,8 @@ export default async function DetailLaporanPage({
 
                         {/* ── Blok Ekstraksi (F-011) — hanya tampil jika ada sesi ── */}
                         {hasSession && (
-                          <div className="rounded-xl bg-muted/50 border border-border/60 p-3 space-y-3">
-                            <p className="text-xs font-semibold text-foreground/70 uppercase tracking-wide">
+                          <div className="rounded-2xl bg-surface-container border border-outline-variant p-4 space-y-3 shadow-xs">
+                            <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
                               Ekstraksi Data Transaksi
                             </p>
                             <ExtractButton
@@ -195,11 +195,11 @@ export default async function DetailLaporanPage({
                         {txCount > 0 && (
                           <div className="space-y-3 pt-2">
                             <div className="flex items-center justify-between">
-                              <h2 className="text-base font-semibold">
+                              <h2 className="text-base font-bold text-on-surface font-sans">
                                 Transaksi Kas ({txCount})
                               </h2>
                               {hasSession && unverifiedCount > 0 && (
-                                <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                                <span className="text-xs font-semibold text-amber-800 bg-amber-500/15 border border-amber-300 px-2.5 py-0.5 rounded-full">
                                   {unverifiedCount} perlu dikonfirmasi
                                 </span>
                               )}

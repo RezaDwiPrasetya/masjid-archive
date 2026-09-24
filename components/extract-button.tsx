@@ -25,22 +25,22 @@ const statusBadge: Record<
 > = {
   not_extracted: {
     label: "Belum diekstrak",
-    className: "bg-muted text-muted-foreground",
+    className: "bg-surface-container-high border border-outline-variant text-on-surface-variant font-medium",
     icon: null,
   },
   processing: {
     label: "Sedang diproses…",
-    className: "bg-amber-100 text-amber-700",
-    icon: <Loader2 size={12} className="animate-spin" />,
+    className: "bg-amber-500/15 border border-amber-300 text-amber-800 font-semibold",
+    icon: <Loader2 size={12} className="animate-spin text-amber-700" />,
   },
   done: {
     label: "Selesai",
-    className: "bg-emerald-100 text-emerald-700",
-    icon: <CheckCircle2 size={12} />,
+    className: "bg-emerald-500/15 border border-emerald-300 text-emerald-800 font-semibold",
+    icon: <CheckCircle2 size={12} className="text-emerald-700" />,
   },
   failed: {
     label: "Gagal",
-    className: "bg-destructive/10 text-destructive",
+    className: "bg-destructive/10 border border-destructive/30 text-destructive font-semibold",
     icon: <AlertCircle size={12} />,
   },
 };
@@ -99,30 +99,32 @@ export function ExtractButton({
   const errorMessage = localError ?? extractionError;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2.5">
       {/* Status badge */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <span
-          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.className}`}
-        >
-          {badge.icon}
-          {badge.label}
-          {currentStatus === "done" && transactionCount !== undefined && (
-            <span className="ml-1">· {transactionCount} transaksi</span>
-          )}
-        </span>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs ${badge.className}`}
+          >
+            {badge.icon}
+            {badge.label}
+            {currentStatus === "done" && transactionCount !== undefined && (
+              <span className="font-normal opacity-90">· {transactionCount} transaksi</span>
+            )}
+          </span>
 
-        {/* Badge model fallback — tampil hanya jika model yang dipakai bukan model utama */}
-        {currentStatus === "done" &&
-          extractionModel &&
-          extractionModel !== PRIMARY_MODEL && (
-            <span
-              title={`Model yang dipakai: ${extractionModel} (model cadangan)`}
-              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-200/70 dark:border-amber-800/40"
-            >
-              <span aria-hidden="true">&#9888;</span> Model Cadangan
-            </span>
-          )}
+          {/* Badge model fallback — tampil hanya jika model yang dipakai bukan model utama */}
+          {currentStatus === "done" &&
+            extractionModel &&
+            extractionModel !== PRIMARY_MODEL && (
+              <span
+                title={`Model yang dipakai: ${extractionModel} (model cadangan)`}
+                className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold bg-amber-500/15 text-amber-800 border border-amber-300"
+              >
+                <span aria-hidden="true">&#9888;</span> Model Cadangan
+              </span>
+            )}
+        </div>
 
         {/* Tombol Ekstrak / Coba Lagi */}
         {(extractionStatus === "not_extracted" || extractionStatus === "failed") && (
@@ -156,12 +158,12 @@ export function ExtractButton({
         {extractionStatus === "done" && !loading && (
           <Button
             size="sm"
-            variant="ghost"
+            variant="outline"
             disabled={loading}
             onClick={handleExtract}
-            className="gap-1.5 text-muted-foreground hover:text-foreground"
+            className="gap-1.5 text-xs h-7 text-on-surface-variant hover:text-on-surface"
           >
-            <RotateCcw size={13} />
+            <RotateCcw size={12} />
             Ekstrak Ulang
           </Button>
         )}
@@ -169,9 +171,9 @@ export function ExtractButton({
 
       {/* Pesan error */}
       {errorMessage && (
-        <p className="flex items-start gap-1.5 rounded-lg bg-destructive/8 px-3 py-2 text-xs text-destructive">
-          <AlertCircle size={13} className="mt-px shrink-0" />
-          {errorMessage}
+        <p className="flex items-start gap-1.5 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+          <AlertCircle size={14} className="mt-0.5 shrink-0" />
+          <span>{errorMessage}</span>
         </p>
       )}
     </div>
