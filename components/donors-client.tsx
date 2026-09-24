@@ -57,8 +57,8 @@ export function DonorsClient({ donors, anonymous }: DonorsClientProps) {
       <div className="space-y-8">
         {/* Page Title Header */}
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Daftar Donatur</h1>
-          <p className="text-muted-foreground text-sm">
+          <h1 className="text-3xl font-bold tracking-tight text-on-surface">Daftar Donatur</h1>
+          <p className="text-sm text-on-surface-variant">
             Transparansi catatan infaq dan kontribusi para donatur terverifikasi kas masjid.
           </p>
         </div>
@@ -66,12 +66,12 @@ export function DonorsClient({ donors, anonymous }: DonorsClientProps) {
         {/* 1. DUA KARTU KPI SIMETRIS (50:50) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Card 1: Donatur Terdaftar */}
-          <div className="rounded-2xl border border-outline-variant bg-surface-container/70 p-6 shadow-sm space-y-3">
+          <div className="rounded-2xl border border-outline-variant bg-surface-container/70 p-6 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
                 Donatur Terdata
               </span>
-              <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+              <span className="rounded-full bg-primary/10 border border-primary/20 px-2.5 py-0.5 text-xs font-semibold text-primary">
                 Terverifikasi
               </span>
             </div>
@@ -86,12 +86,12 @@ export function DonorsClient({ donors, anonymous }: DonorsClientProps) {
           </div>
 
           {/* Card 2: Infaq Anonim / Tromol */}
-          <div className="rounded-2xl border border-outline-variant bg-surface-container/70 p-6 shadow-sm space-y-3">
+          <div className="rounded-2xl border border-outline-variant bg-surface-container/70 p-6 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
                 Infaq Anonim (Tromol / Kotak Amal)
               </span>
-              <span className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+              <span className="rounded-full bg-surface-container-high border border-outline-variant px-2.5 py-0.5 text-xs font-medium text-on-surface-variant">
                 Tanpa Profil
               </span>
             </div>
@@ -129,7 +129,7 @@ export function DonorsClient({ donors, anonymous }: DonorsClientProps) {
               placeholder="Cari nama donatur..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-10 text-sm rounded-xl border-outline-variant bg-surface-container shadow-sm"
+              className="pl-9 h-10 text-sm rounded-xl border-outline-variant bg-surface-container shadow-xs"
             />
           </div>
         </div>
@@ -148,7 +148,7 @@ export function DonorsClient({ donors, anonymous }: DonorsClientProps) {
             </p>
           </div>
         ) : (
-          <div className="rounded-2xl border border-outline-variant bg-surface-container/60 shadow-sm overflow-hidden divide-y divide-outline-variant">
+          <div className="rounded-2xl border border-outline-variant bg-surface-container/60 shadow-xs overflow-hidden divide-y divide-outline-variant">
             {filteredDonors.map((donor, idx) => {
               const rank = idx + 1;
               const isRankOne = rank === 1 && !search;
@@ -156,21 +156,21 @@ export function DonorsClient({ donors, anonymous }: DonorsClientProps) {
                 <Link
                   key={donor.id}
                   href={`/donatur/${donor.id}`}
-                  className="group flex items-center justify-between gap-4 p-4 sm:p-5 hover:bg-surface-container-high transition-all duration-150"
+                  className="group flex items-center justify-between gap-4 p-4 sm:p-5 hover:bg-surface-container-high transition-colors duration-150"
                 >
                   <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
                     {/* Badge Nomor Urut */}
                     <div
                       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold transition-transform group-hover:scale-105 ${
                         isRankOne
-                          ? "border border-amber-500/30 text-amber-800 dark:text-amber-200 bg-amber-500/15"
+                          ? "border border-amber-500/40 text-amber-800 dark:text-amber-200 bg-amber-500/15"
                           : "border border-outline-variant text-on-surface-variant bg-surface"
                       }`}
                     >
                       #{rank}
                     </div>
 
-                    {/* Nama Donatur (Tanpa truncate agar tidak terpotong) */}
+                    {/* Nama Donatur */}
                     <div className="min-w-0">
                       <div className="font-semibold text-sm sm:text-base text-on-surface group-hover:text-primary transition-colors leading-snug">
                         {donor.name}

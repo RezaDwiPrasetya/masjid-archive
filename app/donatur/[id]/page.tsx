@@ -3,7 +3,6 @@ import {
   ArrowLeft,
   Calendar,
   ExternalLink,
-  HeartHandshake,
   Receipt,
   User,
   AlertCircle,
@@ -11,8 +10,9 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PageShell } from "@/components/page-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -33,7 +33,7 @@ export default async function DonorDetailPage({
 }) {
   const { id } = await params;
 
-  // Query data donatur dan riwayat transaksi terverifikasi
+  // Query data donatur dan riwayat transaksi terverifikasi (strictly preserved)
   const donor = await prisma.donor.findUnique({
     where: { id },
     include: {
@@ -61,19 +61,19 @@ export default async function DonorDetailPage({
       <AppShell active="/donatur">
         <PageShell>
           <div className="mx-auto max-w-xl py-12">
-            <Card className="border-destructive/20 bg-card/70 p-8 text-center backdrop-blur-xl">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+            <Card className="border-error/20 bg-surface-container p-8 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-error/10 text-error">
                 <AlertCircle size={32} />
               </div>
-              <h1 className="text-2xl font-bold text-foreground">
+              <h1 className="text-2xl font-bold text-on-surface">
                 Donatur Tidak Ditemukan
               </h1>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Data profil donatur dengan ID <code className="bg-muted px-1.5 py-0.5 rounded font-mono text-xs">{id}</code> tidak ditemukan di sistem atau belum memiliki transaksi terverifikasi.
+              <p className="mt-2 text-sm text-on-surface-variant">
+                Data profil donatur dengan ID <code className="bg-surface-container-high px-1.5 py-0.5 rounded font-mono text-xs">{id}</code> tidak ditemukan di sistem atau belum memiliki transaksi terverifikasi.
               </p>
               <div className="mt-6">
                 <Link href="/donatur">
-                  <Button className="rounded-xl">
+                  <Button variant="default">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Kembali ke Daftar Donatur
                   </Button>
@@ -93,90 +93,87 @@ export default async function DonorDetailPage({
 
   const averagePerDonation =
     donor.transactions.length > 0
-    ? totalContribution / donor.transactions.length
-    : 0;
+      ? totalContribution / donor.transactions.length
+      : 0;
 
   return (
     <AppShell active="/donatur">
       <PageShell>
         <div className="space-y-6">
-        {/* Back Link */}
-        <Link
-          href="/donatur"
-          className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline transition-colors"
-        >
-          <ArrowLeft size={16} /> Kembali ke Daftar Donatur
-        </Link>
+          {/* Back Navigation */}
+          <div>
+            <Link
+              href="/donatur"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline transition-colors"
+            >
+              <ArrowLeft size={14} /> Kembali ke Daftar Donatur
+            </Link>
+          </div>
 
-        {/* Profil Header Card */}
-        <Card className="border-outline-variant bg-surface-container shadow-level-1">
-          <CardContent className="p-6">
+          {/* Profile Header Card */}
+          <div className="rounded-xl border border-outline-variant bg-surface-container p-6 sm:p-7 shadow-level-1">
             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm shadow-primary/20">
-                  <User size={32} />
+              <div className="flex items-start gap-4">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-fixed shadow-xs">
+                  <User size={28} />
                 </div>
                 <div>
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <h1 className="text-2xl font-bold text-on-surface tracking-tight">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-on-surface tracking-tight font-sans">
                       {donor.name}
                     </h1>
-                    <span className="rounded-full bg-primary/10 border border-primary/20 px-3 py-0.5 text-xs font-semibold text-primary whitespace-nowrap">
+                    <Badge variant="success">
                       Donatur Terverifikasi
-                    </span>
+                    </Badge>
                   </div>
-                  <p className="text-xs text-on-surface-variant mt-1.5">
-                    Profil donasi tercatat secara resmi pada pembukuan kas masjid.
+                  <p className="text-xs text-on-surface-variant mt-1">
+                    Profil donasi tercatat dan telah diverifikasi pada pembukuan kas masjid.
                   </p>
                 </div>
               </div>
 
-              {/* Stat Cards Mini - Symmetrical & Balanced */}
-              <div className="grid grid-cols-2 gap-3 sm:flex sm:items-stretch">
-                <div className="rounded-xl border border-outline-variant/70 bg-surface-container-high/80 px-4 py-3 min-w-[160px] flex flex-col justify-between shadow-xs">
-                  <span className="text-xs font-medium text-on-surface-variant">
+              {/* Stat Summary - Horizontal & Balanced */}
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 border-t md:border-t-0 md:border-l border-outline-variant pt-4 md:pt-0 md:pl-6">
+                <div className="min-w-[140px]">
+                  <span className="text-xs font-medium text-on-surface-variant block">
                     Total Kontribusi
                   </span>
-                  <span className="text-lg font-bold text-primary mt-1 tabular-nums whitespace-nowrap">
+                  <span className="text-xl sm:text-2xl font-bold text-primary tabular-nums mt-0.5 block">
                     {formatRupiah(totalContribution)}
                   </span>
                 </div>
-                <div className="rounded-xl border border-outline-variant/70 bg-surface-container-high/80 px-4 py-3 min-w-[160px] flex flex-col justify-between shadow-xs">
-                  <span className="text-xs font-medium text-on-surface-variant">
+                <div className="min-w-[110px]">
+                  <span className="text-xs font-medium text-on-surface-variant block">
                     Frekuensi Infaq
                   </span>
-                  <span className="text-lg font-bold text-on-surface mt-1 tabular-nums whitespace-nowrap">
-                    {donor.transactions.length} <span className="text-xs font-normal text-on-surface-variant">transaksi</span>
+                  <span className="text-xl sm:text-2xl font-bold text-on-surface tabular-nums mt-0.5 block">
+                    {donor.transactions.length} <span className="text-xs font-normal text-on-surface-variant">kali</span>
                   </span>
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Riwayat Transaksi */}
-        <Card className="border-outline-variant bg-surface-container shadow-level-1">
-          <CardHeader className="flex flex-row items-center justify-between pb-4">
-            <div>
-              <CardTitle className="text-lg font-bold flex items-center gap-2 text-on-surface">
-                <Receipt className="h-5 w-5 text-primary" />
-                Riwayat Transaksi Terverifikasi
-              </CardTitle>
-              <p className="text-xs text-on-surface-variant mt-0.5">
-                Daftar seluruh catatan infaq donatur yang telah dikonfirmasi oleh pengurus DKM.
-              </p>
+          {/* Riwayat Transaksi — Format Buku Besar */}
+          <div className="space-y-3 pt-2">
+            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 border-b border-outline-variant pb-3">
+              <div className="flex items-center gap-2">
+                <Receipt className="h-4 w-4 text-primary" />
+                <h2 className="text-lg font-bold text-on-surface font-sans">
+                  Riwayat Infaq Terverifikasi ({donor.transactions.length})
+                </h2>
+              </div>
+              <span className="text-xs text-on-surface-variant tabular-nums">
+                Rata-rata per infaq: <strong className="text-on-surface">{formatRupiah(averagePerDonation)}</strong>
+              </span>
             </div>
-            <span className="text-xs text-on-surface-variant tabular-nums">
-              Rata-rata: {formatRupiah(averagePerDonation)}
-            </span>
-          </CardHeader>
-          <CardContent className="p-0">
+
             {donor.transactions.length === 0 ? (
-              <div className="py-12 text-center text-on-surface-variant">
+              <div className="py-12 text-center text-on-surface-variant rounded-xl border border-dashed border-outline-variant bg-surface-container/50">
                 <p className="text-sm">Belum ada riwayat transaksi terverifikasi untuk donatur ini.</p>
               </div>
             ) : (
-              <div className="divide-y divide-outline-variant">
+              <div className="divide-y divide-outline-variant border-y border-outline-variant">
                 {donor.transactions.map((tx) => {
                   const txDate = tx.transactionDate ?? tx.report.reportDate;
                   const dateStr = new Date(txDate).toLocaleDateString("id-ID", {
@@ -189,31 +186,31 @@ export default async function DonorDetailPage({
                   return (
                     <div
                       key={tx.id}
-                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 px-6 gap-3 transition-colors hover:bg-surface-container-high/50"
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3.5 px-3 gap-3 transition-colors hover:bg-surface-container rounded-md"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
-                          <HeartHandshake size={16} />
+                        <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <Receipt size={14} />
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-on-surface">
                             {tx.description || "Infaq Kas Masjid"}
                           </p>
-                          <div className="flex items-center gap-2 text-xs text-on-surface-variant mt-0.5">
-                            <Calendar size={12} />
+                          <div className="flex items-center gap-1.5 text-xs text-on-surface-variant mt-0.5">
+                            <Calendar size={12} className="text-primary/70" />
                             <span>{dateStr}</span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between sm:justify-end gap-4 ml-11 sm:ml-0">
-                        <span className="text-base font-bold text-emerald-700 tabular-nums">
+                      <div className="flex items-center justify-between sm:justify-end gap-4 ml-10 sm:ml-0">
+                        <span className="text-base font-bold text-primary tabular-nums">
                           +{formatRupiah(Number(tx.amount))}
                         </span>
 
                         <Link
                           href={`/laporan/${tx.reportId}`}
-                          className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline bg-primary/10 hover:bg-primary/20 px-2.5 py-1 rounded-lg transition-colors"
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-on-surface-variant hover:text-primary bg-surface-container-high hover:bg-surface-container border border-outline-variant px-2.5 py-1 rounded-md transition-colors"
                         >
                           <FileText size={12} />
                           <span>Laporan</span>
@@ -225,8 +222,7 @@ export default async function DonorDetailPage({
                 })}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
         </div>
       </PageShell>
     </AppShell>

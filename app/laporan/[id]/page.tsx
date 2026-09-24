@@ -87,25 +87,32 @@ export default async function DetailLaporanPage({
   return (
     <AppShell active="/">
       <PageShell>
-        <Link
-          href="/"
-          className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-        >
-          <ArrowLeft size={16} /> Kembali ke Arsip
-        </Link>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Detail Laporan</h1>
-        <p className="text-muted-foreground">
-          Laporan{" "}
-          {new Date(report.reportDate).toLocaleDateString("id-ID", {
-            dateStyle: "full",
-          })}
-        </p>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
-        {/* Panel utama: daftar lampiran */}
         <div className="space-y-6">
+          {/* Back Navigation */}
+          <div>
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline transition-colors"
+            >
+              <ArrowLeft size={14} /> Kembali ke Arsip Laporan
+            </Link>
+          </div>
+
+          {/* Page Heading */}
+          <div className="border-b border-outline-variant pb-5">
+            <h1 className="text-3xl font-bold tracking-tight text-on-surface font-sans">
+              Detail Laporan
+            </h1>
+            <p className="text-sm text-on-surface-variant mt-1">
+              Laporan Keuangan Kas • {new Date(report.reportDate).toLocaleDateString("id-ID", {
+                dateStyle: "full",
+              })}
+            </p>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+            {/* Panel utama: daftar lampiran */}
+            <div className="space-y-6">
           {report.attachments.length === 0 ? (
             <div className="flex flex-col items-center rounded-2xl border bg-card p-12 text-center text-muted-foreground">
               <ImageOff size={40} className="mb-3" />
@@ -298,34 +305,45 @@ export default async function DetailLaporanPage({
         </div>
 
         {/* Sidebar: metadata laporan */}
-        <aside className="h-fit rounded-xl border border-outline-variant bg-surface-container p-6 shadow-level-1">
-          <dl className="space-y-4 text-sm">
+        <aside className="h-fit rounded-xl border border-outline-variant bg-surface-container p-5 sm:p-6 shadow-level-1">
+          <div className="space-y-5">
             <div>
-              <dt className="text-muted-foreground">Tanggal laporan</dt>
-              <dd className="font-medium">
-                {new Date(report.reportDate).toLocaleDateString("id-ID", {
-                  dateStyle: "long",
-                })}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Diunggah oleh</dt>
-              <dd className="font-medium">{report.uploadedBy.name}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Tanggal unggah</dt>
-              <dd className="font-medium">
-                {new Date(report.uploadedAt).toLocaleDateString("id-ID", {
-                  dateStyle: "long",
-                })}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Jumlah lampiran</dt>
-              <dd className="mb-3 font-medium">
-                {report.attachments.length} file
-              </dd>
-              {hasSession && <AddAttachmentButton reportId={report.id} />}
+              <h3 className="text-xs font-bold uppercase tracking-wider text-on-surface-variant border-b border-outline-variant pb-2">
+                Informasi Dokumen
+              </h3>
+              <dl className="mt-3 space-y-3 text-xs sm:text-sm">
+                <div>
+                  <dt className="text-on-surface-variant text-xs">Tanggal Laporan</dt>
+                  <dd className="font-semibold text-on-surface">
+                    {new Date(report.reportDate).toLocaleDateString("id-ID", {
+                      dateStyle: "long",
+                    })}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-on-surface-variant text-xs">Diunggah Oleh</dt>
+                  <dd className="font-semibold text-on-surface">{report.uploadedBy.name}</dd>
+                </div>
+                <div>
+                  <dt className="text-on-surface-variant text-xs">Tanggal Pengunggahan</dt>
+                  <dd className="font-medium text-on-surface">
+                    {new Date(report.uploadedAt).toLocaleDateString("id-ID", {
+                      dateStyle: "medium",
+                    })}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-on-surface-variant text-xs">Jumlah Lampiran</dt>
+                  <dd className="font-semibold text-on-surface mt-0.5">
+                    {report.attachments.length} berkas pindaian
+                  </dd>
+                  {hasSession && (
+                    <div className="mt-2.5">
+                      <AddAttachmentButton reportId={report.id} />
+                    </div>
+                  )}
+                </div>
+              </dl>
             </div>
 
             {/* Ringkasan kas & transaksi terverifikasi */}
@@ -337,7 +355,6 @@ export default async function DetailLaporanPage({
                 a.transactions.filter((t) => !t.isVerified)
               );
 
-              // Baca saldo langsung dari Report — tidak lagi dari Attachment (sudah dimigrasikan)
               const initialBalance = report.initialBalance
                 ? parseFloat(report.initialBalance.toString())
                 : null;
@@ -364,7 +381,6 @@ export default async function DetailLaporanPage({
               const calculatedFinal =
                 initialBalance !== null ? initialBalance + netChange : null;
 
-              // Check reconciliation: if both initial & final exist from paper, is it balanced?
               const isReconciled =
                 calculatedFinal !== null &&
                 finalBalance !== null &&
@@ -384,74 +400,71 @@ export default async function DetailLaporanPage({
 
               return (
                 <div className="border-t border-outline-variant pt-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
-                      Ringkasan Kas Pekan Ini
-                    </p>
-                  </div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+                    Ringkasan Kas Pekan Ini
+                  </h3>
 
                   {allUnverified.length > 0 && (
-                    <p className="text-xs text-amber-700 font-medium bg-amber-500/10 border border-amber-300/60 rounded-lg px-2.5 py-1.5 dark:bg-amber-950/30 dark:text-amber-400">
-                      {allUnverified.length} transaksi menunggu verifikasi
-                    </p>
+                    <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5 text-xs text-amber-900 dark:text-amber-300 font-medium">
+                      {allUnverified.length} transaksi belum diverifikasi
+                    </div>
                   )}
 
-                  <div className="space-y-2 text-sm">
-                    {/* Saldo Lalu / Awal jika terdeteksi dari kertas */}
+                  <div className="space-y-2 text-xs sm:text-sm">
                     {initialBalance !== null && (
                       <div className="flex justify-between items-baseline">
-                        <span className="text-muted-foreground">Saldo Lalu</span>
-                        <span className="font-semibold text-foreground tabular-nums">
+                        <span className="text-on-surface-variant">Saldo Lalu</span>
+                        <span className="font-semibold text-on-surface tabular-nums">
                           {fmt(initialBalance)}
                         </span>
                       </div>
                     )}
 
                     <div className="flex justify-between items-baseline">
-                      <span className="text-muted-foreground">Pemasukan</span>
-                      <span className="font-medium text-emerald-700 dark:text-emerald-400 tabular-nums">
+                      <span className="text-on-surface-variant">Pemasukan</span>
+                      <span className="font-semibold text-emerald-700 dark:text-emerald-400 tabular-nums">
                         + {fmt(totalMasuk)}
                       </span>
                     </div>
 
                     <div className="flex justify-between items-baseline">
-                      <span className="text-muted-foreground">Pengeluaran</span>
-                      <span className="font-medium text-rose-600 dark:text-rose-400 tabular-nums">
+                      <span className="text-on-surface-variant">Pengeluaran</span>
+                      <span className="font-semibold text-rose-600 dark:text-rose-400 tabular-nums">
                         - {fmt(totalKeluar)}
                       </span>
                     </div>
 
-                    {/* Selisih Pemasukan - Pengeluaran Pekan Ini */}
                     {initialBalance !== null && (
-                      <div className="flex justify-between items-baseline py-1 border-t border-dashed border-border/70 text-xs">
-                        <span className="text-muted-foreground">Selisih Pekan Ini</span>
+                      <div className="flex justify-between items-baseline py-1 border-t border-dashed border-outline-variant text-xs">
+                        <span className="text-on-surface-variant">Arus Kas Pekan Ini</span>
                         <span
-                          className={`font-semibold tabular-nums ${netChange >= 0
+                          className={`font-semibold tabular-nums ${
+                            netChange >= 0
                               ? "text-emerald-700 dark:text-emerald-400"
                               : "text-rose-600 dark:text-rose-400"
-                            }`}
+                          }`}
                         >
                           {netChange > 0 ? `+ ${fmt(netChange)}` : fmt(netChange)}
                         </span>
                       </div>
                     )}
 
-                    {/* Jika ada Saldo Awal, hitung Saldo Akhir Kumulatif */}
                     {initialBalance !== null ? (
-                      <div className="flex justify-between items-baseline border-t border-border/80 pt-2">
-                        <span className="font-bold text-foreground">Saldo Kas Akhir</span>
+                      <div className="flex justify-between items-baseline border-t border-outline-variant pt-2">
+                        <span className="font-bold text-on-surface">Saldo Kas Akhir</span>
                         <span className="font-extrabold text-base text-primary tabular-nums">
                           {fmt(calculatedFinal!)}
                         </span>
                       </div>
                     ) : (
-                      <div className="flex justify-between items-baseline border-t border-border/80 pt-2">
-                        <span className="font-semibold text-foreground">Selisih Kas</span>
+                      <div className="flex justify-between items-baseline border-t border-outline-variant pt-2">
+                        <span className="font-semibold text-on-surface">Selisih Kas</span>
                         <span
-                          className={`font-bold ${netChange >= 0
+                          className={`font-bold tabular-nums ${
+                            netChange >= 0
                               ? "text-emerald-700 dark:text-emerald-400"
                               : "text-rose-600 dark:text-rose-400"
-                            }`}
+                          }`}
                         >
                           {fmt(netChange)}
                         </span>
@@ -459,44 +472,44 @@ export default async function DetailLaporanPage({
                     )}
                   </div>
 
-                  {/* Lencana Rekonsiliasi Kas Otomatis */}
                   {isReconciled && (
-                    <div className="flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-200/80 p-2.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950/30 dark:border-emerald-800/40 dark:text-emerald-300">
-                      <CheckCircle2 size={15} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+                    <div className="flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 text-xs font-semibold text-emerald-800">
+                      <CheckCircle2 size={15} className="shrink-0 text-emerald-600" />
                       <span>Perhitungan buku kas seimbang</span>
                     </div>
                   )}
 
                   {hasDifference && (
-                    <div className="flex items-start gap-2 rounded-xl bg-amber-50 border border-amber-200/80 p-2.5 text-xs text-amber-800 dark:bg-amber-950/30 dark:border-amber-800/40 dark:text-amber-300">
-                      <AlertTriangle size={15} className="shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+                    <div className="flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 p-2.5 text-xs text-amber-900">
+                      <AlertTriangle size={15} className="shrink-0 text-amber-600 mt-0.5" />
                       <div>
                         <p className="font-semibold">
-                          Total tertulis di buku: {fmt(finalBalance!)}
+                          Total di buku: {fmt(finalBalance!)}
                         </p>
                         <p className="text-[11px] opacity-80 mt-0.5">
-                          Terdapat selisih {fmt(Math.abs(calculatedFinal! - finalBalance!))} dengan kalkulasi transaksi terverifikasi.
+                          Selisih {fmt(Math.abs(calculatedFinal! - finalBalance!))} dengan transaksi terverifikasi.
                         </p>
                       </div>
                     </div>
                   )}
 
-                  <p className="text-[10px] text-muted-foreground">
-                    * Berdasarkan transaksi yang sudah diverifikasi
+                  <p className="text-[10px] text-on-surface-variant/80">
+                    * Berdasarkan transaksi yang telah diverifikasi
                   </p>
                 </div>
               );
             })()}
-          </dl>
 
-          {hasSession && (
-            <div className="mt-5 border-t pt-5">
-              <DeleteReportButton reportId={report.id} />
-            </div>
-          )}
+            {hasSession && (
+              <div className="pt-4 border-t border-outline-variant">
+                <DeleteReportButton reportId={report.id} />
+              </div>
+            )}
+          </div>
         </aside>
       </div>
-      </PageShell>
+    </div>
+  </PageShell>
     </AppShell>
   );
 }
