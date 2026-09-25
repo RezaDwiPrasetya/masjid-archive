@@ -17,9 +17,13 @@
 | F-011 | Ekstraksi Data Laporan (Vision-LLM) | Must | ✅ Done (V4) |
 | F-012 | Review & Verifikasi Transaksi | Must | ✅ Done (V4) |
 | F-013 | Ringkasan Kas & Rekonsiliasi Saldo Kas | Should | ✅ Done (V4) |
-| F-014 | Dashboard Tren Keuangan (Publik) | Must | Planned (V5) |
-| F-015 | Tracking & Profil Donatur (Publik) | Must | Planned (V5) |
-| F-016 | Assign Nama Donatur saat Review Transaksi | Should | Planned (V5) |
+| F-014 | Dashboard Tren Keuangan (Publik) | Must | ✅ Done (V5) |
+| F-015 | Tracking & Profil Donatur (Publik) | Must | ✅ Done (V5) |
+| F-016 | Assign Nama Donatur saat Review Transaksi | Should | ✅ Done (V5) |
+| F-017 | Penyempurnaan Alur Verifikasi (Edit Donatur & Batalkan Verifikasi) | Should | ✅ Done (V5) |
+| F-018 | Rincian Transparansi Infaq Anonim (Publik) | Must | Planned (V6) |
+| F-019 | Ekstraksi Dokumen Kas PDF (Vision-LLM) | Should | Planned (V6) |
+| F-020 | Impor Langsung Dokumen Kas Excel (.xlsx) | Should | Planned (V6) |
 
 ## Feature Details — V1
 
@@ -288,3 +292,53 @@
 **Acceptance Criteria:**
 - [x] Bendahara dapat mengoreksi nama donatur pada transaksi yang sudah terverifikasi
 - [x] Pembatalan verifikasi berhasil mengembalikan transaksi ke antrean verifikasi dan mengeluarkan nominal dari dashboard publik
+
+---
+
+## Feature Details — V6 (Advanced Transparency & Multimodal Pipeline)
+
+### F-018 — Rincian Transparansi Infaq Anonim (Publik)
+
+**Objective:** Membuka transparansi penuh bagi jemaah untuk melihat rincian riwayat transaksi yang tergolong "Infaq Anonim" (seperti kotak amal, tromol Jumat, dan hamba Allah) tanpa membuat entitas profil `Donor` individual.
+**User:** Publik (jemaah), Pengurus DKM
+**Process:**
+- Pada kartu "Infaq Anonim" di halaman `/donatur`, pengguna dapat mengklik tombol aksi/interaksi "Lihat Rincian".
+- Membuka dialog/modal responsif yang menampilkan daftar ledger terverifikasi: Tanggal Transaksi, Keterangan Asli (mis. "Kotak Amal Jumat", "Tromol Pintu Utara", "Infaq Hamba Allah"), Tautan Laporan Pekanan Asal, dan Nominal Transaksi (Rp).
+- Data diambil dari endpoint publik `GET /api/donors/anonymous/transactions`.
+**Business Rules:**
+- MUTLAK hanya menampilkan transaksi `isVerified = true`.
+- Transaksi bertipe `pemasukan` dengan `donorId = null`.
+- TIDAK membuat record baru di tabel `Donor` (tetap berpegang pada aturan arsitektur data model V5).
+**Acceptance Criteria:**
+- [ ] Kartu Infaq Anonim di `/donatur` memiliki tombol interaksi untuk membuka modal rincian.
+- [ ] Modal menampilkan tabel/list transaksi anonim dengan format uang rapi (tabular-nums), tanggal, dan deskripsi asli.
+- [ ] Data yang disajikan 100% konsisten dengan nilai agregat kartu Infaq Anonim.
+- [ ] Tidak ada transaksi unverified (`isVerified = false`) yang bocor ke modal rincian.
+
+### F-019 — Ekstraksi Dokumen Kas PDF (Vision-LLM)
+
+**Objective:** Memungkinkan bendahara mengekstrak data kas mingguan yang diunggah dalam format dokumen PDF (misalnya hasil scan printer DKM) menggunakan kapabilitas multimodal Google Gemini secara langsung.
+**User:** Bendahara DKM
+**Process:**
+- Pada halaman detail laporan, tombol "Ekstrak Data" diizinkan aktif untuk lampiran dengan `fileType = "pdf"`.
+- Sistem mengirimkan buffer dokumen PDF dengan MIME `application/pdf` ke Google Gemini via `inlineData`.
+- Hasil ekstraksi transaksi dan saldo kas diproses dan disajikan di `TransactionReviewPanel` persis seperti ekstraksi foto gambar.
+**Business Rules:**
+- Mempertahankan fallback otomatis ke model cadangan jika model utama sibuk.
+- File PDF yang diproses dibatasi maksimal 10 MB (sesuai limit upload yang sudah berlaku).
+**Acceptance Criteria:**
+- [ ] Endpoint `/api/attachments/:id/extract` menerima dan memproses lampiran bertipe `pdf`.
+- [ ] Review panel transaksi menampilkan hasil ekstraksi dokumen PDF dengan status "Menunggu Verifikasi".
+
+### F-020 — Direct Parser Impor Dokumen Kas Excel (.xlsx)
+
+**Objective:** Memungkinkan bendahara mengimpor data transaksi langsung dari file spreadsheet Excel buku kas tanpa melalui OCR, memberikan akurasi 100% tanpa risiko salah baca karakter tulisan tangan.
+**User:** Bendahara DKM
+**Process:**
+- Sistem membaca sheet tabel kas dari file `.xlsx` / `.xls` yang diunggah.
+- Memetakan kolom tanggal, uraian/deskripsi, pemasukan, dan pengeluaran ke dalam draft `Transaction` (`isVerified = false`).
+- Bendahara meninjau baris yang diimpor di `TransactionReviewPanel` sebelum mengonfirmasi verifikasi.
+**Acceptance Criteria:**
+- [ ] Sistem mem-parsing file `.xlsx` menjadi baris draft transaksi.
+- [ ] Transaksi hasil impor muncul di review panel untuk diverifikasi oleh bendahara.
+

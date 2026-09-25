@@ -538,11 +538,47 @@ Riwayat transaksi terverifikasi milik satu donatur tertentu.
 
 ---
 
-## Ringkasan Endpoint Mutasi & Transaksi (V4 & V5)
+### `GET /api/donors/anonymous/transactions` (V6 — Issue #054)
+
+Mengambil daftar seluruh transaksi terverifikasi yang masuk ke dalam kategori "Infaq Anonim" (pemasukan tanpa identitas donatur, `donorId = null`). Digunakan untuk modal audit transparansi publik di halaman `/donatur`.
+
+**Parameter Query (opsional):**
+- `limit` (number, default: 100, max: 200): Jumlah baris yang diambil.
+- `offset` (number, default: 0): Paginasi data.
+
+**Response 200**
+
+```json
+{
+  "data": {
+    "totalContribution": 1150000,
+    "donationCount": 14,
+    "transactions": [
+      {
+        "id": "txn_anon_1",
+        "amount": 250000,
+        "description": "Kotak Amal Jumat Pekan ke-2",
+        "transactionDate": "2026-08-07T00:00:00.000Z",
+        "reportId": "rpt_1",
+        "reportDate": "2026-08-07T00:00:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+**Aturan Bisnis:**
+- MUTLAK hanya mengembalikan transaksi dengan `isVerified = true`, `type = "pemasukan"`, dan `donorId = null`.
+- Diurutkan dari transaksi terbaru (`transactionDate` atau `createdAt` DESC).
+- Dapat diakses secara publik tanpa autentikasi (publik read-only).
+
+---
+
+## Ringkasan Endpoint Mutasi & Transaksi (V4, V5, & V6)
 
 | Method | Path                                   | Fungsi                                           | Akses Publik |
 | ------ | -------------------------------------- | ------------------------------------------------- | ------------ |
-| POST   | `/api/attachments/:id/extract`         | Memicu ekstraksi data (vision-LLM)                | **Tidak**    |
+| POST   | `/api/attachments/:id/extract`         | Memicu ekstraksi data vision-LLM (Gambar & PDF V6)| **Tidak**    |
 | GET    | `/api/reports/:id/transactions`        | Daftar transaksi (publik hanya yang terverifikasi)| Ya (terbatas)|
 | PATCH  | `/api/transactions/:id`                | Edit transaksi sebelum konfirmasi                 | **Tidak**    |
 | POST   | `/api/transactions/:id/confirm`        | Konfirmasi transaksi + assign donatur (V5)        | **Tidak**    |
@@ -550,13 +586,14 @@ Riwayat transaksi terverifikasi milik satu donatur tertentu.
 | PATCH  | `/api/transactions/:id/donor`          | Edit nama donatur transaksi terverifikasi (#051)  | **Tidak**    |
 | DELETE | `/api/transactions/:id`                | Hapus transaksi (hanya jika belum verified)       | **Tidak**    |
 
-## Ringkasan Endpoint Publik V5 (Financial Intelligence)
+## Ringkasan Endpoint Publik (Financial Intelligence & V6)
 
-| Method | Path                     | Fungsi                                              | Akses Publik |
-| ------ | ------------------------ | ---------------------------------------------------- | ------------ |
-| GET    | `/api/dashboard/trend`   | Data tren kas mingguan (Jumat)/bulanan (F-014, #053) | Ya           |
-| GET    | `/api/donors`            | Daftar donatur + agregat anonim (F-015)              | Ya           |
-| GET    | `/api/donors/:id`        | Riwayat transaksi satu donatur (F-015)               | Ya           |
+| Method | Path                                  | Fungsi                                              | Akses Publik |
+| ------ | ------------------------------------- | --------------------------------------------------- | ------------ |
+| GET    | `/api/dashboard/trend`                | Data tren kas mingguan (Jumat)/bulanan (F-014, #053) | Ya           |
+| GET    | `/api/donors`                         | Daftar donatur + agregat anonim (F-015)              | Ya           |
+| GET    | `/api/donors/:id`                     | Riwayat transaksi satu donatur (F-015)               | Ya           |
+| GET    | `/api/donors/anonymous/transactions`  | Rincian transaksi infaq anonim (F-018, #054)         | Ya           |
 
 ## Ringkasan Endpoint V3 (Referensi)
 

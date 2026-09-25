@@ -130,7 +130,7 @@ Bendahara membuka Detail Laporan → menekan "Ekstrak Data" pada lampiran gambar
 
 ---
 
-## V5 — Financial Intelligence (Sedang Dikerjakan)
+## V5 — Financial Intelligence (✅ Selesai)
 
 ### MVP Objective (V5)
 
@@ -157,7 +157,6 @@ Membuktikan bahwa data transaksi terverifikasi yang sudah terkumpul dari V4 bisa
 
 ### Not Now (V5 — tetap di luar scope, dibahas terpisah nanti)
 - UI penggabungan manual `Donor` yang lolos dari fuzzy matching (mis. beda ejaan total, "Kosasih" vs "Kosasi") — untuk V5 awal, penggabungan seperti ini belum ada alur UI-nya; dicatat sebagai keterbatasan yang diterima
-- Ekstraksi/parsing untuk lampiran PDF dan Excel — tetap ditunda sejak V4, tidak berubah di V5
 - Proyeksi/prediksi kas ke depan (forecasting) — murni tren historis dulu, bukan prediksi
 - Filter dashboard berdasarkan rentang tanggal custom (selain toggle Mingguan/Bulanan bawaan) — bisa jadi peningkatan lanjutan
 - Notifikasi/alert otomatis (mis. WhatsApp) saat tren pengeluaran melonjak — di luar scope, murni tampilan pasif dulu
@@ -177,8 +176,26 @@ Membuktikan bahwa data transaksi terverifikasi yang sudah terkumpul dari V4 bisa
 
 ---
 
-## Roadmap Fase Berikutnya (Referensi)
+## V6 — Advanced Transparency & Multimodal Data Pipeline (Sedang Dikerjakan)
 
-| Fase | Fokus |
-|---|---|
-| V6 | Multi-tenant (opsional, jangka panjang) |
+### MVP Objective (V6)
+Menyempurnakan transparansi keuangan hingga ke audit transaksi infaq tanpa nama, serta mengatasi kesenjangan pipeline data dengan mengaktifkan ekstraksi dokumen PDF (via multimodal vision-LLM) dan impor langsung spreadsheet kas Excel (.xlsx) tanpa ketergantungan OCR.
+
+### Must Have (V6)
+- **Rincian Transparansi Infaq Anonim (F-018, Issue #054)**: Modal/drawer publik interaktif pada kartu "Infaq Anonim" di `/donatur`, menampilkan daftar lengkap transaksi terverifikasi tanpa nama profil (tanggal, nominal, deskripsi sumber, tautan laporan asal).
+- Seluruh data rincian infaq anonim MUTLAK hanya mengambil transaksi `isVerified = true`.
+- Tidak ada entitas profil `Donor` baru yang dibuat untuk donasi anonim.
+
+### Should Have (V6)
+- **Ekstraksi Dokumen Kas PDF (F-019)**: Dukungan pengiriman buffer PDF langsung ke Google Gemini multimodal API di `/api/attachments/:id/extract`.
+- **Direct Parser Excel Kas (F-020)**: Parser spreadsheet (.xlsx) di server yang membaca baris transaksi kas secara deterministik (100% akurasi numerik).
+
+### MVP Core Flow (V6 — Infaq Anonim)
+Jemaah membuka halaman `/donatur` → melihat kartu KPI "Infaq Anonim" → menekan tombol "Lihat Rincian" → dialog modal terbuka menampilkan tabel riwayat transaksi (mis. Kotak Amal Jumat, Tromol, Infaq Hamba Allah) → jemaah dapat mengklik baris untuk membuka laporan pekanan terkait.
+
+### MVP Success Criteria (V6)
+- [ ] Jemaah dapat membuka dialog rincian Infaq Anonim dan melihat riwayat transaksi terverifikasi.
+- [ ] Total nominal dalam modal rincian 100% klop dengan total pada kartu agregat Infaq Anonim.
+- [ ] Transaksi `isVerified = false` tidak pernah muncul di modal rincian.
+- [ ] Desain konsisten dengan tema mading kas masjid (tabular-nums, font Outfit, border outline-variant).
+

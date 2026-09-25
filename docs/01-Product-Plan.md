@@ -39,13 +39,12 @@ Bendahara tetap bekerja seperti biasa (mencatat manual, lalu unggah foto/file la
 | **V3** | Autentikasi & Manajemen Pengguna (SSO): Login Google OAuth, keamanan rute, role-based access | ✅ Selesai |
 | **V4** | Ekstraksi data: vision-LLM untuk gambar (dipicu manual oleh bendahara), data mentah tersimpan sebagai `Transaction`, menunggu verifikasi manual sebelum final | ✅ Selesai |
 | **V5** | Financial intelligence: tren keuangan (mingguan/bulanan), tracking & riwayat donatur, dashboard publik — seluruhnya dihitung hanya dari transaksi yang sudah terverifikasi | ✅ Selesai |
-| **V6 (opsional, jangka panjang)** | Multi-tenant — mendukung lebih dari satu masjid, potensi monetisasi | Belum diprioritaskan |
+| **V6** | Advanced Transparency & Multimodal Data Pipeline: Rincian transparansi infaq anonim (audit kotak amal/hamba Allah), ekstraksi lampiran PDF via vision-LLM, direct parser spreadsheet kas Excel (.xlsx) | 🟡 In Progress |
 
 ## Out of Scope
 
 - Integrasi pembayaran online / donasi digital langsung — belum masuk scope manapun saat ini
-- Ekstraksi data dari lampiran PDF/Excel — tetap di luar scope V4 maupun V5, hanya disimpan sebagai lampiran biasa
-- Multi-masjid / multi-tenant — tetap out of scope untuk fase dekat, dipertimbangkan di V6
+- Multi-masjid / multi-tenant — tetap out of scope untuk fase dekat, diprioritaskan eksklusif untuk Masjid Al-Luqman
 
 ## Success Metrics
 
@@ -54,8 +53,9 @@ Bendahara tetap bekerja seperti biasa (mencatat manual, lalu unggah foto/file la
 | Laporan mingguan berhasil diunggah per bulan | Sesuai jumlah laporan Jumat aktual DKM |
 | Waktu pencarian arsip lama | Berkurang dibanding cara manual di buku |
 | Adopsi sistem login mandiri (V3) | 100% pengurus aktif menggunakan akun Google pribadi/DKM untuk unggah laporan |
-| Akurasi ekstraksi data vision-LLM (V4) | Cukup akurat untuk angka besar, koreksi manual tetap dimungkinkan lewat alur verifikasi sebelum data dianggap final |
+| Akurasi ekstraksi data vision-LLM (V4 & V6) | Cukup akurat untuk angka besar, koreksi manual tetap dimungkinkan lewat alur verifikasi sebelum data dianggap final |
 | Adopsi fitur dashboard/tren oleh pengurus & jemaah (V5) | Dievaluasi lewat user testing setelah dashboard publik dirilis |
+| Transparansi donasi anonim & ragam dokumen (V6) | Jemaah dapat melihat rincian riwayat infaq kotak amal/anonim; bendahara dapat mengekstrak PDF & mengimpor Excel |
 
 ## Timeline
 
@@ -65,3 +65,6 @@ Bendahara tetap bekerja seperti biasa (mencatat manual, lalu unggah foto/file la
 | V3 — Google SSO Auth | ✅ Selesai (branch `feature/v3-auth`) |
 | V4 — Ekstraksi Data (Vision-LLM) | ✅ Selesai |
 | V5 — Financial Intelligence (Dashboard Publik) | ✅ Selesai |
+| Redesign UI Batch 1, 2, 3 | ✅ Selesai, di-merge ke `main` |
+| V6 — Advanced Transparency & Multimodal Pipeline | 🟡 Sedang Dikerjakan |
+
