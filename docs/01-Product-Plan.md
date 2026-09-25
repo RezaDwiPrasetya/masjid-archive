@@ -66,5 +66,5 @@ Bendahara tetap bekerja seperti biasa (mencatat manual, lalu unggah foto/file la
 | V4 — Ekstraksi Data (Vision-LLM) | ✅ Selesai |
 | V5 — Financial Intelligence (Dashboard Publik) | ✅ Selesai |
 | Redesign UI Batch 1, 2, 3 | ✅ Selesai, di-merge ke `main` |
-| V6 — Advanced Transparency & Multimodal Pipeline | 🟡 Sedang Dikerjakan |
+| V6 — Advanced Transparency & Multimodal Pipeline | ✅ Selesai (Issue #054-#057) |
 

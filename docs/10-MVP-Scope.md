@@ -176,7 +176,7 @@ Membuktikan bahwa data transaksi terverifikasi yang sudah terkumpul dari V4 bisa
 
 ---
 
-## V6 — Advanced Transparency & Multimodal Data Pipeline (Sedang Dikerjakan)
+## V6 — Advanced Transparency & Multimodal Data Pipeline (Selesai)
 
 ### MVP Objective (V6)
 Menyempurnakan transparansi keuangan hingga ke audit transaksi infaq tanpa nama, serta mengatasi kesenjangan pipeline data dengan mengaktifkan ekstraksi dokumen PDF (via multimodal vision-LLM) dan impor langsung spreadsheet kas Excel (.xlsx) tanpa ketergantungan OCR.
@@ -187,15 +187,17 @@ Menyempurnakan transparansi keuangan hingga ke audit transaksi infaq tanpa nama,
 - Tidak ada entitas profil `Donor` baru yang dibuat untuk donasi anonim.
 
 ### Should Have (V6)
-- **Ekstraksi Dokumen Kas PDF (F-019)**: Dukungan pengiriman buffer PDF langsung ke Google Gemini multimodal API di `/api/attachments/:id/extract`.
-- **Direct Parser Excel Kas (F-020)**: Parser spreadsheet (.xlsx) di server yang membaca baris transaksi kas secara deterministik (100% akurasi numerik).
+- **Ekstraksi Dokumen Kas PDF (F-019, Issue #055)**: Dukungan pengiriman buffer PDF langsung ke Google Gemini multimodal API di `/api/attachments/:id/extract` serta pratinjau tersemat (viewer) di halaman detail laporan.
+- **Direct Parser Excel Kas (F-020, Issue #056)**: Parser spreadsheet (.xlsx/.xls) di server yang membaca baris transaksi kas secara deterministik (100% akurasi numerik) dengan fallback AI untuk struktur tabel non-standar.
 
 ### MVP Core Flow (V6 — Infaq Anonim)
 Jemaah membuka halaman `/donatur` → melihat kartu KPI "Infaq Anonim" → menekan tombol "Lihat Rincian" → dialog modal terbuka menampilkan tabel riwayat transaksi (mis. Kotak Amal Jumat, Tromol, Infaq Hamba Allah) → jemaah dapat mengklik baris untuk membuka laporan pekanan terkait.
 
 ### MVP Success Criteria (V6)
-- [ ] Jemaah dapat membuka dialog rincian Infaq Anonim dan melihat riwayat transaksi terverifikasi.
-- [ ] Total nominal dalam modal rincian 100% klop dengan total pada kartu agregat Infaq Anonim.
-- [ ] Transaksi `isVerified = false` tidak pernah muncul di modal rincian.
-- [ ] Desain konsisten dengan tema mading kas masjid (tabular-nums, font Outfit, border outline-variant).
+- [x] Jemaah dapat membuka dialog rincian Infaq Anonim dan melihat riwayat transaksi terverifikasi.
+- [x] Total nominal dalam modal rincian 100% klop dengan total pada kartu agregat Infaq Anonim.
+- [x] Transaksi `isVerified = false` tidak pernah muncul di modal rincian.
+- [x] Desain konsisten dengan tema mading kas masjid (tabular-nums, font Outfit, border outline-variant).
+- [x] Dokumen PDF dapat dipratinjau langsung di halaman detail laporan dan diekstrak via Gemini multimodal.
+- [x] Berkas spreadsheet Excel (.xlsx/.xls) dapat diimpor langsung secara tabular ke panel review transaksi kas.
 

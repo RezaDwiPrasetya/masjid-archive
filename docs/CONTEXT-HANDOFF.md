@@ -1,6 +1,6 @@
 # CONTEXT HANDOFF — Proyek "Masjid Archive"
 > **Terakhir diperbarui**: 25 September 2026  
-> **Status**: Fase V6 (Advanced Transparency & Multimodal Data Pipeline) — **Sedang Berjalan (Issue #054)**
+> **Status**: Fase V6 (Advanced Transparency & Multimodal Data Pipeline) — **SELESAI (Issue #054, #055, #056, #057)**
 
 ---
 
@@ -12,13 +12,12 @@ Aplikasi web arsip & manajemen keuangan untuk **DKM Masjid Al-Luqman** (Kel. Sok
 
 ## 2. KONDISI PROJECT SAAT INI
 - **V1–V5 SELESAI** dan sudah di-push ke repo (fungsional, data, backend).
-- **REDESIGN VISUAL MENYELURUH (3 BATCH) SELESAI 100%**:
-  - **Batch 1** (Commit `2362e29`): Shared components (Sidebar/AppShell 260px, PageShell, Button, Card, Badge, Table, Dialog, Auth Button SSO langsung).
-  - **Batch 2** (Commit `720e6fa`): Halaman publik (Arsip Laporan berjenjang tahun/bulan kartu 3:4, Detail Laporan document viewer, Dashboard hero band kas & Recharts, Donatur 2 KPI 50:50 & list divide-y, Detail Donatur profil & transaksi, Cari filter bar full-width).
-  - **Batch 3** (Commit `06cf451`): Halaman internal & panel review (Unggah drag-and-drop dengan icon MIME & picker tanggal, Pengguna 4 metrik divider vertikal & filter peran, Extraction UI status badge & Model Cadangan, Transaction Review Panel lengkap: unverified vs verified, banner peringatan duplikat, inline input donatur, pembatalan verifikasi, dan AlertDialog konfirmasi hapus/batal verifikasi).
-- Seluruh pembaruan Batch 1–3 sudah di-merge ke branch `main` dan di-push ke remote GitHub `origin/main` (`fde76b6..06cf451`).
-- Komponen `PageShell` disepakati full-width proporsional (`w-full px-6 md:px-8 lg:px-10`).
-- **FASE V6 DIMULAI**: Dimulai dari **Issue #054** (F-018: Rincian Transparansi Infaq Anonim di halaman `/donatur`).
+- **REDESIGN VISUAL MENYELURUH (3 BATCH) SELESAI 100%**.
+- **FASE V6 SELESAI 100%**:
+  - **Issue #054** (Commit `d29dec3`): Endpoint publik `GET /api/donors/anonymous/transactions` & Modal ledger riwayat transaksi infaq anonim terverifikasi di `/donatur`.
+  - **Issue #055** (Commit `fc6b8d8`): Ekstraksi AI dokumen PDF via Gemini Multimodal API di `/api/attachments/:id/extract` & Pratinjau dokumen PDF tersemat (`<iframe>` 65vh) di halaman detail laporan.
+  - **Issue #056** (Commit `fcb80bf`): Server-side tabular parser (`lib/parse-excel-transactions.ts`) untuk impor langsung data kas dari spreadsheet Excel (.xlsx/.xls) ke panel review tanpa ketergantungan OCR, lengkap dengan UI di detail laporan.
+  - **Issue #057**: Verifikasi integrasi menyeluruh, pemutakhiran dokumentasi Fase V6, dan persiapan merge branch ke `main`.
 
 ---
 
@@ -99,12 +98,12 @@ Model utama:
 
 ---
 
-## 7. FITUR YANG SEDANG DIKERJAKAN
+## 7. FITUR YANG SELESAI PADA FASE V6
 **Fase V6: Advanced Transparency & Multimodal Data Pipeline**
-- **Issue #054 (Aktif)**: F-018 — Rincian Transparansi Infaq Anonim di Halaman Donatur (Modal / Drawer riwayat transaksi kotak amal & hamba Allah).
-- Rencana lanjutan V6:
-  - F-019: Ekstraksi Dokumen Kas PDF via Gemini Multimodal.
-  - F-020: Direct Parser Impor Spreadsheet Kas Excel (.xlsx).
+- **Issue #054**: F-018 — Rincian Transparansi Infaq Anonim di Halaman Donatur (Modal dialog ledger riwayat transaksi kotak amal & hamba Allah).
+- **Issue #055**: F-019 — Ekstraksi Dokumen Kas PDF via Gemini Multimodal API & Pratinjau Tersemat di Detail Laporan.
+- **Issue #056**: F-020 — Direct Parser Impor Spreadsheet Kas Excel (.xlsx/.xls) ke Panel Review.
+- **Issue #057**: Pemutakhiran Dokumentasi & Finalisasi Rilis V6.
 
 ---
 
