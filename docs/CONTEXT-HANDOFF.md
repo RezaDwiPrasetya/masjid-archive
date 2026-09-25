@@ -1,23 +1,30 @@
 # CONTEXT HANDOFF — Proyek "Masjid Archive"
 > **Terakhir diperbarui**: 25 September 2026  
-> **Status**: Fase V6 (Advanced Transparency & Multimodal Data Pipeline) — **SELESAI (Issue #054, #055, #056, #057)**
+> **Status**: **TAMAT / SELESAI PENUH (V1 s/d V6 Feature-Complete — Merged to Main & Pushed)**
 
 ---
 
 ## 1. TUJUAN UTAMA PROJECT
-Aplikasi web arsip & manajemen keuangan untuk **DKM Masjid Al-Luqman** (Kel. Soklat, Kec. Subang). Awalnya proyek PKL Reza di PT Gothru Media Indonesia.  
-**Tujuan**: Mengubah pencatatan buku kas fisik mingguan (difoto, dipajang di mading) menjadi platform digital yang mengarsipkan, mengekstrak data via vision-LLM, memverifikasi manual, dan menyajikan transparansi keuangan (tren, donatur) ke publik/jemaah tanpa login.
+Aplikasi web arsip & manajemen keuangan untuk **DKM Masjid Al-Luqman** (Kel. Soklat, Kec. Subang). Proyek PKL & Tugas Akhir Reza (D IV TRPL) di PT Gothru Media Indonesia.  
+**Tujuan**: Mengubah pencatatan buku kas fisik mingguan (difoto, dipajang di mading) menjadi platform digital yang mengarsipkan, mengekstrak data via vision-LLM, memverifikasi manual, dan menyajikan transparansi keuangan (tren, donatur, infaq anonim, ekspor cetak & Excel) ke publik/jemaah tanpa login.
 
 ---
 
 ## 2. KONDISI PROJECT SAAT INI
-- **V1–V5 SELESAI** dan sudah di-push ke repo (fungsional, data, backend).
-- **REDESIGN VISUAL MENYELURUH (3 BATCH) SELESAI 100%**.
-- **FASE V6 SELESAI 100%**:
-  - **Issue #054** (Commit `d29dec3`): Endpoint publik `GET /api/donors/anonymous/transactions` & Modal ledger riwayat transaksi infaq anonim terverifikasi di `/donatur`.
-  - **Issue #055** (Commit `fc6b8d8`): Ekstraksi AI dokumen PDF via Gemini Multimodal API di `/api/attachments/:id/extract` & Pratinjau dokumen PDF tersemat (`<iframe>` 65vh) di halaman detail laporan.
-  - **Issue #056** (Commit `fcb80bf`): Server-side tabular parser (`lib/parse-excel-transactions.ts`) untuk impor langsung data kas dari spreadsheet Excel (.xlsx/.xls) ke panel review tanpa ketergantungan OCR, lengkap dengan UI di detail laporan.
-  - **Issue #057**: Fitur ekspor dan unduh rekapitulasi pembukuan kas mingguan dan bulanan dalam format dokumen cetak PDF (siap mading) dan spreadsheet Excel (.xlsx) untuk transparansi fisik DKM.
+- **SELURUH FASE V1–V6 SELESAI 100%**:
+  - **V1–V2**: Multi-format upload (JPG, PNG, PDF, Excel) & arsip berjenjang.
+  - **V3**: Google SSO NextAuth & Role-based Access Control (Admin / Guest).
+  - **V4**: Pipeline ekstraksi multimodal vision-LLM (Gemini API) + fallback model cadangan + review & konfirmasi transaksi manual + rekonsiliasi kas.
+  - **V5**: Financial Intelligence (Grafik tren kas Jumat/bulanan via raw SQL, entity Donor fuzzy matching, deteksi duplikat, pembatalan verifikasi, isolasi data publik).
+  - **Redesign UI Batch 1, 2, 3**: Standarisasi visual tokens, full-width PageShell, Accessible Base UI primitives.
+  - **V6 (Issue #054–#057)**:
+    - **#054**: Transparansi infaq anonim publik (`/donatur`).
+    - **#055**: Ekstraksi PDF multimodal + embedded PDF viewer (`/laporan/:id`).
+    - **#056**: Server-side tabular Excel parser (`.xlsx`/`.xls`) langsung ke review panel tanpa OCR.
+    - **#057**: Ekspor & cetak rekap kas mingguan & bulanan (format A4 formal mading DKM + Excel spreadsheet).
+- Seluruh commit sudah digabungkan ke `main` dan sinkron dengan remote GitHub `origin/main`.
+- Status kode: `tsc --noEmit` lolos 0 error, `npm run lint` lolos 0 error.
+- **Fokus Selanjutnya**: Pemeliharaan, audit keamanan & stabilitas, serta penyusunan laporan data flow / dokumentasi tugas akhir.
 
 ---
 
