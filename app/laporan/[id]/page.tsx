@@ -353,33 +353,106 @@ export default async function DetailLaporanPage({
                   )}
 
 
-                  {/* ── Excel ── */}
+                  {/* ── Excel (Fase V6 — Issue #056) ── */}
                   {att.fileType === "excel" && (
-                    <div className="flex items-center gap-4 p-5">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-green-100 text-green-700">
-                        <FileSpreadsheet size={24} />
+                    <div className="p-4 space-y-4">
+                      {/* Meta + aksi file */}
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                            <FileSpreadsheet size={20} />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-on-surface">
+                              {att.originalFileName}
+                            </p>
+                            <p className="text-xs text-on-surface-variant">
+                              Spreadsheet Excel · {(att.fileSizeBytes / 1024 / 1024).toFixed(2)} MB
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <a
+                            href={downloadUrl(att.fileUrl, att.originalFileName)}
+                            className="shrink-0"
+                          >
+                            <Button size="sm" variant="outline" className="gap-1.5 text-xs">
+                              <Download size={13} /> Unduh
+                            </Button>
+                          </a>
+                          {hasSession && (
+                            <DeleteAttachmentButton attachmentId={att.id} />
+                          )}
+                        </div>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium">
-                          {att.originalFileName}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Excel ·{" "}
-                          {(att.fileSizeBytes / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 gap-2">
-                        <a
-                          href={downloadUrl(att.fileUrl, att.originalFileName)}
-                        >
-                          <Button size="sm">
-                            <Download size={14} /> Unduh
-                          </Button>
-                        </a>
-                        {hasSession && (
-                          <DeleteAttachmentButton attachmentId={att.id} />
-                        )}
-                      </div>
+
+                      {/* ── Blok Impor / Ekstraksi Data (Issue #056) — hanya tampil jika ada sesi ── */}
+                      {hasSession && (
+                        <div className="rounded-2xl bg-surface-container border border-outline-variant p-4 space-y-3 shadow-xs">
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
+                              Impor Tabular Spreadsheet
+                            </p>
+                            <span className="text-[11px] font-medium text-emerald-800 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
+                              Spreadsheet Excel
+                            </span>
+                          </div>
+                          <p className="text-xs text-on-surface-variant leading-relaxed">
+                            Data tabel dibaca secara deterministik dari berkas spreadsheet (.xlsx/.xls) dan dimasukkan sebagai draf transaksi untuk ditinjau.
+                          </p>
+                          <ExtractButton
+                            attachmentId={att.id}
+                            extractionStatus={
+                              att.extractionStatus as
+                              | "not_extracted"
+                              | "processing"
+                              | "done"
+                              | "failed"
+                            }
+                            extractionError={att.extractionError}
+                            extractionModel={att.extractionModel}
+                            transactionCount={txCount}
+                            verifiedCount={verifiedCount}
+                          />
+                        </div>
+                      )}
+
+                      {/* ── Panel Review Transaksi (F-012) ── */}
+                      {txCount > 0 && (
+                        <div className="space-y-3 pt-2">
+                          <div className="flex items-center justify-between">
+                            <h2 className="text-base font-bold text-on-surface font-sans">
+                              Transaksi Kas ({txCount})
+                            </h2>
+                            {hasSession && unverifiedCount > 0 && (
+                              <span className="text-xs font-semibold text-amber-800 bg-amber-500/15 border border-amber-300 px-2.5 py-0.5 rounded-full">
+                                {unverifiedCount} perlu dikonfirmasi
+                              </span>
+                            )}
+                          </div>
+                          <TransactionReviewPanel
+                            key={`${att.id}-${att.transactions.length}-${unverifiedCount}`}
+                            transactions={att.transactions.map((t) => ({
+                              ...t,
+                              amount: t.amount.toString(),
+                              transactionDate: t.transactionDate
+                                ? t.transactionDate.toISOString()
+                                : null,
+                              verifiedAt: t.verifiedAt
+                                ? t.verifiedAt.toISOString()
+                                : null,
+                              donorNameRaw: t.donorNameRaw,
+                              donorId: t.donorId,
+                              donor: t.donor
+                                ? { id: t.donor.id, name: t.donor.name }
+                                : null,
+                            }))}
+                            hasSession={hasSession}
+                            allVerifiedTransactions={allVerifiedInReport}
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { extractTransactionsFromFile } from "@/lib/extract-transactions";
+import { parseTransactionsFromExcel } from "@/lib/parse-excel-transactions";
 
 export async function POST(
   _request: NextRequest,
@@ -27,9 +28,13 @@ export async function POST(
     );
   }
 
-  if (attachment.fileType !== "image" && attachment.fileType !== "pdf") {
+  if (
+    attachment.fileType !== "image" &&
+    attachment.fileType !== "pdf" &&
+    attachment.fileType !== "excel"
+  ) {
     return NextResponse.json(
-      { error: "Ekstraksi otomatis saat ini hanya didukung untuk lampiran gambar dan dokumen PDF." },
+      { error: "Ekstraksi atau impor data hanya didukung untuk lampiran Gambar, PDF, dan Excel." },
       { status: 400 }
     );
   }
@@ -41,16 +46,18 @@ export async function POST(
     );
   }
 
-  // 3. Tandai status processing sebelum memanggil API eksternal
+  // 3. Tandai status processing sebelum memproses
   await prisma.attachment.update({
     where: { id },
     data: { extractionStatus: "processing" },
   });
 
   try {
-    // 4. Kirim gambar atau dokumen PDF ke Gemini dan dapatkan hasil ekstraksi
+    // 4. Ekstraksi atau impor data sesuai jenis file
     const { transactions, initialBalance, finalBalance, rawResponse, modelName } =
-      await extractTransactionsFromFile(attachment.fileUrl, attachment.fileType);
+      attachment.fileType === "excel"
+        ? await parseTransactionsFromExcel(attachment.fileUrl)
+        : await extractTransactionsFromFile(attachment.fileUrl, attachment.fileType);
 
     // 5. Simpan hasil secara atomik dalam satu transaksi DB:
     //    - Hapus Transaction lama (unverified) dari attachment ini
