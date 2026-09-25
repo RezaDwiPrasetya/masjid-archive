@@ -310,10 +310,10 @@
 - Transaksi bertipe `pemasukan` dengan `donorId = null`.
 - TIDAK membuat record baru di tabel `Donor` (tetap berpegang pada aturan arsitektur data model V5).
 **Acceptance Criteria:**
-- [ ] Kartu Infaq Anonim di `/donatur` memiliki tombol interaksi untuk membuka modal rincian.
-- [ ] Modal menampilkan tabel/list transaksi anonim dengan format uang rapi (tabular-nums), tanggal, dan deskripsi asli.
-- [ ] Data yang disajikan 100% konsisten dengan nilai agregat kartu Infaq Anonim.
-- [ ] Tidak ada transaksi unverified (`isVerified = false`) yang bocor ke modal rincian.
+- [x] Kartu Infaq Anonim di `/donatur` memiliki tombol interaksi untuk membuka modal rincian.
+- [x] Modal menampilkan tabel/list transaksi anonim dengan format uang rapi (tabular-nums), tanggal, dan deskripsi asli.
+- [x] Data yang disajikan 100% konsisten dengan nilai agregat kartu Infaq Anonim.
+- [x] Tidak ada transaksi unverified (`isVerified = false`) yang bocor ke modal rincian.
 
 ### F-019 — Ekstraksi Dokumen Kas PDF (Vision-LLM)
 
@@ -327,8 +327,9 @@
 - Mempertahankan fallback otomatis ke model cadangan jika model utama sibuk.
 - File PDF yang diproses dibatasi maksimal 10 MB (sesuai limit upload yang sudah berlaku).
 **Acceptance Criteria:**
-- [ ] Endpoint `/api/attachments/:id/extract` menerima dan memproses lampiran bertipe `pdf`.
-- [ ] Review panel transaksi menampilkan hasil ekstraksi dokumen PDF dengan status "Menunggu Verifikasi".
+- [x] Endpoint `/api/attachments/:id/extract` menerima dan memproses lampiran bertipe `pdf`.
+- [x] Review panel transaksi menampilkan hasil ekstraksi dokumen PDF dengan status "Menunggu Verifikasi".
+- [x] Tampilan dokumen PDF tersemat (`<iframe>` 65vh) muncul di halaman detail laporan.
 
 ### F-020 — Direct Parser Impor Dokumen Kas Excel (.xlsx)
 
@@ -339,6 +340,23 @@
 - Memetakan kolom tanggal, uraian/deskripsi, pemasukan, dan pengeluaran ke dalam draft `Transaction` (`isVerified = false`).
 - Bendahara meninjau baris yang diimpor di `TransactionReviewPanel` sebelum mengonfirmasi verifikasi.
 **Acceptance Criteria:**
-- [ ] Sistem mem-parsing file `.xlsx` menjadi baris draft transaksi.
-- [ ] Transaksi hasil impor muncul di review panel untuk diverifikasi oleh bendahara.
+- [x] Sistem mem-parsing file `.xlsx` menjadi baris draft transaksi.
+- [x] Transaksi hasil impor muncul di review panel untuk diverifikasi oleh bendahara.
+- [x] Panel detail laporan menyajikan UI impor tabular spreadsheet dengan tombol aksi terpadu.
+
+### F-021 — Ekspor & Unduh Rekapitulasi Kas Mingguan & Bulanan (Cetak PDF & Excel)
+
+**Objective:** Memfasilitasi transparansi fisik DKM Masjid Al-Luqman untuk mencetak laporan pembukuan kas mingguan dan bulanan ke mading/papan pengumuman masjid serta mengunduh arsip spreadsheet Excel.
+**User:** Publik (jemaah), Pengurus DKM
+**Process:**
+- **Ekspor Mingguan**: Pada halaman detail laporan (`/laporan/:id`), pengguna dapat memilih tombol "Cetak / PDF" untuk membuka tampilan siap cetak A4 formal (Kop Surat resmi DKM Al-Luqman, tabel mutasi kas, saldo awal & akhir, serta lembar tanda tangan pengesahan) atau "Unduh Excel" via `GET /api/reports/:id/export/excel`.
+- **Ekspor Bulanan**: Pada dashboard publik (`/dashboard`), pengguna dapat menekan tombol "Ekspor Rekap Bulanan" untuk memilih periode bulan/tahun lalu mencetak rekap bulanan A4 formal (`/laporan/cetak/bulanan?year=YYYY&month=M`) atau mengunduh spreadsheet Excel via `GET /api/reports/export/monthly/excel?year=YYYY&month=M`.
+**Business Rules:**
+- Seluruh data transaksi yang diekspor/dicetak MUTLAK hanya berstatus `isVerified = true`.
+- Tampilan cetak menggunakan aturan `@media print` sehingga elemen navigasi/tombol web otomatis disembunyikan saat dicetak ke printer atau disimpan sebagai PDF.
+**Acceptance Criteria:**
+- [x] Dokumen kas mingguan dapat diunduh dalam format Excel (.xlsx) dengan struktur tabel rapi.
+- [x] Halaman cetak mingguan menyediakan format A4 resmi dengan Kop DKM, tabel mutasi kas, dan kolom tanda tangan pengesahan.
+- [x] Dashboard memiliki tombol dialog untuk mengekspor rekapitulasi kas bulanan ke Excel (.xlsx) dan format cetak PDF.
+- [x] Data transaksi unverified (`isVerified = false`) tidak pernah muncul di berkas ekspor maupun cetakan.
 

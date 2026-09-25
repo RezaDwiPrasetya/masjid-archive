@@ -23,6 +23,7 @@ import {
   LabelList,
 } from "recharts";
 import { Button } from "@/components/ui/button";
+import { MonthlyExportDialog } from "@/components/monthly-export-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PageShell } from "@/components/page-shell";
@@ -353,25 +354,28 @@ export function DashboardClient({
             </p>
           </div>
 
-          <div className="inline-flex items-center rounded-lg border border-outline-variant bg-surface-container p-1 self-start sm:self-auto">
-            <Button
-              size="sm"
-              variant={granularity === "weekly" ? "default" : "ghost"}
-              onClick={() => handleGranularityChange("weekly")}
-              className="rounded-md px-3.5 text-xs font-medium transition-all"
-              disabled={loading}
-            >
-              Mingguan (12 Pekan)
-            </Button>
-            <Button
-              size="sm"
-              variant={granularity === "monthly" ? "default" : "ghost"}
-              onClick={() => handleGranularityChange("monthly")}
-              className="rounded-md px-3.5 text-xs font-medium transition-all"
-              disabled={loading}
-            >
-              Bulanan (12 Bulan)
-            </Button>
+          <div className="flex items-center gap-3 flex-wrap self-start sm:self-auto">
+            <MonthlyExportDialog />
+            <div className="inline-flex items-center rounded-lg border border-outline-variant bg-surface-container p-1">
+              <Button
+                size="sm"
+                variant={granularity === "weekly" ? "default" : "ghost"}
+                onClick={() => handleGranularityChange("weekly")}
+                className="rounded-md px-3.5 text-xs font-medium transition-all"
+                disabled={loading}
+              >
+                Mingguan (12 Pekan)
+              </Button>
+              <Button
+                size="sm"
+                variant={granularity === "monthly" ? "default" : "ghost"}
+                onClick={() => handleGranularityChange("monthly")}
+                className="rounded-md px-3.5 text-xs font-medium transition-all"
+                disabled={loading}
+              >
+                Bulanan (12 Bulan)
+              </Button>
+            </div>
           </div>
         </div>
 

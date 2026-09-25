@@ -189,15 +189,19 @@ Menyempurnakan transparansi keuangan hingga ke audit transaksi infaq tanpa nama,
 ### Should Have (V6)
 - **Ekstraksi Dokumen Kas PDF (F-019, Issue #055)**: Dukungan pengiriman buffer PDF langsung ke Google Gemini multimodal API di `/api/attachments/:id/extract` serta pratinjau tersemat (viewer) di halaman detail laporan.
 - **Direct Parser Excel Kas (F-020, Issue #056)**: Parser spreadsheet (.xlsx/.xls) di server yang membaca baris transaksi kas secara deterministik (100% akurasi numerik) dengan fallback AI untuk struktur tabel non-standar.
+- **Ekspor & Unduh Rekapitulasi Kas (F-021, Issue #057)**: Fitur ekspor dan unduh rekapitulasi pembukuan kas mingguan dan bulanan dalam format dokumen cetak PDF dan spreadsheet Excel untuk transparansi fisik DKM.
 
-### MVP Core Flow (V6 — Infaq Anonim)
-Jemaah membuka halaman `/donatur` → melihat kartu KPI "Infaq Anonim" → menekan tombol "Lihat Rincian" → dialog modal terbuka menampilkan tabel riwayat transaksi (mis. Kotak Amal Jumat, Tromol, Infaq Hamba Allah) → jemaah dapat mengklik baris untuk membuka laporan pekanan terkait.
+### MVP Core Flow (V6 — Infaq Anonim & Ekspor)
+1. Jemaah membuka halaman `/donatur` → melihat kartu KPI "Infaq Anonim" → menekan tombol "Lihat Rincian" → dialog modal terbuka menampilkan tabel riwayat transaksi → jemaah dapat mengklik baris untuk membuka laporan pekanan terkait.
+2. Jemaah/Pengurus membuka halaman detail laporan kas atau dashboard → menekan tombol "Cetak / PDF" atau "Unduh Excel" → memperoleh dokumen rekapitulasi kas resmi DKM Al-Luqman siap tempel di papan mading fisik atau diarsipkan dalam spreadsheet.
 
 ### MVP Success Criteria (V6)
 - [x] Jemaah dapat membuka dialog rincian Infaq Anonim dan melihat riwayat transaksi terverifikasi.
 - [x] Total nominal dalam modal rincian 100% klop dengan total pada kartu agregat Infaq Anonim.
-- [x] Transaksi `isVerified = false` tidak pernah muncul di modal rincian.
+- [x] Transaksi `isVerified = false` tidak pernah muncul di modal rincian atau berkas ekspor.
 - [x] Desain konsisten dengan tema mading kas masjid (tabular-nums, font Outfit, border outline-variant).
 - [x] Dokumen PDF dapat dipratinjau langsung di halaman detail laporan dan diekstrak via Gemini multimodal.
 - [x] Berkas spreadsheet Excel (.xlsx/.xls) dapat diimpor langsung secara tabular ke panel review transaksi kas.
+- [x] Rekapitulasi kas mingguan dapat diunduh format Excel (.xlsx) dan dicetak format A4 formal kop surat DKM.
+- [x] Rekapitulasi kas bulanan dapat diekspor ke Excel (.xlsx) dan dicetak format A4 formal via dialog dashboard.
 

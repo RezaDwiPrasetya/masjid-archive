@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   ExternalLink,
+  Printer,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PageShell } from "@/components/page-shell";
@@ -100,15 +101,30 @@ export default async function DetailLaporanPage({
           </div>
 
           {/* Page Heading */}
-          <div className="border-b border-outline-variant pb-5">
-            <h1 className="text-3xl font-bold tracking-tight text-on-surface font-sans">
-              Detail Laporan
-            </h1>
-            <p className="text-sm text-on-surface-variant mt-1">
-              Laporan Keuangan Kas • {new Date(report.reportDate).toLocaleDateString("id-ID", {
-                dateStyle: "full",
-              })}
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-outline-variant pb-5">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-on-surface font-sans">
+                Detail Laporan
+              </h1>
+              <p className="text-sm text-on-surface-variant mt-1">
+                Laporan Keuangan Kas • {new Date(report.reportDate).toLocaleDateString("id-ID", {
+                  dateStyle: "full",
+                })}
+              </p>
+            </div>
+            {/* Tombol Ekspor Rekapitulasi Kas (Issue #057) */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <Link href={`/laporan/${report.id}/cetak`} target="_blank">
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs font-semibold">
+                  <Printer size={14} /> Cetak / PDF
+                </Button>
+              </Link>
+              <a href={`/api/reports/${report.id}/export/excel`} download>
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs font-semibold">
+                  <FileSpreadsheet size={14} className="text-emerald-700" /> Unduh Excel
+                </Button>
+              </a>
+            </div>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">

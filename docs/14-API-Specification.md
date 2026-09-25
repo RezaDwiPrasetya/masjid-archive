@@ -594,6 +594,8 @@ Mengambil daftar seluruh transaksi terverifikasi yang masuk ke dalam kategori "I
 | GET    | `/api/donors`                         | Daftar donatur + agregat anonim (F-015)              | Ya           |
 | GET    | `/api/donors/:id`                     | Riwayat transaksi satu donatur (F-015)               | Ya           |
 | GET    | `/api/donors/anonymous/transactions`  | Rincian transaksi infaq anonim (F-018, #054)         | Ya           |
+| GET    | `/api/reports/:id/export/excel`       | Unduh rekapitulasi kas mingguan format Excel (.xlsx) | Ya           |
+| GET    | `/api/reports/export/monthly/excel`   | Unduh rekapitulasi kas bulanan format Excel (.xlsx)  | Ya           |
 
 ## Ringkasan Endpoint V3 (Referensi)
 

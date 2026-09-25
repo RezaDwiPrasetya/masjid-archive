@@ -17,7 +17,7 @@ Aplikasi web arsip & manajemen keuangan untuk **DKM Masjid Al-Luqman** (Kel. Sok
   - **Issue #054** (Commit `d29dec3`): Endpoint publik `GET /api/donors/anonymous/transactions` & Modal ledger riwayat transaksi infaq anonim terverifikasi di `/donatur`.
   - **Issue #055** (Commit `fc6b8d8`): Ekstraksi AI dokumen PDF via Gemini Multimodal API di `/api/attachments/:id/extract` & Pratinjau dokumen PDF tersemat (`<iframe>` 65vh) di halaman detail laporan.
   - **Issue #056** (Commit `fcb80bf`): Server-side tabular parser (`lib/parse-excel-transactions.ts`) untuk impor langsung data kas dari spreadsheet Excel (.xlsx/.xls) ke panel review tanpa ketergantungan OCR, lengkap dengan UI di detail laporan.
-  - **Issue #057**: Verifikasi integrasi menyeluruh, pemutakhiran dokumentasi Fase V6, dan persiapan merge branch ke `main`.
+  - **Issue #057**: Fitur ekspor dan unduh rekapitulasi pembukuan kas mingguan dan bulanan dalam format dokumen cetak PDF (siap mading) dan spreadsheet Excel (.xlsx) untuk transparansi fisik DKM.
 
 ---
 
@@ -103,7 +103,7 @@ Model utama:
 - **Issue #054**: F-018 — Rincian Transparansi Infaq Anonim di Halaman Donatur (Modal dialog ledger riwayat transaksi kotak amal & hamba Allah).
 - **Issue #055**: F-019 — Ekstraksi Dokumen Kas PDF via Gemini Multimodal API & Pratinjau Tersemat di Detail Laporan.
 - **Issue #056**: F-020 — Direct Parser Impor Spreadsheet Kas Excel (.xlsx/.xls) ke Panel Review.
-- **Issue #057**: Pemutakhiran Dokumentasi & Finalisasi Rilis V6.
+- **Issue #057**: F-021 — Fitur Ekspor dan Unduh Rekapitulasi Kas Mingguan & Bulanan dalam Format Cetak PDF Mading dan Spreadsheet Excel (.xlsx).
 
 ---
 
