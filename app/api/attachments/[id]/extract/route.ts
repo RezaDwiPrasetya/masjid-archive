@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
-import { extractTransactionsFromImage } from "@/lib/extract-transactions";
+import { extractTransactionsFromFile } from "@/lib/extract-transactions";
 
 export async function POST(
   _request: NextRequest,
@@ -27,9 +27,9 @@ export async function POST(
     );
   }
 
-  if (attachment.fileType !== "image") {
+  if (attachment.fileType !== "image" && attachment.fileType !== "pdf") {
     return NextResponse.json(
-      { error: "Ekstraksi hanya didukung untuk lampiran bertipe gambar." },
+      { error: "Ekstraksi otomatis saat ini hanya didukung untuk lampiran gambar dan dokumen PDF." },
       { status: 400 }
     );
   }
@@ -48,9 +48,9 @@ export async function POST(
   });
 
   try {
-    // 4. Kirim gambar ke Gemini dan dapatkan hasil ekstraksi
+    // 4. Kirim gambar atau dokumen PDF ke Gemini dan dapatkan hasil ekstraksi
     const { transactions, initialBalance, finalBalance, rawResponse, modelName } =
-      await extractTransactionsFromImage(attachment.fileUrl);
+      await extractTransactionsFromFile(attachment.fileUrl, attachment.fileType);
 
     // 5. Simpan hasil secara atomik dalam satu transaksi DB:
     //    - Hapus Transaction lama (unverified) dari attachment ini

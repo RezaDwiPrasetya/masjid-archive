@@ -10,6 +10,7 @@ import {
   ImageOff,
   CheckCircle2,
   AlertTriangle,
+  ExternalLink,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PageShell } from "@/components/page-shell";
@@ -230,44 +231,127 @@ export default async function DetailLaporanPage({
                     </>
                   )}
 
-                  {/* ── PDF ── */}
+                  {/* ── PDF (Fase V6 — Issue #055) ── */}
                   {att.fileType === "pdf" && (
-                    <div className="flex items-center gap-4 p-5">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
-                        <FileText size={24} />
+                    <>
+                      {/* Pratinjau Dokumen PDF Tersemat */}
+                      <div className="relative bg-surface border-b border-outline-variant">
+                        <iframe
+                          src={`${att.fileUrl}#toolbar=0&navpanes=0`}
+                          title={`Pratinjau PDF ${att.originalFileName}`}
+                          className="w-full h-[65vh] border-0"
+                        />
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium">
-                          {att.originalFileName}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          PDF · {(att.fileSizeBytes / 1024 / 1024).toFixed(2)}{" "}
-                          MB
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 gap-2">
-                        <a
-                          href={att.fileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <Button size="sm" variant="outline">
-                            Buka
-                          </Button>
-                        </a>
-                        <a
-                          href={downloadUrl(att.fileUrl, att.originalFileName)}
-                        >
-                          <Button size="sm">
-                            <Download size={14} /> Unduh
-                          </Button>
-                        </a>
+
+                      <div className="p-4 space-y-3">
+                        {/* Meta + aksi file */}
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-600 border border-red-500/20">
+                              <FileText size={18} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold text-on-surface">
+                                {att.originalFileName}
+                              </p>
+                              <p className="text-xs text-on-surface-variant">
+                                Dokumen PDF · {(att.fileSizeBytes / 1024 / 1024).toFixed(2)} MB
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <a
+                              href={att.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="shrink-0"
+                            >
+                              <Button size="sm" variant="outline" className="gap-1.5 text-xs">
+                                <ExternalLink size={13} /> Buka Tab Baru
+                              </Button>
+                            </a>
+                            <a
+                              href={downloadUrl(att.fileUrl, att.originalFileName)}
+                              className="shrink-0"
+                            >
+                              <Button size="sm" variant="outline" className="gap-1.5 text-xs">
+                                <Download size={13} /> Unduh
+                              </Button>
+                            </a>
+                            {hasSession && (
+                              <DeleteAttachmentButton attachmentId={att.id} />
+                            )}
+                          </div>
+                        </div>
+
+                        {/* ── Blok Ekstraksi AI (F-019) — hanya tampil jika ada sesi ── */}
                         {hasSession && (
-                          <DeleteAttachmentButton attachmentId={att.id} />
+                          <div className="rounded-2xl bg-surface-container border border-outline-variant p-4 space-y-3 shadow-xs">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
+                                Ekstraksi Data Transaksi
+                              </p>
+                              <span className="text-[11px] font-medium text-primary bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-full">
+                                Dokumen PDF
+                              </span>
+                            </div>
+                            <ExtractButton
+                              attachmentId={att.id}
+                              extractionStatus={
+                                att.extractionStatus as
+                                | "not_extracted"
+                                | "processing"
+                                | "done"
+                                | "failed"
+                              }
+                              extractionError={att.extractionError}
+                              extractionModel={att.extractionModel}
+                              transactionCount={txCount}
+                              verifiedCount={verifiedCount}
+                            />
+                          </div>
+                        )}
+
+                        {/* ── Panel Review Transaksi (F-012) ── */}
+                        {txCount > 0 && (
+                          <div className="space-y-3 pt-2">
+                            <div className="flex items-center justify-between">
+                              <h2 className="text-base font-bold text-on-surface font-sans">
+                                Transaksi Kas ({txCount})
+                              </h2>
+                              {hasSession && unverifiedCount > 0 && (
+                                <span className="text-xs font-semibold text-amber-800 bg-amber-500/15 border border-amber-300 px-2.5 py-0.5 rounded-full">
+                                  {unverifiedCount} perlu dikonfirmasi
+                                </span>
+                              )}
+                            </div>
+                            <TransactionReviewPanel
+                              key={`${att.id}-${att.transactions.length}-${unverifiedCount}`}
+                              transactions={att.transactions.map((t) => ({
+                                ...t,
+                                amount: t.amount.toString(),
+                                transactionDate: t.transactionDate
+                                  ? t.transactionDate.toISOString()
+                                  : null,
+                                verifiedAt: t.verifiedAt
+                                  ? t.verifiedAt.toISOString()
+                                  : null,
+                                donorNameRaw: t.donorNameRaw,
+                                donorId: t.donorId,
+                                donor: t.donor
+                                  ? { id: t.donor.id, name: t.donor.name }
+                                  : null,
+                              }))}
+                              hasSession={hasSession}
+                              allVerifiedTransactions={allVerifiedInReport}
+                            />
+                          </div>
                         )}
                       </div>
-                    </div>
+                    </>
                   )}
+
 
                   {/* ── Excel ── */}
                   {att.fileType === "excel" && (
