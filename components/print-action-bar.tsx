@@ -1,44 +1,43 @@
 "use client";
 
-import { Printer, Download, ArrowLeft } from "lucide-react";
+import { Printer, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
 interface PrintActionBarProps {
   backUrl: string;
-  excelDownloadUrl: string;
+  excelDownloadUrl?: string;
   title: string;
 }
 
 export function PrintActionBar({
   backUrl,
-  excelDownloadUrl,
   title,
 }: PrintActionBarProps) {
   const router = useRouter();
 
   const handleBack = () => {
     // 1. Jika tab ini dibuka di tab baru dengan opener, tutup window agar tab tidak menumpuk
-    if (typeof window !== "undefined" && window.opener) {
+    if (typeof window !== "undefined") {
+      if (window.opener) {
+        window.close();
+        return;
+      }
+
+      // 2. Jika riwayat peramban tersedia, navigasi mundur secara normal
+      if (window.history.length > 1) {
+        router.back();
+        return;
+      }
+
       window.close();
+      setTimeout(() => {
+        router.push(backUrl);
+      }, 100);
       return;
     }
 
-    // 2. Jika riwayat peramban tersedia, navigasi mundur secara normal
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      router.back();
-    } else {
-      router.push(backUrl);
-    }
-  };
-
-  const handleDownloadExcel = () => {
-    const link = document.createElement("a");
-    link.href = excelDownloadUrl;
-    link.setAttribute("download", "");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    router.push(backUrl);
   };
 
   return (
@@ -51,7 +50,7 @@ export function PrintActionBar({
           variant="outline"
           size="sm"
           onClick={handleBack}
-          className="gap-1.5 text-xs"
+          className="gap-1.5 text-xs font-semibold"
         >
           <ArrowLeft size={14} /> Kembali
         </Button>
@@ -61,14 +60,6 @@ export function PrintActionBar({
       </div>
 
       <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleDownloadExcel}
-          className="gap-1.5 text-xs font-semibold border-outline-variant hover:bg-surface-container-high"
-        >
-          <Download size={14} className="text-primary" /> Unduh Excel (.xlsx)
-        </Button>
         <Button
           size="sm"
           onClick={() => window.print()}
