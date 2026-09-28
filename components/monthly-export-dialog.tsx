@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Download, Printer, FileSpreadsheet, Calendar } from "lucide-react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -29,6 +29,7 @@ const MONTH_OPTIONS = [
 ];
 
 export function MonthlyExportDialog() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const now = new Date();
   const [year, setYear] = useState<number>(now.getFullYear());
@@ -39,6 +40,21 @@ export function MonthlyExportDialog() {
 
   const excelUrl = `/api/reports/export/monthly/excel?year=${year}&month=${month}`;
   const printUrl = `/laporan/cetak/bulanan?year=${year}&month=${month}`;
+
+  const handlePrint = () => {
+    setOpen(false);
+    router.push(printUrl);
+  };
+
+  const handleDownloadExcel = () => {
+    setOpen(false);
+    const link = document.createElement("a");
+    link.href = excelUrl;
+    link.setAttribute("download", "");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -121,33 +137,22 @@ export function MonthlyExportDialog() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-              <Link
-                href={printUrl}
-                onClick={() => setOpen(false)}
-                className="w-full"
+              <Button
+                onClick={handlePrint}
+                className="w-full gap-2 text-xs font-semibold h-10 bg-primary hover:bg-primary/90 text-on-primary shadow-xs"
               >
-                <Button
-                  variant="outline"
-                  className="w-full gap-2 text-xs font-semibold h-10 border-outline-variant hover:bg-surface-container-high"
-                >
-                  <Printer size={14} className="text-primary" />
-                  Cetak / PDF Mading
-                </Button>
-              </Link>
+                <Printer size={14} />
+                <span>Cetak / PDF Mading</span>
+              </Button>
 
-              <a
-                href={excelUrl}
-                download
-                onClick={() => setOpen(false)}
-                className="w-full"
+              <Button
+                variant="outline"
+                onClick={handleDownloadExcel}
+                className="w-full gap-2 text-xs font-semibold h-10 border-outline-variant hover:bg-surface-container-high"
               >
-                <Button
-                  className="w-full gap-2 text-xs font-semibold h-10 bg-primary hover:bg-primary/90 text-on-primary"
-                >
-                  <FileSpreadsheet size={14} />
-                  Unduh Excel (.xlsx)
-                </Button>
-              </a>
+                <FileSpreadsheet size={14} className="text-primary" />
+                <span>Unduh Excel (.xlsx)</span>
+              </Button>
             </div>
           </div>
         </div>

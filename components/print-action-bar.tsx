@@ -32,6 +32,15 @@ export function PrintActionBar({
     }
   };
 
+  const handleDownloadExcel = () => {
+    const link = document.createElement("a");
+    link.href = excelDownloadUrl;
+    link.setAttribute("download", "");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <aside
       aria-label="Aksi Dokumen Cetak"
@@ -52,11 +61,14 @@ export function PrintActionBar({
       </div>
 
       <div className="flex items-center gap-2">
-        <a href={excelDownloadUrl} download>
-          <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-            <Download size={14} /> Unduh Excel (.xlsx)
-          </Button>
-        </a>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleDownloadExcel}
+          className="gap-1.5 text-xs font-semibold border-outline-variant hover:bg-surface-container-high"
+        >
+          <Download size={14} className="text-primary" /> Unduh Excel (.xlsx)
+        </Button>
         <Button
           size="sm"
           onClick={() => window.print()}
