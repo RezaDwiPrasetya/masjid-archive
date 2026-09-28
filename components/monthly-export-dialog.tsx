@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Download, Printer, FileSpreadsheet, Calendar } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -120,10 +121,8 @@ export function MonthlyExportDialog() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-              <a
+              <Link
                 href={printUrl}
-                target="_blank"
-                rel="noopener noreferrer"
                 onClick={() => setOpen(false)}
                 className="w-full"
               >
@@ -134,7 +133,7 @@ export function MonthlyExportDialog() {
                   <Printer size={14} className="text-primary" />
                   Cetak / PDF Mading
                 </Button>
-              </a>
+              </Link>
 
               <a
                 href={excelUrl}

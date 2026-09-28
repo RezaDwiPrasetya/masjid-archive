@@ -114,7 +114,7 @@ export default async function DetailLaporanPage({
             </div>
             {/* Tombol Ekspor Rekapitulasi Kas (Issue #057) */}
             <div className="flex items-center gap-2 flex-wrap">
-              <Link href={`/laporan/${report.id}/cetak`} target="_blank">
+              <Link href={`/laporan/${report.id}/cetak`}>
                 <Button variant="outline" size="sm" className="gap-1.5 text-xs font-semibold">
                   <Printer size={14} /> Cetak / PDF
                 </Button>
