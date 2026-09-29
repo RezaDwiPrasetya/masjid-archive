@@ -40,7 +40,7 @@ Bendahara tetap bekerja seperti biasa (mencatat manual, lalu unggah foto/file la
 | **V4** | Ekstraksi data: vision-LLM untuk gambar (dipicu manual oleh bendahara), data mentah tersimpan sebagai `Transaction`, menunggu verifikasi manual sebelum final | ✅ Selesai |
 | **V5** | Financial intelligence: tren keuangan (mingguan/bulanan), tracking & riwayat donatur, dashboard publik — seluruhnya dihitung hanya dari transaksi yang sudah terverifikasi | ✅ Selesai |
 | **V6** | Advanced Transparency & Multimodal Data Pipeline: Rincian transparansi infaq anonim (audit kotak amal/hamba Allah), ekstraksi lampiran PDF via vision-LLM, direct parser spreadsheet kas Excel (.xlsx), ekspor cetak & Excel | ✅ Selesai |
-| **V7** | Mobile Responsiveness & Touch Optimization: Penyesuaian layout ponsel (360px-430px), perbaikan grafik mingguan anti-overlap, ergonomi navigasi sentuh bottom-bar | 🟡 In Progress |
+| **Maintenance & Polish** | Perbaikan responsivitas mobile: eliminasi overlap teks grafik mingguan, ergonomi sentuh bottom-bar, perbaikan visual kartu | ✅ Selesai (Issue #058) |
 
 ## Out of Scope
 
@@ -57,7 +57,7 @@ Bendahara tetap bekerja seperti biasa (mencatat manual, lalu unggah foto/file la
 | Akurasi ekstraksi data vision-LLM (V4 & V6) | Cukup akurat untuk angka besar, koreksi manual tetap dimungkinkan lewat alur verifikasi sebelum data dianggap final |
 | Adopsi fitur dashboard/tren oleh pengurus & jemaah (V5) | Dievaluasi lewat user testing setelah dashboard publik dirilis |
 | Transparansi donasi anonim & ragam dokumen (V6) | Jemaah dapat melihat rincian riwayat infaq kotak amal/anonim; bendahara dapat mengekstrak PDF & mengimpor Excel |
-| Kenyamanan akses mobile smartphone (V7) | Grafik tidak overlap di layar HP, touch target bottom bar ≥ 44px, bebas overflow horizontal |
+| Kenyamanan akses mobile smartphone | Grafik bersih tidak overlap di layar HP, touch target bottom bar ≥ 44px, bebas overflow horizontal |
 
 ## Timeline
 
@@ -69,6 +69,8 @@ Bendahara tetap bekerja seperti biasa (mencatat manual, lalu unggah foto/file la
 | V5 — Financial Intelligence (Dashboard Publik) | ✅ Selesai |
 | Redesign UI Batch 1, 2, 3 | ✅ Selesai, di-merge ke `main` |
 | V6 — Advanced Transparency & Multimodal Pipeline | ✅ Selesai (Issue #054-#057) |
-| V7 — Mobile Responsiveness & Touch Optimization | 🟡 Sedang Dikerjakan (Issue #058) |
+| Pemeliharaan & Polish Mobile (Issue #058) | ✅ Selesai (Commit `93492f6`) |
+| **Status Keseluruhan Proyek** | 🏆 **TAMAT / SELESAI PENUH** |
+
 
 
