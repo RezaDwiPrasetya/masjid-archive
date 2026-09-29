@@ -360,3 +360,31 @@
 - [x] Dashboard memiliki tombol dialog untuk mengekspor rekapitulasi kas bulanan ke Excel (.xlsx) dan format cetak PDF.
 - [x] Data transaksi unverified (`isVerified = false`) tidak pernah muncul di berkas ekspor maupun cetakan.
 
+### F-022 — Mobile Responsiveness & Touch Optimization System
+
+**Objective:** Memastikan sistem Masjid Archive dapat diakses dengan nyaman, proporsional, dan tanpa tumpang tindih elemen visual pada perangkat smartphone (mobile portrait 360px - 430px) bagi jemaah umum maupun pengurus DKM.
+**User:** Publik (jemaah), Pengurus DKM
+**Process:**
+- **1. Dashboard Chart Mobile Refinement**:
+  - Pada mobile (`< 640px`), label nominal uang di atas bar mingguan disembunyikan untuk menghilangkan tabrakan teks `Rp xxx rb` secara horizontal. Rincian nilai disajikan via touch tooltip yang interaktif dan responsif.
+  - Lebar Y-axis dirampingkan ke ~50px agar chart batang memiliki ruang horizontal maksimal.
+  - Sumbu X tanggal mingguan diatur interval dan margin-nya agar tidak berdesakan.
+- **2. Mobile Bottom Navigation**:
+  - Standarisasi tap target minimal 44px–48px yang thumb-friendly.
+  - Padding horizontal dinamis dan penyesuaian font label pada perangkat HP kecil (≤ 380px) agar menu (hingga 6 item admin) tetap proporsional dan tidak terpotong.
+- **3. Halaman Donatur & Dialog**:
+  - Proporsi kartu agregat KPI (Donatur Terdata & Infaq Anonim) diatur seimbang dengan gap vertikal rapi di mobile.
+  - Modal ledger rincian infaq anonim dan dialog ekspor bulanan menyesuaikan lebar viewport HP (`w-[95vw] sm:max-w-lg`) tanpa horizontal overflow.
+- **4. Penanganan Tabel Kas & Review**:
+  - Tabel daftar pengguna dan panel review transaksi dilengkapi pembungkus scroll responsif yang intuitif di perangkat mobile.
+**Business Rules:**
+- Tidak mengubah logika bisnis, keaslian data finansial, maupun format desktop yang sudah baku.
+- Seluruh perbaikan berfokus pada layout adaptif CSS/Tailwind dan interaksi sentuh.
+**Acceptance Criteria:**
+- [ ] Grafik tren kas mingguan di dashboard mobile bebas dari tumpang-tindih teks nominal di atas batang.
+- [ ] Nilai nominal tetap dapat dilihat di mobile via tap/sentuh baris grafik (tooltip interaktif).
+- [ ] Seluruh item navigasi bawah (bottom navigation bar) dapat di-tap dengan mudah dan label teks tidak terpotong pada lebar layar 360px.
+- [ ] Modal rincian donatur anonim dan dialog ekspor bulanan proporsional di layar HP tanpa memotong tombol aksi.
+- [ ] Tidak ada horizontal scrollbar yang tidak diinginkan pada level `body` di semua halaman utama.
+
+

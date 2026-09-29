@@ -268,12 +268,29 @@ export function DashboardClient({
     pengeluaran: p.pengeluaran,
   }));
 
+  // Deteksi viewport mobile (< 640px) untuk optimasi tata letak grafik & label
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(typeof window !== "undefined" && window.innerWidth < 640);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   const renderBarLabel = (props: {
     x?: number | string;
     y?: number | string;
     width?: number | string;
     value?: unknown;
   }) => {
+    // Sembunyikan label teks statis jika pada viewport mobile (< 640px) pada mode mingguan,
+    // ATAU jika lebar bar < 36px (menghilangkan overlap teks horizontal Rp xxx rb di layar sempit)
+    if ((isMobile && granularity === "weekly") || Number(props.width || 0) < 36) {
+      return null;
+    }
     const { x, y, width, value } = props;
     const num = Number(value);
     if (!num || num <= 0) return null;
@@ -521,8 +538,13 @@ export function DashboardClient({
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={chartData}
-                    margin={{ top: 20, right: 10, left: 10, bottom: 20 }}
-                    barGap={4}
+                    margin={{
+                      top: 20,
+                      right: isMobile ? 4 : 10,
+                      left: isMobile ? -16 : 10,
+                      bottom: 20,
+                    }}
+                    barGap={isMobile ? 2 : 4}
                   >
                     <CartesianGrid
                       strokeDasharray="3 3"
@@ -534,12 +556,13 @@ export function DashboardClient({
                       tickLine={false}
                       axisLine={false}
                       tickMargin={10}
-                      className="text-xs fill-on-surface-variant font-medium"
+                      interval={isMobile && granularity === "weekly" ? "preserveStartEnd" : 0}
+                      className="text-[10px] sm:text-xs fill-on-surface-variant font-medium"
                     />
                     <YAxis
                       tickLine={false}
                       axisLine={false}
-                      tickMargin={8}
+                      tickMargin={isMobile ? 4 : 8}
                       tickFormatter={formatShortRupiah}
                       domain={[
                         0,
@@ -548,8 +571,8 @@ export function DashboardClient({
                             ? Math.ceil((dataMax * 1.15) / 50000) * 50000
                             : "auto",
                       ]}
-                      className="text-xs fill-on-surface-variant"
-                      width={80}
+                      className="text-[10px] sm:text-xs fill-on-surface-variant"
+                      width={isMobile ? 52 : 75}
                     />
                     <ChartTooltip
                       content={
@@ -591,6 +614,11 @@ export function DashboardClient({
               </ChartContainer>
               <p className="mt-3 text-center text-xs text-on-surface-variant">
                 Hijau menunjukkan uang masuk, merah menunjukkan uang keluar.
+                {isMobile && (
+                  <span className="block mt-1 text-[11px] text-on-surface-variant/80">
+                    💡 Sentuh batang grafik untuk melihat rincian kas
+                  </span>
+                )}
               </p>
             </div>
           )}

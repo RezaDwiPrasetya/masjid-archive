@@ -205,3 +205,31 @@ Menyempurnakan transparansi keuangan hingga ke audit transaksi infaq tanpa nama,
 - [x] Rekapitulasi kas mingguan dapat diunduh format Excel (.xlsx) dan dicetak format A4 formal kop surat DKM.
 - [x] Rekapitulasi kas bulanan dapat diekspor ke Excel (.xlsx) dan dicetak format A4 formal via dialog dashboard.
 
+---
+
+## 8. Milestone & Scope Fase V7 (Mobile Responsiveness & Touch Optimization)
+
+### MVP Objective (V7)
+Menyempurnakan kenyamanan penggunaan aplikasi pada perangkat smartphone (mobile portrait 360px - 430px) bagi jemaah dan pengurus DKM, mengatasi tumpang-tindih teks pada grafik mingguan, serta memastikan ergonomi navigasi sentuh (touch targets) yang prima.
+
+### Must Have (V7)
+- **Dashboard Chart Mobile Optimization (F-022, Issue #058)**:
+  - Meniadakan tumpang tindih teks nominal uang pada grafik batang mingguan di layar `< 640px`.
+  - Mengaktifkan interaktivitas sentuh (touch tooltip) untuk membaca nominal per batang secara jelas.
+  - Merampingkan sumbu Y (Y-Axis) dari 80px ke 50–55px pada layar sempit untuk memaksimalkan visualisasi batang.
+- **Mobile Bottom Navigation Ergonomics (F-022, Issue #058)**:
+  - Penyesuaian padding dan ukuran label menu navigasi bawah (bottom bar) agar tidak berdesakan dan tidak terpotong pada smartphone kompak (≤ 380px), baik untuk jemaah (5 item) maupun admin (6 item).
+  - Standarisasi tap target minimal 44×44px sesuai WCAG.
+
+### Should Have (V7)
+- **Responsive Modals & Dialogs**: Dialog rincian infaq anonim dan dialog ekspor bulanan menyesuaikan batas layar mobile (`w-[95vw]`) dengan area tombol yang mudah dijangkau satu jempol.
+- **Container Anti-Overflow**: Memastikan seluruh halaman (`/`, `/dashboard`, `/donatur`, `/cari`, `/unggah`, `/pengguna`) bebas dari horizontal scrolling yang tidak diinginkan pada level `body`.
+
+### MVP Success Criteria (V7)
+- [ ] Grafik tren kas mingguan di dashboard mobile bersih tanpa tabrakan teks label di atas batang.
+- [ ] Touch tooltip pada grafik responsif dan informatif saat disentuh jemaah via smartphone.
+- [ ] Seluruh menu navigasi bawah terbaca jelas tanpa teks terpotong di layar 360px.
+- [ ] Dialog dan modal terbuka proporsional dan dapat ditutup/dioperasikan dengan nyaman di mobile.
+- [ ] Lolos pengujian visual mobile portrait di browser developer tools dan perangkat riil.
+
+

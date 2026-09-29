@@ -128,9 +128,37 @@ Unit dasar: 8px.
 - **Alert/Banner** ("data masih tahap awal"): latar `primary-fixed`, radius large, padding `space-4`
 - **Grid Foto (Arsip Laporan)**: 3-4 kolom, gap `space-4`, tanpa kartu pembungkus terpisah — foto + caption sebagai satu unit
 
+## Mobile Responsiveness & Touch Guidelines (Fase V7)
+
+### 1. Viewport Breakpoints & Strategi Layar
+- **Mobile Compact (< 390px)**: Prioritas keringkasan konten, hilangkan redundansi visual, minimal margin 12px-16px.
+- **Mobile Standard (390px - 639px)**: Target utama jemaah & pengurus saat browsing via smartphone. Layout 1 kolom, vertical stack.
+- **Tablet (640px - 1023px)**: Grid 2 kolom, adaptasi sidebar/bottom bar.
+- **Desktop (≥ 1024px)**: Sidebar tetap 260px, grid 3-4 kolom, multi-panel review.
+
+### 2. Standar Navigasi Bawah (Mobile Bottom Bar)
+- **Touch Target**: Setiap item navigasi harus memiliki tap area minimal 44×44px (standar aksesibilitas WCAG).
+- **Densitas Item (5–6 Menu)**:
+  - Pada layar HP sempit (≤ 380px), padding horizontal antar-item diatur secara presisi (`px-1` atau `px-1.5`), font label 10px demi mencegah teks terpotong (*truncate* berantakan).
+  - Indikator aktif berupa pill halus (`bg-primary/10 text-primary`) dengan ikon ukuran 18–20px.
+  - Safe-area inset untuk navigasi gesture modern (`env(safe-area-inset-bottom)`).
+
+### 3. Grafik Finansial Responsif (Dashboard Chart)
+- **Masalah Overlap**: Dilarang me-render label nominal uang permanen di atas bar jika lebar bar < 50px (seperti pada grafik mingguan 8–12 pekan di HP), karena teks nominal Rupiah (±50px) akan saling tabrakan dan menimpa.
+- **Solusi Responsif**:
+  - Pada layar `< 640px` (mobile), sembunyikan label nominal statis di atas bar. Andalkan **interactive touch tooltip** yang responsif dan mudah di-tap dengan jari.
+  - Lebar Y-Axis pada mobile dirampingkan (maksimal 50–55px, bukan 80px) untuk memberikan ruang maksimal pada visualisasi batang kas.
+  - Sumbu X tanggal mingguan diatur intervalnya secara dinamis agar tidak berdempetan.
+
+### 4. Kartu & Komponen Informasi di Mobile
+- **Hierarki Vertikal**: Komponen KPI yang bersebelahan di desktop (seperti Donatur Terdata & Infaq Anonim) otomatis tersusun rapi secara vertikal (*single column*) dengan gap 12px-16px.
+- **Dialog & Modal**: Di mobile, dialog harus memiliki batas padding aman (maksimal `w-[92vw]` atau `w-[95vw]`), tombol aksi utama di bagian bawah mudah dijangkau satu jempol.
+- **Tabel Kas & Transaksi**: Harus memiliki pembungkus `overflow-x-auto` dengan indikator scroll halus atau beralih ke format kartu ringkas (card-view) untuk mencegah overflow horizontal pada viewport HP.
+
 ## States
 
 - Default, Hover, Focus, Loading, Empty, Error, Success — semua tetap berlaku
 - **List Row hover (baru)**: latar berubah jadi `surface-container` (bukan shadow naik seperti kartu) — memberi kesan "baris disorot", bukan "kartu terangkat"
 
 > **Catatan implementasi:** ikon di guideline ini merujuk Material Symbols (wireframe awal), implementasi aktual memakai **Lucide Icons** — lihat [12. Technical Specification](./12-Technical-Specification.md).
+

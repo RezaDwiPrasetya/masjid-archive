@@ -146,7 +146,7 @@ export function AppShell({
       </div>
 
       {/* Mobile Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-around border-t border-outline-variant bg-surface-container/95 backdrop-blur-md px-1 lg:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-around border-t border-outline-variant bg-surface-container/95 backdrop-blur-md px-0.5 sm:px-2 pb-[env(safe-area-inset-bottom)] lg:hidden">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = active === item.href;
@@ -154,20 +154,22 @@ export function AppShell({
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center gap-1 py-1 px-2 text-[11px] transition-colors ${
+              className={`flex flex-1 min-w-0 flex-col items-center justify-center gap-0.5 py-1 px-0.5 sm:px-1 min-h-[44px] transition-colors ${
                 isActive
                   ? "font-semibold text-primary"
                   : "font-medium text-on-surface-variant hover:text-on-surface"
               }`}
             >
               <div
-                className={`flex items-center justify-center rounded-lg p-1 transition-all ${
-                  isActive ? "bg-primary/10 text-primary" : ""
+                className={`flex items-center justify-center rounded-xl px-2.5 py-1 transition-all ${
+                  isActive ? "bg-primary/10 text-primary" : "text-on-surface-variant"
                 }`}
               >
-                <Icon size={20} />
+                <Icon size={19} className="shrink-0" />
               </div>
-              <span className="truncate">{item.label}</span>
+              <span className="truncate text-[10px] sm:text-[11px] leading-tight text-center tracking-tight">
+                {item.label}
+              </span>
             </Link>
           );
         })}

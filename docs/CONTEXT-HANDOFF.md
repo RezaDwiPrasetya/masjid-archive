@@ -1,6 +1,6 @@
 # CONTEXT HANDOFF — Proyek "Masjid Archive"
-> **Terakhir diperbarui**: 25 September 2026  
-> **Status**: **TAMAT / SELESAI PENUH (V1 s/d V6 Feature-Complete — Merged to Main & Pushed)**
+> **Terakhir diperbarui**: 29 September 2026  
+> **Status**: **Fase V7 (Mobile Responsiveness & Touch Optimization) — In Progress (Issue #058)**
 
 ---
 
@@ -22,9 +22,10 @@ Aplikasi web arsip & manajemen keuangan untuk **DKM Masjid Al-Luqman** (Kel. Sok
     - **#055**: Ekstraksi PDF multimodal + embedded PDF viewer (`/laporan/:id`).
     - **#056**: Server-side tabular Excel parser (`.xlsx`/`.xls`) langsung ke review panel tanpa OCR.
     - **#057**: Ekspor & cetak rekap kas mingguan & bulanan (format A4 formal mading DKM + Excel spreadsheet).
-- Seluruh commit sudah digabungkan ke `main` dan sinkron dengan remote GitHub `origin/main`.
+- **FASE V7 AKTIF (Issue #058)**:
+  - **Mobile Responsiveness & Touch Ergonomics**: Berdasarkan temuan pengujian mobile riil di HP smartphone (tumpang tindih teks nominal pada grafik mingguan di layar sempit, kepadatan 6 item bottom bar nav di 360px, proporsi dialog/modal responsif).
 - Status kode: `tsc --noEmit` lolos 0 error, `npm run lint` lolos 0 error.
-- **Fokus Selanjutnya**: Pemeliharaan, audit keamanan & stabilitas, serta penyusunan laporan data flow / dokumentasi tugas akhir.
+
 
 ---
 
@@ -112,11 +113,15 @@ Model utama:
 - **Issue #056**: F-020 — Direct Parser Impor Spreadsheet Kas Excel (.xlsx/.xls) ke Panel Review.
 - **Issue #057**: F-021 — Fitur Ekspor dan Unduh Rekapitulasi Kas Mingguan & Bulanan dalam Format Cetak PDF Mading dan Spreadsheet Excel (.xlsx).
 
+**Fase V7: Mobile Responsiveness & Touch Optimization**
+- **Issue #058**: F-022 — Optimasi Responsivitas Mobile, Eliminasi Overlap Grafik Tren Kas Mingguan, dan Ergonomi Sentuh Navigasi Bawah.
+
 ---
 
 ## 8. MASALAH/BUG YANG SEDANG DIBAHAS
-Tidak ada bug fungsional aktif di codebase.  
-Fokus saat ini adalah eksekusi Issue #054 secara rapi tanpa melanggar prinsip data isolasi (hanya data `isVerified=true` yang ditampilkan di modal rincian anonim).
+- **Grafik Tren Kas Mingguan di Mobile**: Label nominal di atas batang saling tumpang tindih secara horizontal pada layar smartphone (360px–430px) karena banyak pekan. Solusi: sembunyikan label nominal statis di layar `< 640px` dan gunakan touch tooltip responsif + rampingkan sumbu Y.
+- **Mobile Bottom Navigation**: 6 item menu navigasi bawah sangat padat pada viewport HP sempit (≤ 380px), perlu penyesuaian font dan padding tap target (minimal 44px) agar label tidak terpotong.
+
 
 ---
 
