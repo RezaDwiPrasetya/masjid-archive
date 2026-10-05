@@ -1,0 +1,41 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+|Pengurus (Admin)|
+start
+:Membuka halaman manajemen pengguna (/pengguna);
+
+|Sistem|
+:Mengecek role sesi pengguna saat ini;
+if (Role == "Admin"?) then (Ya)
+  :Mengambil daftar seluruh pengguna dari database;
+  :Menampilkan tabel pengguna, email, foto profil, dan role;
+else (Bukan Admin)
+  :Menolak akses & menampilkan pesan peringatan;
+  stop
+endif
+
+|Pengurus (Admin)|
+if (Aksi yang dipilih?) then (Ubah Role Pengguna)
+  :Memilih role baru (Admin / Guest) pada dropdown;
+  |Sistem|
+  :Menyimpan perubahan role pengguna ke database;
+  :Memperbarui tampilan tabel seketika;
+  |Pengurus (Admin)|
+else (Hapus Pengguna)
+  :Menekan tombol hapus akun;
+  :Muncul dialog konfirmasi alert;
+  :Mengonfirmasi tindakan hapus;
+  |Sistem|
+  :Menghapus akun pengguna dari database;
+  :Memperbarui daftar pengguna aktif;
+  |Pengurus (Admin)|
+endif
+
+:Melihat data pengguna terbaru;
+stop
+
+@enduml

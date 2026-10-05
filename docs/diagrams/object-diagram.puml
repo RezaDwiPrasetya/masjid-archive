@@ -1,0 +1,111 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+' ─── INSTANSIASI OBJEK (RUNTIME SNAPSHOT) ─────────────────────────────────────
+
+object "bendahara : User" as u1 {
+  id = "usr_cuid_01"
+  name = "H. Ahmad Fauzi (Bendahara)"
+  email = "bendahara@masjid-alluqman.id"
+  role = "Admin"
+}
+
+object "laporanJumat : Report" as r1 {
+  id = "rep_2026_w39"
+  reportDate = 2026-09-25 (Jumat)
+  year = 2026
+  month = 9
+  weekOfMonth = 4
+  initialBalance = Rp 14.500.000,00
+  finalBalance = Rp 17.850.000,00
+}
+
+object "fotoKas : Attachment" as a1 {
+  id = "att_img_01"
+  fileType = "image"
+  originalFileName = "buku_kas_25_sep.jpg"
+  fileSizeBytes = 2458000
+  extractionStatus = "done"
+  extractionModel = "gemini-3.6-flash"
+}
+
+object "rekapExcel : Attachment" as a2 {
+  id = "att_xls_01"
+  fileType = "excel"
+  originalFileName = "lampiran_operasional.xlsx"
+  fileSizeBytes = 48500
+  extractionStatus = "done"
+  extractionModel = "direct-excel-parser"
+}
+
+object "tx1 : Transaction" as t1 {
+  id = "tx_001"
+  type = "pemasukan"
+  amount = Rp 2.850.000,00
+  description = "Kotak Amal Shalat Jumat"
+  transactionDate = 2026-09-25
+  donorNameRaw = "Hamba Allah"
+  donorId = null (Infaq Anonim)
+  isVerified = true
+}
+
+object "tx2 : Transaction" as t2 {
+  id = "tx_002"
+  type = "pemasukan"
+  amount = Rp 1.500.000,00
+  description = "Infaq Renovasi Tempat Wudhu"
+  transactionDate = 2026-09-24
+  donorNameRaw = "H. Supriyadi"
+  donorId = "dnr_supriyadi_01"
+  isVerified = true
+}
+
+object "tx3 : Transaction" as t3 {
+  id = "tx_003"
+  type = "pengeluaran"
+  amount = Rp 1.000.000,00
+  description = "Pembayaran Listrik & Kebersihan"
+  transactionDate = 2026-09-25
+  donorNameRaw = null
+  donorId = null
+  isVerified = true
+}
+
+object "donaturSupriyadi : Donor" as d1 {
+  id = "dnr_supriyadi_01"
+  name = "H. Supriyadi"
+  normalizedName = "supriyadi"
+  contact = "08123456789"
+}
+
+' ─── LINK ANTAR OBJEK ────────────────────────────────────────────────────────
+
+' Pengurus mengunggah laporan
+u1 -- r1 : mengunggah
+
+' Pengurus memverifikasi transaksi
+u1 -- t1 : memverifikasi
+u1 -- t2 : memverifikasi
+u1 -- t3 : memverifikasi
+
+' Laporan memiliki lampiran
+r1 *-- a1
+r1 *-- a2
+
+' Laporan menaungi transaksi
+r1 *-- t1
+r1 *-- t2
+r1 *-- t3
+
+' Lampiran diekstrak menjadi transaksi
+a1 o-- t1
+a1 o-- t2
+a2 o-- t3
+
+' Donatur terhubung ke transaksi yang diatribusikan
+d1 -- t2 : donatur
+
+@enduml

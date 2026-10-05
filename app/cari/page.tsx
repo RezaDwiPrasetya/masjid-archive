@@ -17,6 +17,34 @@ function valueOf(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? "" : value ?? "";
 }
 
+function getReportLastActivity(report: {
+  uploadedAt: Date;
+  attachments: { uploadedAt: Date; extractedAt: Date | null }[];
+  transactions: { verifiedAt: Date | null }[];
+}): number {
+  let latest = new Date(report.uploadedAt).getTime();
+
+  for (const att of report.attachments) {
+    if (att.uploadedAt) {
+      const t = new Date(att.uploadedAt).getTime();
+      if (t > latest) latest = t;
+    }
+    if (att.extractedAt) {
+      const t = new Date(att.extractedAt).getTime();
+      if (t > latest) latest = t;
+    }
+  }
+
+  for (const tx of report.transactions) {
+    if (tx.verifiedAt) {
+      const t = new Date(tx.verifiedAt).getTime();
+      if (t > latest) latest = t;
+    }
+  }
+
+  return latest;
+}
+
 export default async function CariLaporanPage({
   searchParams,
 }: {
@@ -26,22 +54,49 @@ export default async function CariLaporanPage({
   const keyword = valueOf(query.keyword);
   const year = valueOf(query.year);
   const month = valueOf(query.month);
+  const sort = valueOf(query.sort) || "terbaru_aktivitas";
+
+  // Ambil daftar tahun lengkap secara distinct
+  const distinctYears = await prisma.report.findMany({
+    select: { year: true },
+    distinct: ["year"],
+    orderBy: { year: "desc" },
+  });
+  const years = distinctYears.map((r) => r.year);
+
   const reports = await prisma.report.findMany({
     where: {
       ...(year ? { year: Number(year) } : {}),
       ...(month ? { month: Number(month) } : {}),
     },
-    orderBy: { reportDate: "desc" },
-    include: { uploadedBy: true, attachments: true },
+    include: {
+      uploadedBy: true,
+      attachments: true,
+      transactions: {
+        select: { verifiedAt: true },
+      },
+    },
   });
+
+  // Urutkan laporan sesuai opsi yang dipilih (default: terbaru_aktivitas)
+  const sortedReports = [...reports].sort((a, b) => {
+    if (sort === "tanggal_asc") {
+      return new Date(a.reportDate).getTime() - new Date(b.reportDate).getTime();
+    }
+    if (sort === "tanggal_desc") {
+      return new Date(b.reportDate).getTime() - new Date(a.reportDate).getTime();
+    }
+    // Default: "terbaru_aktivitas" (Paling baru diubah atau ditambahkan)
+    return getReportLastActivity(b) - getReportLastActivity(a);
+  });
+
   const filteredReports = keyword
-    ? reports.filter((report) =>
+    ? sortedReports.filter((report) =>
         `${new Date(report.reportDate).toLocaleDateString("id-ID")} ${report.uploadedBy.name}`
           .toLowerCase()
           .includes(keyword.toLowerCase())
       )
-    : reports;
-  const years = [...new Set(reports.map((report) => report.year))].sort((a, b) => b - a);
+    : sortedReports;
 
   return (
     <AppShell active="/cari">
@@ -56,7 +111,7 @@ export default async function CariLaporanPage({
             </p>
           </div>
 
-          <form className="grid gap-4 rounded-xl border border-outline-variant bg-surface-container p-5 sm:p-6 shadow-level-1 md:grid-cols-[1fr_180px_180px_auto] md:items-end">
+          <form className="grid gap-4 rounded-xl border border-outline-variant bg-surface-container p-5 sm:p-6 shadow-level-1 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_140px_140px_220px_auto] lg:items-end">
             <div>
               <label htmlFor="keyword" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
                 Kata Kunci
@@ -105,9 +160,26 @@ export default async function CariLaporanPage({
                 ))}
               </select>
             </div>
-            <Button type="submit" variant="default" className="h-9 gap-2">
-              <Search size={15} /> Cari Laporan
-            </Button>
+            <div>
+              <label htmlFor="sort" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
+                Urutkan
+              </label>
+              <select
+                id="sort"
+                name="sort"
+                defaultValue={sort}
+                className="h-9 w-full rounded-lg border border-outline-variant bg-surface px-3 text-sm text-on-surface outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30 font-medium"
+              >
+                <option value="terbaru_aktivitas">Terakhir Diubah / Ditambahkan</option>
+                <option value="tanggal_desc">Tanggal Laporan (Terbaru)</option>
+                <option value="tanggal_asc">Tanggal Laporan (Terlama)</option>
+              </select>
+            </div>
+            <div className="sm:col-span-2 lg:col-span-1">
+              <Button type="submit" variant="default" className="h-9 w-full lg:w-auto gap-2">
+                <Search size={15} /> Cari
+              </Button>
+            </div>
           </form>
 
           {filteredReports.length === 0 ? (
@@ -128,11 +200,17 @@ export default async function CariLaporanPage({
                 <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
                   Ditemukan {filteredReports.length} Laporan
                 </span>
+                <span className="text-xs text-on-surface-variant font-medium">
+                  {sort === "terbaru_aktivitas" && "Diurutkan: Terakhir Diubah / Ditambahkan"}
+                  {sort === "tanggal_desc" && "Diurutkan: Tanggal Dokumen Terbaru"}
+                  {sort === "tanggal_asc" && "Diurutkan: Tanggal Dokumen Terlama"}
+                </span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
                 {filteredReports.map((report) => {
                   const thumb = report.attachments.find((a) => a.fileType === "image");
+                  const lastActive = getReportLastActivity(report);
                   return (
                     <Link
                       key={report.id}
@@ -173,6 +251,14 @@ export default async function CariLaporanPage({
                         </h4>
                         <p className="text-[11px] text-on-surface-variant truncate">
                           Oleh: {report.uploadedBy.name}
+                        </p>
+                        <p className="text-[10px] text-on-surface-variant/70 truncate">
+                          Aktivitas:{" "}
+                          {new Date(lastActive).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
                         </p>
                       </div>
                     </Link>

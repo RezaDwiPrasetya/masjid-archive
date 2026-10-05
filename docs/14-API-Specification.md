@@ -256,19 +256,28 @@ Menghapus satu file lampiran tertentu dari suatu laporan.
 
 ### `POST /api/attachments/:id/extract`
 
-Memicu ekstraksi data transaksi dari satu lampiran bergambar menggunakan vision-LLM (Gemini). **Hanya berlaku untuk `fileType = "image"`.**
+Memicu ekstraksi data transaksi dari satu lampiran bergambar/PDF (Gemini Vision) atau Excel (Parser tabular).
 **Wajib: Request harus memiliki Sesi NextAuth yang valid.**
+
+**Request Body (Opsional):**
+```json
+{
+  "replaceVerified": false // boolean (default: false). Jika true, semua transaksi lama (termasuk yang terverifikasi) akan direset/dihapus sebelum transaksi baru dimasukkan.
+}
+```
 
 **Logika Server-Side:**
 1. Validasi sesi — `401` jika tidak ada.
-2. Ambil `Attachment` sesuai `:id`. Tolak `400` jika `fileType !== "image"`, atau `409` jika `extractionStatus` sedang `processing` (mencegah trigger ganda).
+2. Ambil `Attachment` sesuai `:id`. Tolak `400` jika `fileType` tidak didukung, atau `409` jika `extractionStatus` sedang `processing` (mencegah trigger ganda).
 3. Update `extractionStatus` → `processing`.
-4. Kirim gambar (dari `fileUrl`) + prompt terstruktur ke Gemini API dengan `responseSchema` (timeout 25s dengan auto-fallback dari `gemini-3.6-flash` ke `gemini-3.5-flash`).
+4. Jalankan ekstraksi/parsing sesuai jenis berkas.
 5. **Sukses**:
-   - Hapus transaksi lama pada attachment ini yang **belum diverifikasi** (`isVerified = false`). Transaksi yang sudah `isVerified = true` tetap dipertahankan.
+   - Jika `replaceVerified = true`: Hapus seluruh transaksi lama pada attachment ini (baik `isVerified = true` maupun `false`) untuk mencegah duplikasi nilai saat ekstrak ulang.
+   - Jika `replaceVerified = false` (default): Hapus transaksi lama yang **belum diverifikasi** (`isVerified = false`). Transaksi yang sudah `isVerified = true` tetap dipertahankan.
    - Insert baris `Transaction` baru hasil ekstraksi (`isVerified: false`).
    - Update `Attachment` (`extractionStatus: "done"`, `initialBalance`, `finalBalance`, `extractionModel`, `extractionRawResponse`, `extractedAt`, `extractionError: null`).
 6. **Gagal**: update `Attachment` (`extractionStatus: "failed"`, `extractionError`: pesan singkat ramah pengguna).
+
 
 **Response 200 (sukses)**
 

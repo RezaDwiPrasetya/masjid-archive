@@ -49,12 +49,16 @@
 
 ### F-003 — Cari Arsip
 
-**Objective:** Membantu pengguna menemukan laporan tertentu dengan cepat.
-**User:** Pengurus DKM
-**Input:** Kata kunci pencarian, filter Tahun, filter Bulan
+**Objective:** Membantu pengguna menemukan laporan tertentu dengan cepat serta memantau arsip yang paling baru diperbarui.
+**User:** Pengurus DKM & Jamaah Publik
+**Input:** Kata kunci pencarian, filter Tahun, filter Bulan, opsi Pengurutan (`terbaru_aktivitas`, `tanggal_desc`, `tanggal_asc`)
 **Acceptance Criteria:**
-- [x] Hasil pencarian ter-update sesuai filter yang dipilih
+- [x] Hasil pencarian ter-update sesuai filter dan kata kunci yang dipilih
+- [x] Default pengurutan menampilkan arsip yang paling baru diubah atau ditambahkan (`terbaru_aktivitas`) berdasarkan timestamp terakhir dari laporan, lampiran, maupun verifikasi transaksi
+- [x] Tersedia opsi pengurutan alternatif: Tanggal Laporan Terbaru dan Tanggal Laporan Terlama
+- [x] Setiap kartu arsip menampilkan tanggal laporan, pengunggah, dan waktu aktivitas pembaruan terakhir
 - [x] Pesan "tidak ditemukan" muncul jika hasil kosong
+
 
 ### F-004 — Detail Laporan
 

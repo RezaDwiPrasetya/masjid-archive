@@ -1,0 +1,46 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+|Pengurus / Bendahara|
+start
+:Membuka detail laporan kas (/laporan/[id]);
+:Menekan tombol "Ekstrak Transaksi" pada lampiran;
+
+|Sistem|
+:Mengubah extractionStatus menjadi "processing";
+if (Tipe Lampiran?) then (Excel .xlsx / .xls)
+  :Membaca sheet tabular secara langsung (Parser Excel);
+  :Memetakan baris pemasukan & pengeluaran;
+else (Gambar / PDF)
+  :Mengunduh file dari Supabase Storage;
+  :Mengirim prompt & dokumen ke model utama (gemini-3.6-flash);
+  
+  |Gemini AI|
+  :Menganalisis teks & struktur tabel buku kas;
+  
+  |Sistem|
+  if (Respons model utama sukses & < 25 detik?) then (Ya)
+    :Menerima structured JSON dari model utama;
+  else (Gagal / Timeout / 503 / 429)
+    :Trigger auto-fallback ke model cadangan (gemini-3.5-flash);
+    |Gemini AI|
+    :Menganalisis dokumen kas (fallback);
+    |Sistem|
+    :Menerima structured JSON dari model cadangan;
+  endif
+endif
+
+|Sistem|
+:Menyimpan draft transaksi (isVerified = false);
+:Mengupdate saldo awal & saldo akhir di Report;
+:Mengubah extractionStatus menjadi "done";
+:Menampilkan panel review transaksi;
+
+|Pengurus / Bendahara|
+:Melihat daftar draf transaksi hasil ekstraksi di Review Panel;
+stop
+
+@enduml

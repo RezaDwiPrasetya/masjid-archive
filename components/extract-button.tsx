@@ -2,8 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, Loader2, RotateCcw, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Sparkles, Loader2, RotateCcw, AlertCircle, CheckCircle2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogPopup,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+} from "@/components/ui/alert-dialog";
 
 type ExtractionStatus = "not_extracted" | "processing" | "done" | "failed";
 
@@ -51,10 +59,12 @@ export function ExtractButton({
   extractionError,
   extractionModel,
   transactionCount,
+  verifiedCount = 0,
 }: ExtractButtonProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
   const currentStatus = loading ? "processing" : extractionStatus;
   const badge = statusBadge[currentStatus];
@@ -63,13 +73,16 @@ export function ExtractButton({
     !loading &&
     (extractionStatus === "not_extracted" || extractionStatus === "failed");
 
-  async function handleExtract() {
+  async function handleExtract(replaceVerified = false) {
+    setConfirmDialogOpen(false);
     setLoading(true);
     setLocalError(null);
 
     try {
       const res = await fetch(`/api/attachments/${attachmentId}/extract`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ replaceVerified }),
       });
 
       const data = await res.json();
@@ -93,6 +106,14 @@ export function ExtractButton({
       setLocalError("Tidak bisa terhubung ke server. Periksa koneksi dan coba lagi.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  function handleReExtractClick() {
+    if (verifiedCount > 0) {
+      setConfirmDialogOpen(true);
+    } else {
+      handleExtract(false);
     }
   }
 
@@ -132,7 +153,7 @@ export function ExtractButton({
             size="sm"
             variant={extractionStatus === "failed" ? "outline" : "default"}
             disabled={!canExtract}
-            onClick={handleExtract}
+            onClick={() => handleExtract(false)}
             className="gap-1.5"
           >
             {loading ? (
@@ -160,7 +181,7 @@ export function ExtractButton({
             size="sm"
             variant="outline"
             disabled={loading}
-            onClick={handleExtract}
+            onClick={handleReExtractClick}
             className="gap-1.5 text-xs h-7 text-on-surface-variant hover:text-on-surface"
           >
             <RotateCcw size={12} />
@@ -176,6 +197,67 @@ export function ExtractButton({
           <span>{errorMessage}</span>
         </p>
       )}
+
+      {/* Dialog Konfirmasi Ekstrak Ulang saat sudah ada transaksi terverifikasi */}
+      <AlertDialog
+        open={confirmDialogOpen}
+        onOpenChange={(v) => {
+          if (!loading) setConfirmDialogOpen(v);
+        }}
+      >
+        <AlertDialogPopup>
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-700">
+                <AlertTriangle className="size-5" />
+              </div>
+              <div>
+                <AlertDialogTitle>Ekstrak Ulang Berkas Ini?</AlertDialogTitle>
+                <span className="text-xs text-muted-foreground font-medium">
+                  {verifiedCount} transaksi telah diverifikasi sebelumnya
+                </span>
+              </div>
+            </div>
+            <AlertDialogDescription className="pt-2 text-stone-600 dark:text-stone-300">
+              Lampiran ini sudah memiliki <strong>{verifiedCount} transaksi terverifikasi</strong>.
+              Jika Anda menambahkan draf baru tanpa mereset data lama, transaksi berisiko ganda/duplikat dan nilai kas akan terhitung dua kali.
+              <br />
+              <br />
+              Pilih tindakan yang diinginkan:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={loading}
+              onClick={() => setConfirmDialogOpen(false)}
+            >
+              Batal
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={loading}
+              onClick={() => handleExtract(false)}
+              className="border-amber-300 text-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-xs"
+              title="Pertahankan transaksi yang sudah diverifikasi dan tambahkan hasil ekstraksi baru sebagai draft"
+            >
+              Simpan Lama & Tambah Draf
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              disabled={loading}
+              onClick={() => handleExtract(true)}
+              className="gap-1.5 text-xs"
+              title="Hapus semua transaksi lama dari lampiran ini dan ganti dengan hasil ekstraksi baru"
+            >
+              Reset & Ekstrak Ulang
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogPopup>
+      </AlertDialog>
     </div>
   );
 }

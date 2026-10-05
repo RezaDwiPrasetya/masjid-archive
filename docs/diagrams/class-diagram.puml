@@ -1,0 +1,111 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam classAttributeIconSize 0
+
+' Jarak antar class
+skinparam nodesep 50
+skinparam ranksep 60
+
+class User {
+  - id: String
+  - name: String
+  - email: String
+  - image: String
+  - role: String
+  + login(): Session
+  + logout(): void
+  + updateRole(newRole: String): void
+  + deleteAccount(): void
+}
+
+class Report {
+  - id: String
+  - reportDate: DateTime
+  - year: Int
+  - month: Int
+  - weekOfMonth: Int
+  - initialBalance: Decimal
+  - finalBalance: Decimal
+  - uploadedAt: DateTime
+  - uploadedById: String
+  + calculateTotalIncome(): Decimal
+  + calculateTotalExpense(): Decimal
+  + calculateSystemBalance(): Decimal
+  + reconcileBalance(): ReconcileResult
+  + printReport(format: String): void
+  + exportToExcel(): void
+}
+
+class Attachment {
+  - id: String
+  - reportId: String
+  - fileUrl: String
+  - fileType: String
+  - originalFileName: String
+  - fileSizeBytes: Int
+  - extractionStatus: String
+  - extractionModel: String
+  - extractionRawResponse: Json
+  - extractionError: String
+  - extractedAt: DateTime
+  - uploadedAt: DateTime
+  + triggerAiExtraction(): void
+  + parseExcelDirect(): List<Transaction>
+  + deleteAttachment(): void
+}
+
+class Transaction {
+  - id: String
+  - reportId: String
+  - attachmentId: String
+  - type: String
+  - amount: Decimal
+  - description: String
+  - transactionDate: DateTime
+  - donorNameRaw: String
+  - donorId: String
+  - isVerified: Boolean
+  - verifiedById: String
+  - verifiedAt: DateTime
+  + verify(userId: String): void
+  + unverify(): void
+  + updateDetails(amount: Decimal, desc: String): void
+  + assignDonor(donorId: String): void
+  + deleteDraft(): void
+}
+
+class Donor {
+  - id: String
+  - name: String
+  - normalizedName: String
+  - contact: String
+  + normalizeName(rawName: String): String
+  + checkAnonymous(rawName: String): Boolean
+  + calculateTotalContribution(): Decimal
+  + getTransactionHistory(): List<Transaction>
+}
+
+' ─── RELASI & KARDINALITAS (MULTIPLICITY) ──────────────────────────────────────
+
+' User mengunggah Report
+User "1" -- "0..*" Report : mengunggah >
+
+' User memverifikasi Transaction
+User "0..1" -- "0..*" Transaction : memverifikasi >
+
+' Report tersusun dari Attachment (Komposisi)
+Report "1" *-- "1..*" Attachment : terdiri dari >
+
+' Report menaungi Transaction
+Report "1" *-- "0..*" Transaction : memiliki >
+
+' Attachment menghasilkan Transaction hasil ekstraksi
+Attachment "1" o-- "0..*" Transaction : diekstrak menjadi >
+
+' Donor menaungi riwayat Transaction (Opsional / 0..1 karena bisa anonim atau pengeluaran)
+Donor "0..1" -- "0..*" Transaction : memberikan >
+
+@enduml

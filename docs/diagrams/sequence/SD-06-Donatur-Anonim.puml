@@ -1,0 +1,53 @@
+@startuml
+autonumber
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+actor "Publik / Jamaah" as Jamaah
+boundary "Halaman Donatur\n(/donatur)" as DonorsPage
+control "Donors API\n(/api/donors)" as DonorsAPI
+control "Anonymous Transactions API\n(/api/donors/anonymous/transactions)" as AnonAPI
+entity "Database\n(Prisma: Donor, Transaction)" as DB
+
+Jamaah -> DonorsPage : Buka menu Donatur (/donatur)
+activate DonorsPage
+
+DonorsPage -> DonorsAPI : GET /api/donors
+activate DonorsAPI
+
+DonorsAPI -> DB : Agregasi total kontribusi teridentifikasi & total infaq anonim
+activate DB
+DB --> DonorsAPI : Data ringkasan donasi & daftar donatur
+deactivate DB
+
+DonorsAPI --> DonorsPage : 200 OK (donorsList, totalIdentified, totalAnonymous)
+deactivate DonorsAPI
+
+DonorsPage -> Jamaah : Render 2 KPI Card (50:50) & Tabel Donatur Publik
+
+alt Jamaah membuka rincian Infaq Anonim
+  Jamaah -> DonorsPage : Klik kartu "Infaq Anonim"
+  DonorsPage -> AnonAPI : GET /api/donors/anonymous/transactions
+  activate AnonAPI
+
+  AnonAPI -> DB : prisma.transaction.findMany({\n  where: { type: 'pemasukan', donorId: null, isVerified: true },\n  include: { report: true },\n  orderBy: { transactionDate: 'desc' }\n})
+  activate DB
+  DB --> AnonAPI : Daftar transaksi infaq tanpa nama
+  deactivate DB
+
+  AnonAPI --> DonorsPage : 200 OK (anonymousTransactions[])
+  deactivate AnonAPI
+
+  DonorsPage -> DonorsPage : Tampilkan Modal Dialog Ledger Infaq Anonim
+  DonorsPage -> Jamaah : Lihat riwayat infaq kotak amal / hamba Allah transparan
+
+else Jamaah melihat profil donatur individu
+  Jamaah -> DonorsPage : Klik salah satu nama donatur (/donatur/[id])
+  DonorsPage -> Jamaah : Navigasi ke detail profil & riwayat transaksi donatur
+end
+
+deactivate DonorsPage
+
+@enduml

@@ -1,0 +1,558 @@
+# Panduan Pengguna — Masjid Archive
+### Sistem Arsip & Manajemen Keuangan DKM Masjid Al-Luqman
+
+> **Versi Sistem**: V6 (Feature-Complete)  
+> **Terakhir diperbarui**: 5 Oktober 2026  
+> **Disusun oleh**: Reza Dwi Prasetya — PKL PT Gothru Media Indonesia
+
+---
+
+## Daftar Isi
+
+1. [Tentang Sistem Ini](#1-tentang-sistem-ini)
+2. [Hak Akses Pengguna (Role)](#2-hak-akses-pengguna-role)
+3. [Cara Login](#3-cara-login)
+4. [Navigasi Utama](#4-navigasi-utama)
+5. [Arsip Laporan](#5-arsip-laporan--halaman-utama)
+6. [Dashboard Keuangan](#6-dashboard-keuangan)
+7. [Halaman Donatur](#7-halaman-donatur)
+8. [Pencarian Arsip](#8-pencarian-arsip)
+9. [Mengunggah Laporan Baru](#9-mengunggah-laporan-baru)
+10. [Detail Laporan & Ekstraksi AI](#10-detail-laporan--ekstraksi-ai)
+11. [Verifikasi & Rekonsiliasi Transaksi](#11-verifikasi--rekonsiliasi-transaksi)
+12. [Cetak & Ekspor Rekapitulasi Kas](#12-cetak--ekspor-rekapitulasi-kas)
+13. [Manajemen Pengguna](#13-manajemen-pengguna)
+14. [Pertanyaan Umum (FAQ)](#14-pertanyaan-umum-faq)
+
+---
+
+## 1. Tentang Sistem Ini
+
+**Masjid Archive** adalah sistem informasi berbasis web yang dirancang khusus untuk **DKM Masjid Al-Luqman**, Kelurahan Soklat, Kecamatan Subang.
+
+Sistem ini menggantikan ketergantungan pada buku kas fisik yang rentan hilang atau rusak — **tanpa mengubah cara kerja bendahara sehari-hari**. Bendahara tetap merekap manual di buku kas, kemudian memotret atau memindai dokumen tersebut lalu mengunggah salinannya ke sistem.
+
+### Apa yang bisa dilakukan sistem ini?
+
+| Fitur | Siapa yang Bisa |
+|---|---|
+| Melihat arsip laporan keuangan mingguan | Semua orang (tanpa login) |
+| Melihat dashboard tren kas & grafik | Semua orang (tanpa login) |
+| Melihat daftar donatur & infaq anonim | Semua orang (tanpa login) |
+| Mencari arsip laporan berdasarkan periode | Semua orang (tanpa login) |
+| Mengunggah laporan baru | Bendahara & Administrator |
+| Mengekstrak data dari foto/PDF/Excel via AI | Bendahara & Administrator |
+| Memverifikasi & merekonsiliasi transaksi | Bendahara & Administrator |
+| Mencetak & mengunduh rekap kas | Bendahara & Administrator |
+| Mengelola akun pengguna | Administrator saja |
+
+---
+
+## 2. Hak Akses Pengguna (Role)
+
+Sistem menggunakan tiga tingkatan akses:
+
+### 👤 Jamaah (Publik / Read-only)
+- Tidak perlu login.
+- Dapat melihat seluruh arsip laporan, dashboard keuangan, dan data donatur yang sudah terverifikasi.
+- **Tidak dapat** mengubah data apa pun.
+
+### 💼 Bendahara
+- Perlu login dengan akun Google yang sudah didaftarkan oleh Administrator.
+- Dapat mengunggah laporan, mengekstrak data via AI, memverifikasi transaksi, dan mencetak/mengekspor rekap kas.
+- **Tidak dapat** mengelola akun pengguna lain.
+
+### 🛡️ Administrator
+- Perlu login dengan akun Google yang memiliki role `ADMIN`.
+- Memiliki seluruh akses Bendahara **ditambah** kemampuan mengelola daftar pengguna (mengatur role, menghapus akun).
+- Menu **Pengguna** hanya muncul di navigasi untuk Administrator.
+
+> **Catatan**: Role ditetapkan secara manual oleh Administrator melalui menu Pengguna. Seseorang yang login pertama kali otomatis masuk sebagai Jamaah (read-only) sampai diberi role oleh Admin.
+
+---
+
+## 3. Cara Login
+
+Login diperlukan untuk mengakses fitur operasional (unggah, ekstraksi, verifikasi, cetak).
+
+### Langkah Login
+
+1. Buka aplikasi di browser.
+2. Klik tombol **"Masuk"** yang terletak di bagian bawah sidebar (desktop) atau pojok kanan atas (mobile).
+3. Pilih akun Google Anda dari daftar yang muncul.
+4. Sistem akan memverifikasi akun Anda secara otomatis.
+
+### Setelah Login Berhasil
+
+- Nama dan foto profil Google Anda akan ditampilkan di sidebar.
+- Menu **Unggah** akan dapat diakses (jika role Anda adalah Bendahara atau Admin).
+- Menu **Pengguna** akan muncul di navigasi (jika role Anda adalah Admin).
+
+### Cara Logout
+
+Klik nama/foto profil Anda di sidebar, kemudian pilih **"Keluar"**.
+
+> **Penting**: Jika setelah login Anda melihat pesan *"Akses Ditolak"* saat membuka menu Unggah, berarti role akun Anda belum disetel. Hubungi Administrator untuk mendapatkan akses Bendahara.
+
+---
+
+## 4. Navigasi Utama
+
+Sistem dapat diakses melalui navigasi di sidebar (desktop) atau bilah navigasi bawah (mobile/tablet).
+
+### Menu Navigasi
+
+| Menu | Ikon | Halaman | Tersedia untuk |
+|---|---|---|---|
+| **Laporan** | 📁 | `/` — Arsip laporan mingguan | Semua |
+| **Dashboard** | 📊 | `/dashboard` — Grafik tren kas | Semua |
+| **Donatur** | 🤝 | `/donatur` — Daftar donatur & infaq anonim | Semua |
+| **Cari** | 🔍 | `/cari` — Pencarian arsip | Semua |
+| **Unggah** | ➕ | `/unggah` — Unggah laporan baru | Bendahara & Admin |
+| **Pengguna** | 👥 | `/pengguna` — Manajemen akun | Admin saja |
+
+---
+
+## 5. Arsip Laporan — Halaman Utama
+
+**Alamat**: `/` (halaman utama)
+
+Halaman ini menampilkan seluruh arsip laporan kas mingguan yang telah diunggah, dikelompokkan secara otomatis berdasarkan **Tahun → Bulan → Minggu**.
+
+### Cara Membaca Arsip
+
+- Laporan ditampilkan dalam bentuk kartu, diurutkan dari yang terbaru.
+- Setiap kartu menampilkan:
+  - **Tanggal laporan** (hari Jumat)
+  - **Periode** (Minggu ke-N, Bulan, Tahun)
+  - **Jumlah lampiran** yang terlampir
+- Klik kartu laporan untuk membuka **Halaman Detail Laporan**.
+
+### Filter Arsip
+
+Anda dapat menyaring tampilan arsip berdasarkan:
+- **Tahun** — pilih dari daftar tahun yang tersedia
+- **Bulan** — pilih bulan tertentu dalam tahun yang dipilih
+
+---
+
+## 6. Dashboard Keuangan
+
+**Alamat**: `/dashboard`
+
+Halaman publik yang menampilkan ringkasan dan tren keuangan kas masjid berdasarkan transaksi yang sudah terverifikasi.
+
+### Konten Halaman Dashboard
+
+#### 1. Saldo Kas Terakhir
+Menampilkan saldo kas akhir dari laporan mingguan terbaru yang sudah diverifikasi, beserta tanggal laporannya.
+
+#### 2. Grafik Tren Kas
+Grafik batang yang menampilkan perbandingan **Pemasukan** dan **Pengeluaran** per periode.
+
+- **Toggle Mingguan**: Menampilkan tren per minggu (selaras dengan hari Jumat, sesuai jadwal laporan kas DKM)
+- **Toggle Bulanan**: Menampilkan tren per bulan (agregasi seluruh transaksi dalam satu bulan)
+- Rentang data dimulai dari laporan pertama yang ada hingga maksimal 12 periode terakhir
+
+#### 3. Ekspor Rekapitulasi Bulanan
+Tombol **"Ekspor Rekap Bulanan"** di pojok kanan atas grafik membuka dialog untuk memilih periode dan format ekspor. Lihat [Bab 12](#12-cetak--ekspor-rekapitulasi-kas) untuk panduan lengkap.
+
+> **Info**: Seluruh data yang ditampilkan di dashboard hanya berasal dari transaksi dengan status **terverifikasi**. Data draft yang belum dikonfirmasi bendahara tidak pernah ditampilkan.
+
+---
+
+## 7. Halaman Donatur
+
+**Alamat**: `/donatur`
+
+Halaman transparansi keuangan yang menampilkan informasi donatur dan infaq masjid.
+
+### Dua Kartu KPI Utama
+
+| Kartu | Isi |
+|---|---|
+| **Donatur Terdata** | Jumlah donatur yang teridentifikasi + total kontribusi terverifikasi |
+| **Infaq Anonim (Tromol / Kotak Amal)** | Total nominal + jumlah transaksi dari kotak amal dan donasi tanpa nama |
+
+### Melihat Rincian Infaq Anonim
+
+1. Klik tombol **"Lihat Rincian"** pada kartu Infaq Anonim.
+2. Dialog akan terbuka dan memuat daftar seluruh transaksi infaq anonim terverifikasi.
+3. Setiap baris menampilkan: **keterangan transaksi**, **tanggal**, **tautan ke laporan asal**, dan **nominal**.
+4. Jika ada lebih dari 5 transaksi, kotak pencarian akan muncul untuk memudahkan filter.
+5. Klik tautan **laporan** pada baris transaksi untuk membuka laporan fisik asal transaksi tersebut.
+
+### Daftar Profil Donatur
+
+Di bawah kartu KPI terdapat daftar profil seluruh donatur teridentifikasi, diurutkan berdasarkan **total kontribusi tertinggi ke terendah**. Donatur teratas mendapat badge peringkat emas (#1).
+
+- Gunakan **kotak pencarian** di atas daftar untuk mencari nama donatur tertentu.
+- Klik nama donatur untuk membuka halaman **Detail Profil Donatur** (`/donatur/[id]`) yang berisi riwayat transaksi lengkap donatur tersebut.
+
+---
+
+## 8. Pencarian Arsip
+
+**Alamat**: `/cari`
+
+Memungkinkan pencarian arsip laporan berdasarkan kata kunci dan filter periode.
+
+### Cara Mencari & Mengurutkan
+
+1. **Kata Kunci**: Ketik kata kunci pada kolom pencarian (misalnya: nama pengurus pengunggah atau tanggal laporan).
+2. **Filter Periode**: Gunakan filter **Tahun** dan **Bulan** untuk mempersempit arsip yang ditampilkan.
+3. **Pengurutan (Sort)**:
+   - **Terakhir Diubah / Ditambahkan** *(Default)*: Menampilkan laporan yang paling baru disentuh (baru diunggah, baru diekstrak AI, atau baru diverifikasi transaksinya) di urutan paling awal.
+   - **Tanggal Laporan (Terbaru)**: Mengurutkan secara kronologis kalender dari tanggal buku kas terbaru ke terlama.
+   - **Tanggal Laporan (Terlama)**: Mengurutkan secara kronologis kalender dari tanggal buku kas paling lampau ke terbaru.
+4. **Hasil Pencarian**: Ditampilkan dalam bentuk kartu visual foto dengan label pekan, nama pengunggah, serta tanggal aktivitas pembaruan terakhir.
+5. Klik kartu arsip untuk membuka halaman **Detail Laporan**.
+
+---
+
+## 9. Mengunggah Laporan Baru
+
+**Alamat**: `/unggah`  
+**Akses**: Bendahara & Administrator
+
+Halaman untuk mengunggah dokumen kas mingguan baru ke sistem arsip.
+
+### Format File yang Didukung
+
+| Tipe File | Format | Batas Ukuran |
+|---|---|---|
+| Foto buku kas | `.jpg` / `.png` | Maks. 5 MB per file |
+| Dokumen kas | `.pdf` | Maks. 10 MB per file |
+| Spreadsheet kas | `.xlsx` / `.xls` | Maks. 5 MB per file |
+
+### Langkah Mengunggah
+
+#### Langkah 1 — Pilih File
+
+- **Cara 1**: Klik area *drop zone* bertanda awan panah ke atas, lalu pilih file dari perangkat Anda.
+- **Cara 2**: Seret (*drag and drop*) file langsung ke area tersebut.
+- Anda dapat memilih **beberapa file sekaligus** dalam sekali unggah (kombinasi foto, PDF, dan Excel diperbolehkan).
+
+Setelah file dipilih, daftar file terpilih akan muncul di bawah drop zone beserta nama dan ukuran masing-masing file.
+
+- Untuk **menghapus** file yang tidak jadi diunggah: klik ikon **✕** di sebelah kanan nama file.
+- Untuk **menambah** file lagi: klik tautan **"+ Tambah berkas lain"** di bawah daftar.
+
+#### Langkah 2 — Isi Tanggal Laporan
+
+Pada bagian **Detail Laporan**, isi kolom **Tanggal Laporan** dengan tanggal saat laporan ini dibacakan di hadapan jamaah — biasanya **hari Jumat**.
+
+> **Penting**: Tanggal laporan harus berupa hari Jumat. Sistem menggunakan tanggal ini untuk mengelompokkan laporan secara otomatis berdasarkan periode mingguan.
+
+#### Langkah 3 — Simpan
+
+Klik tombol **"Simpan ke Arsip (N file)"** di bagian bawah halaman.
+
+- Tombol ini hanya aktif jika minimal satu file sudah dipilih.
+- Jika unggah berhasil, akan muncul banner hijau **"Laporan Berhasil Disimpan"** beserta tautan ke halaman Arsip.
+- Jika ada error, pesan kesalahan akan ditampilkan di atas tombol simpan.
+
+### Pesan Error yang Mungkin Muncul
+
+| Pesan | Penyebab | Solusi |
+|---|---|---|
+| "Tipe file tidak didukung" | Format file selain JPG/PNG/PDF/XLSX/XLS | Konversi file ke format yang didukung |
+| "Melebihi batas ukuran" | File terlalu besar | Kompres atau pecah file menjadi beberapa bagian |
+| "Pilih minimal satu file" | Belum ada file dipilih saat klik Simpan | Pilih file terlebih dahulu |
+| "Tanggal laporan wajib diisi" | Kolom tanggal belum diisi | Isi tanggal laporan |
+
+---
+
+## 10. Detail Laporan & Ekstraksi AI
+
+**Alamat**: `/laporan/[id]`  
+**Akses**: Melihat — semua orang | Ekstraksi — Bendahara & Administrator
+
+Halaman ini menampilkan detail satu laporan mingguan beserta seluruh lampirannya dan panel review transaksi.
+
+### Bagian-bagian Halaman Detail
+
+#### A. Informasi Laporan
+- Tanggal laporan (hari Jumat)
+- Periode (Minggu ke-N, Bulan, Tahun)
+- Diunggah oleh (nama pengurus)
+
+#### B. Lampiran Dokumen
+Setiap lampiran yang terhubung ke laporan ini ditampilkan dalam daftar. Untuk setiap lampiran:
+
+- **Foto (JPG/PNG)**: Ditampilkan sebagai pratinjau gambar yang dapat diperbesar.
+- **PDF**: Ditampilkan sebagai pratinjau PDF tersemat langsung di halaman (dapat discroll).
+- **Excel**: Ditampilkan sebagai ikon spreadsheet dengan nama file.
+
+**Tombol aksi per lampiran** (hanya muncul jika sudah login):
+- **Ekstrak Data** / **Coba Lagi** — Memulai proses ekstraksi AI (lihat di bawah)
+- **Ekstrak Ulang** — Menjalankan ulang ekstraksi meski sebelumnya sudah berhasil
+- **Hapus Lampiran** — Menghapus lampiran (hanya jika belum ada transaksi terverifikasi)
+
+#### C. Rekap Saldo Kas (Sidebar)
+Menampilkan ringkasan finansial laporan minggu ini:
+- **Saldo Awal** — Saldo kas dari laporan minggu sebelumnya
+- **Total Pemasukan** — Jumlah seluruh transaksi pemasukan terverifikasi
+- **Total Pengeluaran** — Jumlah seluruh transaksi pengeluaran terverifikasi
+- **Saldo Akhir (Sistem)** — Hasil kalkulasi: Saldo Awal + Pemasukan − Pengeluaran
+- **Saldo Fisik Tercatat** — Saldo akhir yang tertera di buku kas fisik
+- **Status Rekonsiliasi** — Cocok ✅ atau Selisih ⚠️ antara saldo sistem dan saldo fisik
+
+#### D. Panel Review Transaksi
+Menampilkan seluruh transaksi yang diekstrak dari lampiran, dikelompokkan menjadi:
+- **Menunggu Verifikasi** (draft) — Hasil ekstraksi yang belum dikonfirmasi
+- **Sudah Diverifikasi** — Transaksi yang sudah dikonfirmasi bendahara
+
+---
+
+### Proses Ekstraksi Data AI
+
+Fitur ini memungkinkan sistem membaca isi dokumen kas (foto/PDF/Excel) secara otomatis dan mengubahnya menjadi data transaksi terstruktur.
+
+#### Cara Mengekstrak
+
+1. Buka halaman **Detail Laporan**.
+2. Pada daftar lampiran, cari lampiran yang berstatus **"Belum diekstrak"**.
+3. Klik tombol **"Ekstrak Data"** di sebelah lampiran tersebut.
+4. Tunggu proses selesai (status akan berubah menjadi **"Sedang diproses…"**).
+5. Setelah berhasil, status berubah menjadi **"Selesai · N transaksi"** dan panel review transaksi akan menampilkan hasilnya.
+
+#### Status Ekstraksi
+
+| Status | Arti |
+|---|---|
+| 🔘 Belum diekstrak | Lampiran belum pernah diproses AI |
+| 🟡 Sedang diproses… | Proses ekstraksi sedang berjalan |
+| ✅ Selesai | Ekstraksi berhasil, transaksi tersedia di panel review |
+| ❌ Gagal | Ekstraksi gagal — klik **"Coba Lagi"** |
+
+#### Badge Model Cadangan ⚠️
+Jika setelah ekstraksi muncul badge **"Model Cadangan"** berwarna kuning, artinya model AI utama (`gemini-3.6-flash`) tidak merespons tepat waktu dan sistem secara otomatis beralih ke model cadangan (`gemini-3.5-flash`). Hasil ekstraksi tetap valid — hanya perlu dicek lebih teliti karena akurasi model cadangan sedikit lebih rendah.
+
+#### Ekstrak Ulang & Dialog Proteksi Duplikasi
+
+Jika Anda menekan tombol **"Ekstrak Ulang"** pada berkas yang sudah pernah diproses:
+- **Jika belum ada transaksi terverifikasi**: Sistem akan langsung menghapus draf lama yang belum diverifikasi dan mengekstrak ulang dari nol.
+- **Jika SUDAH ada transaksi terverifikasi**: Sistem akan memunculkan **Dialog Konfirmasi Proteksi** untuk mencegah penggandaan data kas, dengan 2 opsi pilihan:
+  1. **Reset & Ekstrak Ulang** (Direkomendasikan jika ingin mengulang dari awal): Menghapus seluruh transaksi lama dari berkas ini (termasuk yang terverifikasi) dan menggantikannya dengan hasil ekstraksi baru berstatus draft.
+  2. **Simpan Lama & Tambah Draf**: Mempertahankan transaksi lama yang sudah terverifikasi dan menambahkan hasil ekstraksi baru sebagai draft (gunakan opsi ini hanya jika ada baris tambahan baru yang belum terbaca sebelumnya).
+  3. **Batal**: Membatalkan proses tanpa mengubah data apapun.
+
+#### Perbedaan per Tipe Lampiran
+
+| Tipe Lampiran | Mekanisme Ekstraksi |
+|---|---|
+| **Foto (JPG/PNG)** | Dikirim ke Google Gemini AI untuk analisis visual (OCR + pemahaman struktur tabel tulisan tangan) |
+| **PDF** | Dikirim ke Google Gemini AI sebagai dokumen multimodal |
+| **Excel (.xlsx/.xls)** | Dibaca langsung secara tabular oleh parser server (100% akurasi numerik, tanpa AI) |
+
+
+---
+
+## 11. Verifikasi & Rekonsiliasi Transaksi
+
+**Akses**: Bendahara & Administrator
+
+Setelah ekstraksi selesai, hasil transaksi berstatus **draft (belum terverifikasi)**. Bendahara wajib memeriksa dan mengonfirmasi setiap transaksi sebelum data dianggap resmi.
+
+### Alur Verifikasi Transaksi
+
+#### Langkah 1 — Periksa Setiap Transaksi Draft
+
+Di bagian **"Menunggu Verifikasi"** pada panel review, setiap baris transaksi menampilkan:
+- Jenis transaksi (Pemasukan / Pengeluaran)
+- Nominal (Rp)
+- Keterangan / deskripsi
+- Tanggal transaksi
+- Nama donatur (untuk pemasukan)
+
+Bandingkan dengan buku kas fisik untuk memastikan keakuratan.
+
+#### Langkah 2 — Edit Jika Perlu
+
+Jika ada data yang tidak sesuai, klik ikon **pensil ✏️** pada baris transaksi untuk mengedit:
+- **Nominal** — ketik nominal yang benar
+- **Keterangan** — perbaiki deskripsi transaksi
+- **Jenis transaksi** — ganti antara Pemasukan / Pengeluaran
+- **Nama donatur** — isi atau perbaiki nama donatur (untuk transaksi pemasukan)
+
+Klik **✓ Simpan** setelah selesai mengedit, atau **✗ Batal** untuk membatalkan perubahan.
+
+#### Langkah 3 — Konfirmasi (Verifikasi)
+
+Setelah data sudah benar, klik tombol **"Konfirmasi ✓"** pada baris transaksi.
+
+Saat mengonfirmasi transaksi pemasukan dengan nama donatur:
+- Sistem otomatis mencocokkan nama donatur ke profil yang sudah ada (fuzzy matching).
+- Jika nama cocok: transaksi terhubung ke profil donatur yang ada.
+- Jika nama baru: profil donatur baru dibuat secara otomatis.
+- Jika nama terdeteksi anonim (contoh: "Hamba Allah", "Kotak Amal"): tidak dibuat profil donatur, masuk sebagai infaq anonim.
+
+#### Langkah 4 — Hapus Jika Tidak Valid
+
+Jika sebuah baris transaksi tidak valid (misalnya duplikat atau hasil baca AI yang keliru), klik tombol **"Hapus 🗑️"** pada baris tersebut.
+
+> **Catatan**: Transaksi yang sudah berstatus **terverifikasi tidak dapat dihapus**.
+
+#### Pembatalan Verifikasi
+
+Jika terjadi kesalahan setelah transaksi dikonfirmasi, Bendahara dapat membatalkan verifikasi dengan klik ikon **Batalkan Verifikasi** (ikon putar balik) pada baris transaksi yang sudah diverifikasi. Transaksi akan kembali ke status draft dan bisa diedit ulang.
+
+### Rekonsiliasi Saldo
+
+Setelah seluruh transaksi selesai diverifikasi, periksa bagian **Rekap Saldo Kas** di sidebar:
+
+- Jika **Saldo Sistem = Saldo Fisik** → muncul label ✅ **Cocok** (rekonsiliasi berhasil)
+- Jika ada selisih → muncul label ⚠️ **Selisih Rp X** (ada transaksi yang belum masuk atau nominal yang keliru)
+
+---
+
+## 12. Cetak & Ekspor Rekapitulasi Kas
+
+Sistem menyediakan dua format ekspor resmi yang dapat digunakan untuk ditempel di papan mading fisik masjid atau disimpan sebagai arsip digital.
+
+### Ekspor Rekap Mingguan (dari Halaman Detail Laporan)
+
+1. Buka halaman **Detail Laporan** laporan yang ingin dicetak.
+2. Klik tombol **"Cetak / PDF"** yang tersedia di halaman tersebut.
+3. Halaman pratinjau cetak akan terbuka dalam format A4 resmi berkop surat DKM Al-Luqman.
+4. Dialog cetak browser akan terbuka — pilih:
+   - **"Save as PDF"** untuk menyimpan sebagai berkas PDF.
+   - **Nama printer** untuk mencetak langsung ke printer fisik.
+
+Selain cetak PDF, tersedia juga tombol **"Unduh Excel"** untuk mengunduh rekap mingguan dalam format `.xlsx`.
+
+---
+
+### Ekspor Rekap Bulanan (dari Dashboard)
+
+1. Buka halaman **Dashboard** (`/dashboard`).
+2. Klik tombol **"Ekspor Rekap Bulanan"** di pojok kanan atas grafik.
+3. Dialog **Ekspor Rekapitulasi Kas** akan terbuka.
+4. Pilih **Bulan** dan **Tahun** yang diinginkan menggunakan dropdown.
+5. Pilih format ekspor:
+
+#### Cetak / PDF Mading
+- Klik tombol **"Cetak / PDF Mading"**.
+- Anda akan diarahkan ke halaman pratinjau cetak format A4 resmi.
+- Dialog cetak browser akan terbuka — pilih printer atau simpan sebagai PDF.
+
+#### Unduh Excel (.xlsx)
+- Klik tombol **"Unduh Excel (.xlsx)"**.
+- File spreadsheet rekap kas bulan tersebut akan otomatis diunduh ke perangkat Anda.
+- Berkas berisi tabel seluruh laporan mingguan dalam bulan yang dipilih beserta detail transaksi terverifikasi.
+
+> **Catatan**: Ekspor hanya mencakup transaksi dengan status **terverifikasi**. Transaksi draft tidak pernah masuk ke dalam berkas ekspor.
+
+---
+
+## 13. Manajemen Pengguna
+
+**Alamat**: `/pengguna`  
+**Akses**: Administrator saja
+
+Halaman ini hanya terlihat di menu navigasi untuk akun dengan role **ADMIN**.
+
+### Ringkasan Statistik
+
+Di bagian atas halaman terdapat 4 angka statistik:
+- **Total Pengguna** — jumlah semua akun terdaftar
+- **Administrator** — akun dengan role ADMIN
+- **Bendahara** — akun dengan role BENDAHARA
+- **Jamaah** — akun yang login tapi belum diberi role (read-only)
+
+### Mencari & Memfilter Pengguna
+
+- **Kotak pencarian** — cari berdasarkan nama atau alamat email
+- **Dropdown filter role** — tampilkan hanya Administrator, Bendahara, atau Jamaah
+
+### Mengubah Role (Hak Akses) Pengguna
+
+1. Temukan pengguna yang ingin diubah rolenya di tabel.
+2. Pada kolom **"Hak Akses (Role)"**, klik dropdown di baris pengguna tersebut.
+3. Pilih role yang diinginkan:
+   - **Jamaah (Read-only)** — hanya dapat melihat, tidak bisa unggah/verifikasi
+   - **Bendahara (Upload)** — dapat mengunggah laporan dan memverifikasi transaksi
+   - **Administrator** — akses penuh termasuk kelola pengguna
+4. Perubahan langsung tersimpan secara otomatis (ada banner hijau konfirmasi).
+
+> **Catatan**: Anda tidak dapat mengubah role akun Anda sendiri yang sedang aktif digunakan.
+
+### Menghapus Pengguna
+
+1. Klik tombol **"Hapus"** (ikon tempat sampah) di kolom Aksi pada baris pengguna.
+2. Dialog konfirmasi akan muncul.
+
+**Terdapat dua skenario**:
+
+#### Skenario A — Pengguna Tidak Memiliki Riwayat Data
+Dialog konfirmasi hapus biasa akan muncul. Klik **"Ya, Hapus Pengguna"** untuk menghapus permanen.
+
+#### Skenario B — Pengguna Memiliki Riwayat Audit (Laporan / Verifikasi)
+Dialog **Proteksi Integritas Data** akan muncul dan pengguna **tidak dapat dihapus**. Ini adalah pengaman sistem agar jejak audit kas masjid tetap terlacak.
+
+Solusinya: Ubah saja role pengguna tersebut menjadi **Jamaah (Read-only)** untuk mencabut aksesnya tanpa menghapus riwayat data.
+
+---
+
+## 14. Pertanyaan Umum (FAQ)
+
+**Q: Apakah perlu login untuk melihat arsip laporan?**  
+A: Tidak. Seluruh arsip laporan, dashboard keuangan, dan daftar donatur dapat diakses oleh siapa pun tanpa perlu login.
+
+---
+
+**Q: Kenapa setelah login saya tidak bisa mengakses menu Unggah?**  
+A: Akun Anda belum mendapatkan role Bendahara atau Admin. Hubungi Administrator DKM untuk mendapatkan akses.
+
+---
+
+**Q: Boleh satu laporan punya lebih dari satu lampiran?**  
+A: Ya. Satu laporan mingguan dapat memiliki kombinasi beberapa file: foto, PDF, dan/atau Excel sekaligus.
+
+---
+
+**Q: Apa yang terjadi jika ekstraksi AI gagal?**  
+A: Sistem akan menampilkan pesan error yang ramah. Klik **"Coba Lagi"** untuk mengulang proses. Jika foto terlalu buram, pertimbangkan mengambil foto ulang dengan pencahayaan yang lebih baik.
+
+---
+
+**Q: Apakah transaksi yang diekstrak AI langsung menjadi data resmi?**  
+A: Tidak. Hasil ekstraksi selalu berstatus **draft** (belum terverifikasi) dan harus dikonfirmasi satu per satu oleh Bendahara. Data draft tidak pernah tampil di dashboard publik atau berkas ekspor.
+
+---
+
+**Q: Nama donatur ditulis berbeda-beda di setiap laporan, apakah akan terhitung terpisah?**  
+A: Tidak, selama variasinya tidak terlalu jauh. Sistem menggunakan **fuzzy matching** (normalisasi nama dan penghapusan gelar seperti "H.", "Bpk.", "Ibu") sehingga "H. Supriyadi", "Bpk Supriyadi", dan "Supriyadi" akan dihitung sebagai satu profil donatur yang sama.
+
+---
+
+**Q: Bagaimana cara membatalkan verifikasi transaksi yang salah dikonfirmasi?**  
+A: Buka Detail Laporan terkait → temukan transaksi di bagian "Sudah Diverifikasi" → klik ikon **Batalkan Verifikasi** (ikon putar balik) pada baris transaksi tersebut. Transaksi akan kembali ke status draft.
+
+---
+
+**Q: Apakah saldo kas diperbarui secara otomatis?**  
+A: Ya. Rekap Saldo Kas di sidebar halaman Detail Laporan dikalkulasi secara otomatis dari seluruh transaksi terverifikasi. Demikian juga grafik di Dashboard, yang selalu mencerminkan data terverifikasi terkini.
+
+---
+
+**Q: Apakah data infaq anonim ("Hamba Allah", "Kotak Amal") tercatat?**  
+A: Ya, namun tidak dibuat sebagai profil donatur. Semua infaq anonim dikelompokkan ke kartu **"Infaq Anonim (Tromol / Kotak Amal)"** di halaman Donatur dan dapat dilihat rinciannya melalui tombol **"Lihat Rincian"**.
+
+---
+
+**Q: Mengapa angka pemasukan/pengeluaran menjadi dobel (2x lipat) dan saldo kas akhir berselisih setelah saya melakukan Ekstrak Ulang?**  
+A: Hal ini terjadi jika Anda melakukan ekstraksi ulang pada berkas yang sebelumnya sudah memiliki transaksi terverifikasi, lalu Anda mengonfirmasi kembali draf baru tersebut sehingga transaksinya tercatat ganda.  
+**Cara memperbaikinya**:
+1. Buka Detail Laporan terkait.
+2. Di daftar **Transaksi Kas**, temukan baris-baris duplikat (misalnya yang memiliki tanggal konfirmasi terbaru).
+3. Klik tombol **"Batalkan Verifikasi"** pada baris duplikat tersebut.
+4. Setelah statusnya kembali ke *"Menunggu Verifikasi"*, klik tombol **Hapus (ikon tempat sampah)**.
+5. Setelah baris duplikat dihapus, rekap kas di sidebar akan kembali seimbang dan cocok ✅ secara otomatis.
+
+
+---
+
+*Panduan ini disusun berdasarkan implementasi sistem Masjid Archive versi V6 (Feature-Complete), status Oktober 2026.*  
+*Untuk pertanyaan teknis, hubungi: **Reza Dwi Prasetya** — Engineer & Developer Masjid Archive.*

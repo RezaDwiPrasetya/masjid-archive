@@ -1,0 +1,59 @@
+@startuml
+autonumber
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+actor "Publik / Jamaah" as Jamaah
+boundary "Halaman Utama / Cari\n(/ atau /cari)" as ArchivePage
+boundary "Halaman Detail Laporan\n(/laporan/[id])" as DetailPage
+control "Reports Query Handler\n(Server Component / API)" as ReportHandler
+entity "Database\n(Prisma: Report, Attachment, Transaction)" as DB
+
+Jamaah -> ArchivePage : Buka website Masjid Archive
+activate ArchivePage
+
+ArchivePage -> ReportHandler : Query laporan kas (group by tahun/bulan)
+activate ReportHandler
+ReportHandler -> DB : prisma.report.findMany({\n  include: { attachments: true },\n  orderBy: { reportDate: 'desc' }\n})
+activate DB
+DB --> ReportHandler : List laporan kas beserta lampiran
+deactivate DB
+ReportHandler --> ArchivePage : Data laporan terkelompok
+deactivate ReportHandler
+
+ArchivePage -> Jamaah : Tampilkan grid kartu laporan kas mingguan
+
+opt Jamaah melakukan pencarian
+  Jamaah -> ArchivePage : Ketik query di input pencarian (/cari)
+  ArchivePage -> ArchivePage : Filter instan (tanggal, bulan, tahun, pekan)
+  ArchivePage -> Jamaah : Tampilkan kartu laporan yang sesuai
+end
+
+Jamaah -> ArchivePage : Klik salah satu kartu laporan kas
+deactivate ArchivePage
+
+ArchivePage -> DetailPage : Navigasi ke /laporan/[id]
+activate DetailPage
+
+DetailPage -> ReportHandler : Ambil detail laporan & transaksi
+activate ReportHandler
+ReportHandler -> DB : prisma.report.findUnique({\n  where: { id },\n  include: {\n    attachments: true,\n    transactions: { where: { isVerified: true } }\n  }\n})
+activate DB
+note right of DB: Hanya transaksi isVerified: true\nyang ditampilkan ke publik
+DB --> ReportHandler : Data laporan & transaksi publik
+deactivate DB
+ReportHandler --> DetailPage : Render detail laporan
+deactivate ReportHandler
+
+alt Lampiran bertipe PDF
+  DetailPage -> DetailPage : Render embedded PDF viewer
+else Lampiran gambar
+  DetailPage -> DetailPage : Render zoomable image lightbox
+end
+
+DetailPage -> Jamaah : Tampilkan dokumen kas, saldo rekap, & daftar transaksi
+deactivate DetailPage
+
+@enduml

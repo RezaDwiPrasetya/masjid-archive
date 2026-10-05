@@ -1,0 +1,47 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+|Pengurus / Bendahara|
+start
+:Memeriksa draf transaksi pada Transaction Review Panel;
+if (Ada data salah / perlu koreksi?) then (Ya)
+  :Mengedit nominal / keterangan / tanggal transaksi;
+  |Sistem|
+  :Memperbarui data draft transaksi di database;
+  |Pengurus / Bendahara|
+endif
+
+if (Ingin konfirmasi transaksi?) then (Ya)
+  :Memasukkan/memilih nama donatur (opsional untuk pemasukan);
+  :Menekan tombol "Konfirmasi / Verifikasi";
+  
+  |Sistem|
+  :Menjalankan normalisasi & fuzzy matching nama donatur;
+  if (Pola anonim? ("hamba allah", "anonim", dsb.)) then (Ya)
+    :Set donorId = NULL (infaq anonim murni);
+  else if (Donatur sudah ada di master database?) then (Ya)
+    :Hubungkan transaksi ke ID Donatur yang cocok;
+  else (Donatur Baru)
+    :Buat entitas Donatur baru di tabel Donor;
+    :Hubungkan transaksi ke Donatur baru;
+  endif
+  :Ubah isVerified = true, catat verifiedById & verifiedAt;
+  :Hitung ulang selisih saldo kas (Rekonsiliasi);
+else (Ingin hapus draft)
+  :Menekan tombol hapus pada baris draft;
+  |Sistem|
+  :Menghapus transaksi draft (hanya berlaku jika isVerified=false);
+endif
+
+|Sistem|
+:Menampilkan status rekonsiliasi kas (Cocok / Selisih Rp X);
+:Memperbarui tampilan tabel transaksi aktif;
+
+|Pengurus / Bendahara|
+:Melihat status kas terverifikasi & indikator rekonsiliasi;
+stop
+
+@enduml

@@ -1,0 +1,71 @@
+@startuml
+skinparam packageStyle rectangle
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+' Jarak dan kerapian layout
+skinparam nodesep 40
+skinparam ranksep 60
+
+' Aktor
+actor "Publik / Jamaah" as Jamaah
+actor "Pengurus / Bendahara" as Pengurus
+actor "Gemini AI" as AI
+
+' Pengurus mewarisi hak akses Jamaah (menghindari garis silang bertumpuk)
+Jamaah <|-- Pengurus
+
+rectangle "Sistem Informasi Arsip & Keuangan Masjid Al-Luqman" {
+
+  ' Kolom Utama Use Case (Disusun vertikal berurutan)
+  usecase "Melihat Dashboard & Tren Kas" as UC1
+  usecase "Melihat & Mencari Arsip Laporan" as UC2
+  usecase "Melihat Donatur & Infaq Anonim" as UC3
+  
+  usecase "Mengunggah Dokumen Kas\n(Foto/PDF/Excel)" as UC4
+  usecase "Ekstraksi Transaksi Otomatis" as UC5
+  usecase "Verifikasi & Rekonsiliasi Kas" as UC6
+  usecase "Mengelola Data Donatur" as UC7
+  usecase "Mencetak & Ekspor Rekap Kas" as UC8
+  usecase "Manajemen Pengguna" as UC9
+
+  ' Use case Login di sisi kanan dalam boundary
+  usecase "Login Akun" as UC_Login
+
+  ' Memaksa susunan vertikal rapi dari atas ke bawah
+  UC1 -[hidden]down- UC2
+  UC2 -[hidden]down- UC3
+  UC3 -[hidden]down- UC4
+  UC4 -[hidden]down- UC5
+  UC5 -[hidden]down- UC6
+  UC6 -[hidden]down- UC7
+  UC7 -[hidden]down- UC8
+  UC8 -[hidden]down- UC9
+
+  ' Relasi <<include>> rapi ke Login (arah kanan)
+  UC4 .right.> UC_Login : <<include>>
+  UC5 .right.> UC_Login : <<include>>
+  UC6 .right.> UC_Login : <<include>>
+  UC7 .right.> UC_Login : <<include>>
+  UC8 .right.> UC_Login : <<include>>
+  UC9 .right.> UC_Login : <<include>>
+}
+
+' Relasi Aktor Kiri ke Use Case
+Jamaah -- UC1
+Jamaah -- UC2
+Jamaah -- UC3
+
+Pengurus -- UC4
+Pengurus -- UC5
+Pengurus -- UC6
+Pengurus -- UC7
+Pengurus -- UC8
+Pengurus -- UC9
+
+' Relasi Aktor Kanan
+UC5 -- AI
+
+@enduml

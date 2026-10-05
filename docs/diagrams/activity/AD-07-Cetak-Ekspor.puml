@@ -1,0 +1,35 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+|Pengurus / Bendahara|
+start
+:Membuka halaman detail laporan kas atau menu cetak (/laporan/cetak);
+:Memilih opsi cetak: Mingguan atau Bulanan;
+
+|Sistem|
+:Mengambil data transaksi terverifikasi & saldo laporan terkait;
+:Merender tata letak formal DKM standar kertas A4;
+:Menampilkan dialog pratinjau cetak cetak mading;
+
+|Pengurus / Bendahara|
+if (Pilihan Aksi?) then (Cetak PDF Mading)
+  :Menekan tombol "Cetak / Simpan PDF";
+  |Sistem|
+  :Memicu fungsi print browser (window.print()) format A4 resmi DKM;
+  |Pengurus / Bendahara|
+  :Menyimpan sebagai PDF atau mencetak ke printer fisik;
+else (Ekspor Spreadsheet Excel)
+  :Menekan tombol "Unduh Excel (.xlsx)";
+  |Sistem|
+  :Men-generate file spreadsheet (.xlsx) rekapitulasi kas;
+  :Mengirim stream file ke browser;
+  |Pengurus / Bendahara|
+  :Menerima & menyimpan file .xlsx di perangkat lokal;
+endif
+
+stop
+
+@enduml

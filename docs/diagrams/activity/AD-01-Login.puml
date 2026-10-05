@@ -1,0 +1,43 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+|Pengurus / Bendahara|
+start
+:Mengakses halaman khusus pengurus\n(mis. /unggah, /pengguna);
+
+|Sistem|
+:Mengecek status autentikasi sesi;
+if (Sudah login?) then (Ya)
+  :Menampilkan halaman pengurus;
+  stop
+else (Tidak)
+  :Mengarahkan ke halaman /login;
+endif
+
+|Pengurus / Bendahara|
+:Menekan tombol "Masuk dengan Google";
+
+|Sistem|
+:Mengarahkan ke layanan Google OAuth;
+
+|Google OAuth|
+:Meminta otorisasi akun pengguna;
+|Pengurus / Bendahara|
+:Memilih akun Google & memberi izin;
+
+|Google OAuth|
+:Mengirimkan token identitas & data profil;
+
+|Sistem|
+:Memvalidasi token & mencocokkan data di database;
+:Membuat sesi aktif (NextAuth Session);
+:Mengarahkan kembali ke halaman tujuan;
+
+|Pengurus / Bendahara|
+:Melihat antarmuka pengurus dengan sesi aktif;
+stop
+
+@enduml

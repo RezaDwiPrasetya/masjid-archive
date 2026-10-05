@@ -1,0 +1,42 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+|Publik / Jamaah|
+start
+:Membuka website Masjid Archive (Halaman Utama /);
+
+|Sistem|
+:Mengambil data laporan mingguan dari database;
+:Mengelompokkan kartu laporan berdasarkan Tahun & Bulan;
+:Menampilkan grid kartu arsip laporan kas;
+
+|Publik / Jamaah|
+if (Ingin mencari laporan tertentu?) then (Ya)
+  :Membuka menu /cari;
+  :Memasukkan kata kunci (tanggal, bulan, tahun, atau nomor minggu);
+  |Sistem|
+  :Menyaring laporan kas sesuai query;
+  :Menampilkan hasil pencarian instan;
+  |Publik / Jamaah|
+endif
+
+:Memilih salah satu kartu laporan kas;
+
+|Sistem|
+:Memuat halaman detail laporan (/laporan/[id]);
+:Mengambil ringkasan saldo, foto buku kas, dan daftar transaksi (isVerified=true);
+if (Lampiran bertipe PDF?) then (Ya)
+  :Menampilkan embedded PDF viewer interaktif;
+else (Gambar)
+  :Menampilkan pratinjau gambar foto buku kas;
+endif
+:Menampilkan tabel transaksi pemasukan & pengeluaran yang telah diverifikasi;
+
+|Publik / Jamaah|
+:Membaca laporan kas dan rincian transaksi mingguan;
+stop
+
+@enduml

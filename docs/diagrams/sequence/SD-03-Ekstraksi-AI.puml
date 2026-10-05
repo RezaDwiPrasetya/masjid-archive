@@ -1,0 +1,71 @@
+@startuml
+autonumber
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+actor "Pengurus / Bendahara" as Pengurus
+boundary "Detail Laporan Page\n(/laporan/[id])" as DetailPage
+control "Extract API\n(/api/attachments/[id]/extract)" as ExtractAPI
+participant "Excel Tabular Parser\n(Server-side xlsx)" as ExcelParser
+participant "Supabase Storage" as Storage
+participant "Gemini 3.6 Flash\n(Model Utama)" as GeminiMain
+participant "Gemini 3.5 Flash\n(Model Cadangan)" as GeminiFallback
+entity "Database\n(Prisma: Attachment, Transaction, Report)" as DB
+
+Pengurus -> DetailPage : Klik tombol "Ekstrak Transaksi"
+activate DetailPage
+
+DetailPage -> ExtractAPI : POST /api/attachments/[id]/extract
+activate ExtractAPI
+
+ExtractAPI -> DB : Update extractionStatus = "processing"
+activate DB
+DB --> ExtractAPI : Ok
+deactivate DB
+
+alt fileType == "excel" (.xlsx / .xls)
+  ExtractAPI -> Storage : Download file Excel buffer
+  activate Storage
+  Storage --> ExtractAPI : Buffer spreadsheet
+  deactivate Storage
+  
+  ExtractAPI -> ExcelParser : Parse baris & kolom tabular
+  activate ExcelParser
+  ExcelParser --> ExtractAPI : Structured extracted data (transactions, balance)
+  deactivate ExcelParser
+
+else fileType == "image" atau "pdf"
+  ExtractAPI -> Storage : Download file binary buffer
+  activate Storage
+  Storage --> ExtractAPI : Binary data
+  deactivate Storage
+
+  ExtractAPI -> GeminiMain : generateContent(prompt, inlineData) [Timeout 25s]
+  activate GeminiMain
+  alt Respons Utama Sukses (< 25s)
+    GeminiMain --> ExtractAPI : Structured JSON (initialBalance, finalBalance, transactions[])
+  else Timeout / Error 503 / 429
+    GeminiMain --> ExtractAPI : Failed / Aborted
+    deactivate GeminiMain
+    ExtractAPI -> GeminiFallback : Fallback generateContent(prompt, inlineData)
+    activate GeminiFallback
+    GeminiFallback --> ExtractAPI : Structured JSON (initialBalance, finalBalance, transactions[])
+    deactivate GeminiFallback
+  end
+end
+
+ExtractAPI -> DB : prisma.$transaction([\n  Report.update(initialBalance, finalBalance),\n  Transaction.createMany(draftTransactions, isVerified: false),\n  Attachment.update(extractionStatus: "done", extractionModel)\n])
+activate DB
+DB --> ExtractAPI : Transaction success
+deactivate DB
+
+ExtractAPI --> DetailPage : 200 OK (data hasil ekstraksi)
+deactivate ExtractAPI
+
+DetailPage -> DetailPage : Buka Transaction Review Panel
+DetailPage -> Pengurus : Tampilkan daftar draf transaksi untuk diperiksa
+deactivate DetailPage
+
+@enduml

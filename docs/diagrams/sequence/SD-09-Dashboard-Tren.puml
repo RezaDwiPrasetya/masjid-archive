@@ -1,0 +1,33 @@
+@startuml
+autonumber
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+actor "Publik / Jamaah" as Jamaah
+boundary "Halaman Dashboard\n(/dashboard)" as DashboardPage
+control "Trend API\n(/api/dashboard/trend)" as TrendAPI
+entity "Database\n(PostgreSQL via Prisma raw SQL)" as DB
+
+Jamaah -> DashboardPage : Buka menu Dashboard (/dashboard)
+activate DashboardPage
+
+DashboardPage -> TrendAPI : GET /api/dashboard/trend?range=6m
+activate TrendAPI
+
+TrendAPI -> DB : prisma.$queryRaw(`\n  SELECT DATE_TRUNC('week', "transactionDate") + INTERVAL '4 days' AS friday,\n  SUM(CASE WHEN type = 'pemasukan' THEN amount ELSE 0 END) AS total_inflow,\n  SUM(CASE WHEN type = 'pengeluaran' THEN amount ELSE 0 END) AS total_outflow\n  FROM "Transaction"\n  WHERE "isVerified" = true\n  GROUP BY friday ORDER BY friday ASC\n`)
+activate DB
+note right of DB: Mengelompokkan tren kas mingguan\nselaras tepat pada hari Jumat
+DB --> TrendAPI : Raw aggregation rows
+deactivate DB
+
+TrendAPI -> TrendAPI : Hitung saldo kas berjalan (running balance) & metrik agregat
+TrendAPI --> DashboardPage : 200 OK (trendData[], currentBalance, totalInflow, totalOutflow)
+deactivate TrendAPI
+
+DashboardPage -> DashboardPage : Render Hero Band Saldo & Grafik Recharts
+DashboardPage -> Jamaah : Tampilkan visualisasi tren kas mingguan & bulanan
+deactivate DashboardPage
+
+@enduml

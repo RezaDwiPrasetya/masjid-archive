@@ -39,9 +39,17 @@
 
 ## Version
 
-Current: `0.5.0` (Fase V5 Selesai)
+Current: `0.6.0` (Fase V6 Feature-Complete & UI Polish)
 
 ## Changelog
+
+### 0.6.0 (2026-10-05) — Fase V6: Pengayaan Multi-Format, Proteksi Ekstraksi & Pencarian Cerdas
+- Ekstraksi multimodal PDF & parser Excel deterministik langsung ke draf transaksi.
+- Dialog konfirmasi proteksi Ekstrak Ulang (`AlertDialog`) untuk mencegah duplikasi nilai kas, dengan opsi *Reset & Ekstrak Ulang* atau *Simpan Lama & Tambah Draf*.
+- Mekanisme pengurutan cerdas di halaman Cari Arsip (`/cari`) berbasis aktivitas terbaru (`terbaru_aktivitas`) dengan opsi filter pengurutan.
+- Ekspor rekapitulasi kas ke format Excel dan cetak ramah printer / PDF.
+- Modal rincian transaksi Infaq Anonim di halaman Donatur.
+- Dokumen Panduan Pengguna komprehensif (`PANDUAN-PENGGUNA.md`) dan diagram UML sistem.
 
 ### 0.5.0 (2026-09-23) — Fase V5: Financial Intelligence & Dashboard Publik
 - Implementasi dashboard tren pemasukan & pengeluaran publik (`/dashboard`).

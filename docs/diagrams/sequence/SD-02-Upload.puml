@@ -1,0 +1,48 @@
+@startuml
+autonumber
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+actor "Pengurus / Bendahara" as Pengurus
+boundary "Halaman Unggah\n(/unggah)" as UploadPage
+control "Reports API\n(/api/reports)" as ReportsAPI
+participant "Supabase Storage\n(Bucket: report-photos)" as Storage
+entity "Database\n(Prisma: Report & Attachment)" as DB
+
+Pengurus -> UploadPage : Buka /unggah & pilih tanggal Jumat
+activate UploadPage
+Pengurus -> UploadPage : Pilih / drop file (JPG/PNG/PDF/Excel)
+Pengurus -> UploadPage : Klik tombol "Unggah Laporan"
+
+UploadPage -> UploadPage : Validasi file & hari Jumat di sisi klien
+UploadPage -> ReportsAPI : POST multipart/form-data (reportDate, files[])
+activate ReportsAPI
+
+ReportsAPI -> ReportsAPI : Verifikasi sesi pengurus aktif
+alt Sesi tidak valid / bukan pengurus
+  ReportsAPI --> UploadPage : 401 Unauthorized
+  UploadPage -> Pengurus : Tampilkan peringatan akses dibatasi
+else Sesi valid
+  loop Untuk setiap file yang diunggah
+    ReportsAPI -> Storage : Upload file binary buffer
+    activate Storage
+    Storage --> ReportsAPI : fileUrl & metadata storage
+    deactivate Storage
+  end
+
+  ReportsAPI -> DB : prisma.report.create({\n  data: { reportDate, year, month, weekOfMonth, uploadedById,\n  attachments: { create: [{ fileUrl, fileType, originalFileName, ... }] }\n}})
+  activate DB
+  DB --> ReportsAPI : Created Report with Attachments
+  deactivate DB
+
+  ReportsAPI --> UploadPage : 201 Created (reportId, attachments)
+  deactivate ReportsAPI
+
+  UploadPage -> UploadPage : router.push("/laporan/" + reportId)
+  UploadPage -> Pengurus : Navigasi ke detail laporan yang baru diunggah
+end
+deactivate UploadPage
+
+@enduml

@@ -1,0 +1,35 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+|Pengurus / Bendahara|
+start
+:Membuka halaman /unggah;
+:Memilih tanggal laporan kas (hari Jumat);
+:Memilih atau drag-and-drop file\n(JPG, PNG, PDF, atau Excel);
+
+|Sistem|
+:Memvalidasi input tanggal & format file;
+if (Tanggal valid Jumat & file didukung?) then (Tidak)
+  :Menampilkan pesan error validasi;
+  |Pengurus / Bendahara|
+  :Memperbaiki input tanggal / file;
+  detach
+else (Ya)
+  |Pengurus / Bendahara|
+  :Menekan tombol "Unggah Laporan";
+endif
+
+|Sistem|
+:Membuat record Report di database;
+:Mengunggah file ke Supabase Storage (bucket "report-photos");
+:Menyimpan metadata Attachment (fileUrl, fileType, ukuran);
+:Mengarahkan ke halaman detail laporan (/laporan/[id]);
+
+|Pengurus / Bendahara|
+:Melihat detail laporan kas yang berhasil diunggah;
+stop
+
+@enduml

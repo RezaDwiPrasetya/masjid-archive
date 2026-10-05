@@ -1,0 +1,45 @@
+@startuml
+autonumber
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+actor "Pengurus / Bendahara" as Pengurus
+boundary "Halaman Detail / Cetak\n(/laporan/cetak)" as PrintPage
+control "Reports Export API\n(Client/Server Route)" as ExportAPI
+entity "Database\n(Prisma: Report, Transaction)" as DB
+
+Pengurus -> PrintPage : Buka menu cetak & pilih periode (Mingguan / Bulanan)
+activate PrintPage
+
+PrintPage -> ExportAPI : Request data rekap kas & transaksi terverifikasi
+activate ExportAPI
+
+ExportAPI -> DB : prisma.report.findMany({\n  where: { ...periodeFilter },\n  include: { transactions: { where: { isVerified: true } } }\n})
+activate DB
+DB --> ExportAPI : Data laporan & agregat finansial
+deactivate DB
+
+ExportAPI --> PrintPage : Rekap data kas lengkap
+deactivate ExportAPI
+
+PrintPage -> Pengurus : Tampilkan pratinjau cetak layout resmi DKM Al-Luqman
+
+alt Aksi Cetak PDF Mading A4
+  Pengurus -> PrintPage : Klik tombol "Cetak / Simpan PDF"
+  PrintPage -> PrintPage : window.print() dengan CSS @media print A4
+  PrintPage -> Pengurus : Dialog cetak browser terbuka (siap print fisik/PDF)
+
+else Aksi Ekspor Spreadsheet Excel
+  Pengurus -> PrintPage : Klik tombol "Unduh Excel (.xlsx)"
+  PrintPage -> ExportAPI : Generate file spreadsheet via library xlsx
+  activate ExportAPI
+  ExportAPI --> PrintPage : Binary stream buffer .xlsx
+  deactivate ExportAPI
+  PrintPage -> Pengurus : Unduh file rekapitulasi kas langsung ke komputer lokal
+end
+
+deactivate PrintPage
+
+@enduml

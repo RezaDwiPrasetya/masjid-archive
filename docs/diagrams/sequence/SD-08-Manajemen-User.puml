@@ -1,0 +1,61 @@
+@startuml
+autonumber
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+actor "Pengurus (Admin)" as Admin
+boundary "Halaman Pengguna\n(/pengguna)" as UserPage
+control "Users API\n(/api/users & /api/users/[id])" as UsersAPI
+entity "Database\n(Prisma: User)" as DB
+
+Admin -> UserPage : Buka menu Manajemen Pengguna (/pengguna)
+activate UserPage
+
+UserPage -> UsersAPI : GET /api/users
+activate UsersAPI
+
+UsersAPI -> UsersAPI : Verifikasi role sesi (Wajib "Admin")
+alt Role bukan Admin
+  UsersAPI --> UserPage : 403 Forbidden
+  UserPage -> Admin : Tampilkan akses ditolak
+else Role Admin
+  UsersAPI -> DB : prisma.user.findMany({ select: { id, name, email, role, image } })
+  activate DB
+  DB --> UsersAPI : List seluruh akun pengguna
+  deactivate DB
+  UsersAPI --> UserPage : 200 OK (users[])
+  deactivate UsersAPI
+  UserPage -> Admin : Render tabel pengguna dan kontrol peran (role)
+end
+
+alt Tindakan Mengubah Role Pengguna
+  Admin -> UserPage : Pilih opsi role baru (Admin / Guest)
+  UserPage -> UsersAPI : PATCH /api/users/[id] { role }
+  activate UsersAPI
+  UsersAPI -> DB : prisma.user.update({ where: { id }, data: { role } })
+  activate DB
+  DB --> UsersAPI : Updated User
+  deactivate DB
+  UsersAPI --> UserPage : 200 OK
+  deactivate UsersAPI
+  UserPage -> Admin : Notifikasi role berhasil diubah
+
+else Tindakan Hapus Akun Pengguna
+  Admin -> UserPage : Klik tombol hapus & konfirmasi AlertDialog
+  UserPage -> UsersAPI : DELETE /api/users/[id]
+  activate UsersAPI
+  UsersAPI -> DB : prisma.user.delete({ where: { id } })
+  activate DB
+  DB --> UsersAPI : User deleted
+  deactivate DB
+  UsersAPI --> UserPage : 200 OK
+  deactivate UsersAPI
+  UserPage -> UserPage : Hapus baris pengguna dari tabel UI
+  UserPage -> Admin : Notifikasi pengguna berhasil dihapus
+end
+
+deactivate UserPage
+
+@enduml

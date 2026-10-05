@@ -46,6 +46,20 @@ export async function POST(
     );
   }
 
+  // Parse body opsional: { replaceVerified?: boolean }
+  let replaceVerified = false;
+  try {
+    const text = await _request.text();
+    if (text) {
+      const json = JSON.parse(text);
+      if (json && typeof json.replaceVerified === "boolean") {
+        replaceVerified = json.replaceVerified;
+      }
+    }
+  } catch {
+    // Body kosong atau bukan JSON valid, gunakan default false
+  }
+
   // 3. Tandai status processing sebelum memproses
   await prisma.attachment.update({
     where: { id },
@@ -60,15 +74,15 @@ export async function POST(
         : await extractTransactionsFromFile(attachment.fileUrl, attachment.fileType);
 
     // 5. Simpan hasil secara atomik dalam satu transaksi DB:
-    //    - Hapus Transaction lama (unverified) dari attachment ini
+    //    - Hapus Transaction lama dari attachment ini (jika replaceVerified = true, hapus semua termasuk verified; jika false, hanya hapus unverified)
     //    - Insert Transaction baru hasil ekstraksi
     //    - Update status & saldo Attachment menjadi "done"
     await prisma.$transaction([
-      // Sesuai aturan eksplisit 13-Data-Model.md:
-      // Hanya hapus transaksi yang belum diverifikasi (isVerified = false).
-      // Transaksi yang sudah isVerified = true TIDAK BOLEH terhapus otomatis oleh proses re-extract.
       prisma.transaction.deleteMany({
-        where: { attachmentId: id, isVerified: false },
+        where: {
+          attachmentId: id,
+          ...(replaceVerified ? {} : { isVerified: false }),
+        },
       }),
       // Insert baris transaksi baru dari hasil ekstraksi
       prisma.transaction.createMany({

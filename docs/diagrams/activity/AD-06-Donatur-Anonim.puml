@@ -1,0 +1,37 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+|Publik / Jamaah|
+start
+:Membuka halaman /donatur;
+
+|Sistem|
+:Mengambil daftar donatur terdaftar (dengan aggregate nominal);
+:Menghitung total donasi teridentifikasi & total infaq anonim;
+:Menampilkan 2 kartu KPI ringkasan dan daftar profil donatur;
+
+|Publik / Jamaah|
+if (Memilih salah satu donatur?) then (Ya)
+  :Mengklik nama donatur;
+  |Sistem|
+  :Menampilkan profil donatur & riwayat kontribusi transaksi per periode;
+  |Publik / Jamaah|
+  :Melihat riwayat sedekah/infaq donatur tersebut;
+  detach
+else if (Memilih kartu "Infaq Anonim"?) then (Ya)
+  :Mengklik kartu / tombol rincian infaq anonim;
+  |Sistem|
+  :Mengambil seluruh transaksi pemasukan dengan pola anonim (donorId = NULL);
+  :Membuka modal dialog ledger riwayat infaq kotak amal / hamba Allah;
+  |Publik / Jamaah|
+  :Melihat transparansi daftar penerimaan infaq tanpa nama;
+  detach
+else (Tidak)
+  :Melihat ringkasan total donasi publik;
+  stop
+endif
+
+@enduml

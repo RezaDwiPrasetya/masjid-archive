@@ -148,6 +148,12 @@ Tidak ada bug fungsional aktif di codebase. Seluruh fase V1 s/d V6 dan perbaikan
 - Font: Outfit. Ikon: Lucide.
 - Layout: Full-width proporsional (`w-full px-6 md:px-8 lg:px-10`).
 - Rincian Infaq Anonim menggunakan dialog/modal responsif dengan format tabel/list ledger rapi, tanpa membuat entity `Donor` palsu di database.
+- Proteksi Ekstrak Ulang: Jika berkas sudah memiliki transaksi terverifikasi (`verifiedCount > 0`), tombol "Ekstrak Ulang" wajib memicu dialog konfirmasi (`AlertDialog`). Opsi eksplisit yang disediakan adalah:
+  1. `Reset & Ekstrak Ulang` (mengirim `{ replaceVerified: true }` ke API untuk menghapus transaksi lama sebelum memasukkan hasil baru).
+  2. `Simpan Lama & Tambah Draf` (mengirim `{ replaceVerified: false }`, hanya menghapus unverified).
+  Hal ini mencegah insiden duplikasi nilai kas ganda akibat konfirmasi berulang dari ekstrak ulang.
+- Pengurutan Halaman Cari (`/cari`): Secara default diurutkan berdasarkan aktivitas terbaru (`terbaru_aktivitas`) dengan menghitung `lastActivity` (waktu terbesar dari `report.uploadedAt`, `attachments.uploadedAt`, `attachments.extractedAt`, dan `transactions.verifiedAt`), serta menyediakan opsi alternatif `tanggal_desc` dan `tanggal_asc`.
+
 
 ---
 
@@ -155,7 +161,7 @@ Tidak ada bug fungsional aktif di codebase. Seluruh fase V1 s/d V6 dan perbaikan
 - JANGAN upgrade Prisma ke v6+ (tetap di 5.22.0).
 - JANGAN satukan Vercel Postgres dengan Supabase Storage.
 - JANGAN ubah ON DELETE RESTRICT pada relasi transaksi jadi CASCADE/SET NULL.
-- JANGAN biarkan proses apa pun menghapus transaksi `isVerified=true` secara otomatis/implisit.
+- JANGAN biarkan proses apa pun menghapus transaksi `isVerified=true` secara otomatis/implisit tanpa konfirmasi eksplisit dari pengguna.
 - JANGAN buat entity Donor untuk pola nama anonim ("hamba allah", "kas masjid").
 - JANGAN ubah warna primary `#154212`.
 - JANGAN kembalikan batasan `max-w-[1120px]` pada PageShell.

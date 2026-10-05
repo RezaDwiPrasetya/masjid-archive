@@ -1,0 +1,61 @@
+@startuml
+autonumber
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+actor "Pengurus / Bendahara" as Pengurus
+boundary "Review Panel Component\n(transaction-review-panel)" as ReviewPanel
+control "Confirm Transaction API\n(/api/transactions/[id]/confirm)" as ConfirmAPI
+participant "Donor Service\n(donor-service.ts)" as DonorService
+entity "Database\n(Prisma: Transaction, Donor, Report)" as DB
+
+Pengurus -> ReviewPanel : Periksa draf transaksi & input/pilih nama donatur
+activate ReviewPanel
+Pengurus -> ReviewPanel : Klik "Konfirmasi / Verifikasi"
+
+ReviewPanel -> ConfirmAPI : POST /api/transactions/[id]/confirm { donorNameRaw }
+activate ConfirmAPI
+
+ConfirmAPI -> ConfirmAPI : Ambil user session (id, role)
+ConfirmAPI -> DonorService : matchAndAssignDonor(txType, donorNameRaw)
+activate DonorService
+
+alt txType == "pengeluaran" ATAU pola nama anonim ("hamba allah", "anonim")
+  DonorService --> ConfirmAPI : donorId = null (Infaq Anonim / Pengeluaran)
+else Nama terisi donatur tertentu
+  DonorService -> DonorService : normalizeDonorName(rawInput)
+  DonorService -> DB : prisma.donor.findUnique({ where: { normalizedName } })
+  activate DB
+  alt Donor ditemukan
+    DB --> DonorService : Existing Donor (id, name)
+  else Donor belum ada
+    DB --> DonorService : null
+    DonorService -> DB : prisma.donor.create({ data: { name, normalizedName } })
+    DB --> DonorService : New Donor (id, name)
+  end
+  deactivate DB
+  DonorService --> ConfirmAPI : matched donorId
+end
+deactivate DonorService
+
+ConfirmAPI -> DB : prisma.transaction.update({\n  where: { id },\n  data: { isVerified: true, donorId, donorNameRaw, verifiedById, verifiedAt }\n})
+activate DB
+DB --> ConfirmAPI : Updated Transaction
+deactivate DB
+
+ConfirmAPI -> DB : Ambil seluruh transaksi terverifikasi & saldo Report
+activate DB
+DB --> ConfirmAPI : Laporan kas & saldo (initialBalance, totalIncome, totalExpense)
+deactivate DB
+
+ConfirmAPI -> ConfirmAPI : Hitung rekonsiliasi: (Saldo Awal + Inflow - Outflow) vs Saldo Akhir
+ConfirmAPI --> ReviewPanel : 200 OK (updatedTransaction, reconciliationStatus)
+deactivate ConfirmAPI
+
+ReviewPanel -> ReviewPanel : Update state UI (badge verified, status rekonsiliasi kas)
+ReviewPanel -> Pengurus : Tampilkan status terverifikasi & indikator rekonsiliasi
+deactivate ReviewPanel
+
+@enduml

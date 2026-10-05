@@ -1,0 +1,132 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+' Notasi relasi Crow's Foot standar database
+skinparam linetype ortho
+
+entity "User" as User {
+  * id : VARCHAR(255) <<PK>>
+  --
+  name : VARCHAR(255)
+  email : VARCHAR(255) <<UNIQUE>>
+  emailVerified : TIMESTAMP
+  image : VARCHAR(255)
+  role : VARCHAR(50)
+}
+
+entity "Report" as Report {
+  * id : VARCHAR(255) <<PK>>
+  --
+  * reportDate : TIMESTAMP
+  * year : INTEGER
+  * month : INTEGER
+  * weekOfMonth : INTEGER
+  * uploadedAt : TIMESTAMP
+  * uploadedById : VARCHAR(255) <<FK>>
+  initialBalance : DECIMAL(15, 2)
+  finalBalance : DECIMAL(15, 2)
+}
+
+entity "Attachment" as Attachment {
+  * id : VARCHAR(255) <<PK>>
+  --
+  * reportId : VARCHAR(255) <<FK>>
+  * fileUrl : TEXT
+  * fileType : VARCHAR(50)
+  * originalFileName : VARCHAR(255)
+  * fileSizeBytes : INTEGER
+  * extractionStatus : VARCHAR(50)
+  extractionModel : VARCHAR(100)
+  extractionRawResponse : JSONB
+  extractionError : TEXT
+  extractedAt : TIMESTAMP
+  * uploadedAt : TIMESTAMP
+}
+
+entity "Transaction" as Transaction {
+  * id : VARCHAR(255) <<PK>>
+  --
+  * attachmentId : VARCHAR(255) <<FK>>
+  * reportId : VARCHAR(255) <<FK>>
+  * type : VARCHAR(50)
+  * amount : DECIMAL(15, 2)
+  description : TEXT
+  transactionDate : TIMESTAMP
+  donorNameRaw : VARCHAR(255)
+  donorId : VARCHAR(255) <<FK>>
+  * isVerified : BOOLEAN
+  verifiedById : VARCHAR(255) <<FK>>
+  verifiedAt : TIMESTAMP
+}
+
+entity "Donor" as Donor {
+  * id : VARCHAR(255) <<PK>>
+  --
+  * name : VARCHAR(255)
+  * normalizedName : VARCHAR(255) <<UNIQUE>>
+  contact : VARCHAR(255)
+}
+
+entity "Account" as Account {
+  * id : VARCHAR(255) <<PK>>
+  --
+  * userId : VARCHAR(255) <<FK, onDelete: Cascade>>
+  * type : VARCHAR(50)
+  * provider : VARCHAR(50)
+  * providerAccountId : VARCHAR(255)
+  refresh_token : TEXT
+  access_token : TEXT
+  expires_at : INTEGER
+  token_type : VARCHAR(50)
+  scope : VARCHAR(255)
+  id_token : TEXT
+  session_state : VARCHAR(255)
+}
+
+entity "Session" as Session {
+  * id : VARCHAR(255) <<PK>>
+  --
+  * sessionToken : VARCHAR(255) <<UNIQUE>>
+  * userId : VARCHAR(255) <<FK, onDelete: Cascade>>
+  * expires : TIMESTAMP
+}
+
+entity "VerificationToken" as VerificationToken {
+  * identifier : VARCHAR(255)
+  * token : VARCHAR(255) <<UNIQUE>>
+  --
+  * expires : TIMESTAMP
+  ' UNIQUE(identifier, token)
+}
+
+' ─── RELASI TABEL (CROW'S FOOT NOTATION) ──────────────────────────────────────
+
+' Satu User dapat mengunggah nol atau banyak Report
+User ||--o{ Report : "mengunggah (uploadedById)"
+
+' Satu User dapat memverifikasi nol atau banyak Transaction
+User ||--o{ Transaction : "memverifikasi (verifiedById)"
+
+' Satu User memiliki nol atau banyak Account & Session (NextAuth onDelete: Cascade)
+User ||--o{ Account : "userId (Cascade)"
+User ||--o{ Session : "userId (Cascade)"
+
+' Satu Report memiliki satu atau banyak Attachment (ON DELETE RESTRICT)
+Report ||--|{ Attachment : "reportId"
+
+' Satu Report menaungi nol atau banyak Transaction (ON DELETE RESTRICT)
+Report ||--o{ Transaction : "reportId"
+
+' Satu Attachment diekstrak menjadi nol atau banyak Transaction (ON DELETE RESTRICT)
+Attachment ||--o{ Transaction : "attachmentId"
+
+' Satu Donor dapat memiliki nol atau banyak Transaction (bisa null jika anonim)
+Donor ||--o{ Transaction : "donorId"
+
+' VerificationToken tidak berelasi FK ke User — identifier adalah email/provider string
+' Dikelola sepenuhnya oleh NextAuth.js untuk alur email verification
+
+@enduml

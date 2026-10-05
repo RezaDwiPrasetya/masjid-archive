@@ -1,0 +1,47 @@
+@startuml
+autonumber
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+actor "Pengurus / Bendahara" as Pengurus
+boundary "Halaman Login\n(/login)" as LoginPage
+control "NextAuth Handler\n(/api/auth/[...nextauth])" as AuthHandler
+entity "Database\n(Prisma Adapter)" as DB
+participant "Google OAuth\nService" as GoogleOAuth
+
+Pengurus -> LoginPage : Akses halaman pengurus (misal: /unggah)
+activate LoginPage
+LoginPage -> AuthHandler : Cek session token aktif
+activate AuthHandler
+AuthHandler --> LoginPage : Tidak ada sesi aktif (Unauthenticated)
+deactivate AuthHandler
+
+LoginPage -> Pengurus : Tampilkan antarmuka "Masuk dengan Google"
+Pengurus -> LoginPage : Klik "Masuk dengan Google"
+
+LoginPage -> AuthHandler : signIn("google", { callbackUrl })
+activate AuthHandler
+AuthHandler -> GoogleOAuth : Redireksi ke halaman otorisasi Google
+deactivate AuthHandler
+
+Pengurus -> GoogleOAuth : Memilih akun & menyetujui izin
+activate GoogleOAuth
+GoogleOAuth --> AuthHandler : Callback otorisasi (code & profile data)
+deactivate GoogleOAuth
+activate AuthHandler
+
+AuthHandler -> DB : Cari atau buat record User & Account
+activate DB
+DB --> AuthHandler : Data User (id, email, name, role)
+deactivate DB
+
+AuthHandler -> AuthHandler : Buat JWT / Session Token
+AuthHandler --> LoginPage : Sesi berhasil dibuat & redirect ke callbackUrl
+deactivate AuthHandler
+
+LoginPage -> Pengurus : Render halaman tujuan dengan akses pengurus
+deactivate LoginPage
+
+@enduml
