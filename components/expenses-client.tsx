@@ -141,18 +141,13 @@ export function ExpensesClient({
 
   return (
     <PageShell>
-      <div className="space-y-8 max-w-6xl mx-auto">
+      <div className="space-y-8">
         {/* Page Title Header */}
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-rose-500/10 text-rose-700">
-              <Receipt className="size-4.5" />
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-on-surface">
-              Rekap & Transparansi Pengeluaran
-            </h1>
-          </div>
-          <p className="text-sm text-on-surface-variant pl-10">
+          <h1 className="text-3xl font-bold tracking-tight text-on-surface">
+            Rekap & Transparansi Pengeluaran
+          </h1>
+          <p className="text-sm text-on-surface-variant">
             Transparansi pembukuan alokasi dana kas masjid per kategori pengeluaran yang telah diverifikasi.
           </p>
         </div>
