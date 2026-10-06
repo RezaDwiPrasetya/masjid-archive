@@ -331,7 +331,7 @@ function TransactionRow({
                 }
               >
                 <SelectTrigger className="w-full text-xs">
-                  <SelectValue placeholder="Pilih kategori..." />
+                  <span>{getCategoryLabel(editCategory)}</span>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__null__">Tidak Dikategorikan</SelectItem>
@@ -657,7 +657,9 @@ function TransactionRow({
                   {categoryLoading ? (
                     <Loader2 size={10} className="animate-spin" />
                   ) : null}
-                  <SelectValue placeholder="Pilih kategori..." />
+                  <span className="truncate">
+                    {getCategoryLabel(selectedCategory)}
+                  </span>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__null__">Tidak Dikategorikan</SelectItem>
