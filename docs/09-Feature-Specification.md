@@ -24,6 +24,9 @@
 | F-018 | Rincian Transparansi Infaq Anonim (Publik) | Must | Planned (V6) |
 | F-019 | Ekstraksi Dokumen Kas PDF (Vision-LLM) | Should | Planned (V6) |
 | F-020 | Impor Langsung Dokumen Kas Excel (.xlsx) | Should | Planned (V6) |
+| F-021 | Ekspor & Cetak Rekapitulasi Kas (PDF & Excel) | Should | ✅ Done (V6) |
+| F-022 | Mobile Responsiveness & Touch Ergonomics | Should | ✅ Done (V6) |
+| F-023 | Rekap & Transparansi Pengeluaran Per Kategori (Publik) | Must | Planned (V7) |
 
 ## Feature Details — V1
 
@@ -296,6 +299,49 @@
 **Acceptance Criteria:**
 - [x] Bendahara dapat mengoreksi nama donatur pada transaksi yang sudah terverifikasi
 - [x] Pembatalan verifikasi berhasil mengembalikan transaksi ke antrean verifikasi dan mengeluarkan nominal dari dashboard publik
+
+---
+
+## Feature Details — V7 (Expense Transparency)
+
+### F-023 — Rekap & Transparansi Pengeluaran Per Kategori (Publik)
+
+**Objective:** Melengkapi simetri transparansi keuangan masjid dengan menyediakan halaman publik khusus yang merangkum **pengeluaran kas** per kategori dari waktu ke waktu — menjawab pertanyaan jemaah: *"Uang kas masjid digunakan untuk apa saja?"* — setara dengan halaman Donatur yang menjawab *"Siapa yang menyumbang?"*.
+**User:** Publik (jemaah), Pengurus DKM, Bendahara DKM
+**Process:**
+- **Input kategori (Bendahara):** Pada panel review transaksi (`TransactionReviewPanel`), transaksi bertipe `pengeluaran` menampilkan dropdown **Kategori** yang bisa dipilih sebelum atau sesudah dikonfirmasi. Kategori bersifat opsional (boleh kosong / "Tidak Dikategorikan").
+  - Set kategori yang tersedia (tetap, tidak bisa ditambah pengguna):
+    - `operasional` — Tagihan listrik, air, internet
+    - `honor` — Honor khotib, imam, marbot, ustadz
+    - `sosial` — Santunan fakir miskin, anak yatim, bantuan warga
+    - `pembangunan` — Renovasi, pembelian material, peralatan masjid
+    - `konsumsi` — Konsumsi rapat DKM, acara pengajian
+    - `administrasi` — ATK, cetak dokumen, biaya admin bank
+    - `lainnya` — Pengeluaran yang tidak masuk kategori di atas
+- **Halaman publik `/pengeluaran`:** Menampilkan ringkasan dan rincian pengeluaran terverifikasi.
+  - **Kartu KPI**: Total pengeluaran keseluruhan & jumlah transaksi pengeluaran
+  - **Breakdown per Kategori**: Progress bar / treemap visual nominal per kategori (diurutkan terbesar ke terkecil)
+  - **Tabel Rincian**: Daftar seluruh transaksi pengeluaran terverifikasi (tanggal, deskripsi, kategori, nominal, link ke laporan asal), dengan filter per kategori
+**Business Rules:**
+- MUTLAK hanya menampilkan transaksi `isVerified = true` dan `type = "pengeluaran"`.
+- Field `category` pada skema bersifat **opsional (nullable)** — transaksi lama yang belum dikategorikan ditampilkan dengan label "Tidak Dikategorikan" tanpa error.
+- Perubahan kategori pada transaksi yang sudah terverifikasi hanya bisa dilakukan oleh pengguna login (bendahara/admin), tidak memengaruhi status `isVerified` atau field finansial lainnya.
+- Set kategori bersifat **enum tetap** di aplikasi (tidak disimpan sebagai tabel terpisah di database) — sesuai kebutuhan DKM Al-Luqman, tidak perlu manajemen kategori dinamis.
+- Halaman publik bisa diakses tanpa login.
+**Schema Change:**
+- Tambah field `category String?` pada model `Transaction` di `schema.prisma`.
+- Nilai valid: `operasional`, `honor`, `sosial`, `pembangunan`, `konsumsi`, `administrasi`, `lainnya`, `null`.
+- Migration additive — tidak mengubah field yang sudah ada, semua data lama tetap valid (category = null).
+**Acceptance Criteria:**
+- [x] Field dropdown Kategori muncul di panel review untuk transaksi bertipe `pengeluaran` (tersembunyi untuk `pemasukan`)
+- [x] Kategori dapat diubah pada transaksi pengeluaran yang sudah terverifikasi oleh pengguna login
+- [x] Halaman `/pengeluaran` dapat diakses publik tanpa login
+- [x] Kartu KPI total pengeluaran & jumlah transaksi tampil akurat
+- [x] Breakdown per kategori diurutkan dari nominal terbesar ke terkecil
+- [x] Tabel rincian dapat difilter per kategori
+- [x] Transaksi tanpa kategori ditampilkan dengan label "Tidak Dikategorikan", tidak error
+- [x] Tidak ada transaksi `isVerified = false` yang bocor ke halaman ini
+- [x] Link ke laporan asal pada tiap baris transaksi berfungsi
 
 ---
 

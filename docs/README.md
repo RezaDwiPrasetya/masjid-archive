@@ -10,13 +10,13 @@ Membantu DKM Masjid Al-Luqman (dan pengurus masjid sejenis) menjaga arsip lapora
 
 ### Current Status
 
-- Phase: Fase V5 (Financial Intelligence & Dashboard Publik) Selesai
-- Version: 0.5.0
-- Last Updated: 2026-09-23 (Penyempurnaan Dashboard Tren & Verifikasi V5)
+- Phase: Fase V6 (Multi-Format, Proteksi Ekstraksi & Pencarian Cerdas) Selesai
+- Version: 0.6.0
+- Last Updated: 2026-10-05 (Proteksi Ekstrak Ulang & Pengurutan Aktivitas Cari)
 
 ### Daftar Isi
 
-Ini adalah salinan lokal dari [GitHub Wiki](https://github.com/RezaDwiPrasetya/masjid-archive/wiki) — dipertahankan agar AI coding agent (GitHub Copilot) bisa membaca dokumentasi produk langsung dari dalam repo, bukan dari wiki yang terpisah.
+Ini adalah salinan lokal dari [GitHub Wiki](https://github.com/RezaDwiPrasetya/masjid-archive/wiki) — dipertahankan agar AI coding agent bisa membaca dokumentasi produk langsung dari dalam repo.
 
 1. [Product Plan](./01-Product-Plan.md)
 2. [Problem Statement](./02-Problem-Statement.md)
@@ -33,6 +33,9 @@ Ini adalah salinan lokal dari [GitHub Wiki](https://github.com/RezaDwiPrasetya/m
 13. [Data Model](./13-Data-Model.md)
 14. [API Specification](./14-API-Specification.md)
 15. [Release Plan](./15-Release-Plan.md)
+16. [Panduan Pengguna](./PANDUAN-PENGGUNA.md)
+17. [Diagram UML Sistem](./diagrams/README.md)
+
 
 ### Team
 

@@ -9,6 +9,7 @@ import {
   Search,
   Users,
   ShieldCheck,
+  Receipt,
 } from "lucide-react";
 import { AuthButton } from "@/components/auth-button";
 import { useSession } from "next-auth/react";
@@ -42,7 +43,7 @@ export function AppShell({
   active,
 }: {
   children: React.ReactNode;
-  active: "/" | "/unggah" | "/cari" | "/pengguna" | "/dashboard" | "/donatur";
+  active: "/" | "/unggah" | "/cari" | "/pengguna" | "/dashboard" | "/donatur" | "/pengeluaran";
 }) {
   const { data: session } = useSession();
 
@@ -50,6 +51,7 @@ export function AppShell({
     { href: "/", label: "Laporan", icon: Archive },
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/donatur", label: "Donatur", icon: HeartHandshake },
+    { href: "/pengeluaran", label: "Pengeluaran", icon: Receipt },
     { href: "/cari", label: "Cari", icon: Search },
     { href: "/unggah", label: "Unggah", icon: ImagePlus },
   ];

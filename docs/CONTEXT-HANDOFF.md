@@ -1,6 +1,6 @@
 # CONTEXT HANDOFF — Proyek "Masjid Archive"
-> **Terakhir diperbarui**: 29 September 2026  
-> **Status**: **TAMAT / SELESAI PENUH (V1 s/d V6 Feature-Complete + Perbaikan Responsivitas #058 — Merged to Main & Pushed)**
+> **Terakhir diperbarui**: 6 Oktober 2026  
+> **Status**: **V1–V6 + Mobile Polish (#058) SELESAI — Fase V7 (Expense Transparency, Issue #059) dalam perencanaan**
 
 ---
 
@@ -26,7 +26,7 @@ Aplikasi web arsip & manajemen keuangan untuk **DKM Masjid Al-Luqman** (Kel. Sok
   - **#058 (Selesai)**: Optimasi responsivitas mobile & ergonomi sentuh (eliminasi overlap teks nominal grafik mingguan, perbaikan tap target bottom bar navigasi, padding dialog responsif).
 - Seluruh commit sudah digabungkan ke `main` dan sinkron dengan remote GitHub `origin/main`.
 - Status kode: `tsc --noEmit` lolos 0 error, `npm run lint` lolos 0 error.
-- **Fokus Saat Ini**: Pemeliharaan stabil, operasional riil DKM Al-Luqman, dan dokumentasi laporan Tugas Akhir.
+- **Fokus Saat Ini**: Perencanaan V7 — Rekap & Transparansi Pengeluaran Per Kategori (F-023, Issue #059). Lihat bagian 14 untuk langkah konkret berikutnya.
 
 
 ---
@@ -120,6 +120,17 @@ Model utama:
 
 ---
 
+## 7b. FITUR YANG DIRENCANAKAN — FASE V7
+**F-023 — Rekap & Transparansi Pengeluaran Per Kategori (Issue #059):**
+- Field `category String?` (nullable, additive) pada model `Transaction` via Prisma migration.
+- Dropdown kategori di `TransactionReviewPanel` untuk transaksi `pengeluaran` (tersembunyi untuk `pemasukan`).
+- Endpoint publik `GET /api/expenses` — agregasi pengeluaran per kategori.
+- Endpoint publik `GET /api/expenses/transactions` — rincian transaksi pengeluaran dengan filter kategori.
+- Halaman publik `/pengeluaran` — KPI total + breakdown visual per kategori + tabel rincian.
+- Edit kategori pada transaksi yang sudah terverifikasi (pengguna login, tanpa mengubah data finansial).
+
+---
+
 ## 8. MASALAH/BUG YANG SEDANG DIBAHAS
 Tidak ada bug fungsional aktif di codebase. Seluruh fase V1 s/d V6 dan perbaikan estetika/responsivitas mobile (Issue #058) telah tuntas 100% dan teruji.
 
@@ -180,11 +191,16 @@ Shared logic di `lib/donor-matching.ts` dan `lib/donor-service.ts`.
 ---
 
 ## 14. LANGKAH BERIKUTNYA YANG SEHARUSNYA DILAKUKAN
-1. Reza membuat Issue #054 di GitHub.
-2. Buat branch baru untuk pengerjaan: `feature/v6-infaq-anonim` atau sesuai konvensi branch proyek.
-3. Implementasikan endpoint `GET /api/donors/anonymous/transactions`.
-4. Implementasikan UI Modal / Detail View di `components/donors-client.tsx`.
-5. Verifikasi: `tsc --noEmit`, `npm run lint`, browser test, pastikan data `isVerified=false` terisolasi 100%.
+**Fase V7 — Issue #059 (F-023 Rekap Pengeluaran Per Kategori):**
+1. Buat Issue #059 di GitHub dengan label `enhancement` dan title: `[V7] Rekap & Transparansi Pengeluaran Per Kategori`.
+2. Buat branch baru: `feature/v7-expense-category`.
+3. **Schema:** Tambah `category String?` di model `Transaction` di `schema.prisma` — jalankan `npx prisma migrate dev --name add_expense_category`.
+4. **API:** Buat `app/api/expenses/route.ts` (agregasi per kategori) dan `app/api/expenses/transactions/route.ts` (daftar rincian).
+5. **UI Panel Review:** Tambah dropdown Kategori di `TransactionReviewPanel` untuk transaksi `pengeluaran`.
+6. **UI Edit Terverifikasi:** Tambah endpoint `PATCH /api/transactions/:id/category` dan tombol edit kategori untuk pengguna login.
+7. **Halaman Publik:** Buat `app/pengeluaran/page.tsx` + `components/expenses-client.tsx`.
+8. **Navigasi:** Tambah menu "Pengeluaran" di `app-shell.tsx`.
+9. Verifikasi: `tsc --noEmit`, `npm run lint`, browser test — pastikan `isVerified=false` tidak bocor.
 
 ---
 

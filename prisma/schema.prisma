@@ -78,6 +78,8 @@ model Transaction {
   verifiedById    String?    // ID User yang mengonfirmasi; diisi otomatis dari sesi saat konfirmasi
   verifiedBy      User?      @relation("VerifiedBy", fields: [verifiedById], references: [id])
   verifiedAt      DateTime?  // Waktu konfirmasi
+  // V7: Kategorisasi pengeluaran — hanya relevan untuk type = "pengeluaran", null = belum dikategorikan
+  category        String?    // "operasional" | "honor" | "sosial" | "pembangunan" | "konsumsi" | "administrasi" | "lainnya" | null
 }
 
 // V5: Entity donatur lintas periode — satu donatur bisa muncul di banyak laporan/minggu

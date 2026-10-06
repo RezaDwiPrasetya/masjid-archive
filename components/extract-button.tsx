@@ -95,7 +95,7 @@ export function ExtractButton({
       if (data.data?.extractionStatus === "failed") {
         setLocalError(
           data.data?.extractionError ??
-            "Ekstraksi gagal. Pastikan foto cukup jelas dan coba lagi."
+          "Ekstraksi gagal. Pastikan foto cukup jelas dan coba lagi."
         );
         return;
       }

@@ -30,6 +30,12 @@
 - [x] Halaman Daftar Donatur & Detail Donatur Publik (`/donatur`)
 - [x] Fitur Koreksi Nama Donatur Terverifikasi & Pembatalan Verifikasi
 
+### Milestone 6 — Expense Transparency (V7)
+- [x] Field `category` di `Transaction` (migration Prisma additive)
+- [x] Dropdown kategorisasi pengeluaran di `TransactionReviewPanel`
+- [x] Endpoint publik `GET /api/expenses` & `GET /api/expenses/transactions`
+- [x] Halaman publik `/pengeluaran` (KPI + breakdown kategori + tabel rincian)
+
 ## Release Criteria
 
 - [x] Alur inti (unggah, arsip, cari, detail, ekstraksi, verifikasi) berjalan tanpa error
@@ -40,6 +46,7 @@
 ## Version
 
 Current: `0.6.0` (Fase V6 Feature-Complete & UI Polish)
+Next: `0.7.0` (Fase V7: Expense Transparency — Issue #059)
 
 ## Changelog
 

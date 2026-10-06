@@ -229,6 +229,45 @@ Menyempurnakan kenyamanan penggunaan aplikasi pada perangkat smartphone (mobile 
 - [x] Seluruh menu navigasi bawah terbaca jelas tanpa teks terpotong di layar 360px.
 - [x] Dialog dan modal terbuka proporsional dan dapat ditutup/dioperasikan dengan nyaman di mobile.
 - [x] Lolos pengujian visual mobile portrait di browser developer tools dan perangkat riil.
+---
 
+## V7 — Expense Transparency (Rekap Pengeluaran Per Kategori)
 
+### MVP Objective (V7)
+
+Melengkapi simetri transparansi keuangan masjid. Jika V5 menjawab *"Siapa yang menyumbang?"* (halaman Donatur), maka V7 menjawab *"Uang kas masjid digunakan untuk apa saja?"* dengan halaman publik khusus pengeluaran berdasarkan kategori — sehingga jemaah bisa mengaudit penggunaan dana masjid secara menyeluruh dari dua sisi: penerimaan dan pengeluaran.
+
+### Must Have (V7)
+- Tambah field `category` (nullable String) pada model `Transaction` via migration Prisma additive (F-023)
+- Dropdown pemilihan kategori di `TransactionReviewPanel` untuk transaksi bertipe `pengeluaran` — tersembunyi untuk `pemasukan`
+- Endpoint publik `GET /api/expenses` — agregasi total pengeluaran per kategori (hanya `isVerified=true`, `type=pengeluaran`)
+- Endpoint publik `GET /api/expenses/transactions` — daftar rincian transaksi pengeluaran, dengan filter opsional per kategori
+- Halaman publik `/pengeluaran` yang bisa diakses tanpa login, menampilkan:
+  - Kartu KPI: total pengeluaran kumulatif & jumlah transaksi
+  - Breakdown visual nominal per kategori (sorted terbesar ke terkecil)
+  - Tabel rincian transaksi dengan filter per kategori dan link ke laporan asal
+
+### Should Have (V7)
+- Tombol edit kategori pada transaksi pengeluaran yang sudah terverifikasi (untuk pengguna login), tanpa mengubah `isVerified` atau data finansial
+- Filter rentang waktu (bulan/tahun) pada halaman `/pengeluaran`
+- Badge kategori yang konsisten secara visual (warna berbeda per kategori) di panel review & halaman publik
+
+### Not Now (V7 — dibahas nanti)
+- Manajemen kategori dinamis (tambah/ubah/hapus kategori oleh admin) — set kategori tetap sudah cukup untuk kebutuhan DKM Al-Luqman
+- Auto-kategorisasi pengeluaran via AI/Gemini berdasarkan deskripsi transaksi — bisa menjadi enhancement V8
+- Budget/anggaran per kategori & notifikasi jika melebihi plafon — di luar scope operasional saat ini
+- Ekspor rekap pengeluaran per kategori ke Excel/PDF — bisa ditambahkan setelah halaman stabil
+
+### MVP Core Flow (V7)
+
+**Alur bendahara (kategorisasi):** Di panel review laporan → klik transaksi bertipe `pengeluaran` → pilih kategori dari dropdown (Operasional, Honor, Sosial, dsb.) sebelum atau setelah konfirmasi → kategori tersimpan bersama data transaksi.
+
+**Alur publik (jemaah):** Buka halaman `/pengeluaran` tanpa login → lihat total pengeluaran & breakdown per kategori → klik filter kategori untuk mempersempit daftar → klik link laporan pada baris transaksi untuk melihat bukti fisik buku kas.
+
+### MVP Success Criteria (V7)
+- [ ] Dropdown kategori muncul di panel review untuk transaksi pengeluaran
+- [ ] Halaman `/pengeluaran` dapat diakses publik dan menampilkan data yang akurat
+- [ ] Total pengeluaran per kategori konsisten dengan penjumlahan manual dari laporan
+- [ ] Transaksi `isVerified=false` tidak pernah bocor ke halaman publik ini
+- [ ] Transaksi lama tanpa kategori ditampilkan dengan label "Tidak Dikategorikan" tanpa error
 

@@ -20,6 +20,7 @@ import {
   UserX,
   AlertTriangle,
   RotateCcw,
+  Tag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,11 @@ import {
   AlertDialogDescription,
 } from "@/components/ui/alert-dialog";
 import { normalizeDonorName, isAnonymousDonor } from "@/lib/donor-matching";
+import {
+  EXPENSE_CATEGORIES,
+  getCategoryLabel,
+  getCategoryColor,
+} from "@/lib/expense-categories";
 
 interface Transaction {
   id: string;
@@ -56,6 +62,8 @@ interface Transaction {
     status: "existing" | "created" | "anonymous" | "none";
     donorName: string | null;
   } | null;
+  // V7: Kategori pengeluaran
+  category?: string | null;
 }
 
 interface TransactionReviewPanelProps {
@@ -90,6 +98,7 @@ function TransactionRow({
   onDelete,
   onEdit,
   onUpdateDonor,
+  onUpdateCategory,
   onUnverify,
   duplicateWarning,
 }: {
@@ -99,6 +108,7 @@ function TransactionRow({
   onDelete: (id: string) => Promise<void>;
   onEdit: (id: string, data: Partial<Transaction>) => Promise<void>;
   onUpdateDonor: (id: string, donorNameRaw: string | null) => Promise<void>;
+  onUpdateCategory: (id: string, category: string | null) => Promise<void>;
   onUnverify?: (id: string) => Promise<void>;
   duplicateWarning?: {
     transactionDate: string | null;
@@ -142,6 +152,22 @@ function TransactionRow({
     setDonorName(tx.donorNameRaw ?? "");
     setEditDonorName(tx.donorNameRaw ?? "");
     setEditDonorInput(tx.donorNameRaw ?? tx.donor?.name ?? "");
+  }
+
+  // V7: State kategori pengeluaran
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    tx.category ?? null
+  );
+  const [prevCategory, setPrevCategory] = useState(tx.category);
+  const [categoryLoading, setCategoryLoading] = useState(false);
+  const [editCategory, setEditCategory] = useState<string | null>(
+    tx.category ?? null
+  );
+
+  if (tx.category !== prevCategory) {
+    setPrevCategory(tx.category);
+    setSelectedCategory(tx.category ?? null);
+    setEditCategory(tx.category ?? null);
   }
 
   const isIncome = tx.type === "pemasukan";
@@ -202,6 +228,8 @@ function TransactionRow({
         transactionDate: editDate || null,
         donorNameRaw:
           editType === "pemasukan" ? editDonorName.trim() || null : null,
+        category:
+          editType === "pengeluaran" ? editCategory || null : null,
       });
       setIsEditing(false);
     } finally {
@@ -287,6 +315,33 @@ function TransactionRow({
                 placeholder="Nama donatur (kosongkan jika tanpa donatur)"
                 className="text-xs"
               />
+            </div>
+          )}
+          {/* Kategori Pengeluaran (khusus pengeluaran) */}
+          {editType === "pengeluaran" && (
+            <div className="col-span-2 space-y-1">
+              <label className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                <Tag size={12} className="text-muted-foreground" />
+                Kategori Pengeluaran (opsional)
+              </label>
+              <Select
+                value={editCategory ?? "__null__"}
+                onValueChange={(v) =>
+                  setEditCategory(v === "__null__" ? null : v)
+                }
+              >
+                <SelectTrigger className="w-full text-xs">
+                  <SelectValue placeholder="Pilih kategori..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__null__">Tidak Dikategorikan</SelectItem>
+                  {EXPENSE_CATEGORIES.map((c) => (
+                    <SelectItem key={c.value} value={c.value}>
+                      {c.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
         </div>
@@ -575,6 +630,58 @@ function TransactionRow({
             {tx.matchingFeedback.status === "none" &&
               "Transaksi berhasil dikonfirmasi"}
           </span>
+        </div>
+      )}
+
+      {/* V7: Badge/dropdown kategori — hanya untuk pengeluaran */}
+      {!isIncome && (
+        <div className="mt-2.5 flex items-center gap-2 flex-wrap">
+          {hasSession ? (
+            // Pengeluaran + login: dropdown edit kategori langsung
+            <div className="flex items-center gap-1.5">
+              <Tag size={11} className="text-on-surface-variant shrink-0" />
+              <Select
+                value={selectedCategory ?? "__null__"}
+                onValueChange={async (v) => {
+                  const newCat = v === "__null__" ? null : v;
+                  setCategoryLoading(true);
+                  await onUpdateCategory(tx.id, newCat);
+                  setSelectedCategory(newCat);
+                  setCategoryLoading(false);
+                }}
+              >
+                <SelectTrigger
+                  className="h-6 text-[11px] font-medium px-2 gap-1 min-w-0 max-w-[180px] border-outline-variant"
+                  disabled={categoryLoading}
+                >
+                  {categoryLoading ? (
+                    <Loader2 size={10} className="animate-spin" />
+                  ) : null}
+                  <SelectValue placeholder="Pilih kategori..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__null__">Tidak Dikategorikan</SelectItem>
+                  {EXPENSE_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : (
+            // Tanpa login atau belum terverifikasi: tampilkan badge saja
+            <span
+              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border ${
+                getCategoryColor(tx.category ?? null).bg
+              } ${getCategoryColor(tx.category ?? null).border} ${
+                getCategoryColor(tx.category ?? null).text
+              }`}
+            >
+              <Tag size={9} />
+              {getCategoryLabel(tx.category ?? null)}
+            </span>
+          )}
         </div>
       )}
 
@@ -891,6 +998,9 @@ export function TransactionReviewPanel({
           ...(data.donorNameRaw !== undefined && {
             donorNameRaw: data.donorNameRaw,
           }),
+          ...(data.category !== undefined && {
+            category: data.category,
+          }),
         }),
       });
       if (!res.ok) {
@@ -912,6 +1022,10 @@ export function TransactionReviewPanel({
                   json.data?.donorNameRaw !== undefined
                     ? json.data?.donorNameRaw
                     : t.donorNameRaw,
+                category:
+                  json.data?.category !== undefined
+                    ? json.data?.category
+                    : t.category,
               }
             : t
         )
@@ -988,6 +1102,41 @@ export function TransactionReviewPanel({
     } catch {
       setGlobalError(
         "Tidak dapat terhubung ke server saat mengupdate nama donatur."
+      );
+    }
+  }
+
+  // V7: Update kategori pengeluaran
+  async function handleUpdateCategory(id: string, category: string | null) {
+    setGlobalError(null);
+    try {
+      const res = await fetch(`/api/transactions/${id}/category`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category }),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        setGlobalError(json.error ?? "Gagal mengupdate kategori transaksi.");
+        return;
+      }
+      const json = await res.json();
+      const updatedData = json.data;
+
+      setTransactions((prev) =>
+        prev.map((t) =>
+          t.id === id
+            ? {
+                ...t,
+                category: updatedData?.category ?? null,
+              }
+            : t
+        )
+      );
+      router.refresh();
+    } catch {
+      setGlobalError(
+        "Tidak dapat terhubung ke server saat mengupdate kategori."
       );
     }
   }
@@ -1140,6 +1289,7 @@ export function TransactionReviewPanel({
                 onDelete={handleDelete}
                 onEdit={handleEdit}
                 onUpdateDonor={handleUpdateDonor}
+                onUpdateCategory={handleUpdateCategory}
                 onUnverify={handleUnverify}
                 duplicateWarning={getDuplicateWarning(tx)}
               />
@@ -1169,6 +1319,7 @@ export function TransactionReviewPanel({
                 onDelete={handleDelete}
                 onEdit={handleEdit}
                 onUpdateDonor={handleUpdateDonor}
+                onUpdateCategory={handleUpdateCategory}
                 onUnverify={handleUnverify}
               />
             ))}

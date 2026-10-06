@@ -76,10 +76,13 @@ Hasil ekstraksi dari vision-LLM (gambar) atau parsing (PDF/Excel). Satu `Attachm
 | isVerified | boolean, default false | Yes | Menandai apakah baris ini sudah dikonfirmasi manual oleh bendahara — baris yang belum diverifikasi **tidak dihitung** dalam dashboard V5 |
 | verifiedById | reference ke User | Optional | Siapa yang mengonfirmasi baris ini; diisi otomatis dari sesi aktif saat tombol "Konfirmasi" ditekan |
 | verifiedAt | timestamp | Optional | Kapan verifikasi dilakukan |
+| category | text | Optional (V7) | Kategori pengeluaran — hanya relevan untuk transaksi bertipe `pengeluaran`. Nilai valid: `operasional`, `honor`, `sosial`, `pembangunan`, `konsumsi`, `administrasi`, `lainnya`. Bernilai `null` untuk transaksi `pemasukan` atau pengeluaran yang belum dikategorikan (ditampilkan sebagai "Tidak Dikategorikan") |
 
 > **Catatan V4:** dokumen versi sebelumnya menyimpan `rawExtractedText` per baris `Transaction`. Ini dipindahkan ke level `Attachment` (`extractionRawResponse`) karena satu pemanggilan ekstraksi bisa menghasilkan banyak baris `Transaction` sekaligus — menyimpan payload mentah di tiap baris akan redundan. Baris `Transaction` sekarang murni berisi data yang sudah diparsing/terstruktur.
 
 > **Catatan V5:** `donorNameRaw` ditambahkan sebagai perluasan **aditif** (tidak mengubah apa pun) dari schema ekstraksi V4 — `responseSchema` Gemini yang sudah ada di 12-Technical-Specification.md ditambah satu field opsional baru `donorName` per baris transaksi. Ini tidak menyentuh ulang alur ekstraksi V4 yang sudah selesai & di-push, cuma menambah satu kolom baru yang dibaca kalau ada.
+
+> **Catatan V7:** `category` ditambahkan sebagai perluasan **aditif** dari schema V5 — field `String?` nullable baru pada `Transaction`. Seluruh data transaksi lama tetap valid dengan nilai `null`. Kategori hanya diisi oleh bendahara secara manual melalui dropdown di panel review, tidak pernah diisi otomatis oleh proses ekstraksi.
 
 ### Donor (Donatur) — V5
 
@@ -145,4 +148,20 @@ Struktur ini modular per fase:
 - **V3** fokus merombak `User` dan menambah infrastruktur NextAuth (`Account`, `Session`).
 - **V4** menambahkan field ekstraksi di `Attachment`, entity `Transaction` baru, serta `initialBalance`/`finalBalance` di `Report`.
 - **V5** menambahkan entity `Donor`, field `donorNameRaw` di `Transaction` (perluasan aditif dari skema ekstraksi V4), dan aturan fuzzy matching + pengecualian donasi anonim.
+- **V7** menambahkan field `category` di `Transaction` (perluasan aditif dari V5) untuk mendukung kategorisasi pengeluaran dan halaman transparansi publik `/pengeluaran`.
 Sehingga tidak perlu migrasi besar ulang tiap fase, cukup menambah tabel/kolom baru.
+
+## Enum Kategori Pengeluaran (V7)
+
+Set kategori bersifat tetap (hardcoded di aplikasi, bukan tabel database). Nilai yang valid untuk field `Transaction.category`:
+
+| Nilai | Label Tampilan | Contoh Transaksi |
+|---|---|---|
+| `operasional` | Operasional | Tagihan listrik PLN, token listrik, air PDAM, internet |
+| `honor` | Honor | Honor khotib Jumat, honor imam, honorarium marbot, ustadz kajian |
+| `sosial` | Sosial | Santunan anak yatim, bantuan fakir miskin, sumbangan warga kurang mampu |
+| `pembangunan` | Pembangunan | Beli semen, cat, keramik, besi, renovasi atap, peralatan masjid |
+| `konsumsi` | Konsumsi | Konsumsi rapat DKM, konsumsi acara pengajian, buka puasa bersama |
+| `administrasi` | Administrasi | Pembelian ATK, cetak dokumen, biaya admin bank, materai |
+| `lainnya` | Lainnya | Pengeluaran yang tidak masuk kategori di atas |
+| `null` | Tidak Dikategorikan | Transaksi lama atau pengeluaran yang belum dipilih kategorinya |

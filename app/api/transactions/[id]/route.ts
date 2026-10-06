@@ -40,6 +40,7 @@ export async function PATCH(
     description?: string;
     transactionDate?: string | null;
     donorNameRaw?: string | null;
+    category?: string | null;
   };
 
   // Hanya izinkan field yang ada di spec — tidak ada mass-assignment
@@ -57,6 +58,9 @@ export async function PATCH(
       ...(body.donorNameRaw !== undefined && {
         donorNameRaw: body.donorNameRaw ? body.donorNameRaw.trim() : null,
       }),
+      ...(body.category !== undefined && {
+        category: body.category ? body.category.trim() : null,
+      }),
     },
   });
 
@@ -68,6 +72,7 @@ export async function PATCH(
       description: updated.description,
       transactionDate: updated.transactionDate,
       donorNameRaw: updated.donorNameRaw,
+      category: updated.category,
     },
   });
 }
