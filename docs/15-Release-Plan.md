@@ -45,12 +45,23 @@
 
 ## Version
 
-Current: `0.6.0` (Fase V6 Feature-Complete & UI Polish)
-Next: `0.7.0` (Fase V7: Expense Transparency — Issue #059)
+Current: `0.7.0` (Fase V7: Expense Transparency Feature-Complete — Issue #059)
+Next: `1.0.0` (Production Hardening & Serah Terima Tugas Akhir)
 
 ## Changelog
 
-### 0.6.0 (2026-10-05) — Fase V6: Pengayaan Multi-Format, Proteksi Ekstraksi & Pencarian Cerdas
+### 0.7.0 (2026-10-06) — Fase V7: Rekap & Transparansi Pengeluaran Per Kategori (Issue #059)
+- **Model & Database**: Penambahan kolom `category String?` pada model `Transaction` di `schema.prisma` secara additive/nullable dan eksekusi migrasi Prisma `20261006095151_add_expense_category`.
+- **Shared Library Kategori**: Modul terpusat `lib/expense-categories.ts` dengan enum tetap pos kas (`operasional`, `honor`, `sosial`, `pembangunan`, `konsumsi`, `administrasi`, `lainnya`, dan `null` untuk "Tidak Dikategorikan") beserta sistem warna badge seragam.
+- **API Agregasi & Rincian**: Endpoint publik `GET /api/expenses` (agregat total & breakdown per kategori) dan `GET /api/expenses/transactions` (rincian transaksi terverifikasi dengan filter kategori & paginasi).
+- **Mutasi Kategori**: Endpoint terproteksi sesi `PATCH /api/transactions/:id/category` untuk mengubah kategori pengeluaran tanpa menyentuh angka kas atau status verifikasi.
+- **Review Panel**: Dropdown pemilihan kategori langsung di `TransactionReviewPanel` bagi bendahara login (sebelum maupun sesudah verifikasi) serta badge bagi publik.
+- **Halaman Publik `/pengeluaran`**: Dashboard publik pengeluaran dengan 3 kartu KPI, visual multi-colored progress bar, interactive category filter chips, search bar real-time, sorting nominal/tanggal, dan tautan laporan kas asal.
+- **Navigasi Global**: Penambahan menu "Pengeluaran" berikon `Receipt` pada sidebar desktop dan bottom bar mobile di `components/app-shell.tsx`.
+- **Perbaikan UI & Kompatibilitas**:
+  - Penyelarasan layout halaman `/pengeluaran` menjadi full-width konsisten dengan halaman Donatur/Dashboard.
+  - Perbaikan label dropdown pilihan `null` menjadi "Tidak Dikategorikan" menggantikan string internal `__null__`.
+  - Wrapper async `context.params` Promise pada route handler NextAuth (`app/api/auth/[...nextauth]/route.ts`) untuk kompatibilitas penuh Next.js 16 App Router.
 - Ekstraksi multimodal PDF & parser Excel deterministik langsung ke draf transaksi.
 - Dialog konfirmasi proteksi Ekstrak Ulang (`AlertDialog`) untuk mencegah duplikasi nilai kas, dengan opsi *Reset & Ekstrak Ulang* atau *Simpan Lama & Tambah Draf*.
 - Mekanisme pengurutan cerdas di halaman Cari Arsip (`/cari`) berbasis aktivitas terbaru (`terbaru_aktivitas`) dengan opsi filter pengurutan.

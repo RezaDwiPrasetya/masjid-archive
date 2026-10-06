@@ -391,3 +391,37 @@ Endpoint V5 (`GET /api/dashboard/trend`, `GET /api/donors`, `GET /api/donors/:id
 - **JANGAN biarkan informasi ini hilang total** hanya karena tidak ada di endpoint tren. Ini adalah salah satu informasi paling relevan bagi jemaah yang mengakses dashboard publik.
 - Referensi acceptance criteria: F-014 di `09-Feature-Specification.md` — *"Menampilkan total pemasukan vs pengeluaran per periode, plus saldo akhir kas (dari `Report.finalBalance`) sebagai referensi."*
 
+---
+
+## Spesifikasi Teknis — Fase V7: Rekap & Transparansi Pengeluaran Per Kategori (Issue #059)
+
+### Data Model & Enum Kategori
+- Model `Transaction` diperluas dengan kolom `category String?` (nullable, additive).
+- Set kategori bersifat tetap (enum aplikasi di `lib/expense-categories.ts`, bukan tabel database relasional terpisah):
+  - `operasional`: Tagihan PLN, PDAM, internet, sabun/kebersihan.
+  - `honor`: Honor khotib Jumat, imam, marbot, ustadz kajian.
+  - `sosial`: Santunan fakir miskin, anak yatim, bantuan warga dhuafa.
+  - `pembangunan`: Renovasi atap/kubah, material bangunan, semen, keramik.
+  - `konsumsi`: Snack rapat pengurus DKM, konsumsi jemaah pengajian.
+  - `administrasi`: ATK, cetak berkas, meterai, biaya admin bank.
+  - `lainnya`: Pengeluaran yang tidak masuk kategori di atas.
+  - `null`: "Tidak Dikategorikan" (menjaga kompatibilitas data historis).
+
+### Endpoint Publik V7
+- **`GET /api/expenses`**:
+  - Mengembalikan agregasi total nominal pengeluaran dan breakdown groupBy kategori.
+  - **Isolasi Mutlak**: Query wajib menyertakan `where: { isVerified: true, type: "pengeluaran" }`.
+- **`GET /api/expenses/transactions`**:
+  - Mengembalikan daftar transaksi pengeluaran terverifikasi beserta relasi laporannya.
+  - Mendukung query param `category` (termasuk filter transaksi tanpa kategori `null`), `limit`, dan `offset`.
+
+### Endpoint Mutasi V7
+- **`PATCH /api/transactions/:id/category`**:
+  - Hanya dapat diakses oleh sesi terautentikasi (bendahara/admin).
+  - Khusus transaksi bertipe `pengeluaran`.
+  - Hanya memperbarui nilai `category`, tidak menyentuh `amount`, `isVerified`, `verifiedById`, atau `transactionDate`.
+
+### Penanganan Kompatibilitas Next.js 16 (App Router)
+- **Route Handler NextAuth**:
+  Pada Next.js 16 App Router, parameter `context.params` bertipe `Promise`. Karena handler bawaan `NextAuth` v4 mengevaluasi `context.params` secara synchronous, handler di `app/api/auth/[...nextauth]/route.ts` dibungkus dengan fungsi async wrapper yang melakukan `const params = await context.params;` sebelum diteruskan ke NextAuth. Hal ini mencegah error `CLIENT_FETCH_ERROR Unexpected token '<' (404 HTML)` saat browser memanggil `/api/auth/session` atau `/api/auth/providers`.
+

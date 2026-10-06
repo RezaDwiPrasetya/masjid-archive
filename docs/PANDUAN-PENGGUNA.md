@@ -1,8 +1,8 @@
 # Panduan Pengguna — Masjid Archive
 ### Sistem Arsip & Manajemen Keuangan DKM Masjid Al-Luqman
 
-> **Versi Sistem**: V6 (Feature-Complete)  
-> **Terakhir diperbarui**: 5 Oktober 2026  
+> **Versi Sistem**: V7 (Feature-Complete)  
+> **Terakhir diperbarui**: 6 Oktober 2026  
 > **Disusun oleh**: Reza Dwi Prasetya — PKL PT Gothru Media Indonesia
 
 ---
@@ -15,14 +15,15 @@
 4. [Navigasi Utama](#4-navigasi-utama)
 5. [Arsip Laporan](#5-arsip-laporan--halaman-utama)
 6. [Dashboard Keuangan](#6-dashboard-keuangan)
-7. [Halaman Donatur](#7-halaman-donatur)
-8. [Pencarian Arsip](#8-pencarian-arsip)
-9. [Mengunggah Laporan Baru](#9-mengunggah-laporan-baru)
-10. [Detail Laporan & Ekstraksi AI](#10-detail-laporan--ekstraksi-ai)
-11. [Verifikasi & Rekonsiliasi Transaksi](#11-verifikasi--rekonsiliasi-transaksi)
-12. [Cetak & Ekspor Rekapitulasi Kas](#12-cetak--ekspor-rekapitulasi-kas)
-13. [Manajemen Pengguna](#13-manajemen-pengguna)
-14. [Pertanyaan Umum (FAQ)](#14-pertanyaan-umum-faq)
+7. [Halaman Pengeluaran](#7-halaman-pengeluaran--rekapitulasi-per-kategori)
+8. [Halaman Donatur](#8-halaman-donatur)
+9. [Pencarian Arsip](#9-pencarian-arsip)
+10. [Mengunggah Laporan Baru](#10-mengunggah-laporan-baru)
+11. [Detail Laporan & Ekstraksi AI](#11-detail-laporan--ekstraksi-ai)
+12. [Verifikasi & Rekonsiliasi Transaksi](#12-verifikasi--rekonsiliasi-transaksi)
+13. [Cetak & Ekspor Rekapitulasi Kas](#13-cetak--ekspor-rekapitulasi-kas)
+14. [Manajemen Pengguna](#14-manajemen-pengguna)
+15. [Pertanyaan Umum (FAQ)](#15-pertanyaan-umum-faq)
 
 ---
 
@@ -38,11 +39,13 @@ Sistem ini menggantikan ketergantungan pada buku kas fisik yang rentan hilang at
 |---|---|
 | Melihat arsip laporan keuangan mingguan | Semua orang (tanpa login) |
 | Melihat dashboard tren kas & grafik | Semua orang (tanpa login) |
+| Melihat rekapitulasi & transparansi pengeluaran per kategori | Semua orang (tanpa login) |
 | Melihat daftar donatur & infaq anonim | Semua orang (tanpa login) |
 | Mencari arsip laporan berdasarkan periode | Semua orang (tanpa login) |
 | Mengunggah laporan baru | Bendahara & Administrator |
 | Mengekstrak data dari foto/PDF/Excel via AI | Bendahara & Administrator |
 | Memverifikasi & merekonsiliasi transaksi | Bendahara & Administrator |
+| Mengklasifikasi & mengedit kategori pengeluaran | Bendahara & Administrator |
 | Mencetak & mengunduh rekap kas | Bendahara & Administrator |
 | Mengelola akun pengguna | Administrator saja |
 
@@ -54,12 +57,12 @@ Sistem menggunakan tiga tingkatan akses:
 
 ### 👤 Jamaah (Publik / Read-only)
 - Tidak perlu login.
-- Dapat melihat seluruh arsip laporan, dashboard keuangan, dan data donatur yang sudah terverifikasi.
+- Dapat melihat seluruh arsip laporan, dashboard keuangan, rekapitulasi pengeluaran per kategori, dan data donatur yang sudah terverifikasi.
 - **Tidak dapat** mengubah data apa pun.
 
 ### 💼 Bendahara
 - Perlu login dengan akun Google yang sudah didaftarkan oleh Administrator.
-- Dapat mengunggah laporan, mengekstrak data via AI, memverifikasi transaksi, dan mencetak/mengekspor rekap kas.
+- Dapat mengunggah laporan, mengekstrak data via AI, memverifikasi transaksi, mengelola kategori pengeluaran, dan mencetak/mengekspor rekap kas.
 - **Tidak dapat** mengelola akun pengguna lain.
 
 ### 🛡️ Administrator
@@ -73,7 +76,7 @@ Sistem menggunakan tiga tingkatan akses:
 
 ## 3. Cara Login
 
-Login diperlukan untuk mengakses fitur operasional (unggah, ekstraksi, verifikasi, cetak).
+Login diperlukan untuk mengakses fitur operasional (unggah, ekstraksi, verifikasi, kelola kategori, cetak).
 
 ### Langkah Login
 
@@ -106,6 +109,7 @@ Sistem dapat diakses melalui navigasi di sidebar (desktop) atau bilah navigasi b
 |---|---|---|---|
 | **Laporan** | 📁 | `/` — Arsip laporan mingguan | Semua |
 | **Dashboard** | 📊 | `/dashboard` — Grafik tren kas | Semua |
+| **Pengeluaran** | 🧾 | `/pengeluaran` — Rekap pengeluaran per kategori | Semua |
 | **Donatur** | 🤝 | `/donatur` — Daftar donatur & infaq anonim | Semua |
 | **Cari** | 🔍 | `/cari` — Pencarian arsip | Semua |
 | **Unggah** | ➕ | `/unggah` — Unggah laporan baru | Bendahara & Admin |
@@ -155,13 +159,63 @@ Grafik batang yang menampilkan perbandingan **Pemasukan** dan **Pengeluaran** pe
 - Rentang data dimulai dari laporan pertama yang ada hingga maksimal 12 periode terakhir
 
 #### 3. Ekspor Rekapitulasi Bulanan
-Tombol **"Ekspor Rekap Bulanan"** di pojok kanan atas grafik membuka dialog untuk memilih periode dan format ekspor. Lihat [Bab 12](#12-cetak--ekspor-rekapitulasi-kas) untuk panduan lengkap.
+Tombol **"Ekspor Rekap Bulanan"** di pojok kanan atas grafik membuka dialog untuk memilih periode dan format ekspor. Lihat [Bab 13](#13-cetak--ekspor-rekapitulasi-kas) untuk panduan lengkap.
 
 > **Info**: Seluruh data yang ditampilkan di dashboard hanya berasal dari transaksi dengan status **terverifikasi**. Data draft yang belum dikonfirmasi bendahara tidak pernah ditampilkan.
 
 ---
 
-## 7. Halaman Donatur
+## 7. Halaman Pengeluaran — Rekapitulasi Per Kategori
+
+**Alamat**: `/pengeluaran`
+
+Halaman publik yang menyajikan transparansi alokasi dana kas masjid dengan mengelompokkan seluruh pengeluaran terverifikasi ke dalam kategori fungsional.
+
+### 1. Tiga Kartu Indikator Utama (KPI)
+
+| Kartu | Penjelasan |
+|---|---|
+| **Total Pengeluaran** | Akumulasi seluruh pengeluaran terverifikasi sepanjang masa arsip |
+| **Kategori Terbesar** | Kategori dengan alokasi pengeluaran tertinggi beserta badge persentase proporsinya terhadap total |
+| **Total Transaksi** | Jumlah frekuensi transaksi pengeluaran yang telah diverifikasi |
+
+### 2. Bar Proporsi Alokasi Dana (Visual Breakdown)
+
+Di bawah kartu KPI, terdapat bilah kemajuan (*progress bar*) multi-warna yang memvisualisasikan komposisi persentase pengeluaran:
+- Setiap warna mewakili kategori tertentu (misalnya hijau untuk Operasional, oranye untuk Honor, biru untuk Pembangunan, dsb.).
+- Di bawah bar terdapat ringkasan persentase dan nominal per kategori yang memudahkan jamaah membaca porsi penggunaan kas secara sekilas.
+
+### 3. Filter Kategori Interaktif (Chips)
+
+Anda dapat menyaring rincian transaksi dengan menekan tombol kategori:
+- **Semua Kategori** — Menampilkan seluruh transaksi pengeluaran.
+- **Operasional** — Biaya listrik PLN, air PDAM, kebersihan, perawatan rutin sarana masjid.
+- **Honor / Imam & Khotib** — Insentif imam rawatib, penceramah Jumat/kajian, dan muadzin.
+- **Sosial & Santunan** — Bantuan mustahik, anak yatim, dhuafa, dan tanggap darurat warga sekitar.
+- **Pembangunan & Sarpras** — Renovasi fisik bangunan, perbaikan atap, sound system, karpet, AC.
+- **Konsumsi Kegiatan** — Konsumsi buka puasa bersama, konsumsi kajian rutin, dan hari besar Islam.
+- **Administrasi & ATK** — Kertas kas, kwitansi, amplop infaq, banner/spanduk pengumuman.
+- **Lain-lain** — Pengeluaran insidental yang tidak tergolong ke pos utama di atas.
+- **Belum Dikategorikan** — Transaksi pengeluaran masa lampau yang belum diberi kategori oleh bendahara.
+
+### 4. Pencarian Cepat & Pengurutan
+
+- **Kolom Cari Transaksi**: Mengetik kata kunci untuk memfilter deskripsi pengeluaran secara instan.
+- **Pengurutan (Sort)**:
+  - **Tanggal Terbaru / Terlama** — Menelusuri pengeluaran secara kronologis.
+  - **Nominal Terbesar / Terkecil** — Menemukan pos pengeluaran bernilai signifikan.
+
+### 5. Tabel Rincian Pengeluaran Terverifikasi
+
+Menampilkan daftar detail setiap transaksi:
+- **Tanggal Transaksi**
+- **Keterangan / Uraian Kebutuhan**
+- **Badge Kategori** (dengan warna identitas khas per kategori)
+- **Nominal (Rp)**
+
+---
+
+## 8. Halaman Donatur
 
 **Alamat**: `/donatur`
 
@@ -191,7 +245,7 @@ Di bawah kartu KPI terdapat daftar profil seluruh donatur teridentifikasi, diuru
 
 ---
 
-## 8. Pencarian Arsip
+## 9. Pencarian Arsip
 
 **Alamat**: `/cari`
 
@@ -210,7 +264,7 @@ Memungkinkan pencarian arsip laporan berdasarkan kata kunci dan filter periode.
 
 ---
 
-## 9. Mengunggah Laporan Baru
+## 10. Mengunggah Laporan Baru
 
 **Alamat**: `/unggah`  
 **Akses**: Bendahara & Administrator
@@ -263,7 +317,7 @@ Klik tombol **"Simpan ke Arsip (N file)"** di bagian bawah halaman.
 
 ---
 
-## 10. Detail Laporan & Ekstraksi AI
+## 11. Detail Laporan & Ekstraksi AI
 
 **Alamat**: `/laporan/[id]`  
 **Akses**: Melihat — semua orang | Ekstraksi — Bendahara & Administrator
@@ -349,7 +403,7 @@ Jika Anda menekan tombol **"Ekstrak Ulang"** pada berkas yang sudah pernah dipro
 
 ---
 
-## 11. Verifikasi & Rekonsiliasi Transaksi
+## 12. Verifikasi & Rekonsiliasi Transaksi
 
 **Akses**: Bendahara & Administrator
 
@@ -365,6 +419,7 @@ Di bagian **"Menunggu Verifikasi"** pada panel review, setiap baris transaksi me
 - Keterangan / deskripsi
 - Tanggal transaksi
 - Nama donatur (untuk pemasukan)
+- **Kategori Pengeluaran** (khusus untuk pengeluaran, default: *Tidak Dikategorikan*)
 
 Bandingkan dengan buku kas fisik untuk memastikan keakuratan.
 
@@ -375,6 +430,7 @@ Jika ada data yang tidak sesuai, klik ikon **pensil ✏️** pada baris transaks
 - **Keterangan** — perbaiki deskripsi transaksi
 - **Jenis transaksi** — ganti antara Pemasukan / Pengeluaran
 - **Nama donatur** — isi atau perbaiki nama donatur (untuk transaksi pemasukan)
+- **Kategori** — pilih pos pengeluaran yang sesuai dari dropdown (Operasional, Honor / Imam & Khotib, Sosial & Santunan, Pembangunan & Sarpras, Konsumsi Kegiatan, Administrasi & ATK, Lain-lain, atau biarkan kosong untuk Tidak Dikategorikan)
 
 Klik **✓ Simpan** setelah selesai mengedit, atau **✗ Batal** untuk membatalkan perubahan.
 
@@ -388,15 +444,26 @@ Saat mengonfirmasi transaksi pemasukan dengan nama donatur:
 - Jika nama baru: profil donatur baru dibuat secara otomatis.
 - Jika nama terdeteksi anonim (contoh: "Hamba Allah", "Kotak Amal"): tidak dibuat profil donatur, masuk sebagai infaq anonim.
 
+Saat mengonfirmasi transaksi pengeluaran:
+- Kategori yang dipilih akan otomatis tersimpan dan langsung tercermin di halaman publik `/pengeluaran`.
+
 #### Langkah 4 — Hapus Jika Tidak Valid
 
 Jika sebuah baris transaksi tidak valid (misalnya duplikat atau hasil baca AI yang keliru), klik tombol **"Hapus 🗑️"** pada baris tersebut.
 
 > **Catatan**: Transaksi yang sudah berstatus **terverifikasi tidak dapat dihapus**.
 
+#### Mengubah Kategori pada Transaksi yang Sudah Diverifikasi
+
+Jika di kemudian hari bendahara menyadari ada pengeluaran terverifikasi yang salah kategori atau masih "Tidak Dikategorikan":
+1. Buka halaman **Detail Laporan** terkait.
+2. Pada panel review di bagian **"Sudah Diverifikasi"**, cari baris transaksi pengeluaran tersebut.
+3. Klik langsung pada **dropdown Kategori** di baris tersebut dan pilih kategori baru yang benar.
+4. Sistem akan langsung menyimpan perubahan kategori ke server secara otomatis tanpa mengubah status verifikasi dan tanpa mengganggu saldo kas.
+
 #### Pembatalan Verifikasi
 
-Jika terjadi kesalahan setelah transaksi dikonfirmasi, Bendahara dapat membatalkan verifikasi dengan klik ikon **Batalkan Verifikasi** (ikon putar balik) pada baris transaksi yang sudah diverifikasi. Transaksi akan kembali ke status draft dan bisa diedit ulang.
+Jika terjadi kesalahan nominal atau jenis transaksi setelah dikonfirmasi, Bendahara dapat membatalkan verifikasi dengan klik ikon **Batalkan Verifikasi** (ikon putar balik) pada baris transaksi yang sudah diverifikasi. Transaksi akan kembali ke status draft dan bisa diedit ulang seluruh field-nya.
 
 ### Rekonsiliasi Saldo
 
@@ -407,7 +474,7 @@ Setelah seluruh transaksi selesai diverifikasi, periksa bagian **Rekap Saldo Kas
 
 ---
 
-## 12. Cetak & Ekspor Rekapitulasi Kas
+## 13. Cetak & Ekspor Rekapitulasi Kas
 
 Sistem menyediakan dua format ekspor resmi yang dapat digunakan untuk ditempel di papan mading fisik masjid atau disimpan sebagai arsip digital.
 
@@ -446,7 +513,7 @@ Selain cetak PDF, tersedia juga tombol **"Unduh Excel"** untuk mengunduh rekap m
 
 ---
 
-## 13. Manajemen Pengguna
+## 14. Manajemen Pengguna
 
 **Alamat**: `/pengguna`  
 **Akses**: Administrator saja
@@ -495,10 +562,10 @@ Solusinya: Ubah saja role pengguna tersebut menjadi **Jamaah (Read-only)** untuk
 
 ---
 
-## 14. Pertanyaan Umum (FAQ)
+## 15. Pertanyaan Umum (FAQ)
 
 **Q: Apakah perlu login untuk melihat arsip laporan?**  
-A: Tidak. Seluruh arsip laporan, dashboard keuangan, dan daftar donatur dapat diakses oleh siapa pun tanpa perlu login.
+A: Tidak. Seluruh arsip laporan, dashboard keuangan, rekapitulasi pengeluaran per kategori, dan daftar donatur dapat diakses oleh siapa pun tanpa perlu login.
 
 ---
 
@@ -518,7 +585,22 @@ A: Sistem akan menampilkan pesan error yang ramah. Klik **"Coba Lagi"** untuk me
 ---
 
 **Q: Apakah transaksi yang diekstrak AI langsung menjadi data resmi?**  
-A: Tidak. Hasil ekstraksi selalu berstatus **draft** (belum terverifikasi) dan harus dikonfirmasi satu per satu oleh Bendahara. Data draft tidak pernah tampil di dashboard publik atau berkas ekspor.
+A: Tidak. Hasil ekstraksi selalu berstatus **draft** (belum terverifikasi) dan harus dikonfirmasi satu per satu oleh Bendahara. Data draft tidak pernah tampil di dashboard publik, halaman pengeluaran, atau berkas ekspor.
+
+---
+
+**Q: Apakah kategori pengeluaran wajib diisi saat verifikasi transaksi?**  
+A: Tidak wajib. Jika tidak dipilih, transaksi tetap dapat diverifikasi dan otomatis berstatus **"Tidak Dikategorikan"**. Kategori ini dapat dilengkapi sewaktu-waktu oleh bendahara langsung dari daftar transaksi terverifikasi.
+
+---
+
+**Q: Mengapa transaksi pemasukan tidak memiliki opsi kategori?**  
+A: Klasifikasi kategori dirancang khusus untuk transparansi alokasi belanja kas masjid (operasional, honor, pembangunan, dsb.). Pemasukan kas masjid diklasifikasikan berdasarkan profil donatur perorangan atau infaq anonim (kotak amal/tromol/hamba Allah).
+
+---
+
+**Q: Bisakah bendahara menambah kategori pengeluaran baru sendiri?**  
+A: Saat ini terdapat 7 kategori standar (`Operasional`, `Honor / Imam & Khotib`, `Sosial & Santunan`, `Pembangunan & Sarpras`, `Konsumsi Kegiatan`, `Administrasi & ATK`, `Lain-lain`) yang dirancang mencakup seluruh kebutuhan kas DKM Al-Luqman. Pengeluaran insidental yang tidak tercantum dapat dikelompokkan ke pos **"Lain-lain"** dengan rincian kebutuhan ditulis jelas pada kolom keterangan.
 
 ---
 
@@ -533,7 +615,7 @@ A: Buka Detail Laporan terkait → temukan transaksi di bagian "Sudah Diverifika
 ---
 
 **Q: Apakah saldo kas diperbarui secara otomatis?**  
-A: Ya. Rekap Saldo Kas di sidebar halaman Detail Laporan dikalkulasi secara otomatis dari seluruh transaksi terverifikasi. Demikian juga grafik di Dashboard, yang selalu mencerminkan data terverifikasi terkini.
+A: Ya. Rekap Saldo Kas di sidebar halaman Detail Laporan dikalkulasi secara otomatis dari seluruh transaksi terverifikasi. Demikian juga grafik di Dashboard dan total di halaman Pengeluaran, yang selalu mencerminkan data terverifikasi terkini.
 
 ---
 
@@ -551,8 +633,8 @@ A: Hal ini terjadi jika Anda melakukan ekstraksi ulang pada berkas yang sebelumn
 4. Setelah statusnya kembali ke *"Menunggu Verifikasi"*, klik tombol **Hapus (ikon tempat sampah)**.
 5. Setelah baris duplikat dihapus, rekap kas di sidebar akan kembali seimbang dan cocok ✅ secara otomatis.
 
-
 ---
 
-*Panduan ini disusun berdasarkan implementasi sistem Masjid Archive versi V6 (Feature-Complete), status Oktober 2026.*  
+*Panduan ini disusun berdasarkan implementasi sistem Masjid Archive versi V7 (Feature-Complete), status Oktober 2026.*  
 *Untuk pertanyaan teknis, hubungi: **Reza Dwi Prasetya** — Engineer & Developer Masjid Archive.*
+

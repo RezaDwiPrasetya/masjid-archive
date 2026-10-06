@@ -10,9 +10,9 @@ Membantu DKM Masjid Al-Luqman (dan pengurus masjid sejenis) menjaga arsip lapora
 
 ### Current Status
 
-- Phase: Fase V6 (Multi-Format, Proteksi Ekstraksi & Pencarian Cerdas) Selesai
-- Version: 0.6.0
-- Last Updated: 2026-10-05 (Proteksi Ekstrak Ulang & Pengurutan Aktivitas Cari)
+- Phase: Fase V7 (Rekap & Transparansi Pengeluaran Per Kategori) Selesai
+- Version: 0.7.0
+- Last Updated: 2026-10-06 (Rekap Pengeluaran Per Kategori F-023, Perbaikan Full-Width & NextAuth Next.js 16)
 
 ### Daftar Isi
 

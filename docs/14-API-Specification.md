@@ -583,16 +583,132 @@ Mengambil daftar seluruh transaksi terverifikasi yang masuk ke dalam kategori "I
 
 ---
 
-## Ringkasan Endpoint Mutasi & Transaksi (V4, V5, & V6)
+### `GET /api/expenses` (V7 — Issue #059)
+
+Mengambil agregasi pengeluaran kas masjid per kategori fungsional untuk transaksi terverifikasi (`isVerified = true`). Digunakan oleh halaman publik `/pengeluaran` untuk merender KPI, grafik proporsi, dan chip filter.
+
+**Akses**: Publik (read-only)
+
+**Response 200**
+
+```json
+{
+  "data": {
+    "totalExpense": 7850000,
+    "totalCount": 24,
+    "byCategory": [
+      {
+        "category": "operasional",
+        "label": "Operasional",
+        "totalAmount": 3200000,
+        "count": 8,
+        "percentage": 40.76
+      },
+      {
+        "category": null,
+        "label": "Tidak Dikategorikan",
+        "totalAmount": 500000,
+        "count": 2,
+        "percentage": 6.37
+      }
+    ]
+  }
+}
+```
+
+**Aturan Bisnis:**
+- Mengelompokkan transaksi `pengeluaran` terverifikasi berdasarkan nilai `category`.
+- Menghitung persentase terhadap `totalExpense` secara matematis aman (fallback `0` jika `totalExpense === 0`).
+- Mengembalikan daftar terurut descending berdasarkan `totalAmount`.
+- Transaksi dengan `category = null` diberi label `"Tidak Dikategorikan"`.
+
+---
+
+### `GET /api/expenses/transactions` (V7 — Issue #059)
+
+Mengambil daftar rincian transaksi pengeluaran terverifikasi dengan dukungan filter kategori, pencarian teks, dan paginasi.
+
+**Akses**: Publik (read-only)
+
+**Parameter Query (opsional):**
+- `category` (string, opsional): Filter kategori tertentu (mis. `operasional`) atau `uncategorized` untuk transaksi bernilai `category: null`. Kosongkan untuk semua kategori.
+- `search` (string, opsional): Pencarian berbasis teks pada kolom `description` (case-insensitive).
+- `limit` (number, default: 50, max: 200): Jumlah baris per halaman.
+- `offset` (number, default: 0): Offset paginasi.
+
+**Response 200**
+
+```json
+{
+  "data": {
+    "total": 12,
+    "transactions": [
+      {
+        "id": "clxyz999...",
+        "amount": 750000,
+        "description": "Pembayaran Listrik PLN Masjid",
+        "transactionDate": "2026-10-02T00:00:00.000Z",
+        "category": "operasional",
+        "categoryLabel": "Operasional",
+        "reportId": "rpt_1",
+        "reportDate": "2026-10-02T00:00:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+**Aturan Bisnis:**
+- MUTLAK membatasi query hanya pada `type: "pengeluaran"` dan `isVerified: true`.
+- Transaksi draf / belum terverifikasi TIDAK PERNAH dikembalikan ke publik.
+
+---
+
+### `PATCH /api/transactions/:id/category` (V7 — Issue #059)
+
+Mengubah kategori fungsional pada transaksi pengeluaran yang **sudah berstatus terverifikasi** tanpa membatalkan status verifikasi atau mengganggu keutuhan nominal finansial.
+
+**Akses**: Pengguna terautentikasi (Sesi NextAuth aktif)
+
+**Request Body:**
+
+```json
+{
+  "category": "pembangunan"
+}
+```
+*(Nilai `category` bisa salah satu enum valid atau `null` untuk mengosongkan kategori).*
+
+**Response 200**
+
+```json
+{
+  "data": {
+    "id": "clxyz999...",
+    "category": "pembangunan",
+    "updatedAt": "2026-10-06T09:55:00.000Z"
+  }
+}
+```
+
+**Response Error:**
+- `401 Unauthorized`: Sesi tidak valid / belum login
+- `400 Bad Request`: Transaksi bukan tipe `pengeluaran` atau kategori tidak valid
+- `404 Not Found`: ID transaksi tidak ditemukan
+
+---
+
+## Ringkasan Endpoint Mutasi & Transaksi (V4, V5, V6, & V7)
 
 | Method | Path                                   | Fungsi                                           | Akses Publik |
 | ------ | -------------------------------------- | ------------------------------------------------- | ------------ |
 | POST   | `/api/attachments/:id/extract`         | Memicu ekstraksi data vision-LLM (Gambar & PDF V6)| **Tidak**    |
 | GET    | `/api/reports/:id/transactions`        | Daftar transaksi (publik hanya yang terverifikasi)| Ya (terbatas)|
-| PATCH  | `/api/transactions/:id`                | Edit transaksi sebelum konfirmasi                 | **Tidak**    |
+| PATCH  | `/api/transactions/:id`                | Edit transaksi sebelum konfirmasi (dukung kategori)| **Tidak**    |
 | POST   | `/api/transactions/:id/confirm`        | Konfirmasi transaksi + assign donatur (V5)        | **Tidak**    |
 | POST   | `/api/transactions/:id/unverify`       | Batalkan verifikasi transaksi (#051)              | **Tidak**    |
 | PATCH  | `/api/transactions/:id/donor`          | Edit nama donatur transaksi terverifikasi (#051)  | **Tidak**    |
+| PATCH  | `/api/transactions/:id/category`       | Edit kategori pengeluaran terverifikasi (V7, #059)| **Tidak**    |
 | DELETE | `/api/transactions/:id`                | Hapus transaksi (hanya jika belum verified)       | **Tidak**    |
 
 ## Ringkasan Endpoint Publik (Financial Intelligence & V6)
