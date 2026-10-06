@@ -138,7 +138,7 @@ Model utama:
 **F-023 — Rekap & Transparansi Pengeluaran Per Kategori (Issue #059) (✅ Selesai & Dimerge ke Main):**
 - Migrasi database `20261006095151_add_expense_category`: Field `category String?` (nullable, additive) pada model `Transaction`.
 - Shared catalog di `lib/expense-categories.ts`: 7 kategori baku (`operasional`, `honor`, `sosial`, `pembangunan`, `konsumsi`, `administrasi`, `lainnya`) dengan fallback `null` ("Tidak Dikategorikan").
-- Dropdown kategori interaktif di `components/transaction-review-panel.tsx` untuk transaksi `pengeluaran`.
+- Interaksi edit kategori di `components/transaction-review-panel.tsx` diselaraskan 100% dengan pola donatur: badge statis terverifikasi dengan ikon pensil inline ✏️ untuk pengguna terautentikasi (dropdown hanya muncul saat pensil diklik).
 - Endpoint mutasi `PATCH /api/transactions/[id]/category`: Pengguna terautentikasi dapat mengubah kategori transaksi yang sudah terverifikasi secara in-place tanpa merusak integritas angka saldo kas.
 - Endpoint publik aman `GET /api/expenses` & `GET /api/expenses/transactions`: Terisolasi ketat hanya melayani data `isVerified: true`.
 - Halaman publik baru `/pengeluaran` (`components/expenses-client.tsx`): 3 KPI cards, visual progress bar proporsi multi-warna, filter kategori interaktif chips, pencarian deskripsi langsung, tabel rincian transaksi terverifikasi full-width responsif.

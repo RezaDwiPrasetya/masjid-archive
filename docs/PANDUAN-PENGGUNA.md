@@ -458,8 +458,10 @@ Jika sebuah baris transaksi tidak valid (misalnya duplikat atau hasil baca AI ya
 Jika di kemudian hari bendahara menyadari ada pengeluaran terverifikasi yang salah kategori atau masih "Tidak Dikategorikan":
 1. Buka halaman **Detail Laporan** terkait.
 2. Pada panel review di bagian **"Sudah Diverifikasi"**, cari baris transaksi pengeluaran tersebut.
-3. Klik langsung pada **dropdown Kategori** di baris tersebut dan pilih kategori baru yang benar.
-4. Sistem akan langsung menyimpan perubahan kategori ke server secara otomatis tanpa mengubah status verifikasi dan tanpa mengganggu saldo kas.
+3. Klik ikon **pensil kecil ✏️** di samping badge kategori (ikon ini hanya muncul jika Anda sudah login).
+4. Pilih kategori baru dari menu dropdown yang muncul.
+5. Klik tombol **Simpan (✓)** untuk menyimpan perubahan (atau klik **Batal ✕** untuk membatalkan).
+6. Sistem akan langsung menyimpan perubahan kategori ke server secara otomatis tanpa mengubah status verifikasi dan tanpa mengganggu saldo kas.
 
 #### Pembatalan Verifikasi
 
