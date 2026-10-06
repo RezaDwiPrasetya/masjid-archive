@@ -155,6 +155,7 @@ function TransactionRow({
   }
 
   // V7: State kategori pengeluaran
+  const [isEditingCategory, setIsEditingCategory] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(
     tx.category ?? null
   );
@@ -168,6 +169,7 @@ function TransactionRow({
     setPrevCategory(tx.category);
     setSelectedCategory(tx.category ?? null);
     setEditCategory(tx.category ?? null);
+    setIsEditingCategory(false);
   }
 
   const isIncome = tx.type === "pemasukan";
@@ -633,55 +635,120 @@ function TransactionRow({
         </div>
       )}
 
-      {/* V7: Badge/dropdown kategori — hanya untuk pengeluaran */}
+      {/* V7: Badge kategori untuk Transaksi Pengeluaran — pola konsisten dengan Donatur */}
       {!isIncome && (
-        <div className="mt-2.5 flex items-center gap-2 flex-wrap">
-          {hasSession ? (
-            // Pengeluaran + login: dropdown edit kategori langsung
-            <div className="flex items-center gap-1.5">
-              <Tag size={11} className="text-on-surface-variant shrink-0" />
-              <Select
-                value={selectedCategory ?? "__null__"}
-                onValueChange={async (v) => {
-                  const newCat = v === "__null__" ? null : v;
-                  setCategoryLoading(true);
-                  await onUpdateCategory(tx.id, newCat);
-                  setSelectedCategory(newCat);
-                  setCategoryLoading(false);
-                }}
-              >
-                <SelectTrigger
-                  className="h-6 text-[11px] font-medium px-2 gap-1 min-w-0 max-w-[180px] border-outline-variant"
+        <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+          {tx.isVerified ? (
+            !isEditingCategory ? (
+              <>
+                <span
+                  className={`inline-flex items-center gap-1 text-xs font-medium border rounded-md px-2 py-0.5 ${
+                    getCategoryColor(tx.category ?? null).bg
+                  } ${getCategoryColor(tx.category ?? null).border} ${
+                    getCategoryColor(tx.category ?? null).text
+                  }`}
+                >
+                  <Tag size={11} />
+                  Kategori:{" "}
+                  <strong className="font-semibold">
+                    {getCategoryLabel(tx.category ?? null)}
+                  </strong>
+                </span>
+
+                {/* Ikon edit pensil kecil untuk transaksi terverifikasi (khusus sesi login) */}
+                {hasSession && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditingCategory(true);
+                      setSelectedCategory(tx.category ?? null);
+                    }}
+                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-container-highest transition-colors"
+                    title="Edit kategori pengeluaran"
+                  >
+                    <Pencil size={12} />
+                  </button>
+                )}
+              </>
+            ) : (
+              <div className="flex items-center gap-1.5 w-full max-w-sm mt-1 animate-in fade-in duration-150">
+                <div className="flex-1 min-w-0">
+                  <Select
+                    value={selectedCategory ?? "__null__"}
+                    onValueChange={(v) => {
+                      setSelectedCategory(v === "__null__" ? null : v);
+                    }}
+                  >
+                    <SelectTrigger
+                      className="h-7 text-xs bg-white border-outline-variant focus-visible:ring-primary"
+                      disabled={categoryLoading}
+                    >
+                      <span className="truncate">
+                        {getCategoryLabel(selectedCategory)}
+                      </span>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__null__">Tidak Dikategorikan</SelectItem>
+                      {EXPENSE_CATEGORIES.map((cat) => (
+                        <SelectItem key={cat.value} value={cat.value}>
+                          {cat.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="h-7 px-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white shrink-0 gap-1"
                   disabled={categoryLoading}
+                  onClick={async () => {
+                    setCategoryLoading(true);
+                    try {
+                      await onUpdateCategory(tx.id, selectedCategory);
+                      setIsEditingCategory(false);
+                    } finally {
+                      setCategoryLoading(false);
+                    }
+                  }}
+                  title="Simpan kategori"
                 >
                   {categoryLoading ? (
-                    <Loader2 size={10} className="animate-spin" />
-                  ) : null}
-                  <span className="truncate">
-                    {getCategoryLabel(selectedCategory)}
-                  </span>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__null__">Tidak Dikategorikan</SelectItem>
-                  {EXPENSE_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat.value} value={cat.value}>
-                      {cat.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                    <Loader2 size={12} className="animate-spin" />
+                  ) : (
+                    <Check size={12} />
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground shrink-0"
+                  disabled={categoryLoading}
+                  onClick={() => {
+                    setIsEditingCategory(false);
+                    setSelectedCategory(tx.category ?? null);
+                  }}
+                  title="Batal"
+                >
+                  <X size={12} />
+                </Button>
+              </div>
+            )
           ) : (
-            // Tanpa login atau belum terverifikasi: tampilkan badge saja
+            // Transaksi belum diverifikasi: badge statis (edit dilakukan via tombol pensil umum kartu)
             <span
-              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border ${
+              className={`inline-flex items-center gap-1 text-xs font-medium border rounded-md px-2 py-0.5 ${
                 getCategoryColor(tx.category ?? null).bg
               } ${getCategoryColor(tx.category ?? null).border} ${
                 getCategoryColor(tx.category ?? null).text
               }`}
             >
-              <Tag size={9} />
-              {getCategoryLabel(tx.category ?? null)}
+              <Tag size={11} />
+              Kategori:{" "}
+              <strong className="font-semibold">
+                {getCategoryLabel(tx.category ?? null)}
+              </strong>
             </span>
           )}
         </div>
