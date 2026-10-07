@@ -27,6 +27,8 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { PageShell } from "@/components/page-shell";
+import { PeriodFilterBar } from "@/components/period-filter-bar";
+import { MONTH_NAMES } from "@/lib/period-filter";
 
 export interface DonorItem {
   id: string;
@@ -53,6 +55,7 @@ interface AnonymousTransaction {
 interface DonorsClientProps {
   donors: DonorItem[];
   anonymous: AnonymousAggregate;
+  availableYears: number[];
 }
 
 function formatRupiah(amount: number): string {
@@ -78,8 +81,17 @@ function formatDateIndo(dateStr: string | null): string {
   }
 }
 
-export function DonorsClient({ donors, anonymous }: DonorsClientProps) {
+export function DonorsClient({ donors, anonymous, availableYears }: DonorsClientProps) {
   const [search, setSearch] = React.useState("");
+
+  // State Periode Waktu (Issue #66 / Fase V8)
+  const [selectedYear, setSelectedYear] = React.useState<number | null>(null);
+  const [selectedMonth, setSelectedMonth] = React.useState<number | null>(null);
+  const [isPeriodLoading, setIsPeriodLoading] = React.useState(false);
+
+  // Live Data State yang terpengaruh oleh Periode Filter
+  const [currentDonors, setCurrentDonors] = React.useState<DonorItem[]>(donors);
+  const [currentAnonymous, setCurrentAnonymous] = React.useState<AnonymousAggregate>(anonymous);
 
   // State untuk modal rincian infaq anonim (Issue #054 / F-018)
   const [isAnonModalOpen, setIsAnonModalOpen] = React.useState(false);
@@ -88,30 +100,74 @@ export function DonorsClient({ donors, anonymous }: DonorsClientProps) {
   const [anonTransactions, setAnonTransactions] = React.useState<AnonymousTransaction[]>([]);
   const [anonSearch, setAnonSearch] = React.useState("");
 
-  // Ambil data transaksi anonim hanya saat modal dibuka pertama kali
-  const fetchAnonymousTransactions = React.useCallback(async () => {
-    setAnonLoading(true);
-    setAnonError(null);
-    try {
-      const res = await fetch("/api/donors/anonymous/transactions");
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
+  // Sinkronisasi data saat filter periode diubah
+  const handlePeriodChange = React.useCallback(
+    async (year: number | null, month: number | null) => {
+      setSelectedYear(year);
+      setSelectedMonth(month);
+      // Invalidate transaksi modal lama agar selalu memuat sesuai periode baru
+      setAnonTransactions([]);
+
+      if (year === null && month === null) {
+        setCurrentDonors(donors);
+        setCurrentAnonymous(anonymous);
+        return;
       }
-      const json = await res.json();
-      setAnonTransactions(json.data?.transactions ?? []);
-    } catch (err) {
-      console.error("[DonorsClient] Gagal mengambil rincian infaq anonim:", err);
-      setAnonError("Gagal memuat rincian transaksi anonim. Silakan periksa koneksi dan coba lagi.");
-    } finally {
-      setAnonLoading(false);
-    }
-  }, []);
+
+      setIsPeriodLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (year !== null) params.set("year", String(year));
+        if (month !== null) params.set("month", String(month));
+
+        const res = await fetch(`/api/donors?${params.toString()}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data) {
+            setCurrentDonors(json.data.donors ?? []);
+            setCurrentAnonymous(
+              json.data.anonymous ?? { totalContribution: 0, donationCount: 0 }
+            );
+          }
+        }
+      } catch (err) {
+        console.error("[DonorsClient] Gagal memfilter periode donatur:", err);
+      } finally {
+        setIsPeriodLoading(false);
+      }
+    },
+    [donors, anonymous]
+  );
+
+  // Ambil data transaksi anonim berdasarkan periode aktif
+  const fetchAnonymousTransactions = React.useCallback(
+    async (yr: number | null = selectedYear, mo: number | null = selectedMonth) => {
+      setAnonLoading(true);
+      setAnonError(null);
+      try {
+        const params = new URLSearchParams();
+        if (yr !== null) params.set("year", String(yr));
+        if (mo !== null) params.set("month", String(mo));
+
+        const res = await fetch(`/api/donors/anonymous/transactions?${params.toString()}`);
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        const json = await res.json();
+        setAnonTransactions(json.data?.transactions ?? []);
+      } catch (err) {
+        console.error("[DonorsClient] Gagal mengambil rincian infaq anonim:", err);
+        setAnonError("Gagal memuat rincian transaksi anonim. Silakan periksa koneksi dan coba lagi.");
+      } finally {
+        setAnonLoading(false);
+      }
+    },
+    [selectedYear, selectedMonth]
+  );
 
   const handleOpenAnonModal = () => {
     setIsAnonModalOpen(true);
-    if (anonTransactions.length === 0 && !anonLoading) {
-      fetchAnonymousTransactions();
-    }
+    fetchAnonymousTransactions(selectedYear, selectedMonth);
   };
 
   // Live filter rincian anonim dalam modal
@@ -128,15 +184,26 @@ export function DonorsClient({ donors, anonymous }: DonorsClientProps) {
 
   // Live filter real-time donatur terdata
   const filteredDonors = React.useMemo(() => {
-    if (!search.trim()) return donors;
+    if (!search.trim()) return currentDonors;
     const q = search.toLowerCase();
-    return donors.filter((d) => d.name.toLowerCase().includes(q));
-  }, [donors, search]);
+    return currentDonors.filter((d) => d.name.toLowerCase().includes(q));
+  }, [currentDonors, search]);
 
-  const totalNamedDonations = donors.reduce(
+  const totalNamedDonations = currentDonors.reduce(
     (acc, d) => acc + d.totalContribution,
     0
   );
+
+  // Label periode aktif untuk modal dialog
+  const activePeriodLabel = React.useMemo(() => {
+    if (selectedYear !== null && selectedMonth !== null) {
+      return `${MONTH_NAMES[selectedMonth - 1]} ${selectedYear}`;
+    }
+    if (selectedYear !== null) {
+      return `Tahun ${selectedYear}`;
+    }
+    return "Semua Waktu";
+  }, [selectedYear, selectedMonth]);
 
   return (
     <PageShell>
@@ -149,99 +216,117 @@ export function DonorsClient({ donors, anonymous }: DonorsClientProps) {
           </p>
         </div>
 
-        {/* 1. DUA KARTU KPI SIMETRIS (50:50) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Card 1: Donatur Terdaftar */}
-          <div className="rounded-2xl border border-outline-variant bg-surface-container/70 p-6 shadow-xs space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
-                Donatur Terdata
-              </span>
-              <span className="rounded-full bg-primary/10 border border-primary/20 px-2.5 py-0.5 text-xs font-semibold text-primary">
-                Terverifikasi
-              </span>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-on-surface tabular-nums">
-                {donors.length} Donatur
-              </div>
-              <p className="text-sm text-on-surface-variant mt-1.5">
-                Total kontribusi: <span className="font-semibold text-primary tabular-nums">{formatRupiah(totalNamedDonations)}</span>
-              </p>
-            </div>
-          </div>
+        {/* TIME-RANGE PERIOD FILTER BAR (Issue #66 / Fase V8) */}
+        <PeriodFilterBar
+          selectedYear={selectedYear}
+          selectedMonth={selectedMonth}
+          availableYears={availableYears}
+          onChange={handlePeriodChange}
+          isLoading={isPeriodLoading}
+        />
 
-          {/* Card 2: Infaq Anonim / Tromol dengan Tombol Rincian */}
-          <div className="rounded-2xl border border-outline-variant bg-surface-container/70 p-6 shadow-xs flex flex-col justify-between gap-4">
-            <div className="space-y-3">
+        {/* CONTAINER KONTEN DENGAN LOADING STATE TRANSITION */}
+        <div className={`space-y-8 transition-opacity duration-200 ${isPeriodLoading ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
+          {/* 1. DUA KARTU KPI SIMETRIS (50:50) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Card 1: Donatur Terdaftar */}
+            <div className="rounded-2xl border border-outline-variant bg-surface-container/70 p-6 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
-                  Infaq Anonim (Tromol / Kotak Amal)
+                  Donatur Terdata
                 </span>
-                <span className="rounded-full bg-surface-container-high border border-outline-variant px-2.5 py-0.5 text-xs font-medium text-on-surface-variant">
-                  Tanpa Profil
+                <span className="rounded-full bg-primary/10 border border-primary/20 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                  Terverifikasi
                 </span>
               </div>
               <div>
                 <div className="text-3xl font-bold text-on-surface tabular-nums">
-                  {formatRupiah(anonymous.totalContribution)}
+                  {currentDonors.length} Donatur
                 </div>
                 <p className="text-sm text-on-surface-variant mt-1.5">
-                  Akumulasi dari <span className="font-semibold text-on-surface tabular-nums">{anonymous.donationCount} kali</span> infaq tromol / kotak amal tanpa nama individual.
+                  Total kontribusi: <span className="font-semibold text-primary tabular-nums">{formatRupiah(totalNamedDonations)}</span>
                 </p>
               </div>
             </div>
 
-            {/* Aksi Audit Transparansi (Issue #054) */}
-            <div className="pt-3 border-t border-outline-variant/60 flex items-center justify-between">
-              <span className="text-xs text-on-surface-variant">
-                Riwayat kotak amal & hamba Allah
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleOpenAnonModal}
-                className="h-8 gap-1.5 text-xs font-semibold rounded-xl border-outline-variant hover:border-primary/50 hover:bg-primary/5 hover:text-primary transition-colors"
-              >
-                <ListOrdered className="h-3.5 w-3.5" />
-                <span>Lihat Rincian</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* DIALOG MODAL RINCIAN INFAQ ANONIM (Issue #054 / F-018) */}
-        <Dialog open={isAnonModalOpen} onOpenChange={setIsAnonModalOpen}>
-          <DialogPopup className="max-w-2xl">
-            <DialogHeader>
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <ListOrdered className="h-4 w-4" />
+            {/* Card 2: Infaq Anonim / Tromol dengan Tombol Rincian */}
+            <div className="rounded-2xl border border-outline-variant bg-surface-container/70 p-6 shadow-xs flex flex-col justify-between gap-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
+                    Infaq Anonim (Tromol / Kotak Amal)
+                  </span>
+                  <span className="rounded-full bg-surface-container-high border border-outline-variant px-2.5 py-0.5 text-xs font-medium text-on-surface-variant">
+                    Tanpa Profil
+                  </span>
                 </div>
                 <div>
-                  <DialogTitle>Rincian Infaq Anonim & Kotak Amal</DialogTitle>
-                  <DialogDescription>
-                    Seluruh catatan transaksi terverifikasi tanpa identitas nama (kotak amal, tromol Jumat, dan hamba Allah).
-                  </DialogDescription>
+                  <div className="text-3xl font-bold text-on-surface tabular-nums">
+                    {formatRupiah(currentAnonymous.totalContribution)}
+                  </div>
+                  <p className="text-sm text-on-surface-variant mt-1.5">
+                    Akumulasi dari <span className="font-semibold text-on-surface tabular-nums">{currentAnonymous.donationCount} kali</span> infaq tromol / kotak amal tanpa nama individual.
+                  </p>
                 </div>
               </div>
-            </DialogHeader>
 
-            {/* Ringkasan Akumulasi di Atas Tabel */}
-            <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-surface border border-outline-variant/70 text-xs">
-              <div>
-                <div className="text-on-surface-variant">Total Akumulasi Terverifikasi</div>
-                <div className="text-base font-bold text-primary tabular-nums mt-0.5">
-                  {formatRupiah(anonymous.totalContribution)}
-                </div>
-              </div>
-              <div className="border-l border-outline-variant/60 pl-3">
-                <div className="text-on-surface-variant">Total Transaksi</div>
-                <div className="text-base font-bold text-on-surface tabular-nums mt-0.5">
-                  {anonymous.donationCount} kali infaq
-                </div>
+              {/* Aksi Audit Transparansi (Issue #054) */}
+              <div className="pt-3 border-t border-outline-variant/60 flex items-center justify-between">
+                <span className="text-xs text-on-surface-variant">
+                  Riwayat kotak amal & hamba Allah
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleOpenAnonModal}
+                  className="h-8 gap-1.5 text-xs font-semibold rounded-xl border-outline-variant hover:border-primary/50 hover:bg-primary/5 hover:text-primary transition-colors"
+                >
+                  <ListOrdered className="h-3.5 w-3.5" />
+                  <span>Lihat Rincian</span>
+                </Button>
               </div>
             </div>
+          </div>
+
+          {/* DIALOG MODAL RINCIAN INFAQ ANONIM (Issue #054 / F-018) */}
+          <Dialog open={isAnonModalOpen} onOpenChange={setIsAnonModalOpen}>
+            <DialogPopup className="max-w-2xl">
+              <DialogHeader>
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <ListOrdered className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <DialogTitle>Rincian Infaq Anonim & Kotak Amal</DialogTitle>
+                      {(selectedYear !== null || selectedMonth !== null) && (
+                        <span className="rounded-full bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 text-[10px] font-semibold">
+                          {activePeriodLabel}
+                        </span>
+                      )}
+                    </div>
+                    <DialogDescription>
+                      Seluruh catatan transaksi terverifikasi tanpa identitas nama (kotak amal, tromol Jumat, dan hamba Allah).
+                    </DialogDescription>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              {/* Ringkasan Akumulasi di Atas Tabel */}
+              <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-surface border border-outline-variant/70 text-xs">
+                <div>
+                  <div className="text-on-surface-variant">Total Akumulasi Terverifikasi</div>
+                  <div className="text-base font-bold text-primary tabular-nums mt-0.5">
+                    {formatRupiah(currentAnonymous.totalContribution)}
+                  </div>
+                </div>
+                <div className="border-l border-outline-variant/60 pl-3">
+                  <div className="text-on-surface-variant">Total Transaksi</div>
+                  <div className="text-base font-bold text-on-surface tabular-nums mt-0.5">
+                    {currentAnonymous.donationCount} kali infaq
+                  </div>
+                </div>
+              </div>
 
             {/* Pencarian Khusus di dalam Modal jika ada transaksi */}
             {anonTransactions.length > 5 && (
@@ -277,7 +362,7 @@ export function DonorsClient({ donors, anonymous }: DonorsClientProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={fetchAnonymousTransactions}
+                    onClick={() => fetchAnonymousTransactions(selectedYear, selectedMonth)}
                     className="gap-1.5 text-xs h-7"
                   >
                     <RotateCcw className="h-3.5 w-3.5" />
@@ -427,6 +512,7 @@ export function DonorsClient({ donors, anonymous }: DonorsClientProps) {
             })}
           </div>
         )}
+        </div>
       </div>
     </PageShell>
   );

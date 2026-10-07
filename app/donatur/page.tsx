@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/app-shell";
 import { prisma } from "@/lib/prisma";
 import { DonorsClient } from "@/components/donors-client";
+import { getAvailableYears } from "@/lib/period-filter";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,9 @@ export const metadata = {
 };
 
 export default async function DonorsPage() {
+  // Ambil daftar tahun yang tersedia di database
+  const availableYears = await getAvailableYears();
+
   // 1. Agregasi donasi per donatur terdaftar (hanya transaksi terverifikasi & pemasukan)
   const donorsWithVerifiedTransactions = await prisma.donor.findMany({
     select: {
@@ -66,7 +70,11 @@ export default async function DonorsPage() {
 
   return (
     <AppShell active="/donatur">
-      <DonorsClient donors={donors} anonymous={anonymous} />
+      <DonorsClient
+        donors={donors}
+        anonymous={anonymous}
+        availableYears={availableYears}
+      />
     </AppShell>
   );
 }

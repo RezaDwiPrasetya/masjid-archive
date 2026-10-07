@@ -2,6 +2,7 @@ import { AppShell } from "@/components/app-shell";
 import { prisma } from "@/lib/prisma";
 import { ExpensesClient, ExpenseCategoryBreakdown } from "@/components/expenses-client";
 import { EXPENSE_CATEGORIES } from "@/lib/expense-categories";
+import { getAvailableYears } from "@/lib/period-filter";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,9 @@ export default async function ExpensesPage() {
     isVerified: true,
     type: "pengeluaran" as const,
   };
+
+  // Ambil daftar tahun yang tersedia dari database
+  const availableYears = await getAvailableYears();
 
   // 1. Agregat total pengeluaran
   const totalAgg = await prisma.transaction.aggregate({
@@ -93,6 +97,7 @@ export default async function ExpensesPage() {
         transactionCount={transactionCount}
         breakdown={breakdown}
         transactions={formattedTransactions}
+        availableYears={availableYears}
       />
     </AppShell>
   );

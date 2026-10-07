@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import {
+  parsePeriodParams,
+  buildReportRelationFilter,
+} from "@/lib/period-filter";
 
 export const dynamic = "force-dynamic";
 
 /**
  * GET /api/donors/anonymous/transactions
- * Rincian riwayat transaksi infaq anonim terverifikasi (F-018, Issue #054)
+ * Rincian riwayat transaksi infaq anonim terverifikasi (F-018, Issue #054, Diperluas V8 — Issue #66)
+ *
+ * Query params (opsional):
+ * - year: filter tahun laporan
+ * - month: filter bulan laporan
+ * - limit: batas paginasi
+ * - offset: offset paginasi
  *
  * Aturan Bisnis & Keamanan:
  * - Akses publik (jemaah tidak perlu login)
@@ -18,6 +28,9 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    const period = parsePeriodParams(searchParams);
+    const reportFilter = buildReportRelationFilter(period);
+
     const limit = Math.min(
       Math.max(parseInt(searchParams.get("limit") || "100", 10), 1),
       200
@@ -28,6 +41,7 @@ export async function GET(request: NextRequest) {
       isVerified: true,
       type: "pemasukan" as const,
       donorId: null,
+      ...(reportFilter ? { report: reportFilter } : {}),
     };
 
     // 1. Ambil agregat total & count (selalu klop dengan kartu KPI di /donatur)
