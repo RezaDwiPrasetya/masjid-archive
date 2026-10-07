@@ -143,6 +143,23 @@ Model utama:
 - Endpoint publik aman `GET /api/expenses` & `GET /api/expenses/transactions`: Terisolasi ketat hanya melayani data `isVerified: true`.
 - Halaman publik baru `/pengeluaran` (`components/expenses-client.tsx`): 3 KPI cards, visual progress bar proporsi multi-warna, filter kategori interaktif chips, pencarian deskripsi langsung, tabel rincian transaksi terverifikasi full-width responsif.
 - Navigasi utama `components/app-shell.tsx`: Menu "Pengeluaran" dengan ikon `Receipt` di desktop dan bottom navigation mobile.
+- Aset Identitas Resmi Masjid Al-Luqman: Pembersihan berkas bawaan starter Vercel di `public/` dan penyediaan favicon multi-resolusi kubah masjid, apple-touch-icon, SVG vektor, serta Web App Manifest.
+
+---
+
+## 7c. FITUR FASE V8 — SEDANG DIKERJAKAN (Issue #66)
+**F-024 — Filter Periode Waktu & Analisis Keuangan Berkala pada Halaman Donatur dan Pengeluaran (Issue #66):**
+- Branch aktif: `feature/v8-period-filter`.
+- **Latar Belakang**: Mencegah *data fatigue* seiring akumulasi arsip bertahun-tahun, memungkinkan jemaah dan pengurus melihat data kas per bulan atau per tahun secara terfokus.
+- **Ekstensi API**:
+  - `GET /api/expenses`: Mendukung query param `year` dan `month`.
+  - `GET /api/expenses/transactions`: Mendukung query param `year` dan `month`.
+  - `GET /api/donors`: Mendukung query param `year` dan `month` untuk menghitung kontribusi per periode.
+  - `GET /api/donors/anonymous/transactions`: Mendukung query param `year` dan `month`.
+- **Komponen Frontend**: `PeriodFilterBar` dengan selector Tahun, Bulan, dan tombol cepat ("Semua Waktu", "Tahun Ini", "Bulan Ini").
+- **UI Integrations**:
+  - `/pengeluaran`: KPI, progress bar persentase alokasi, dan tabel mutasi reaktif terhadap filter periode.
+  - `/donatur`: KPI donatur & infaq anonim serta peringkat donatur terurut berdasarkan kontribusi pada periode terpilih.
 
 ---
 
@@ -209,11 +226,18 @@ Shared logic di `lib/donor-matching.ts`, `lib/donor-service.ts`, dan `lib/expens
 
 ---
 
-## 14. LANGKAH BERIKUTNYA YANG SEHARUSNYA DILAKUKAN
-**Pemeliharaan Sistem & Persiapan Uji Sidang / Deployment Lanjutan:**
-1. **Regression Testing & UAT**: Lakukan uji coba langsung bersama pengurus DKM Masjid Al-Luqman (Bendahara & Ketua DKM) untuk verifikasi laporan mingguan aktual.
-2. **Penyusunan Laporan Proyek/Tugas Akhir**: Dokumentasikan metrik performa AI Vision multimodal vs Direct Excel parser, arsitektur isolasi privasi data publik, serta rekap pengeluaran per kategori.
-3. **Pemantauan Vercel & Supabase**: Monitor kuota gratis Vercel Postgres & Supabase Storage untuk memastikan kapasitas media foto/PDF mencukupi hingga 1–2 tahun ke depan.
+## 14. LANGKAH BERIKUTNYA YANG SEHARUSNYA DILAKUKAN (FASE V8 — ISSUE #66)
+1. **API Endpoints Filtering**:
+   - Tambah parameter `year` dan `month` di `app/api/expenses/route.ts` & `app/api/expenses/transactions/route.ts`.
+   - Tambah parameter `year` dan `month` di `app/api/donors/route.ts` & `app/api/donors/anonymous/transactions/route.ts`.
+2. **Frontend UI Component**:
+   - Buat komponen `components/period-filter-bar.tsx` yang fleksibel & reusable.
+3. **Integrasi Halaman**:
+   - Pasang filter di `components/expenses-client.tsx` (`/pengeluaran`).
+   - Pasang filter di `app/donatur/page.tsx` (`/donatur`).
+4. **Verifikasi**:
+   - Jalankan `npx tsc --noEmit` & `npm run lint`.
+   - Browser testing untuk memastikan data berubah sesuai filter periode.
 
 ---
 

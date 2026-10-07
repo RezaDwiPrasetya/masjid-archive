@@ -510,7 +510,11 @@ Data tren pemasukan/pengeluaran untuk grafik dashboard publik (F-014).
 
 ### `GET /api/donors`
 
-Daftar seluruh donatur beserta total kontribusi terverifikasi (F-015). Mencakup satu entri agregat khusus untuk donasi anonim.
+Daftar seluruh donatur beserta total kontribusi terverifikasi (F-015), dengan dukungan filter periode waktu (F-024, V8). Mencakup satu entri agregat khusus untuk donasi anonim.
+
+**Parameter Query (opsional — V8, Issue #66):**
+- `year` (number, opsional): Filter transaksi pada tahun tertentu (contoh: `2026`).
+- `month` (number, 1–12, opsional): Filter transaksi pada bulan tertentu (harus disertai atau bersama `year`). Jika dikosongkan, mencakup seluruh bulan pada tahun tersebut.
 
 **Response 200**
 
@@ -520,7 +524,11 @@ Daftar seluruh donatur beserta total kontribusi terverifikasi (F-015). Mencakup 
     "donors": [
       { "id": "dnr_1", "name": "Bapak Kosasih", "totalContribution": 2400000, "donationCount": 8 }
     ],
-    "anonymous": { "totalContribution": 1150000, "donationCount": 14 }
+    "anonymous": { "totalContribution": 1150000, "donationCount": 14 },
+    "period": {
+      "year": 2026,
+      "month": 9
+    }
   }
 }
 ```
@@ -547,11 +555,13 @@ Riwayat transaksi terverifikasi milik satu donatur tertentu.
 
 ---
 
-### `GET /api/donors/anonymous/transactions` (V6 — Issue #054)
+### `GET /api/donors/anonymous/transactions` (V6 — Issue #054, Diperluas V8 — Issue #66)
 
 Mengambil daftar seluruh transaksi terverifikasi yang masuk ke dalam kategori "Infaq Anonim" (pemasukan tanpa identitas donatur, `donorId = null`). Digunakan untuk modal audit transparansi publik di halaman `/donatur`.
 
 **Parameter Query (opsional):**
+- `year` (number, opsional — V8): Filter tahun transaksi.
+- `month` (number, 1–12, opsional — V8): Filter bulan transaksi.
 - `limit` (number, default: 100, max: 200): Jumlah baris yang diambil.
 - `offset` (number, default: 0): Paginasi data.
 
@@ -578,16 +588,21 @@ Mengambil daftar seluruh transaksi terverifikasi yang masuk ke dalam kategori "I
 
 **Aturan Bisnis:**
 - MUTLAK hanya mengembalikan transaksi dengan `isVerified = true`, `type = "pemasukan"`, dan `donorId = null`.
+- Jika `year` / `month` disediakan, hanya memperhitungkan transaksi pada rentang periode tersebut.
 - Diurutkan dari transaksi terbaru (`transactionDate` atau `createdAt` DESC).
 - Dapat diakses secara publik tanpa autentikasi (publik read-only).
 
 ---
 
-### `GET /api/expenses` (V7 — Issue #059)
+### `GET /api/expenses` (V7 — Issue #059, Diperluas V8 — Issue #66)
 
-Mengambil agregasi pengeluaran kas masjid per kategori fungsional untuk transaksi terverifikasi (`isVerified = true`). Digunakan oleh halaman publik `/pengeluaran` untuk merender KPI, grafik proporsi, dan chip filter.
+Mengambil agregasi pengeluaran kas masjid per kategori fungsional untuk transaksi terverifikasi (`isVerified = true`). Digunakan oleh halaman publik `/pengeluaran` untuk merender KPI, grafik proporsi, dan chip filter, dengan dukungan filter periode waktu (Tahun & Bulan).
 
 **Akses**: Publik (read-only)
+
+**Parameter Query (opsional — V8, Issue #66):**
+- `year` (number, opsional): Filter tahun pengeluaran (contoh: `2026`).
+- `month` (number, 1–12, opsional): Filter bulan pengeluaran. Jika kosong, menghitung agregasi sepanjang tahun tersebut.
 
 **Response 200**
 
@@ -596,6 +611,10 @@ Mengambil agregasi pengeluaran kas masjid per kategori fungsional untuk transaks
   "data": {
     "totalExpense": 7850000,
     "totalCount": 24,
+    "period": {
+      "year": 2026,
+      "month": 9
+    },
     "byCategory": [
       {
         "category": "operasional",
@@ -618,19 +637,22 @@ Mengambil agregasi pengeluaran kas masjid per kategori fungsional untuk transaks
 
 **Aturan Bisnis:**
 - Mengelompokkan transaksi `pengeluaran` terverifikasi berdasarkan nilai `category`.
+- Jika `year` / `month` disediakan, hanya memperhitungkan transaksi pengeluaran pada rentang waktu tersebut.
 - Menghitung persentase terhadap `totalExpense` secara matematis aman (fallback `0` jika `totalExpense === 0`).
 - Mengembalikan daftar terurut descending berdasarkan `totalAmount`.
 - Transaksi dengan `category = null` diberi label `"Tidak Dikategorikan"`.
 
 ---
 
-### `GET /api/expenses/transactions` (V7 — Issue #059)
+### `GET /api/expenses/transactions` (V7 — Issue #059, Diperluas V8 — Issue #66)
 
-Mengambil daftar rincian transaksi pengeluaran terverifikasi dengan dukungan filter kategori, pencarian teks, dan paginasi.
+Mengambil daftar rincian transaksi pengeluaran terverifikasi dengan dukungan filter kategori, periode waktu (tahun/bulan), pencarian teks, dan paginasi.
 
 **Akses**: Publik (read-only)
 
 **Parameter Query (opsional):**
+- `year` (number, opsional — V8): Filter tahun pengeluaran.
+- `month` (number, 1–12, opsional — V8): Filter bulan pengeluaran.
 - `category` (string, opsional): Filter kategori tertentu (mis. `operasional`) atau `uncategorized` untuk transaksi bernilai `category: null`. Kosongkan untuk semua kategori.
 - `search` (string, opsional): Pencarian berbasis teks pada kolom `description` (case-insensitive).
 - `limit` (number, default: 50, max: 200): Jumlah baris per halaman.

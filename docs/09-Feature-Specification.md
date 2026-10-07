@@ -427,14 +427,50 @@
   - Modal ledger rincian infaq anonim dan dialog ekspor bulanan menyesuaikan lebar viewport HP (`w-[95vw] sm:max-w-lg`) tanpa horizontal overflow.
 - **4. Penanganan Tabel Kas & Review**:
   - Tabel daftar pengguna dan panel review transaksi dilengkapi pembungkus scroll responsif yang intuitif di perangkat mobile.
-**Business Rules:**
-- Tidak mengubah logika bisnis, keaslian data finansial, maupun format desktop yang sudah baku.
-- Seluruh perbaikan berfokus pada layout adaptif CSS/Tailwind dan interaksi sentuh.
+### F-023 — Rekap & Transparansi Pengeluaran Per Kategori
+
+**Objective:** Menyediakan transparansi alokasi belanja kas masjid dengan mengelompokkan transaksi pengeluaran terverifikasi ke dalam kategori fungsional baku serta menyajikannya di halaman publik `/pengeluaran`.
+**User:** Publik (jemaah), Bendahara DKM
+**Process:**
+- Field `category String?` pada model `Transaction` menyimpan salah satu dari 7 kategori baku: `operasional`, `honor`, `sosial`, `pembangunan`, `konsumsi`, `administrasi`, `lainnya`, atau `null` ("Tidak Dikategorikan").
+- Bendahara memilih kategori pengeluaran saat review draf atau mengeditnya in-place via ikon pensil ✏️ pada transaksi yang sudah terverifikasi tanpa merusak saldo kas.
+- Halaman publik `/pengeluaran` menampilkan 3 kartu KPI, visual breakdown bar multi-warna, filter chips kategori, pencarian deskripsi, dan tabel rincian transaksi terverifikasi.
 **Acceptance Criteria:**
-- [ ] Grafik tren kas mingguan di dashboard mobile bebas dari tumpang-tindih teks nominal di atas batang.
-- [ ] Nilai nominal tetap dapat dilihat di mobile via tap/sentuh baris grafik (tooltip interaktif).
-- [ ] Seluruh item navigasi bawah (bottom navigation bar) dapat di-tap dengan mudah dan label teks tidak terpotong pada lebar layar 360px.
-- [ ] Modal rincian donatur anonim dan dialog ekspor bulanan proporsional di layar HP tanpa memotong tombol aksi.
-- [ ] Tidak ada horizontal scrollbar yang tidak diinginkan pada level `body` di semua halaman utama.
+- [x] Migrasi schema `Transaction.category` berhasil dan aman untuk data historis.
+- [x] Endpoint publik `GET /api/expenses` dan `GET /api/expenses/transactions` menyajikan agregasi dan rincian transaksi pengeluaran terverifikasi.
+- [x] Endpoint mutasi `PATCH /api/transactions/:id/category` terproteksi sesi pengurus.
+- [x] Halaman `/pengeluaran` responsif full-width dan menu navigasi terpasang di desktop & mobile.
+
+---
+
+### F-024 — Filter Periode Waktu & Analisis Keuangan Berkala (Donatur & Pengeluaran)
+
+**Objective:** Menyediakan kemampuan pemfilteran periode waktu (Tahun & Bulan, disertai preset cepat "Semua Waktu", "Tahun Ini", "Bulan Ini") pada halaman publik Donatur (`/donatur`) dan Pengeluaran (`/pengeluaran`) agar informasi keuangan tetap kontekstual, terfokus, dan relevan seiring bertambahnya arsip tahunan kas DKM Masjid Al-Luqman.
+**User:** Publik (jemaah), Pengurus DKM
+**Process:**
+- **Komponen Bar Filter Periode (`PeriodFilterBar`)**:
+  - Ditempatkan di header halaman `/pengeluaran` dan `/donatur`.
+  - Tombol preset cepat: `Semua Waktu`, `Tahun Ini`, `Bulan Ini`.
+  - Selector manual: Dropdown `Tahun` (mengambil tahun yang memiliki transaksi aktif di arsip) dan Dropdown `Bulan` (`Semua Bulan`, `Januari` s/d `Desember`).
+- **Reaktivitas Halaman Pengeluaran (`/pengeluaran`)**:
+  - Saat periode dipilih, parameter query `year` dan `month` diteruskan ke `GET /api/expenses` dan `GET /api/expenses/transactions`.
+  - Tiga kartu KPI (Total Pengeluaran, Jumlah Transaksi, Kategori Terbesar) menghitung ulang sesuai periode tersebut.
+  - Bar proporsi persentase alokasi dana multi-warna menghitung komposisi pengeluaran pada periode terpilih.
+  - Tabel rincian hanya menampilkan transaksi pengeluaran pada rentang waktu yang dipilih.
+- **Reaktivitas Halaman Donatur (`/donatur`)**:
+  - Saat periode dipilih, parameter query `year` dan `month` diteruskan ke `GET /api/donors` dan `GET /api/donors/anonymous/transactions`.
+  - Kartu KPI *Donatur Terdata* menghitung jumlah donatur dan total infaq pada periode tersebut.
+  - Kartu KPI *Infaq Anonim* menghitung akumulasi tromol/kotak amal pada periode tersebut.
+  - Daftar peringkat donatur mengurutkan donatur berdasarkan kontribusi pada periode tersebut.
+- **Isolasi Mutlak**:
+  - Seluruh query hanya memperhitungkan transaksi dengan status `isVerified = true`.
+**Acceptance Criteria:**
+- [ ] Pengguna publik dapat memilih Tahun & Bulan di halaman `/pengeluaran`, dan angka KPI + grafik proporsi + tabel mencerminkan periode tersebut.
+- [ ] Pengguna publik dapat memilih Tahun & Bulan di halaman `/donatur`, dan angka KPI + ranking donatur mencerminkan periode tersebut.
+- [ ] Tombol cepat "Semua Waktu", "Tahun Ini", dan "Bulan Ini" berfungsi mulus.
+- [ ] Tersedia fallback yang anggun jika pada periode yang dipilih belum ada transaksi (menampilkan status kosong ramah pengguna tanpa crash).
+- [ ] Seluruh endpoint publik aman dan hanya menyajikan data `isVerified = true`.
+- [ ] `tsc --noEmit` lolos 0 error dan `npm run lint` lolos 0 error.
+
 
 

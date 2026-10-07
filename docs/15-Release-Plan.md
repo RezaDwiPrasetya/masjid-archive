@@ -36,6 +36,13 @@
 - [x] Endpoint publik `GET /api/expenses` & `GET /api/expenses/transactions`
 - [x] Halaman publik `/pengeluaran` (KPI + breakdown kategori + tabel rincian)
 
+### Milestone 7 — Period Filtering & Financial Analysis (V8, Issue #66)
+- [ ] Komponen bar filter periode terpadu (`PeriodFilterBar`) dengan selector Tahun, Bulan, dan preset cepat (Semua Waktu, Tahun Ini, Bulan Ini)
+- [ ] Parameter query `year` dan `month` pada endpoint pengeluaran (`/api/expenses`, `/api/expenses/transactions`)
+- [ ] Parameter query `year` dan `month` pada endpoint donatur (`/api/donors`, `/api/donors/anonymous/transactions`)
+- [ ] Reaktivitas penuh kartu KPI, grafik proporsi, dan tabel transaksi di `/pengeluaran`
+- [ ] Reaktivitas penuh kartu KPI donatur/infaq anonim dan peringkat donatur di `/donatur`
+
 ## Release Criteria
 
 - [x] Alur inti (unggah, arsip, cari, detail, ekstraksi, verifikasi) berjalan tanpa error
@@ -46,9 +53,17 @@
 ## Version
 
 Current: `0.7.0` (Fase V7: Expense Transparency Feature-Complete — Issue #059)
-Next: `1.0.0` (Production Hardening & Serah Terima Tugas Akhir)
+Next: `0.8.0` (Fase V8: Period Filtering & Financial Analysis — Issue #66)
 
 ## Changelog
+
+### 0.8.0 (Planned) — Fase V8: Filter Periode Waktu & Analisis Keuangan Berkala (Issue #66)
+- **Komponen Filter Waktu**: Komponen `PeriodFilterBar` dengan selector Tahun dinamis, selector Bulan (Semua Bulan, Jan–Des), dan tombol preset instan (Semua Waktu, Tahun Ini, Bulan Ini).
+- **Ekstensi API Pengeluaran**: Endpoint `GET /api/expenses` dan `GET /api/expenses/transactions` menerima parameter filter `year` dan `month`.
+- **Ekstensi API Donatur**: Endpoint `GET /api/donors` dan `GET /api/donors/anonymous/transactions` menerima parameter filter `year` dan `month` untuk kalkulasi kontribusi dinamis sesuai periode.
+- **UI Reaktif Halaman `/pengeluaran`**: Seluruh metrik KPI, progress bar proporsi, dan tabel mutasi pengeluaran menyesuaikan dengan periode terpilih.
+- **UI Reaktif Halaman `/donatur`**: Kartu KPI donatur & infaq anonim serta ranking kontribusi donatur menyesuaikan dengan periode terpilih.
+- **Aset & Identitas Brand**: Pembersihan seluruh berkas boilerplate Vercel dan adopsi ikon vektor resmi masjid Al-Luqman (favicon multi-resolusi, PWA manifest, dan Apple touch icon).
 
 ### 0.7.0 (2026-10-06) — Fase V7: Rekap & Transparansi Pengeluaran Per Kategori (Issue #059)
 - **Model & Database**: Penambahan kolom `category String?` pada model `Transaction` di `schema.prisma` secara additive/nullable dan eksekusi migrasi Prisma `20261006095151_add_expense_category`.
