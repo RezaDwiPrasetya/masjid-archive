@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Gradient: Brand Islamic Green -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f340d" />
+      <stop offset="50%" stop-color="#154212" />
+      <stop offset="100%" stop-color="#1b5417" />
+    </linearGradient>
+
+    <!-- Gold Accent Gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fde047" />
+      <stop offset="100%" stop-color="#eab308" />
+    </linearGradient>
+
+    <!-- Subtle Dome Shadow -->
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Squircle Base / App Icon Shape -->
+  <rect width="512" height="512" rx="116" fill="url(#bgGrad)" />
+  <!-- Subtle Inner Border Highlight -->
+  <rect x="6" y="6" width="500" height="500" rx="110" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="4" />
+
+  <!-- Mosque Graphic Wrapper with Filter -->
+  <g filter="url(#softGlow)">
+    <!-- Base Platform / Foundation -->
+    <rect x="76" y="380" width="360" height="28" rx="8" fill="#ffffff" />
+    <rect x="96" y="408" width="320" height="16" rx="6" fill="url(#goldGrad)" />
+
+    <!-- Left Minaret -->
+    <rect x="92" y="196" width="38" height="184" rx="4" fill="#ffffff" />
+    <rect x="84" y="184" width="54" height="12" rx="4" fill="url(#goldGrad)" />
+    <!-- Left Minaret Dome & Finial -->
+    <path d="M 96 184 C 96 150 111 134 111 122 C 111 134 126 150 126 184 Z" fill="#ffffff" />
+    <line x1="111" y1="122" x2="111" y2="106" stroke="url(#goldGrad)" stroke-width="4" stroke-linecap="round" />
+    <circle cx="111" cy="104" r="3.5" fill="url(#goldGrad)" />
+    <!-- Left Minaret Window -->
+    <path d="M 104 250 C 104 242 118 242 118 250 L 118 274 L 104 274 Z" fill="#154212" />
+
+    <!-- Right Minaret -->
+    <rect x="382" y="196" width="38" height="184" rx="4" fill="#ffffff" />
+    <rect x="374" y="184" width="54" height="12" rx="4" fill="url(#goldGrad)" />
+    <!-- Right Minaret Dome & Finial -->
+    <path d="M 386 184 C 386 150 401 134 401 122 C 401 134 416 150 416 184 Z" fill="#ffffff" />
+    <line x1="401" y1="122" x2="401" y2="106" stroke="url(#goldGrad)" stroke-width="4" stroke-linecap="round" />
+    <circle cx="401" cy="104" r="3.5" fill="url(#goldGrad)" />
+    <!-- Right Minaret Window -->
+    <path d="M 394 250 C 394 242 408 242 408 250 L 408 274 L 394 274 Z" fill="#154212" />
+
+    <!-- Main Building Center Body -->
+    <rect x="146" y="240" width="220" height="140" fill="#ffffff" />
+
+    <!-- Arch Gate / Portal (Iwan) -->
+    <path d="M 216 380 L 216 300 C 216 270 256 250 256 250 C 256 250 296 270 296 300 L 296 380 Z" fill="#154212" />
+    <!-- Inner Gate Trim -->
+    <path d="M 226 380 L 226 306 C 226 282 256 266 256 266 C 256 266 286 282 286 306 L 286 380 Z" fill="none" stroke="url(#goldGrad)" stroke-width="4" />
+
+    <!-- Left & Right Small Windows on Center Body -->
+    <path d="M 166 310 C 166 298 184 298 184 310 L 184 340 L 166 340 Z" fill="#154212" />
+    <path d="M 328 310 C 328 298 346 298 346 310 L 346 340 L 328 340 Z" fill="#154212" />
+
+    <!-- Main Central Dome -->
+    <!-- Beautiful pointed onion dome curve -->
+    <path d="M 162 240 C 158 190 196 160 256 128 C 316 160 354 190 350 240 Z" fill="#ffffff" />
+    <!-- Dome Base Molding -->
+    <rect x="156" y="234" width="200" height="12" rx="4" fill="url(#goldGrad)" />
+
+    <!-- Crescent Moon & Star Finial on Top of Central Dome -->
+    <!-- Finial Spire -->
+    <line x1="256" y1="128" x2="256" y2="76" stroke="url(#goldGrad)" stroke-width="6" stroke-linecap="round" />
+    <circle cx="256" cy="100" r="5" fill="url(#goldGrad)" />
+    <!-- Crescent Moon -->
+    <path d="M 256 50 C 242 50 232 60 232 72 C 232 84 242 94 256 94 C 262 94 267 92 271 88 C 262 88 250 82 250 72 C 250 62 262 56 271 56 C 267 52 262 50 256 50 Z" fill="url(#goldGrad)" />
+  </g>
+</svg>

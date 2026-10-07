@@ -10,8 +10,21 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Masjid Archive",
-  description: "Sistem Arsip Digital DKM Masjid Al-Luqman",
+  title: {
+    default: "Masjid Archive — DKM Masjid Al-Luqman",
+    template: "%s | Masjid Archive",
+  },
+  description: "Sistem Informasi & Arsip Digital Keuangan DKM Masjid Al-Luqman, Subang",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: [
+      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
