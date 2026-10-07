@@ -147,19 +147,21 @@ Model utama:
 
 ---
 
-## 7c. FITUR FASE V8 — SEDANG DIKERJAKAN (Issue #66)
-**F-024 — Filter Periode Waktu & Analisis Keuangan Berkala pada Halaman Donatur dan Pengeluaran (Issue #66):**
-- Branch aktif: `feature/v8-period-filter`.
+## 7c. FITUR FASE V8 — SELESAI PENUH (F-024, Issue #66)
+**F-024 — Filter Periode Waktu & Analisis Keuangan Berkala pada Halaman Donatur dan Pengeluaran (Issue #66) (✅ Selesai & Dimerge ke Main):**
+- Branch: `feature/v8-period-filter` telah di-merge ke `main`.
 - **Latar Belakang**: Mencegah *data fatigue* seiring akumulasi arsip bertahun-tahun, memungkinkan jemaah dan pengurus melihat data kas per bulan atau per tahun secara terfokus.
-- **Ekstensi API**:
-  - `GET /api/expenses`: Mendukung query param `year` dan `month`.
+- **Helper Backend (`lib/period-filter.ts`)**: Parser query parameter `year` & `month`, pembuat filter relasi Prisma `where: { report: { year, month } }`, dan pengambilan dinamis distinct `availableYears` dari tabel `Report`.
+- **Ekstensi API Teruji**:
+  - `GET /api/expenses`: Mendukung query param `year` dan `month`, mengembalikan `totalAmount`, `transactionCount`, `breakdown`, `period`, dan `availableYears`.
   - `GET /api/expenses/transactions`: Mendukung query param `year` dan `month`.
-  - `GET /api/donors`: Mendukung query param `year` dan `month` untuk menghitung kontribusi per periode.
-  - `GET /api/donors/anonymous/transactions`: Mendukung query param `year` dan `month`.
-- **Komponen Frontend**: `PeriodFilterBar` dengan selector Tahun, Bulan, dan tombol cepat ("Semua Waktu", "Tahun Ini", "Bulan Ini").
+  - `GET /api/donors`: Mendukung query param `year` dan `month` untuk menghitung kontribusi per periode dan mengembalikan `availableYears`.
+  - `GET /api/donors/anonymous/transactions`: Mendukung query param `year` dan `month` pada ledger transaksi anonim terverifikasi.
+- **Komponen Frontend (`components/period-filter-bar.tsx`)**: Komponen universal reusable dengan selector Tahun dinamis, selector Bulan (Semua Bulan, Jan–Des), status badge periode aktif, tombol reset, dan quick preset chips ("Semua Waktu", "Tahun Ini", "Bulan Ini").
 - **UI Integrations**:
-  - `/pengeluaran`: KPI, progress bar persentase alokasi, dan tabel mutasi reaktif terhadap filter periode.
-  - `/donatur`: KPI donatur & infaq anonim serta peringkat donatur terurut berdasarkan kontribusi pada periode terpilih.
+  - `/pengeluaran`: KPI, progress bar persentase alokasi, filter pills, dan tabel mutasi reaktif terhadap filter periode dengan smooth loading state.
+  - `/donatur`: KPI donatur & infaq anonim serta peringkat donatur terurut berdasarkan kontribusi pada periode terpilih, disinkronisasikan langsung dengan modal dialog rincian infaq anonim.
+- **Verifikasi**: `tsc --noEmit` lolos 0 error, ESLint 0 error, dan verifikasi visual end-to-end via Browser subagent sukses.
 
 ---
 
@@ -226,18 +228,12 @@ Shared logic di `lib/donor-matching.ts`, `lib/donor-service.ts`, dan `lib/expens
 
 ---
 
-## 14. LANGKAH BERIKUTNYA YANG SEHARUSNYA DILAKUKAN (FASE V8 — ISSUE #66)
-1. **API Endpoints Filtering**:
-   - Tambah parameter `year` dan `month` di `app/api/expenses/route.ts` & `app/api/expenses/transactions/route.ts`.
-   - Tambah parameter `year` dan `month` di `app/api/donors/route.ts` & `app/api/donors/anonymous/transactions/route.ts`.
-2. **Frontend UI Component**:
-   - Buat komponen `components/period-filter-bar.tsx` yang fleksibel & reusable.
-3. **Integrasi Halaman**:
-   - Pasang filter di `components/expenses-client.tsx` (`/pengeluaran`).
-   - Pasang filter di `app/donatur/page.tsx` (`/donatur`).
-4. **Verifikasi**:
-   - Jalankan `npx tsc --noEmit` & `npm run lint`.
-   - Browser testing untuk memastikan data berubah sesuai filter periode.
+## 14. STATUS & LANGKAH BERIKUTNYA
+1. **Fase V8 (Issue #66) Telah Tuntas Penuh**:
+   - Seluruh endpoint filtering, komponen `PeriodFilterBar`, dan integrasi reaktif di `/pengeluaran` dan `/donatur` telah selesai, diuji visual di browser, dan digabung ke branch `main`.
+2. **Kandidat Eksplorasi Fase Berikutnya (Fase V9)**:
+   - Evaluasi masukan pengguna / pengurus DKM Masjid Al-Luqman terkait penambahan visualisasi grafik perbandingan antar-periode atau fitur cetak khusus rekap laporan per kategori pengeluaran.
+   - Pemeliharaan performa dan audit berkala data kas.
 
 ---
 

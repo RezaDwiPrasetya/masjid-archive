@@ -37,11 +37,11 @@
 - [x] Halaman publik `/pengeluaran` (KPI + breakdown kategori + tabel rincian)
 
 ### Milestone 7 — Period Filtering & Financial Analysis (V8, Issue #66)
-- [ ] Komponen bar filter periode terpadu (`PeriodFilterBar`) dengan selector Tahun, Bulan, dan preset cepat (Semua Waktu, Tahun Ini, Bulan Ini)
-- [ ] Parameter query `year` dan `month` pada endpoint pengeluaran (`/api/expenses`, `/api/expenses/transactions`)
-- [ ] Parameter query `year` dan `month` pada endpoint donatur (`/api/donors`, `/api/donors/anonymous/transactions`)
-- [ ] Reaktivitas penuh kartu KPI, grafik proporsi, dan tabel transaksi di `/pengeluaran`
-- [ ] Reaktivitas penuh kartu KPI donatur/infaq anonim dan peringkat donatur di `/donatur`
+- [x] Komponen bar filter periode terpadu (`PeriodFilterBar`) dengan selector Tahun, Bulan, dan preset cepat (Semua Waktu, Tahun Ini, Bulan Ini)
+- [x] Parameter query `year` dan `month` pada endpoint pengeluaran (`/api/expenses`, `/api/expenses/transactions`)
+- [x] Parameter query `year` dan `month` pada endpoint donatur (`/api/donors`, `/api/donors/anonymous/transactions`)
+- [x] Reaktivitas penuh kartu KPI, grafik proporsi, dan tabel transaksi di `/pengeluaran`
+- [x] Reaktivitas penuh kartu KPI donatur/infaq anonim dan peringkat donatur di `/donatur`
 
 ## Release Criteria
 
@@ -52,12 +52,12 @@
 
 ## Version
 
-Current: `0.7.0` (Fase V7: Expense Transparency Feature-Complete — Issue #059)
-Next: `0.8.0` (Fase V8: Period Filtering & Financial Analysis — Issue #66)
+Current: `0.8.0` (Fase V8: Period Filtering & Financial Analysis — Issue #66)
+Next: `0.9.0`
 
 ## Changelog
 
-### 0.8.0 (Planned) — Fase V8: Filter Periode Waktu & Analisis Keuangan Berkala (Issue #66)
+### 0.8.0 (2026-10-07) — Fase V8: Filter Periode Waktu & Analisis Keuangan Berkala (Issue #66)
 - **Komponen Filter Waktu**: Komponen `PeriodFilterBar` dengan selector Tahun dinamis, selector Bulan (Semua Bulan, Jan–Des), dan tombol preset instan (Semua Waktu, Tahun Ini, Bulan Ini).
 - **Ekstensi API Pengeluaran**: Endpoint `GET /api/expenses` dan `GET /api/expenses/transactions` menerima parameter filter `year` dan `month`.
 - **Ekstensi API Donatur**: Endpoint `GET /api/donors` dan `GET /api/donors/anonymous/transactions` menerima parameter filter `year` dan `month` untuk kalkulasi kontribusi dinamis sesuai periode.

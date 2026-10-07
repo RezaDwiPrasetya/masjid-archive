@@ -10,9 +10,9 @@ Membantu DKM Masjid Al-Luqman (dan pengurus masjid sejenis) menjaga arsip lapora
 
 ### Current Status
 
-- Phase: Fase V8 (Filter Periode Waktu & Analisis Keuangan Berkala — Issue #66) Dalam Pengerjaan
-- Version: 0.7.0 (Target: 0.8.0)
-- Last Updated: 2026-10-07 (Spesifikasi F-024, Filter Periode Donatur & Pengeluaran, Aset Resmi Masjid Al-Luqman)
+- Phase: Fase V8 (Filter Periode Waktu & Analisis Keuangan Berkala — Issue #66) Selesai
+- Version: 0.8.0
+- Last Updated: 2026-10-07 (Fase V8 Filter Periode Donatur & Pengeluaran Selesai & Di-merge ke main)
 
 ### Daftar Isi
 
