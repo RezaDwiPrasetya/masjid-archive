@@ -11,8 +11,8 @@ const outfit = Outfit({
 
 export const metadata: Metadata = {
   title: {
-    default: "Masjid Archive — DKM Masjid Al-Luqman",
-    template: "%s | Masjid Archive",
+    default: "Masjid Archive | DKM Masjid Al-Luqman",
+    template: "Masjid Archive | %s",
   },
   description: "Sistem Informasi & Arsip Digital Keuangan DKM Masjid Al-Luqman, Subang",
   icons: {

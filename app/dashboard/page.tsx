@@ -5,7 +5,7 @@ import { DashboardClient } from "@/components/dashboard-client";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Dashboard Keuangan — Masjid Archive",
+  title: "Dashboard Keuangan",
   description: "Visualisasi tren pemasukan, pengeluaran kas masjid, dan saldo kas terkini.",
 };
 

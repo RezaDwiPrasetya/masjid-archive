@@ -8,6 +8,11 @@ import { Search, FileSearch, FileText } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  title: "Cari Arsip Laporan",
+  description: "Cari dan telusuri arsip laporan keuangan kas mingguan DKM Masjid Al-Luqman.",
+};
+
 const MONTH_NAMES = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
   "Juli", "Agustus", "September", "Oktober", "November", "Desember",

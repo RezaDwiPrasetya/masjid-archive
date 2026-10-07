@@ -6,7 +6,7 @@ import { getAvailableYears } from "@/lib/period-filter";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Daftar Donatur — Masjid Archive",
+  title: "Daftar Donatur",
   description: "Daftar kontribusi donatur dan infaq terverifikasi kas masjid.",
 };
 

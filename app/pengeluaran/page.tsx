@@ -7,7 +7,7 @@ import { getAvailableYears } from "@/lib/period-filter";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Rekap & Transparansi Pengeluaran — Masjid Archive",
+  title: "Rekap Pengeluaran",
   description:
     "Transparansi alokasi penggunaan dana kas masjid per kategori pengeluaran terverifikasi DKM Masjid Al-Luqman.",
 };

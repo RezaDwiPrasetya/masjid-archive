@@ -25,6 +25,24 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const report = await prisma.report.findUnique({
+    where: { id },
+    select: { weekOfMonth: true, month: true, year: true },
+  });
+  if (!report) {
+    return { title: "Detail Laporan" };
+  }
+  return {
+    title: `Laporan Pekan ${report.weekOfMonth}, ${report.month}/${report.year}`,
+  };
+}
+
 /** Tambahkan ?download=<namaFile> agar Supabase memicu dialog Save-As di browser */
 function downloadUrl(fileUrl: string, fileName: string): string {
   return `${fileUrl}?download=${encodeURIComponent(fileName)}`;

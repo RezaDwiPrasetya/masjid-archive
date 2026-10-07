@@ -17,6 +17,21 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const donor = await prisma.donor.findUnique({
+    where: { id },
+    select: { name: true },
+  });
+  return {
+    title: donor ? `Profil Donatur — ${donor.name}` : "Profil Donatur",
+  };
+}
+
 function formatRupiah(amount: number): string {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
