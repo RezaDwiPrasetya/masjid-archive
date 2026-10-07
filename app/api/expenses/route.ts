@@ -53,20 +53,28 @@ export async function GET(request?: NextRequest) {
       getAvailableYears(),
     ]);
 
-    // 4. Bangun response dengan label dari EXPENSE_CATEGORIES
-    const categoryBreakdown = byCategory.map((row) => ({
-      category: row.category,
-      label: row.category
-        ? (EXPENSE_CATEGORIES.find((c) => c.value === row.category)?.label ??
-          row.category)
-        : "Tidak Dikategorikan",
-      totalAmount: Number(row._sum.amount ?? 0),
-      transactionCount: row._count.id,
-    }));
+    const totalAmount = Number(totalAgg._sum.amount ?? 0);
+
+    // 4. Bangun response dengan label dari EXPENSE_CATEGORIES dan persentase
+    const categoryBreakdown = byCategory.map((row) => {
+      const amount = Number(row._sum.amount ?? 0);
+      const percentage = totalAmount > 0 ? (amount / totalAmount) * 100 : 0;
+      return {
+        category: row.category,
+        label: row.category
+          ? (EXPENSE_CATEGORIES.find((c) => c.value === row.category)?.label ??
+            row.category)
+          : "Tidak Dikategorikan",
+        totalAmount: amount,
+        transactionCount: row._count.id,
+        percentage,
+      };
+    });
 
     return NextResponse.json({
+      success: true,
       data: {
-        totalAmount: Number(totalAgg._sum.amount ?? 0),
+        totalAmount,
         transactionCount: totalAgg._count.id,
         breakdown: categoryBreakdown,
         period: {

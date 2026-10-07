@@ -121,13 +121,13 @@ export function ExpensesClient({
           const summaryJson = await summaryRes.json();
           const txJson = await txRes.json();
 
-          if (summaryJson.success && summaryJson.data) {
+          if (summaryJson.data) {
             setCurrentTotalAmount(summaryJson.data.totalAmount ?? 0);
             setCurrentTransactionCount(summaryJson.data.transactionCount ?? 0);
             setCurrentBreakdown(summaryJson.data.breakdown ?? []);
           }
 
-          if (txJson.success && txJson.data) {
+          if (txJson.data) {
             setCurrentTransactions(txJson.data.transactions ?? []);
           }
         }
@@ -278,7 +278,13 @@ export function ExpensesClient({
                       getCategoryColor(topCategory.category).text
                     }`}
                   >
-                    {topCategory.percentage.toFixed(1)}% Porsi
+                    {(
+                      topCategory.percentage ??
+                      (currentTotalAmount > 0
+                        ? (topCategory.totalAmount / currentTotalAmount) * 100
+                        : 0)
+                    ).toFixed(1)}
+                    % Porsi
                   </span>
                 )}
               </div>
@@ -321,12 +327,17 @@ export function ExpensesClient({
             {currentTotalAmount > 0 && (
               <div className="h-3 w-full rounded-full bg-surface-container-high overflow-hidden flex shadow-inner">
                 {currentBreakdown.map((item) => {
-                  if (item.percentage <= 0) return null;
+                  const pct =
+                    item.percentage ??
+                    (currentTotalAmount > 0
+                      ? (item.totalAmount / currentTotalAmount) * 100
+                      : 0);
+                  if (pct <= 0) return null;
                   return (
                     <div
                       key={item.category ?? "null"}
-                      title={`${item.label}: ${item.percentage.toFixed(1)}% (${formatRupiah(item.totalAmount)})`}
-                      style={{ width: `${item.percentage}%` }}
+                      title={`${item.label}: ${pct.toFixed(1)}% (${formatRupiah(item.totalAmount)})`}
+                      style={{ width: `${pct}%` }}
                       className={`h-full transition-all duration-300 hover:opacity-85 ${
                         item.category === "operasional"
                           ? "bg-blue-500"
@@ -357,6 +368,11 @@ export function ExpensesClient({
                   (selectedCategory === "__null__" && item.category === null) ||
                   selectedCategory === item.category;
                 const color = getCategoryColor(item.category);
+                const pct =
+                  item.percentage ??
+                  (currentTotalAmount > 0
+                    ? (item.totalAmount / currentTotalAmount) * 100
+                    : 0);
 
                 return (
                   <button
@@ -383,7 +399,7 @@ export function ExpensesClient({
                         {item.label}
                       </span>
                       <span className="text-[11px] font-bold text-on-surface-variant tabular-nums">
-                        {item.percentage.toFixed(1)}%
+                        {pct.toFixed(1)}%
                       </span>
                     </div>
 

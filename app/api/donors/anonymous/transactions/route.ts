@@ -92,6 +92,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({
+      success: true,
       data: {
         totalContribution: Number(aggregate._sum.amount ?? 0),
         donationCount: aggregate._count.id,

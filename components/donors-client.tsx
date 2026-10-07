@@ -123,7 +123,7 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
         const res = await fetch(`/api/donors?${params.toString()}`);
         if (res.ok) {
           const json = await res.json();
-          if (json.success && json.data) {
+          if (json.data) {
             setCurrentDonors(json.data.donors ?? []);
             setCurrentAnonymous(
               json.data.anonymous ?? { totalContribution: 0, donationCount: 0 }
