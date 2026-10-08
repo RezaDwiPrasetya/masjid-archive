@@ -468,3 +468,24 @@ Endpoint V5 (`GET /api/dashboard/trend`, `GET /api/donors`, `GET /api/donors/:id
 - **Route Handler NextAuth**:
   Pada Next.js 16 App Router, parameter `context.params` bertipe `Promise`. Karena handler bawaan `NextAuth` v4 mengevaluasi `context.params` secara synchronous, handler di `app/api/auth/[...nextauth]/route.ts` dibungkus dengan fungsi async wrapper yang melakukan `const params = await context.params;` sebelum diteruskan ke NextAuth. Hal ini mencegah error `CLIENT_FETCH_ERROR Unexpected token '<' (404 HTML)` saat browser memanggil `/api/auth/session` atau `/api/auth/providers`.
 
+---
+
+## Spesifikasi Teknis — Fase V9: Filter Periode Fiskal & Ekspor Terpadu Tanpa Modal (Issue #067)
+
+### Latar Belakang & Masalah
+1. Mode grafik sebelumnya berbasis *rolling window* (8–12 pekan terakhir) yang terus bergeser dan tidak memungkinkan bendahara/jamaah meninjau laporan keuangan masa lalu (misal bulan Ramadhan atau tahun lalu).
+2. Fitur ekspor kas bulanan sebelumnya terisolasi di dalam modal dialog popup terpisah (`MonthlyExportDialog`) yang mengharuskan pengguna memilih ulang bulan dan tahun, menimbulkan redundansi interaksi (tidak WYSIWYG).
+3. Tampilan tahunan (12 bulan x 2 batang = 24 batang) sangat padat di layar ponsel (< 768 px) jika dipaksakan sekaligus.
+
+### Desain Solusi V9
+1. **Global Fiscal Filter Terpadu**:
+   - Selector Bulan (Jan–Des) dan Tahun diintegrasikan langsung pada toolbar ringkasan kas dashboard di samping tombol toggle mode grafik.
+   - **Mode Mingguan:** Menampilkan 4 atau 5 pekan (hari Jumat) di dalam bulan dan tahun yang dipilih secara presisi.
+   - **Mode Tahunan:** Menampilkan 12 bulan (Jan–Des) di tahun yang dipilih pada layar desktop (>= 768 px).
+   - **Semester Mobile Toggle (Smt 1 & Smt 2):** Khusus layar mobile (< 768 px) pada mode tahunan, grafik dipecah menjadi dua semester (`Jan - Jun` dan `Jul - Des`) agar kapasitas grafik tetap optimal (6 titik = 12 batang), mudah disentuh, dan tidak berdesakan.
+2. **Ekspor & Cetak Terpadu (Zero Modal)**:
+   - Tombol **Cetak (Mading A4)**, **Unduh PDF (.pdf)**, dan **Unduh Excel (.xlsx)** dikeluarkan dari modal dan diletakkan langsung di samping selector periode.
+   - Mengklik cetak atau unduh langsung mengeksekusi dokumen untuk bulan dan tahun yang sedang aktif di layar tanpa popup tambahan.
+3. **Penyelarasan Kartu KPI & Sumbu X**:
+   - Kartu KPI (Total Pemasukan, Total Pengeluaran, Arus Kas Bersih) menghitung data agregat dari periode yang dipilih di dropdown.
+

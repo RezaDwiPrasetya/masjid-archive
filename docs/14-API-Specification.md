@@ -539,7 +539,9 @@ Data tren pemasukan/pengeluaran untuk grafik dashboard publik (F-014).
 | Param | Tipe | Wajib | Keterangan |
 |---|---|---|---|
 | `granularity` | `"weekly"` \| `"monthly"` | tidak (default `"weekly"`) | Menentukan pengelompokan periode (mingguan Jumat atau bulanan) |
-| `periods` | number | tidak (default `12`) | Jumlah periode maksimum yang ditampilkan |
+| `periods` | number | tidak (default `12`) | Jumlah periode maksimum yang ditampilkan (ketika `year` tidak ditentukan) |
+| `year` | number | tidak (opsional — V9, Issue #067) | Membatasi data pada tahun kalender tertentu (misal: `2026`) |
+| `month` | number | tidak (opsional — V9, Issue #067) | Membatasi pekan pada bulan kalender tertentu (1–12) saat `granularity=weekly` |
 
 **Response 200 (Contoh Mingguan Berbasis Jumat)**
 
