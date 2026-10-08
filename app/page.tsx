@@ -34,9 +34,19 @@ function formatRupiah(amount: number): string {
 export default async function ArsipLaporanPage() {
   const reports = await prisma.report.findMany({
     orderBy: { reportDate: "desc" },
-    include: {
-      uploadedBy: true,
-      attachments: true,
+    select: {
+      id: true,
+      reportDate: true,
+      year: true,
+      month: true,
+      weekOfMonth: true,
+      attachments: {
+        select: {
+          id: true,
+          fileType: true,
+          fileUrl: true,
+        },
+      },
       transactions: {
         where: { isVerified: true },
         select: { type: true, amount: true },

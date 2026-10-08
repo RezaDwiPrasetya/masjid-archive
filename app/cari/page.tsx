@@ -74,9 +74,27 @@ export default async function CariLaporanPage({
       ...(year ? { year: Number(year) } : {}),
       ...(month ? { month: Number(month) } : {}),
     },
-    include: {
-      uploadedBy: true,
-      attachments: true,
+    select: {
+      id: true,
+      reportDate: true,
+      year: true,
+      month: true,
+      weekOfMonth: true,
+      uploadedAt: true,
+      uploadedBy: {
+        select: {
+          name: true,
+        },
+      },
+      attachments: {
+        select: {
+          id: true,
+          fileType: true,
+          fileUrl: true,
+          uploadedAt: true,
+          extractedAt: true,
+        },
+      },
       transactions: {
         select: { verifiedAt: true },
       },

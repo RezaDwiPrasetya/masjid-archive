@@ -3,16 +3,51 @@ import { prisma } from "@/lib/prisma";
 import { supabase } from "@/lib/supabase";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { isAdmin } from "@/lib/auth-guard";
+import { isAdmin, isStaff } from "@/lib/auth-guard";
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const session = await getServerSession(authOptions);
+  const staff = isStaff(session);
+
   const report = await prisma.report.findUnique({
     where: { id },
-    include: { uploadedBy: true, attachments: true },
+    select: {
+      id: true,
+      reportDate: true,
+      year: true,
+      month: true,
+      weekOfMonth: true,
+      uploadedAt: true,
+      initialBalance: true,
+      finalBalance: true,
+      uploadedBy: {
+        select: {
+          name: true,
+        },
+      },
+      attachments: {
+        select: {
+          id: true,
+          fileUrl: true,
+          fileType: true,
+          originalFileName: true,
+          fileSizeBytes: true,
+          uploadedAt: true,
+          ...(staff
+            ? {
+                extractionStatus: true,
+                extractionModel: true,
+                extractionError: true,
+                extractedAt: true,
+              }
+            : {}),
+        },
+      },
+    },
   });
 
   if (!report) {
@@ -42,7 +77,11 @@ export async function DELETE(
   // Cari laporan beserta semua attachment-nya
   const report = await prisma.report.findUnique({
     where: { id },
-    include: { attachments: true },
+    select: {
+      attachments: {
+        select: { fileUrl: true },
+      },
+    },
   });
 
   if (!report) {

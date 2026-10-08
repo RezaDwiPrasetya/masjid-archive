@@ -18,7 +18,6 @@
     "@supabase/supabase-js": "^2.116.0",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.2.5",
-    "iron-session": "^9.0.1",
     "lucide-react": "^1.41.0",
     "next": "16.3.4",
     "next-auth": "^4.24.15",

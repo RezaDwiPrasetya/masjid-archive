@@ -57,7 +57,7 @@ interface Transaction {
   donor?: { id: string; name: string } | null;
   isVerified: boolean;
   verifiedAt: string | null;
-  verifiedBy?: { id: string; name: string | null; email: string | null } | null;
+  verifiedBy?: { id: string; name: string | null; email?: string | null } | null;
   matchingFeedback?: {
     status: "existing" | "created" | "anonymous" | "none";
     donorName: string | null;

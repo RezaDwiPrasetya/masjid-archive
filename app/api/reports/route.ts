@@ -13,13 +13,48 @@ export async function GET(request: NextRequest) {
   const month = Number(searchParams.get("month"));
   const keyword = searchParams.get("keyword")?.trim().toLowerCase() ?? "";
 
+  const session = await getServerSession(authOptions);
+  const staff = isStaff(session);
+
   const reports = await prisma.report.findMany({
     where: {
       ...(Number.isInteger(year) && year > 0 ? { year } : {}),
       ...(Number.isInteger(month) && month > 0 ? { month } : {}),
     },
     orderBy: { reportDate: "desc" },
-    include: { uploadedBy: true, attachments: true },
+    select: {
+      id: true,
+      reportDate: true,
+      year: true,
+      month: true,
+      weekOfMonth: true,
+      uploadedAt: true,
+      initialBalance: true,
+      finalBalance: true,
+      uploadedBy: {
+        select: {
+          name: true,
+        },
+      },
+      attachments: {
+        select: {
+          id: true,
+          fileUrl: true,
+          fileType: true,
+          originalFileName: true,
+          fileSizeBytes: true,
+          uploadedAt: true,
+          ...(staff
+            ? {
+                extractionStatus: true,
+                extractionModel: true,
+                extractionError: true,
+                extractedAt: true,
+              }
+            : {}),
+        },
+      },
+    },
   });
 
   const filteredReports = keyword

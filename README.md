@@ -46,7 +46,7 @@ npm install
 
 # setup environment variables
 cp .env.example .env
-# isi DATABASE_URL, AUTH_USERNAME, AUTH_PASSWORD, SESSION_SECRET
+# sesuaikan DATABASE_URL, NEXTAUTH_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, dll.
 
 # setup database
 npx prisma migrate dev

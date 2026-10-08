@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { isStaff, isAdmin } from "@/lib/auth-guard";
 import {
   ArrowLeft,
   Download,
@@ -55,18 +56,54 @@ export default async function DetailLaporanPage({
 }) {
   const { id } = await params;
   const session = await getServerSession(authOptions);
-  const hasSession = !!session;
+  const staff = isStaff(session);
+  const admin = isAdmin(session);
 
   const report = await prisma.report.findUnique({
     where: { id },
-    include: {
-      uploadedBy: true,
+    select: {
+      id: true,
+      reportDate: true,
+      year: true,
+      month: true,
+      weekOfMonth: true,
+      uploadedAt: true,
+      initialBalance: true,
+      finalBalance: true,
+      uploadedBy: {
+        select: {
+          name: true,
+        },
+      },
       attachments: {
-        include: {
+        select: {
+          id: true,
+          reportId: true,
+          fileUrl: true,
+          fileType: true,
+          originalFileName: true,
+          fileSizeBytes: true,
+          uploadedAt: true,
+          extractionStatus: true,
+          extractionModel: true,
+          extractionError: true,
           transactions: {
-            include: {
+            select: {
+              id: true,
+              reportId: true,
+              attachmentId: true,
+              type: true,
+              amount: true,
+              description: true,
+              transactionDate: true,
+              donorNameRaw: true,
+              donorId: true,
+              isVerified: true,
+              verifiedById: true,
+              verifiedAt: true,
+              category: true,
               verifiedBy: {
-                select: { id: true, name: true, email: true },
+                select: { id: true, name: true },
               },
               donor: {
                 select: { id: true, name: true },
@@ -80,10 +117,10 @@ export default async function DetailLaporanPage({
   });
   if (!report) notFound();
 
-  // Untuk publik tanpa sesi, sembunyikan transaksi yang belum diverifikasi
+  // Untuk publik / non-staf, sembunyikan transaksi yang belum diverifikasi
   const attachmentsWithFilteredTx = report.attachments.map((att) => ({
     ...att,
-    transactions: hasSession
+    transactions: staff
       ? att.transactions
       : att.transactions.filter((t) => t.isVerified),
   }));
@@ -202,14 +239,14 @@ export default async function DetailLaporanPage({
                                 <Download size={14} /> Unduh
                               </Button>
                             </a>
-                            {hasSession && (
+                            {staff && (
                               <DeleteAttachmentButton attachmentId={att.id} />
                             )}
                           </div>
                         </div>
 
                         {/* ── Blok Ekstraksi (F-011) — hanya tampil jika ada sesi ── */}
-                        {hasSession && (
+                        {staff && (
                           <div className="rounded-2xl bg-surface-container border border-outline-variant p-4 space-y-3 shadow-xs">
                             <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
                               Ekstraksi Data Transaksi
@@ -238,7 +275,7 @@ export default async function DetailLaporanPage({
                               <h2 className="text-base font-bold text-on-surface font-sans">
                                 Transaksi Kas ({txCount})
                               </h2>
-                              {hasSession && unverifiedCount > 0 && (
+                              {staff && unverifiedCount > 0 && (
                                 <span className="text-xs font-semibold text-amber-800 bg-amber-500/15 border border-amber-300 px-2.5 py-0.5 rounded-full">
                                   {unverifiedCount} perlu dikonfirmasi
                                 </span>
@@ -261,7 +298,7 @@ export default async function DetailLaporanPage({
                                   ? { id: t.donor.id, name: t.donor.name }
                                   : null,
                               }))}
-                              hasSession={hasSession}
+                              hasSession={staff}
                               allVerifiedTransactions={allVerifiedInReport}
                             />
                           </div>
@@ -318,14 +355,14 @@ export default async function DetailLaporanPage({
                                 <Download size={13} /> Unduh
                               </Button>
                             </a>
-                            {hasSession && (
+                            {staff && (
                               <DeleteAttachmentButton attachmentId={att.id} />
                             )}
                           </div>
                         </div>
 
                         {/* ── Blok Ekstraksi AI (F-019) — hanya tampil jika ada sesi ── */}
-                        {hasSession && (
+                        {staff && (
                           <div className="rounded-2xl bg-surface-container border border-outline-variant p-4 space-y-3 shadow-xs">
                             <div className="flex items-center justify-between">
                               <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
@@ -359,7 +396,7 @@ export default async function DetailLaporanPage({
                               <h2 className="text-base font-bold text-on-surface font-sans">
                                 Transaksi Kas ({txCount})
                               </h2>
-                              {hasSession && unverifiedCount > 0 && (
+                              {staff && unverifiedCount > 0 && (
                                 <span className="text-xs font-semibold text-amber-800 bg-amber-500/15 border border-amber-300 px-2.5 py-0.5 rounded-full">
                                   {unverifiedCount} perlu dikonfirmasi
                                 </span>
@@ -382,7 +419,7 @@ export default async function DetailLaporanPage({
                                   ? { id: t.donor.id, name: t.donor.name }
                                   : null,
                               }))}
-                              hasSession={hasSession}
+                              hasSession={staff}
                               allVerifiedTransactions={allVerifiedInReport}
                             />
                           </div>
@@ -420,14 +457,14 @@ export default async function DetailLaporanPage({
                               <Download size={13} /> Unduh
                             </Button>
                           </a>
-                          {hasSession && (
+                          {staff && (
                             <DeleteAttachmentButton attachmentId={att.id} />
                           )}
                         </div>
                       </div>
 
                       {/* ── Blok Impor / Ekstraksi Data (Issue #056) — hanya tampil jika ada sesi ── */}
-                      {hasSession && (
+                      {staff && (
                         <div className="rounded-2xl bg-surface-container border border-outline-variant p-4 space-y-3 shadow-xs">
                           <div className="flex items-center justify-between">
                             <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
@@ -464,7 +501,7 @@ export default async function DetailLaporanPage({
                             <h2 className="text-base font-bold text-on-surface font-sans">
                               Transaksi Kas ({txCount})
                             </h2>
-                            {hasSession && unverifiedCount > 0 && (
+                            {staff && unverifiedCount > 0 && (
                               <span className="text-xs font-semibold text-amber-800 bg-amber-500/15 border border-amber-300 px-2.5 py-0.5 rounded-full">
                                 {unverifiedCount} perlu dikonfirmasi
                               </span>
@@ -487,7 +524,7 @@ export default async function DetailLaporanPage({
                                 ? { id: t.donor.id, name: t.donor.name }
                                 : null,
                             }))}
-                            hasSession={hasSession}
+                            hasSession={staff}
                             allVerifiedTransactions={allVerifiedInReport}
                           />
                         </div>
@@ -533,7 +570,7 @@ export default async function DetailLaporanPage({
                   <dd className="font-semibold text-on-surface mt-0.5">
                     {report.attachments.length} berkas pindaian
                   </dd>
-                  {hasSession && (
+                  {staff && (
                     <div className="mt-2.5">
                       <AddAttachmentButton reportId={report.id} />
                     </div>
@@ -696,7 +733,7 @@ export default async function DetailLaporanPage({
               );
             })()}
 
-            {hasSession && (
+            {admin && (
               <div className="pt-4 border-t border-outline-variant">
                 <DeleteReportButton reportId={report.id} />
               </div>
