@@ -67,24 +67,26 @@ function formatRupiah(amount: number): string {
 }
 
 function formatShortRupiah(val: number): string {
-  if (val === 0) return "Rp 0";
+  if (val === 0) return "0";
   const abs = Math.abs(val);
   const sign = val < 0 ? "-" : "";
+
+  const formatWithComma = (num: number) => {
+    const fixed = num.toFixed(1);
+    const clean = fixed.endsWith(".0") ? fixed.slice(0, -2) : fixed;
+    return clean.replace(".", ",");
+  };
+
   if (abs >= 1_000_000_000) {
-    const formatted = (abs / 1_000_000_000).toFixed(
-      abs % 1_000_000_000 === 0 ? 0 : 1
-    );
-    return `${sign}Rp ${formatted} M`;
+    return `${sign}${formatWithComma(abs / 1_000_000_000)} M`;
   }
   if (abs >= 1_000_000) {
-    const formatted = (abs / 1_000_000).toFixed(abs % 1_000_000 === 0 ? 0 : 1);
-    return `${sign}Rp ${formatted} jt`;
+    return `${sign}${formatWithComma(abs / 1_000_000)} jt`;
   }
   if (abs >= 1_000) {
-    const formatted = (abs / 1_000).toFixed(abs % 1_000 === 0 ? 0 : 1);
-    return `${sign}Rp ${formatted} rb`;
+    return `${sign}${formatWithComma(abs / 1_000)} rb`;
   }
-  return `${sign}Rp ${abs}`;
+  return `${sign}${abs}`;
 }
 
 function formatPeriodLabel(
@@ -346,6 +348,7 @@ export function DashboardClient({
   }));
 
   // 3. Render label bar: di HP (< md) sembunyikan angka di atas batang
+  // Pada desktop: putar label vertikal (-90 derajat) di atas batang agar tidak saling menimpa
   const renderBarLabel = (props: {
     x?: number | string;
     y?: number | string;
@@ -358,12 +361,19 @@ export function DashboardClient({
     const { x, y, width, value } = props;
     const num = Number(value);
     if (!num || num <= 0) return null;
+
+    const cx = Number(x || 0) + Number(width || 0) / 2;
+    const cy = Number(y || 0) - 8;
+
     return (
       <text
-        x={Number(x || 0) + Number(width || 0) / 2}
-        y={Number(y || 0) - 6}
-        textAnchor="middle"
-        className="fill-muted-foreground text-[10px] font-medium"
+        x={cx}
+        y={cy}
+        transform={`rotate(-90 ${cx} ${cy})`}
+        textAnchor="start"
+        dominantBaseline="central"
+        fontSize={11}
+        className="fill-muted-foreground text-[11px] font-medium select-none"
       >
         {formatShortRupiah(num)}
       </text>
@@ -542,7 +552,7 @@ export function DashboardClient({
                 Pemasukan dan Pengeluaran Kas
               </h2>
               <p className="text-sm text-on-surface-variant mt-0.5">
-                Perbandingan uang masuk dan uang keluar kas masjid (hanya transaksi terverifikasi).
+                Perbandingan uang masuk dan uang keluar kas masjid dalam rupiah (hanya transaksi terverifikasi).
               </p>
               <p className="mt-0.5 text-xs text-on-surface-variant/80">
                 {granularity === "weekly"
@@ -604,7 +614,7 @@ export function DashboardClient({
                   <BarChart
                     data={chartData}
                     margin={{
-                      top: isMobile ? 12 : 24,
+                      top: isMobile ? 12 : 36,
                       right: isMobile ? 8 : 16,
                       left: isMobile ? -6 : 8,
                       bottom: isMobile ? 8 : 20,
