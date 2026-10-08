@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { matchAndAssignDonor } from "@/lib/donor-service";
+import { isStaff } from "@/lib/auth-guard";
 
 // PATCH /api/transactions/:id/donor
 // Mengedit nama donatur khusus pada baris transaksi yang SUDAH diverifikasi (isVerified = true) bertipe pemasukan.
@@ -14,6 +15,12 @@ export async function PATCH(
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!isStaff(session)) {
+    return NextResponse.json(
+      { error: "Forbidden: Hanya pengurus DKM (Admin atau Bendahara) yang dapat mengedit donatur transaksi" },
+      { status: 403 }
+    );
   }
 
   const { id } = await params;

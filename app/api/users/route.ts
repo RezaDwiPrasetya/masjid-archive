@@ -2,13 +2,20 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isAdmin } from "@/lib/auth-guard";
 
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== "ADMIN") {
-      return new NextResponse("Unauthorized", { status: 401 });
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (!isAdmin(session)) {
+      return NextResponse.json(
+        { error: "Forbidden: Hanya Administrator yang dapat mengakses manajemen pengguna" },
+        { status: 403 }
+      );
     }
 
     const users = await prisma.user.findMany({
@@ -41,8 +48,14 @@ export async function PATCH(req: Request) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== "ADMIN") {
-      return new NextResponse("Unauthorized", { status: 401 });
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (!isAdmin(session)) {
+      return NextResponse.json(
+        { error: "Forbidden: Hanya Administrator yang dapat mengubah peran pengguna" },
+        { status: 403 }
+      );
     }
 
     const body = await req.json();
@@ -78,8 +91,14 @@ export async function DELETE(req: Request) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== "ADMIN") {
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (!isAdmin(session)) {
+      return NextResponse.json(
+        { error: "Forbidden: Hanya Administrator yang dapat menghapus pengguna" },
+        { status: 403 }
+      );
     }
 
     const { searchParams } = new URL(req.url);

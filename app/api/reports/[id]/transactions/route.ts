@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isStaff } from "@/lib/auth-guard";
 
 // GET /api/reports/:id/transactions
-// - Ada sesi (bendahara): tampilkan semua transaksi (verified & unverified) untuk keperluan review
-// - Tanpa sesi (publik): hanya tampilkan transaksi yang isVerified = true
-//   → transaksi draft/belum dikonfirmasi tidak bocor ke publik
+// - Staf pengurus DKM (ADMIN atau BENDAHARA): tampilkan semua transaksi (verified & unverified) untuk keperluan review
+// - Tanpa sesi atau jemaah umum (Guest): hanya tampilkan transaksi yang isVerified = true
+//   → transaksi draft/belum dikonfirmasi tidak bocor ke publik atau akun tamu
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -25,8 +26,8 @@ export async function GET(
   const transactions = await prisma.transaction.findMany({
     where: {
       reportId: id,
-      // Publik hanya boleh lihat transaksi yang sudah diverifikasi
-      ...(session ? {} : { isVerified: true }),
+      // Hanya staf pengurus (ADMIN / BENDAHARA) yang boleh melihat transaksi draf/unverified
+      ...(isStaff(session) ? {} : { isVerified: true }),
     },
     include: {
       verifiedBy: {

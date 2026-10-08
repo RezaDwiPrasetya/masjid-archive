@@ -5,15 +5,22 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { extractTransactionsFromFile } from "@/lib/extract-transactions";
 import { parseTransactionsFromExcel } from "@/lib/parse-excel-transactions";
+import { isStaff } from "@/lib/auth-guard";
 
 export async function POST(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // 1. Validasi sesi
+  // 1. Validasi sesi & role
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!isStaff(session)) {
+    return NextResponse.json(
+      { error: "Forbidden: Hanya pengurus DKM (Admin atau Bendahara) yang dapat menjalankan ekstraksi data" },
+      { status: 403 }
+    );
   }
 
   const { id } = await params;

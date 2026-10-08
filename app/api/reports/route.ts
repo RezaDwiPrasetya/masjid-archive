@@ -5,6 +5,7 @@ import { derivePeriod } from "@/lib/derive-period";
 import { supabase } from "@/lib/supabase";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { isStaff } from "@/lib/auth-guard";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -36,8 +37,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!isStaff(session)) {
+    return NextResponse.json(
+      { error: "Forbidden: Hanya pengurus DKM (Admin atau Bendahara) yang dapat mengunggah laporan" },
+      { status: 403 }
+    );
   }
   const uploadedById = session.user.id;
 

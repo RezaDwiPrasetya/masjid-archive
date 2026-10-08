@@ -3,13 +3,14 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { EXPENSE_CATEGORIES } from "@/lib/expense-categories";
+import { isStaff } from "@/lib/auth-guard";
 
 /**
  * PATCH /api/transactions/:id/category
  * Mengubah kategori pengeluaran pada transaksi (V7 — F-023)
  *
  * Aturan Bisnis:
- * - Memerlukan sesi aktif (bendahara/admin)
+ * - Memerlukan sesi staf aktif (bendahara/admin)
  * - Hanya bisa digunakan pada transaksi bertipe "pengeluaran"
  * - Mengubah field category saja — isVerified, amount, dan field lain TIDAK berubah
  * - Nilai kategori yang valid: "operasional" | "honor" | "sosial" | "pembangunan" |
@@ -22,6 +23,12 @@ export async function PATCH(
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!isStaff(session)) {
+    return NextResponse.json(
+      { error: "Forbidden: Hanya pengurus DKM (Admin atau Bendahara) yang dapat mengubah kategori pengeluaran" },
+      { status: 403 }
+    );
   }
 
   const { id } = await params;

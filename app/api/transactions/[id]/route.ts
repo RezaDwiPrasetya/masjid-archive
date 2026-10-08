@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isStaff } from "@/lib/auth-guard";
 
 // PATCH /api/transactions/:id
 // Edit field transaksi sebelum dikonfirmasi (hanya jika isVerified = false)
@@ -12,6 +13,12 @@ export async function PATCH(
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!isStaff(session)) {
+    return NextResponse.json(
+      { error: "Forbidden: Hanya pengurus DKM (Admin atau Bendahara) yang dapat mengedit transaksi" },
+      { status: 403 }
+    );
   }
 
   const { id } = await params;
@@ -86,6 +93,12 @@ export async function DELETE(
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!isStaff(session)) {
+    return NextResponse.json(
+      { error: "Forbidden: Hanya pengurus DKM (Admin atau Bendahara) yang dapat menghapus transaksi" },
+      { status: 403 }
+    );
   }
 
   const { id } = await params;

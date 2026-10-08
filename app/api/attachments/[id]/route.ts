@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { supabase } from "@/lib/supabase";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { isStaff } from "@/lib/auth-guard";
 
 export async function DELETE(
   request: NextRequest,
@@ -11,6 +12,12 @@ export async function DELETE(
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!isStaff(session)) {
+    return NextResponse.json(
+      { error: "Forbidden: Hanya pengurus DKM (Admin atau Bendahara) yang dapat menghapus lampiran" },
+      { status: 403 }
+    );
   }
 
   const { id } = await params;
