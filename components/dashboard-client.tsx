@@ -612,6 +612,7 @@ export function DashboardClient({
               <ChartContainer config={chartConfig} className="h-[360px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
+                    key={granularity}
                     data={chartData}
                     margin={{
                       top: isMobile ? 12 : 36,
@@ -669,6 +670,9 @@ export function DashboardClient({
                       fill="hsl(150, 65%, 40%)"
                       radius={[4, 4, 0, 0]}
                       maxBarSize={isMobile ? 22 : 38}
+                      isAnimationActive={true}
+                      animationDuration={600}
+                      animationEasing="ease-out"
                     >
                       <LabelList
                         dataKey="pemasukan"
@@ -680,6 +684,9 @@ export function DashboardClient({
                       fill="hsl(0, 72%, 56%)"
                       radius={[4, 4, 0, 0]}
                       maxBarSize={isMobile ? 22 : 38}
+                      isAnimationActive={true}
+                      animationDuration={600}
+                      animationEasing="ease-out"
                     >
                       <LabelList
                         dataKey="pengeluaran"
