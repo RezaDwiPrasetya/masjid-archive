@@ -43,6 +43,13 @@
 - [x] Reaktivitas penuh kartu KPI, grafik proporsi, dan tabel transaksi di `/pengeluaran`
 - [x] Reaktivitas penuh kartu KPI donatur/infaq anonim dan peringkat donatur di `/donatur`
 
+### Milestone 8 — Fiscal Period Filter & Zero-Modal Export (V9, Issue #067)
+- [ ] Selector Bulan & Tahun terintegrasi di toolbar dashboard utama
+- [ ] Mode Mingguan: 4–5 pekan (Jumat) spesifik bulan & tahun terpilih
+- [ ] Mode Tahunan: 12 bulan (Jan–Des) di desktop, toggle Semester 1 & 2 di mobile
+- [ ] Ekspor & Cetak terpadu (A4 Mading, PDF, Excel) langsung dari toolbar tanpa modal dialog
+- [ ] Penyelarasan kartu KPI dan tabel data dengan periode aktif
+
 ## Release Criteria
 
 - [x] Alur inti (unggah, arsip, cari, detail, ekstraksi, verifikasi) berjalan tanpa error
@@ -52,10 +59,17 @@
 
 ## Version
 
-Current: `0.8.0` (Fase V8: Period Filtering & Financial Analysis — Issue #66)
-Next: `0.9.0`
+Current: `0.9.0` (Fase V9: Fiscal Period Filter & Zero-Modal Export — Issue #067)
+Next: `1.0.0`
 
 ## Changelog
+
+### 0.9.0 (2026-10-08) — Fase V9: Filter Periode Fiskal & Ekspor Terpadu Tanpa Modal (Issue #067)
+- **Toolbar Filter Terpadu**: Pemindahan selector Bulan dan Tahun langsung ke dashboard utama di samping toggle mode grafik.
+- **Mode Mingguan Presisi**: Grafik mingguan memplot pekan (Jumat) dalam bulan dan tahun yang dipilih, bukan rolling window acak.
+- **Mode Tahunan Responsif (Semesteran Mobile)**: Di desktop menampilkan 12 bulan penuh, di mobile menyediakan toggle Semester 1 (Jan–Jun) dan Semester 2 (Jul–Des) agar tetap lega dan proporsional.
+- **Zero-Modal Export**: Tombol Cetak A4 Mading, Unduh PDF, dan Unduh Excel terintegrasi langsung di toolbar dashboard tanpa popup dialog.
+- **Reaktivitas KPI & API**: Endpoint `GET /api/dashboard/trend` menerima filter `year` dan `month` untuk agregasi presisi.
 
 ### 0.8.0 (2026-10-07) — Fase V8: Filter Periode Waktu & Analisis Keuangan Berkala (Issue #66)
 - **Komponen Filter Waktu**: Komponen `PeriodFilterBar` dengan selector Tahun dinamis, selector Bulan (Semua Bulan, Jan–Des), dan tombol preset instan (Semua Waktu, Tahun Ini, Bulan Ini).

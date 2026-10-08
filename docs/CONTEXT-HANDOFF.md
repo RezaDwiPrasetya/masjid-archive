@@ -258,8 +258,12 @@ Shared logic di `lib/donor-matching.ts`, `lib/donor-service.ts`, dan `lib/expens
    - **Pengetatan Endpoint & UI**: Aksi hapus laporan kas (`DELETE /api/reports/:id`) dan tombol hapus di UI hanya dapat diakses oleh Administrator. Aksi mutasi operasional lainnya hanya untuk staf.
    - **Proteksi Data Publik**: Query publik menggunakan `select` eksplisit, menyembunyikan dump respons mentah vision-LLM (`extractionRawResponse`), `extractionError`, serta email pengunggah dari publik tanpa login.
    - **Pembersihan Total Legacy Auth**: Modul `iron-session`, berkas `lib/session.ts`, dan endpoint login/logout lama dihapus permanen.
-4. **Kandidat Eksplorasi Fase Berikutnya (Fase V9)**:
-   - Evaluasi masukan pengguna / pengurus DKM Masjid Al-Luqman terkait penambahan visualisasi grafik perbandingan antar-periode atau fitur cetak khusus rekap laporan per kategori pengeluaran.
+4. **Fase V9: Filter Periode Fiskal & Ekspor Terpadu Tanpa Modal (Issue #067 — Sedang Berjalan)**:
+   - Mengganti sistem grafik *rolling window* dengan filter kalender terpadu (Bulan & Tahun).
+   - Mode Mingguan: memplot 4–5 pekan (Jumat) spesifik bulan & tahun terpilih.
+   - Mode Tahunan: memplot 12 bulan (Jan–Des) di desktop, dan toggle Semester 1 (Jan–Jun) / Semester 2 (Jul–Des) di mobile agar grafik tetap lega (maksimal 6 titik).
+   - Zero-Modal Export: tombol Cetak A4, PDF, dan Excel diintegrasikan langsung pada toolbar dashboard tanpa modal popup `MonthlyExportDialog`.
+5. **Kandidat Eksplorasi Fase Berikutnya (Fase V10)**:
    - Pemeliharaan performa dan audit berkala data kas.
 
 ---

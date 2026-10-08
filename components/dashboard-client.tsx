@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   TrendingUp,
   TrendingDown,
@@ -12,6 +13,9 @@ import {
   Scale,
   FileText,
   Info,
+  Printer,
+  Download,
+  FileSpreadsheet,
 } from "lucide-react";
 import {
   BarChart,
@@ -19,11 +23,9 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  ResponsiveContainer,
   LabelList,
 } from "recharts";
 import { Button } from "@/components/ui/button";
-import { MonthlyExportDialog } from "@/components/monthly-export-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PageShell } from "@/components/page-shell";
@@ -34,6 +36,21 @@ import {
   ChartTooltipContent,
   ChartConfig,
 } from "@/components/ui/chart";
+
+const MONTH_OPTIONS = [
+  { value: 1, label: "Januari" },
+  { value: 2, label: "Februari" },
+  { value: 3, label: "Maret" },
+  { value: 4, label: "April" },
+  { value: 5, label: "Mei" },
+  { value: 6, label: "Juni" },
+  { value: 7, label: "Juli" },
+  { value: 8, label: "Agustus" },
+  { value: 9, label: "September" },
+  { value: 10, label: "Oktober" },
+  { value: 11, label: "November" },
+  { value: 12, label: "Desember" },
+];
 
 export interface TrendPoint {
   period: string;
@@ -210,6 +227,7 @@ export function DashboardClient({
   latestReportDate,
   latestReportId,
 }: DashboardClientProps) {
+  const router = useRouter();
   const [granularity, setGranularity] = React.useState<"weekly" | "monthly">("weekly");
   const animatedBalance = useCountUp(initialFinalBalance ?? 0, 600);
   const [trendData, setTrendData] = React.useState<{
@@ -218,6 +236,24 @@ export function DashboardClient({
   }>({ weekly: [], monthly: [] });
   const [loading, setLoading] = React.useState<boolean>(true);
   const [error, setError] = React.useState<string | null>(null);
+
+  // Inisialisasi tanggal awal berdasarkan tanggal laporan kas terkini atau tanggal hari ini
+  const now = React.useMemo(() => new Date(), []);
+  const initialDate = React.useMemo(() => {
+    if (latestReportDate) {
+      const d = new Date(latestReportDate + "T00:00:00Z");
+      if (!isNaN(d.getTime())) return d;
+    }
+    return now;
+  }, [latestReportDate, now]);
+
+  const [selectedYear, setSelectedYear] = React.useState<number>(initialDate.getUTCFullYear());
+  const [selectedMonth, setSelectedMonth] = React.useState<number>(initialDate.getUTCMonth() + 1);
+
+  // Toggle Semester khusus tampilan Mobile pada mode Tahunan
+  const [semester, setSemester] = React.useState<"s1" | "s2">(
+    initialDate.getUTCMonth() + 1 <= 6 ? "s1" : "s2"
+  );
 
   // Deteksi viewport mobile (< 768px, di bawah breakpoint md)
   const [isMobile, setIsMobile] = React.useState(false);
@@ -231,17 +267,29 @@ export function DashboardClient({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // 1. Variabel penentu jumlah periode: HP (< md) = 6, Desktop = 12
-  const maxPeriods = isMobile ? 6 : 12;
+  const currentYear = now.getFullYear();
+  const yearOptions = React.useMemo(() => {
+    const list = [currentYear, currentYear - 1, currentYear - 2, currentYear - 3];
+    if (!list.includes(selectedYear)) {
+      list.push(selectedYear);
+      list.sort((a, b) => b - a);
+    }
+    return list;
+  }, [currentYear, selectedYear]);
 
   React.useEffect(() => {
     let cancelled = false;
 
     async function loadData() {
+      setLoading(true);
+      setError(null);
       try {
+        const weeklyUrl = `/api/dashboard/trend?granularity=weekly&year=${selectedYear}&month=${selectedMonth}`;
+        const monthlyUrl = `/api/dashboard/trend?granularity=monthly&year=${selectedYear}`;
+
         const [weeklyRes, monthlyRes] = await Promise.all([
-          fetch("/api/dashboard/trend?granularity=weekly&periods=12"),
-          fetch("/api/dashboard/trend?granularity=monthly&periods=12"),
+          fetch(weeklyUrl),
+          fetch(monthlyUrl),
         ]);
 
         if (!weeklyRes.ok || !monthlyRes.ok) {
@@ -274,7 +322,7 @@ export function DashboardClient({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [selectedYear, selectedMonth]);
 
   const [isSwitching, setIsSwitching] = React.useState(false);
 
@@ -292,10 +340,9 @@ export function DashboardClient({
   const handleRetry = () => {
     setLoading(true);
     setError(null);
-    Promise.all([
-      fetch("/api/dashboard/trend?granularity=weekly&periods=12"),
-      fetch("/api/dashboard/trend?granularity=monthly&periods=12"),
-    ])
+    const weeklyUrl = `/api/dashboard/trend?granularity=weekly&year=${selectedYear}&month=${selectedMonth}`;
+    const monthlyUrl = `/api/dashboard/trend?granularity=monthly&year=${selectedYear}`;
+    Promise.all([fetch(weeklyUrl), fetch(monthlyUrl)])
       .then(async ([weeklyRes, monthlyRes]) => {
         if (!weeklyRes.ok || !monthlyRes.ok) {
           throw new Error("Gagal memuat tren keuangan");
@@ -317,35 +364,44 @@ export function DashboardClient({
       });
   };
 
-  // Titik yang benar-benar tampil untuk masing-masing tab (dipotong sesuai maxPeriods)
-  const weeklyVisiblePoints = React.useMemo(
-    () => trendData.weekly.slice(-maxPeriods),
-    [trendData.weekly, maxPeriods]
-  );
-  const monthlyVisiblePoints = React.useMemo(
-    () => trendData.monthly.slice(-maxPeriods),
-    [trendData.monthly, maxPeriods]
-  );
+  const handleDownload = (url: string) => {
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
-  // Titik aktif yang mengontrol grafik & KPI
+  // Titik yang tampil pada mode mingguan: seluruh pekan di bulan terpilih
+  const weeklyVisiblePoints = trendData.weekly;
+
+  // Titik yang tampil pada mode tahunan:
+  // - Di Desktop (>= 768px): 12 bulan penuh (Jan-Des)
+  // - Di Mobile (< 768px): Berdasarkan pilihan Semester 1 (Jan-Jun) atau Semester 2 (Jul-Des)
+  const monthlyVisiblePoints = React.useMemo(() => {
+    if (!isMobile) {
+      return trendData.monthly;
+    }
+    if (semester === "s1") {
+      return trendData.monthly.slice(0, 6);
+    }
+    return trendData.monthly.slice(6, 12);
+  }, [trendData.monthly, isMobile, semester]);
+
+  // Titik aktif yang mengontrol grafik
   const visiblePoints = granularity === "weekly" ? weeklyVisiblePoints : monthlyVisiblePoints;
 
-  // 2. Label dinamis
-  const weeklyTabLabel =
-    weeklyVisiblePoints.length > 0
-      ? `Mingguan (${weeklyVisiblePoints.length} Pekan)`
-      : "Mingguan";
-  const monthlyTabLabel =
-    monthlyVisiblePoints.length > 0
-      ? `Bulanan (${monthlyVisiblePoints.length} Bulan)`
-      : "Bulanan";
+  const currentMonthName = MONTH_OPTIONS.find((m) => m.value === selectedMonth)?.label || "";
+  const periodCountLabel =
+    granularity === "weekly"
+      ? `${currentMonthName} ${selectedYear}`
+      : `Tahun ${selectedYear}`;
 
-  const currentUnit = granularity === "weekly" ? "Pekan" : "Bulan";
-  const periodCountLabel = `${visiblePoints.length} ${currentUnit}`;
-
-  // Perhitungan KPI dikontrol oleh variabel visiblePoints yang sama
-  const totalPemasukan = visiblePoints.reduce((acc, p) => acc + p.pemasukan, 0);
-  const totalPengeluaran = visiblePoints.reduce((acc, p) => acc + p.pengeluaran, 0);
+  // Perhitungan KPI dikontrol oleh seluruh data periode aktif (sebulan penuh atau setahun penuh)
+  const kpiPoints = granularity === "weekly" ? trendData.weekly : trendData.monthly;
+  const totalPemasukan = kpiPoints.reduce((acc, p) => acc + p.pemasukan, 0);
+  const totalPengeluaran = kpiPoints.reduce((acc, p) => acc + p.pengeluaran, 0);
   const netChange = totalPemasukan - totalPengeluaran;
 
   const chartData = visiblePoints.map((p) => ({
@@ -443,39 +499,134 @@ export function DashboardClient({
           </AlertDescription>
         </Alert>
 
-        {/* Header Section & Toggle Granularity */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-on-surface">
-              Ringkasan Kas & Tren
-            </h1>
-            <p className="text-sm text-on-surface-variant mt-0.5">
-              Pergerakan kas masuk, kas keluar, dan arus kas bersih kas masjid.
-            </p>
-          </div>
+        {/* Header Section & Toolbar Terpadu */}
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-on-surface">
+                Ringkasan Kas & Tren
+              </h1>
+              <p className="text-sm text-on-surface-variant mt-0.5">
+                Pergerakan kas masuk, kas keluar, dan arus kas bersih kas masjid.
+              </p>
+            </div>
 
-          <div className="flex items-center gap-3 flex-wrap self-start sm:self-auto">
-            <MonthlyExportDialog />
-            <div className="inline-flex items-center rounded-lg border border-outline-variant bg-surface-container p-1">
+            {/* Quick Export & Print Actions (Zero Modal) */}
+            <div className="flex items-center gap-1.5 flex-wrap self-start sm:self-auto">
               <Button
+                variant="outline"
                 size="sm"
-                variant={granularity === "weekly" ? "default" : "ghost"}
-                onClick={() => handleGranularityChange("weekly")}
-                className="rounded-md px-3.5 text-xs font-medium transition-all"
-                disabled={loading}
+                onClick={() => router.push(`/laporan/cetak/bulanan?year=${selectedYear}&month=${selectedMonth}`)}
+                className="h-8 gap-1.5 text-xs font-semibold px-2.5 border-outline-variant hover:bg-surface-container-high transition-colors"
+                title="Buka pratinjau cetak mading A4"
               >
-                {weeklyTabLabel}
+                <Printer size={13} className="text-primary" />
+                <span>Cetak Mading</span>
               </Button>
+
               <Button
+                variant="outline"
                 size="sm"
-                variant={granularity === "monthly" ? "default" : "ghost"}
-                onClick={() => handleGranularityChange("monthly")}
-                className="rounded-md px-3.5 text-xs font-medium transition-all"
-                disabled={loading}
+                onClick={() => handleDownload(`/api/reports/export/monthly/pdf?year=${selectedYear}&month=${selectedMonth}`)}
+                className="h-8 gap-1.5 text-xs font-semibold px-2.5 border-outline-variant hover:bg-surface-container-high text-emerald-700 dark:text-emerald-400 transition-colors"
+                title="Unduh berkas PDF resmi"
               >
-                {monthlyTabLabel}
+                <Download size={13} />
+                <span>PDF</span>
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleDownload(`/api/reports/export/monthly/excel?year=${selectedYear}&month=${selectedMonth}`)}
+                className="h-8 gap-1.5 text-xs font-semibold px-2.5 border-outline-variant hover:bg-surface-container-high text-primary transition-colors"
+                title="Unduh berkas spreadsheet Excel"
+              >
+                <FileSpreadsheet size={13} />
+                <span>Excel</span>
               </Button>
             </div>
+          </div>
+
+          {/* Filter Bar: Mode Switcher + Periode Dropdowns */}
+          <div className="flex items-center justify-between gap-3 flex-wrap rounded-xl border border-outline-variant/70 bg-surface-container-low p-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Toggle Mode: Mingguan vs Tahunan */}
+              <div className="inline-flex items-center rounded-lg border border-outline-variant bg-surface p-0.5">
+                <Button
+                  size="sm"
+                  variant={granularity === "weekly" ? "default" : "ghost"}
+                  onClick={() => handleGranularityChange("weekly")}
+                  className="rounded-md px-3 h-7 text-xs font-medium transition-all"
+                  disabled={loading}
+                >
+                  Mingguan
+                </Button>
+                <Button
+                  size="sm"
+                  variant={granularity === "monthly" ? "default" : "ghost"}
+                  onClick={() => handleGranularityChange("monthly")}
+                  className="rounded-md px-3 h-7 text-xs font-medium transition-all"
+                  disabled={loading}
+                >
+                  Tahunan
+                </Button>
+              </div>
+
+              {/* Selector Bulan (hanya saat mode Mingguan) */}
+              {granularity === "weekly" && (
+                <div className="flex items-center gap-1">
+                  <select
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(parseInt(e.target.value, 10))}
+                    className="h-7 rounded-lg border border-outline-variant bg-surface px-2.5 text-xs font-medium text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/40 cursor-pointer"
+                  >
+                    {MONTH_OPTIONS.map((m) => (
+                      <option key={m.value} value={m.value}>
+                        {m.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Selector Tahun (selalu tampil) */}
+              <div className="flex items-center gap-1">
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(parseInt(e.target.value, 10))}
+                  className="h-7 rounded-lg border border-outline-variant bg-surface px-2.5 text-xs font-medium text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/40 cursor-pointer"
+                >
+                  {yearOptions.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Khusus Mobile pada Mode Tahunan: Selector Semester (Jan-Jun vs Jul-Des) */}
+            {granularity === "monthly" && isMobile && (
+              <div className="inline-flex items-center rounded-lg border border-outline-variant bg-surface p-0.5 self-end">
+                <Button
+                  size="sm"
+                  variant={semester === "s1" ? "default" : "ghost"}
+                  onClick={() => setSemester("s1")}
+                  className="rounded-md px-2.5 h-6 text-[11px] font-medium"
+                >
+                  Jan - Jun
+                </Button>
+                <Button
+                  size="sm"
+                  variant={semester === "s2" ? "default" : "ghost"}
+                  onClick={() => setSemester("s2")}
+                  className="rounded-md px-2.5 h-6 text-[11px] font-medium"
+                >
+                  Jul - Des
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -565,8 +716,8 @@ export function DashboardClient({
               </p>
               <p className="mt-0.5 text-xs text-on-surface-variant/80">
                 {granularity === "weekly"
-                  ? "Setiap titik mewakili total transaksi terverifikasi dalam satu periode mingguan (laporan kas Jumat)."
-                  : "Setiap titik mewakili total transaksi terverifikasi dalam satu periode bulanan."}
+                  ? `Menampilkan rincian transaksi pekanan (Jumat) untuk bulan ${currentMonthName} ${selectedYear}.`
+                  : `Menampilkan rekapitulasi bulanan untuk tahun ${selectedYear}.`}
               </p>
             </div>
 
