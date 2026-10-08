@@ -89,13 +89,20 @@ function formatShortRupiah(val: number): string {
 
 function formatPeriodLabel(
   dateString: string,
-  granularity: "weekly" | "monthly"
+  granularity: "weekly" | "monthly",
+  isMobile: boolean = false
 ): string {
   try {
     const date = new Date(dateString + "T00:00:00Z");
     if (isNaN(date.getTime())) return dateString;
 
     if (granularity === "monthly") {
+      if (isMobile) {
+        return date.toLocaleDateString("id-ID", {
+          month: "short",
+          timeZone: "UTC",
+        });
+      }
       return date.toLocaleDateString("id-ID", {
         month: "short",
         year: "2-digit",
@@ -103,7 +110,15 @@ function formatPeriodLabel(
       });
     }
 
-    // Weekly: tampilkan tanggal dan bulan laporan kas (Jumat)
+    // Weekly:
+    if (isMobile) {
+      // Ringkas: misalnya "14/08" (tgl/bln)
+      const day = date.getUTCDate();
+      const month = date.getUTCMonth() + 1;
+      return `${day < 10 ? `0${day}` : day}/${month < 10 ? `0${month}` : month}`;
+    }
+
+    // Weekly Desktop: tampilkan tanggal dan bulan laporan kas (Jumat)
     return date.toLocaleDateString("id-ID", {
       day: "numeric",
       month: "short",
@@ -194,25 +209,52 @@ export function DashboardClient({
 }: DashboardClientProps) {
   const [granularity, setGranularity] = React.useState<"weekly" | "monthly">("weekly");
   const animatedBalance = useCountUp(initialFinalBalance ?? 0, 600);
-  const [points, setPoints] = React.useState<TrendPoint[]>([]);
+  const [trendData, setTrendData] = React.useState<{
+    weekly: TrendPoint[];
+    monthly: TrendPoint[];
+  }>({ weekly: [], monthly: [] });
   const [loading, setLoading] = React.useState<boolean>(true);
   const [error, setError] = React.useState<string | null>(null);
+
+  // Deteksi viewport mobile (< 768px, di bawah breakpoint md)
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(typeof window !== "undefined" && window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // 1. Variabel penentu jumlah periode: HP (< md) = 6, Desktop = 12
+  const maxPeriods = isMobile ? 6 : 12;
 
   React.useEffect(() => {
     let cancelled = false;
 
-    async function fetchData() {
+    async function loadData() {
       try {
-        const res = await fetch(
-          `/api/dashboard/trend?granularity=${granularity}&periods=12`
-        );
-        if (!res.ok) {
-          throw new Error(`Gagal memuat tren keuangan (${res.status})`);
+        const [weeklyRes, monthlyRes] = await Promise.all([
+          fetch("/api/dashboard/trend?granularity=weekly&periods=12"),
+          fetch("/api/dashboard/trend?granularity=monthly&periods=12"),
+        ]);
+
+        if (!weeklyRes.ok || !monthlyRes.ok) {
+          throw new Error("Gagal memuat tren keuangan");
         }
-        const json = await res.json();
+
+        const [weeklyJson, monthlyJson] = await Promise.all([
+          weeklyRes.json(),
+          monthlyRes.json(),
+        ]);
+
         if (!cancelled) {
-          setPoints(json?.data?.points ?? []);
-          setError(null);
+          setTrendData({
+            weekly: weeklyJson?.data?.points ?? [],
+            monthly: monthlyJson?.data?.points ?? [],
+          });
           setLoading(false);
         }
       } catch (err) {
@@ -224,71 +266,93 @@ export function DashboardClient({
       }
     }
 
-    fetchData();
+    loadData();
 
     return () => {
       cancelled = true;
     };
-  }, [granularity]);
+  }, []);
 
   const handleGranularityChange = (newGran: "weekly" | "monthly") => {
     if (newGran === granularity) return;
-    setLoading(true);
     setGranularity(newGran);
   };
 
   const handleRetry = () => {
     setLoading(true);
     setError(null);
-    fetch(`/api/dashboard/trend?granularity=${granularity}&periods=12`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`Gagal memuat tren keuangan (${res.status})`);
-        return res.json();
-      })
-      .then((json) => {
-        setPoints(json?.data?.points ?? []);
+    Promise.all([
+      fetch("/api/dashboard/trend?granularity=weekly&periods=12"),
+      fetch("/api/dashboard/trend?granularity=monthly&periods=12"),
+    ])
+      .then(async ([weeklyRes, monthlyRes]) => {
+        if (!weeklyRes.ok || !monthlyRes.ok) {
+          throw new Error("Gagal memuat tren keuangan");
+        }
+        const [weeklyJson, monthlyJson] = await Promise.all([
+          weeklyRes.json(),
+          monthlyRes.json(),
+        ]);
+        setTrendData({
+          weekly: weeklyJson?.data?.points ?? [],
+          monthly: monthlyJson?.data?.points ?? [],
+        });
         setLoading(false);
       })
       .catch((err) => {
+        console.error("Error fetching dashboard trend:", err);
         setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
         setLoading(false);
       });
   };
 
-  // Agregasi untuk periode saat ini
-  const totalPemasukan = points.reduce((acc, p) => acc + p.pemasukan, 0);
-  const totalPengeluaran = points.reduce((acc, p) => acc + p.pengeluaran, 0);
+  // Titik yang benar-benar tampil untuk masing-masing tab (dipotong sesuai maxPeriods)
+  const weeklyVisiblePoints = React.useMemo(
+    () => trendData.weekly.slice(-maxPeriods),
+    [trendData.weekly, maxPeriods]
+  );
+  const monthlyVisiblePoints = React.useMemo(
+    () => trendData.monthly.slice(-maxPeriods),
+    [trendData.monthly, maxPeriods]
+  );
+
+  // Titik aktif yang mengontrol grafik & KPI
+  const visiblePoints = granularity === "weekly" ? weeklyVisiblePoints : monthlyVisiblePoints;
+
+  // 2. Label dinamis
+  const weeklyTabLabel =
+    weeklyVisiblePoints.length > 0
+      ? `Mingguan (${weeklyVisiblePoints.length} Pekan)`
+      : "Mingguan";
+  const monthlyTabLabel =
+    monthlyVisiblePoints.length > 0
+      ? `Bulanan (${monthlyVisiblePoints.length} Bulan)`
+      : "Bulanan";
+
+  const currentUnit = granularity === "weekly" ? "Pekan" : "Bulan";
+  const periodCountLabel = `${visiblePoints.length} ${currentUnit}`;
+
+  // Perhitungan KPI dikontrol oleh variabel visiblePoints yang sama
+  const totalPemasukan = visiblePoints.reduce((acc, p) => acc + p.pemasukan, 0);
+  const totalPengeluaran = visiblePoints.reduce((acc, p) => acc + p.pengeluaran, 0);
   const netChange = totalPemasukan - totalPengeluaran;
 
-  const chartData = points.map((p) => ({
+  const chartData = visiblePoints.map((p) => ({
     period: p.period,
-    label: formatPeriodLabel(p.period, granularity),
+    label: formatPeriodLabel(p.period, granularity, isMobile),
     tooltipLabel: formatTooltipPeriod(p.period, granularity),
     pemasukan: p.pemasukan,
     pengeluaran: p.pengeluaran,
   }));
 
-  // Deteksi viewport mobile (< 640px) untuk optimasi tata letak grafik & label
-  const [isMobile, setIsMobile] = React.useState(false);
-
-  React.useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(typeof window !== "undefined" && window.innerWidth < 640);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
+  // 3. Render label bar: di HP (< md) sembunyikan angka di atas batang
   const renderBarLabel = (props: {
     x?: number | string;
     y?: number | string;
     width?: number | string;
     value?: unknown;
   }) => {
-    // Sembunyikan label teks statis jika pada viewport mobile (< 640px) pada mode mingguan,
-    // ATAU jika lebar bar < 36px (menghilangkan overlap teks horizontal Rp xxx rb di layar sempit)
-    if ((isMobile && granularity === "weekly") || Number(props.width || 0) < 36) {
+    if (isMobile) {
       return null;
     }
     const { x, y, width, value } = props;
@@ -381,7 +445,7 @@ export function DashboardClient({
                 className="rounded-md px-3.5 text-xs font-medium transition-all"
                 disabled={loading}
               >
-                Mingguan (12 Pekan)
+                {weeklyTabLabel}
               </Button>
               <Button
                 size="sm"
@@ -390,7 +454,7 @@ export function DashboardClient({
                 className="rounded-md px-3.5 text-xs font-medium transition-all"
                 disabled={loading}
               >
-                Bulanan (12 Bulan)
+                {monthlyTabLabel}
               </Button>
             </div>
           </div>
@@ -403,7 +467,7 @@ export function DashboardClient({
             <div className="flex items-center gap-1.5 text-xs font-medium text-on-surface-variant">
               <ArrowUpRight className="h-4 w-4 text-emerald-600 shrink-0" />
               <span>
-                Total Pemasukan ({granularity === "weekly" ? "12 Pekan" : "12 Bulan"})
+                Total Pemasukan ({periodCountLabel})
               </span>
             </div>
             {loading ? (
@@ -423,7 +487,7 @@ export function DashboardClient({
             <div className="flex items-center gap-1.5 text-xs font-medium text-on-surface-variant">
               <ArrowDownRight className="h-4 w-4 text-rose-500 shrink-0" />
               <span>
-                Total Pengeluaran ({granularity === "weekly" ? "12 Pekan" : "12 Bulan"})
+                Total Pengeluaran ({periodCountLabel})
               </span>
             </div>
             {loading ? (
@@ -442,7 +506,7 @@ export function DashboardClient({
           <div className="py-3 sm:py-0 sm:px-6 last:sm:pr-0">
             <div className="flex items-center gap-1.5 text-xs font-medium text-on-surface-variant">
               <Scale className="h-4 w-4 shrink-0" />
-              <span>Arus Kas Bersih</span>
+              <span>Arus Kas Bersih ({periodCountLabel})</span>
               {netChange >= 0 ? (
                 <TrendingUp className="h-3.5 w-3.5 text-emerald-600 ml-auto" />
               ) : (
@@ -453,8 +517,9 @@ export function DashboardClient({
               <Skeleton className="h-8 w-32 mt-2 rounded bg-surface-container-high" />
             ) : (
               <div
-                className={`mt-1 text-2xl font-semibold tabular-nums ${netChange >= 0 ? "text-emerald-700" : "text-rose-600"
-                  }`}
+                className={`mt-1 text-2xl font-semibold tabular-nums ${
+                  netChange >= 0 ? "text-emerald-700" : "text-rose-600"
+                }`}
               >
                 {netChange >= 0 ? "+" : ""}
                 {formatRupiah(netChange)}
@@ -522,7 +587,7 @@ export function DashboardClient({
                 <Skeleton className="h-4 w-12 bg-surface-container-high" />
               </div>
             </div>
-          ) : points.length === 0 ? (
+          ) : visiblePoints.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center rounded-lg border border-dashed border-outline-variant bg-surface/50">
               <Wallet className="h-12 w-12 text-on-surface-variant/40 mb-3" />
               <p className="text-base font-semibold text-on-surface">
@@ -539,12 +604,13 @@ export function DashboardClient({
                   <BarChart
                     data={chartData}
                     margin={{
-                      top: 20,
-                      right: isMobile ? 4 : 10,
-                      left: isMobile ? -16 : 10,
-                      bottom: 20,
+                      top: isMobile ? 12 : 24,
+                      right: isMobile ? 8 : 16,
+                      left: isMobile ? -6 : 8,
+                      bottom: isMobile ? 8 : 20,
                     }}
-                    barGap={isMobile ? 2 : 4}
+                    barGap={isMobile ? 3 : 6}
+                    barCategoryGap={isMobile ? "18%" : "22%"}
                   >
                     <CartesianGrid
                       strokeDasharray="3 3"
@@ -555,8 +621,8 @@ export function DashboardClient({
                       dataKey="label"
                       tickLine={false}
                       axisLine={false}
-                      tickMargin={10}
-                      interval={isMobile && granularity === "weekly" ? "preserveStartEnd" : 0}
+                      tickMargin={isMobile ? 6 : 10}
+                      interval={0}
                       className="text-[10px] sm:text-xs fill-on-surface-variant font-medium"
                     />
                     <YAxis
@@ -572,9 +638,10 @@ export function DashboardClient({
                             : "auto",
                       ]}
                       className="text-[10px] sm:text-xs fill-on-surface-variant"
-                      width={isMobile ? 52 : 75}
+                      width={isMobile ? 56 : 70}
                     />
                     <ChartTooltip
+                      cursor={{ fill: "currentColor", opacity: 0.08 }}
                       content={
                         <ChartTooltipContent
                           labelFormatter={(_, payload) => {
@@ -591,7 +658,7 @@ export function DashboardClient({
                       dataKey="pemasukan"
                       fill="hsl(150, 65%, 40%)"
                       radius={[4, 4, 0, 0]}
-                      maxBarSize={40}
+                      maxBarSize={isMobile ? 22 : 38}
                     >
                       <LabelList
                         dataKey="pemasukan"
@@ -602,7 +669,7 @@ export function DashboardClient({
                       dataKey="pengeluaran"
                       fill="hsl(0, 72%, 56%)"
                       radius={[4, 4, 0, 0]}
-                      maxBarSize={40}
+                      maxBarSize={isMobile ? 22 : 38}
                     >
                       <LabelList
                         dataKey="pengeluaran"
