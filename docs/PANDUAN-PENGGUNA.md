@@ -46,8 +46,9 @@ Sistem ini menggantikan ketergantungan pada buku kas fisik yang rentan hilang at
 | Mengekstrak data dari foto/PDF/Excel via AI | Bendahara & Administrator |
 | Memverifikasi & merekonsiliasi transaksi | Bendahara & Administrator |
 | Mengklasifikasi & mengedit kategori pengeluaran | Bendahara & Administrator |
-| Mencetak & mengunduh rekap kas | Bendahara & Administrator |
-| Mengelola akun pengguna | Administrator saja |
+| Mencetak & mengunduh rekap kas (PDF & Excel) | Semua orang (tanpa login) |
+| Menghapus laporan kas utama | Administrator saja |
+| Mengelola akun dan hak akses pengguna | Administrator saja |
 
 ---
 
@@ -61,14 +62,14 @@ Sistem menggunakan tiga tingkatan akses:
 - **Tidak dapat** mengubah data apa pun.
 
 ### 💼 Bendahara
-- Perlu login dengan akun Google yang sudah didaftarkan oleh Administrator.
-- Dapat mengunggah laporan, mengekstrak data via AI, memverifikasi transaksi, mengelola kategori pengeluaran, dan mencetak/mengekspor rekap kas.
-- **Tidak dapat** mengelola akun pengguna lain.
+- Perlu login dengan akun Google yang memiliki role `BENDAHARA`.
+- Dapat mengunggah laporan (`/unggah`), mengekstrak data via AI, memverifikasi transaksi kas, mengedit nama donatur, mengelola kategori pengeluaran, dan menghapus berkas lampiran yang belum terverifikasi.
+- **Tidak dapat** menghapus laporan kas utama (`DELETE /api/reports/:id`) dan tidak dapat mengelola akun pengguna lain.
 
 ### 🛡️ Administrator
 - Perlu login dengan akun Google yang memiliki role `ADMIN`.
-- Memiliki seluruh akses Bendahara **ditambah** kemampuan mengelola daftar pengguna (mengatur role, menghapus akun).
-- Menu **Pengguna** hanya muncul di navigasi untuk Administrator.
+- Memiliki seluruh akses operasional Bendahara **ditambah** hak eksklusif menghapus dokumen laporan kas (`DELETE /api/reports/:id`) serta kewenangan penuh mengelola akun pengguna di menu `/pengguna` (menetapkan role dan menghapus akun yang tidak memiliki riwayat audit finansial).
+- Menu **Pengguna** di navigasi dan tombol **Hapus Laporan** di halaman Detail Laporan hanya muncul khusus untuk Administrator.
 
 > **Catatan**: Role ditetapkan secara manual oleh Administrator melalui menu Pengguna. Seseorang yang login pertama kali otomatis masuk sebagai Jamaah (read-only) sampai diberi role oleh Admin.
 
@@ -338,10 +339,12 @@ Setiap lampiran yang terhubung ke laporan ini ditampilkan dalam daftar. Untuk se
 - **PDF**: Ditampilkan sebagai pratinjau PDF tersemat langsung di halaman (dapat discroll).
 - **Excel**: Ditampilkan sebagai ikon spreadsheet dengan nama file.
 
-**Tombol aksi per lampiran** (hanya muncul jika sudah login):
-- **Ekstrak Data** / **Coba Lagi** — Memulai proses ekstraksi AI (lihat di bawah)
-- **Ekstrak Ulang** — Menjalankan ulang ekstraksi meski sebelumnya sudah berhasil
-- **Hapus Lampiran** — Menghapus lampiran (hanya jika belum ada transaksi terverifikasi)
+**Tombol aksi pada halaman Detail Laporan**:
+- **Hapus Laporan 🗑️** (*Khusus Administrator* `ADMIN`): Terletak di bagian atas halaman. Digunakan untuk menghapus dokumen laporan beserta seluruh berkas dan transaksi terkait. Dilengkapi proteksi data terverifikasi (`409 Conflict`).
+- **+ Tambah Lampiran** (*Khusus Staf* `ADMIN` & `BENDAHARA`): Menambahkan berkas bukti kas susulan.
+- **Ekstrak Data** / **Coba Lagi** (*Khusus Staf* `ADMIN` & `BENDAHARA`): Memulai proses ekstraksi AI pada berkas lampiran.
+- **Ekstrak Ulang** (*Khusus Staf* `ADMIN` & `BENDAHARA`): Menjalankan ulang ekstraksi dengan dialog proteksi data kas.
+- **Hapus Lampiran** (*Khusus Staf* `ADMIN` & `BENDAHARA`): Menghapus lampiran (hanya jika belum memuat transaksi terverifikasi).
 
 #### C. Rekap Saldo Kas (Sidebar)
 Menampilkan ringkasan finansial laporan minggu ini:

@@ -142,16 +142,26 @@
 - [x] Avatar dan nama Google pengguna tampil di antarmuka jika sesi sedang aktif.
 - [x] Sesi login persisten dan pengguna bisa mengakhirinya dengan menekan tombol "Keluar".
 
-### F-010 — Proteksi Rute & Aksi (Role-Based Access)
+### F-010 — Proteksi Rute & Aksi (Role-Based Access Control 3-Tier)
 
-**Objective:** Mencegah publik mengotak-atik arsip laporan dan membatasi hak akses operasional hanya kepada pengurus yang memiliki sesi login valid.
-**User:** Sistem / Publik / Pengurus
-**Process:** Proxy Next.js (`proxy.ts`) mencegat *request* ke halaman terproteksi. Komponen antarmuka (UI) mengecek status sesi sebelum merender tombol aksi mutasi.
+**Objective:** Mencegah publik dan akun tamu umum memutasi arsip laporan, serta menerapkan pemisahan wewenang yang tegas antara Jamaah, Bendahara (staf operasional), dan Administrator (Ketua DKM).
+**User:** Jamaah (`role: null`), Bendahara (`role: "BENDAHARA"`), Administrator (`role: "ADMIN"`)
+**Process:**
+- Proxy Next.js (`proxy.ts`) mencegat permintaan ke rute terproteksi (`/unggah` dan `/pengguna`) berdasarkan token JWT yang disinkronisasi ke basis data pengguna.
+- Helper otorisasi `lib/auth-guard.ts` (`isStaff` dan `isAdmin`) memvalidasi hak akses di setiap Server Component dan API Route Handler.
+- Komponen antarmuka (UI) mengecek peran pengguna sebelum merender tombol aksi mutasi.
+**Tingkatan Peran:**
+1. **Jamaah (`role: null` / Publik)**: Mode baca murni. Transaksi draf disembunyikan. Seluruh mutasi ditolak (`403 Forbidden`). Akses `/unggah` dialihkan ke `/dashboard?error=forbidden`.
+2. **Bendahara (`role: "BENDAHARA"`)**: Wewenang operasional pembukuan: unggah laporan, picu ekstraksi OCR AI, konfirmasi/batal verifikasi transaksi, edit donatur & kategori pengeluaran, hapus lampiran berkas unverified. Dilarang menghapus laporan utama atau mengelola akun pengguna (`403 Forbidden`).
+3. **Administrator (`role: "ADMIN"`)**: Wewenang penuh staf + manajemen pengguna dan penetapan peran di `/pengguna` + hak eksklusif menghapus laporan kas utama (`DELETE /api/reports/:id`).
 **Acceptance Criteria:**
-- [x] Publik (Guest) tetap bisa mengakses halaman Beranda (Arsip), Pencarian, dan Detail Laporan (mode baca).
-- [x] Publik akan diblokir dan dikembalikan ke halaman utama jika mencoba mengakses rute `/unggah`.
-- [x] Endpoint API untuk mutasi data (POST / DELETE) merespons dengan status `401 Unauthorized` jika diakses tanpa sesi yang valid.
-- [x] Tombol aksi destruktif ("Hapus Laporan", "Hapus Lampiran") dan konstruktif ("+ Tambah Lampiran") disembunyikan dari UI jika pengguna tidak memiliki sesi login aktif.
+- [x] Publik (Jamaah / role `null`) tetap leluasa mengakses Beranda (Arsip), Pencarian, Detail Laporan terverifikasi, Grafik Tren, dan Transparansi Donatur/Pengeluaran (mode baca).
+- [x] Pengguna tanpa sesi atau ber-role `null` diblokir dan dialihkan ke `/dashboard?error=forbidden` jika mencoba mengakses rute `/unggah`.
+- [x] Rute `/pengguna` dilindungi ketat dan hanya dapat dibuka oleh akun dengan peran `ADMIN`.
+- [x] Seluruh endpoint API mutasi data (POST / PATCH / DELETE) menolak akses tanpa sesi dengan `401 Unauthorized` dan menolak akun login ber-role `null` dengan `403 Forbidden`.
+- [x] Aksi hapus dokumen laporan kas (`DELETE /api/reports/:id`) dan tombol "Hapus Laporan" di UI dibatasi secara eksklusif hanya untuk Administrator (`ADMIN`).
+- [x] Transaksi draf (`isVerified = false`) disembunyikan secara otomatis dari publik dan akun tamu, hanya dapat dilihat oleh Staf (`ADMIN` atau `BENDAHARA`).
+- [x] Data mentah vision-LLM (`extractionRawResponse`, `extractionError`) dan email pengunggah tidak bocor ke publik berkat query `select` eksplisit.
 
 ---
 

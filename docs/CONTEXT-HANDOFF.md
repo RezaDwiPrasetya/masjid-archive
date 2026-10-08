@@ -28,12 +28,17 @@ Aplikasi web arsip & manajemen keuangan untuk **DKM Masjid Al-Luqman** (Kel. Sok
     - Dropdown pemilihan kategori langsung di review panel (sebelum & sesudah verifikasi).
     - API publik agregasi per kategori (`/api/expenses`) & rincian transaksi (`/api/expenses/transactions`).
     - Penyelarasan layout full-width responsif & penanganan kompatibilitas Next.js 16 context.params Promise NextAuth.
-- **PEMELIHARAAN & PERBAIKAN MOBILE (Issue #058)**:
-  - **#058 (Selesai)**: Optimasi responsivitas mobile & ergonomi sentuh (eliminasi overlap teks nominal grafik mingguan, perbaikan tap target bottom bar navigasi, padding dialog responsif).
+- **PENGUATAN KEAMANAN & OTORISASI RBAC 3-TIER (Selesai)**:
+  - **Audit & Pengetatan RBAC**: Mengganti pemeriksaan permisif `if (!session)` dengan sistem otorisasi 3-Tier yang ketat: Jamaah (`null` / Guest umum), Bendahara (`BENDAHARA`), Administrator (`ADMIN` / Ketua DKM).
+  - **Helper Terpusat (`lib/auth-guard.ts`)**: `isStaff(session)` untuk hak operasional (unggah, ekstraksi AI, verifikasi, edit donatur & kategori) dan `isAdmin(session)` untuk wewenang tertinggi (kelola pengguna & hapus laporan).
+  - **Pengetatan Seluruh Handler Mutasi (`app/api/`)**: Aksi `DELETE /api/reports/:id` dikunci eksklusif `ADMIN` (403 untuk lainnya); seluruh aksi mutasi `POST`/`PATCH`/`DELETE` lainnya dikunci untuk `isStaff`.
+  - **Penyembunyian Transaksi Draf**: Endpoint `GET /api/reports/[id]/transactions` dan Server Component `app/laporan/[id]/page.tsx` mengunci transaksi belum terverifikasi (`isVerified: false`) khusus bagi staf (`isStaff`).
+  - **Pengetatan Middleware (`proxy.ts`)**: Rute `/unggah` hanya dapat diakses staf (`ADMIN`/`BENDAHARA`), rute `/pengguna` hanya `ADMIN`. Akun dengan role `null` otomatis dialihkan ke `/dashboard?error=forbidden`.
+  - **Proteksi Data Publik**: Mengganti seluruh query `include: { attachments: true, uploadedBy: true }` dengan `select` eksplisit pada `GET /api/reports`, `GET /api/reports/[id]`, serta Server Component (`app/page.tsx`, `app/cari/page.tsx`, `app/laporan/[id]/page.tsx`) untuk mencegah kebocoran JSON mentah LLM Gemini (`extractionRawResponse`), `extractionError`, serta alamat email pengunggah ke publik tanpa login.
+  - **Pembersihan Total Legacy Auth**: Menghapus dependensi `iron-session`, berkas `lib/session.ts`, dan endpoint usang `app/api/auth/login` serta `app/api/auth/logout`.
 - Seluruh commit sudah digabungkan ke `main` dan sinkron dengan remote GitHub `origin/main`.
-- Status kode: `tsc --noEmit` lolos 0 error, `npm run lint` lolos 0 error, production build lolos 100%.
-- **Fokus Saat Ini**: Pemeliharaan stabil, operasional riil DKM Al-Luqman, dan dokumentasi laporan Tugas Akhir.et berikutnya.
-
+- Status kode: `tsc --noEmit` lolos 0 error, `npm run lint` lolos 0 error, production build lolos 100%, 55 suite test otorisasi lolos 100%.
+- **Fokus Saat Ini**: Pemeliharaan stabil, operasional riil DKM Al-Luqman, dan dokumentasi laporan Tugas Akhir.
 
 ---
 
@@ -42,8 +47,9 @@ Aplikasi web arsip & manajemen keuangan untuk **DKM Masjid Al-Luqman** (Kel. Sok
 - **ORM**: Prisma versi 5.22.0 — **DIKUNCI, JANGAN upgrade ke v6+** (prisma.config.ts di v6 lebih kompleks, pernah 2x menimbulkan masalah besar sebelumnya)
 - **Database**: Vercel Postgres (native)
 - **File Storage**: Supabase Storage, bucket "report-photos" — **SENGAJA provider terpisah dari database** (separation of concerns, keputusan sadar, bukan solusi sementara)
-- **Auth**: NextAuth.js (Auth.js) + @auth/prisma-adapter, Google OAuth
-- **Next.js 16**: **WAJIB pakai `proxy.ts`** dengan fungsi bernama `proxy` (bukan middleware — `middleware.ts` deprecated, build gagal total kalau salah)
+- **Auth & RBAC**: NextAuth.js (Auth.js) + `@auth/prisma-adapter`, Google OAuth Provider. Sesi berbasis `strategy: "jwt"` dengan sinkronisasi role dinamis ke database pada callback `jwt` dan `session`.
+- **Authorization Guard**: Helper sentral di `lib/auth-guard.ts` (`isAdmin`, `isStaff`). Tiga tier role: `null` (Jamaah/Publik), `BENDAHARA` (Pengurus operasional), `ADMIN` (Ketua DKM/Administrator).
+- **Next.js 16**: **WAJIB pakai `proxy.ts`** dengan fungsi bernama `proxy` (bukan middleware — `middleware.ts` deprecated, build gagal total kalau salah). Melindungi `/unggah` dan `/pengguna` berdasarkan peran token JWT.
 - **NextAuth di Next.js 16**: Route handler di `app/api/auth/[...nextauth]/route.ts` **WAJIB dibungkus fungsi async** yang me-resolve `const params = await context.params; return nextAuthHandler(req, { params });` karena di Next.js 16 App Router `context.params` adalah Promise. Tanpa wrapper ini, endpoint session/providers menghasilkan error 404 HTML.
 - **UI**: shadcn/ui varian Base UI (bukan Radix) — Select butuh prop `items={[{label,value}]}`, Button butuh `nativeButton={false}` kalau prop `render` membungkus elemen non-<button>
 - **Vision-LLM**: Google Gemini API (`@google/generative-ai`), free tier untuk development. Model utama `gemini-3.6-flash` dengan auto-fallback ke `gemini-3.5-flash` (timeout 25 detik via AbortController, trigger saat 503/429 dari model utama)
@@ -56,18 +62,22 @@ Aplikasi web arsip & manajemen keuangan untuk **DKM Masjid Al-Luqman** (Kel. Sok
 ## 4. STRUKTUR FILE PENTING
 
 ### Backend / Lib:
-- `schema.prisma` — model User, Report, Attachment, Transaction (dengan field additive `category`), Donor + model NextAuth (Account, Session, VerificationToken)
+- `schema.prisma` — model User (role: null/BENDAHARA/ADMIN), Report, Attachment, Transaction (dengan field additive `category`), Donor + model NextAuth (Account, Session, VerificationToken)
 - `lib/gemini.ts` — singleton GoogleGenerativeAI client
 - `lib/extract-transactions.ts` — logika ekstraksi (schema structured output, prompt, fetch gambar/dokumen → Gemini → parse). Skema mencakup `initialBalance`, `finalBalance`, dan per-transaksi: type, amount, description, transactionDate, donorName (nullable)
 - `lib/donor-matching.ts` — `normalizeDonorName()`, `isAnonymousDonor()`, `escapeRegex()`, daftar `DONOR_PREFIXES` dan `ANONYMOUS_PATTERNS`
 - `lib/donor-service.ts` — `matchAndAssignDonor(txType, rawInput)`, shared logic dipanggil dari endpoint confirm DAN endpoint edit donor
 - `lib/expense-categories.ts` — konstanta kategori pengeluaran kas (operasional, honor, sosial, pembangunan, konsumsi, administrasi, lainnya) & sistem warna badge
-- `lib/auth.ts` — konfigurasi authOptions NextAuth
+- `lib/auth.ts` — konfigurasi authOptions NextAuth (JWT strategy, sync role DB ke session)
+- `lib/auth-guard.ts` — helper otorisasi `isAdmin(session)` dan `isStaff(session)`
+- `scripts/test-auth-guards.ts` — skrip automated unit & simulation test untuk seluruh role guard
 
 ### API Routes (`app/api/`):
-- `attachments/[id]/extract/route.ts` — POST trigger ekstraksi (Gambar & PDF V6)
-- `reports/[id]/transactions/route.ts` — GET, filter isVerified berdasarkan sesi (tanpa sesi → hanya isVerified=true, dengan sesi → semua)
-- `transactions/[id]/route.ts` — PATCH (edit sebelum konfirmasi, dukung category) + DELETE (hanya jika belum verified)
+- `attachments/[id]/extract/route.ts` — POST trigger ekstraksi (khusus Staf: ADMIN & BENDAHARA)
+- `reports/[id]/transactions/route.ts` — GET, filter isVerified berdasarkan role staf (publik/guest `null` → hanya isVerified=true, staf → semua termasuk draf)
+- `transactions/[id]/route.ts` — PATCH (edit transaksi, category) + DELETE (hapus tx unverified) (khusus Staf)
+- `reports/[id]/route.ts` — GET (publik, select aman) + DELETE (khusus ADMIN)
+- `users/route.ts` — GET, PATCH, DELETE manajemen akun dan peran pengguna (khusus ADMIN)
 - `transactions/[id]/confirm/route.ts` — POST, terima `donorNameRaw` opsional, panggil `matchAndAssignDonor`
 - `transactions/[id]/donor/route.ts` — PATCH edit nama donatur pada transaksi yang SUDAH verified tanpa menyentuh field finansial lain
 - `transactions/[id]/category/route.ts` — PATCH (BARU di V7 — Issue #059): edit kategori pengeluaran pada transaksi verified/unverified bagi sesi aktif
@@ -242,7 +252,13 @@ Shared logic di `lib/donor-matching.ts`, `lib/donor-service.ts`, dan `lib/expens
      - `components/monthly-export-dialog.tsx`: Menyediakan opsi tombol mandiri "Unduh PDF (.pdf)", "Unduh Excel (.xlsx)", dan "Buka Pratinjau Cetak / Mading (A4)".
      - `components/print-action-bar.tsx`: Menyediakan tombol aksi cepat "Unduh PDF" berdampingan dengan "Cetak (Printer)".
      - `app/laporan/[id]/page.tsx`: Menyediakan tombol unduh PDF langsung.
-3. **Kandidat Eksplorasi Fase Berikutnya (Fase V9)**:
+3. **Penguatan Keamanan, Otorisasi RBAC 3-Tier, dan Proteksi Data Publik (Selesai)**:
+   - **Audit & Eliminasi Celah Role Null**: Memastikan pengguna login Google tanpa penetapan role (`null`) tidak dapat melakukan mutasi data keuangan atau melihat draf transaksi yang belum diverifikasi.
+   - **Helper Otorisasi Terpusat (`lib/auth-guard.ts`)**: `isStaff(session)` memvalidasi wewenang `ADMIN` dan `BENDAHARA`, sementara `isAdmin(session)` memvalidasi wewenang eksklusif `ADMIN`.
+   - **Pengetatan Endpoint & UI**: Aksi hapus laporan kas (`DELETE /api/reports/:id`) dan tombol hapus di UI hanya dapat diakses oleh Administrator. Aksi mutasi operasional lainnya hanya untuk staf.
+   - **Proteksi Data Publik**: Query publik menggunakan `select` eksplisit, menyembunyikan dump respons mentah vision-LLM (`extractionRawResponse`), `extractionError`, serta email pengunggah dari publik tanpa login.
+   - **Pembersihan Total Legacy Auth**: Modul `iron-session`, berkas `lib/session.ts`, dan endpoint login/logout lama dihapus permanen.
+4. **Kandidat Eksplorasi Fase Berikutnya (Fase V9)**:
    - Evaluasi masukan pengguna / pengurus DKM Masjid Al-Luqman terkait penambahan visualisasi grafik perbandingan antar-periode atau fitur cetak khusus rekap laporan per kategori pengeluaran.
    - Pemeliharaan performa dan audit berkala data kas.
 

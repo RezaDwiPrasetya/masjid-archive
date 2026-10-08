@@ -14,11 +14,12 @@ Untuk mendukung Google SSO melalui `@auth/prisma-adapter`, tabel `User` dirombak
 | email | text, unique | Yes | Email akun Google |
 | emailVerified | timestamp | Optional | Standar NextAuth |
 | image | text | Optional | URL avatar dari Google |
-| role | text | Optional | 'Admin' / 'Guest' (dikelola manual oleh Superadmin nanti) |
+| role | text | Optional | Peran hak akses RBAC: `'ADMIN'` (Administrator/Ketua DKM), `'BENDAHARA'` (Staf operasional kas), atau `null` (Jamaah/tamu Google umum). Dikelola oleh Administrator di antarmuka `/pengguna`. |
+| verifiedTransactions | relation (Transaction[]) | Optional | Relasi jejak audit transaksi kas yang diverifikasi oleh pengguna ini |
 
 **2. Infrastruktur NextAuth (Wajib untuk Prisma Adapter)**
 *   **Account**: Menyimpan informasi token akses OAuth dari Google.
-*   **Session**: Mengelola masa aktif login pengguna di peramban.
+*   **Session**: Model tabel bawaan NextAuth. Pada arsitektur saat ini, aplikasi menggunakan sesi JWT (`strategy: "jwt"`) dengan sinkronisasi data peran dinamis langsung ke tabel `User` di Postgres, sehingga perubahan peran di UI langsung aktif seketika tanpa jeda re-login.
 *   **VerificationToken**: Tabel standar NextAuth untuk verifikasi *magic link* (meski saat ini fokus pada Google OAuth).
 
 ### Report (Laporan Mingguan)

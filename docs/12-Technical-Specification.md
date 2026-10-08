@@ -15,7 +15,7 @@ Dokumen ini menjelaskan implementasi teknis Masjid Archive, mencakup kondisi pro
 | **Database** | **Vercel Postgres** (native integration, provider PostgreSQL) | Sebelumnya SQLite lokal (V1 development), lalu Supabase Postgres, kini Vercel Postgres native — SQLite tidak bisa dipakai di produksi karena lingkungan serverless Vercel bersifat read-only |
 | ORM | Prisma, versi **5.22.0** (sengaja dipin) | Versi 6+ memperkenalkan sistem konfigurasi baru (`prisma.config.ts`) yang lebih kompleks dan sempat menyebabkan error saat development — tidak di-upgrade kecuali ada kebutuhan spesifik |
 | **File Storage** (foto/lampiran laporan) | **Supabase Storage** (bucket `report-photos`) | Provider terpisah dari database — lihat penjelasan arsitektur di bawah |
-| **Auth** | **NextAuth.js (Auth.js)** | Menggunakan Google Provider (OAuth 2.0) dan `@auth/prisma-adapter` |
+| **Auth & RBAC** | **NextAuth.js (Auth.js)** | Google OAuth 2.0, `@auth/prisma-adapter`, sesi JWT dengan sinkronisasi DB role Prisma dinamis, helper `lib/auth-guard.ts` (RBAC 3-Tier: `ADMIN`, `BENDAHARA`, `null`) |
 | **Vision-LLM (V4)** | **Google Gemini API** (`@google/generative-ai`) | Free tier untuk tahap development — lihat bagian V4 di bawah |
 | **Visualisasi (V5)** | **Recharts** (via `shadcn/ui` Charts, yang membungkus Recharts) | Lihat bagian V5 di bawah |
 | Hosting | Vercel | |
@@ -28,12 +28,53 @@ Ini keputusan arsitektur yang disengaja, bukan solusi sementara:
 
 Pola ini disebut **separation of concerns**, umum dipakai di aplikasi production (kombinasi database + object storage terpisah). Tidak ada kebutuhan untuk menyatukan keduanya ke satu provider.
 
-## Auth Model (V3)
+## Auth & Authorization Model (NextAuth SSO & RBAC 3-Tier)
 
-- Beralih menggunakan **NextAuth.js (Auth.js)** dengan **Google Provider**.
-- Kredensial bersama statis sepenuhnya dihapus.
-- Data sesi dan identitas pengguna dikelola langsung di Vercel Postgres menggunakan `@auth/prisma-adapter`.
-- Proxy Next.js (`proxy.ts`) melindungi rute `/unggah`. Penggunaan `middleware.ts` dihindari karena deprecated di Next.js 16. Semua *endpoint* API mutasi (POST, DELETE) di bawah `/api/reports` divalidasi status sesinya secara *server-side* (menolak akses jika tidak ada sesi aktif).
+Sistem autentikasi dan otorisasi menggunakan arsitektur Role-Based Access Control (RBAC) 3-Tier yang terintegrasi secara menyeluruh dari edge proxy, server components, hingga API route handlers:
+
+### 1. Tingkatan Hak Akses (3-Tier Roles)
+- **Jamaah / Publik (`role: null` atau tanpa sesi)**:
+  - Akses baca data terverifikasi (dashboard, arsip, detail laporan, grafik tren, donatur, kategori pengeluaran, unduh PDF/Excel).
+  - Transaksi draf yang belum diverifikasi (`isVerified: false`) **disembunyikan secara otomatis**.
+  - Seluruh mutasi finansial (`POST`, `PATCH`, `DELETE`) ditolak (`401` jika tanpa sesi, `403 Forbidden` jika login Google tapi ber-role `null`).
+  - Akses rute `/unggah` dialihkan oleh `proxy.ts` ke `/dashboard?error=forbidden`.
+- **Bendahara / Staf Operasional (`role: "BENDAHARA"`)**:
+  - Akses operasional pembukuan: unggah dokumen kas di `/unggah`, jalankan ekstraksi OCR AI, konfirmasi/batal verifikasi transaksi kas, edit nama donatur, serta klasifikasi kategori pengeluaran.
+  - Hapus lampiran berkas unverified (`DELETE /api/attachments/:id`).
+  - **Dilarang keras**: Menghapus laporan utama kas dan mengelola hak akses pengguna (ditolak `403 Forbidden`).
+- **Administrator / Ketua DKM (`role: "ADMIN"`)**:
+  - Seluruh wewenang operasional staf bendahara.
+  - Wewenang eksklusif manajemen pengguna dan penetapan peran di `/pengguna`.
+  - Hak eksklusif menghapus laporan kas (`DELETE /api/reports/:id`) dengan proteksi transaksi terverifikasi.
+
+### 2. Mekanisme Sesi: JWT Strategy + Dynamic DB Role Synchronization
+- NextAuth dikonfigurasi dengan `session: { strategy: "jwt" }`.
+- **Alasan Pemilihan**: Next.js 16 edge proxy (`proxy.ts`) membaca data sesi secara cepat dan stateless melalui `getToken({ req, secret })`.
+- **Sinkronisasi Role Seketika (Realtime Sync)**:
+  Untuk mengatasi kelemahan JWT biasa yang menyimpan payload usang, callback `jwt({ token, user })` di `lib/auth.ts` selalu melakukan query `prisma.user.findUnique({ where: { id: userId } })` ke Vercel Postgres setiap kali token diverifikasi.
+  *Dampak Positif*: Perubahan peran pengguna yang dilakukan oleh Administrator di antarmuka `/pengguna` (misal promosi Jamaah menjadi Bendahara, atau pencabutan akses) **langsung aktif detik itu juga**, tanpa mengharuskan pengguna keluar (logout) dan masuk kembali.
+
+### 3. Modul Otorisasi Terpusat (`lib/auth-guard.ts`)
+Pengecekan hak akses di seluruh route handler API distandarisasi menggunakan dua fungsi guard:
+- `isStaff(session)`: Mengembalikan `true` hanya jika `role` adalah `"ADMIN"` atau `"BENDAHARA"` (case-insensitive & whitespace trimmed). Mengembalikan `false` untuk `null` atau `undefined`.
+- `isAdmin(session)`: Mengembalikan `true` hanya jika `role` adalah `"ADMIN"`.
+
+### 4. Perlindungan Rute Next.js 16 (`proxy.ts`)
+Menggantikan `middleware.ts` yang telah deprecated di Next.js 16:
+- Melindungi rute `/unggah` dan `/unggah/:path*` (khusus Staf: `ADMIN` atau `BENDAHARA`).
+- Melindungi rute `/pengguna` dan `/pengguna/:path*` (khusus `ADMIN`).
+- Pengguna tanpa sesi dialihkan ke `/login?callbackUrl=...`. Pengguna dengan peran tidak memadai dialihkan ke `/dashboard?error=forbidden`.
+
+### 5. Proteksi Data Publik & Pencegahan Kebocoran Informasi (Data Hardening)
+- Seluruh query data publik (`GET /api/reports`, `GET /api/reports/:id`, `app/page.tsx`, `app/cari/page.tsx`, `app/laporan/[id]/page.tsx`) wajib menggunakan klausa `select` eksplisit, bukan `include: true`.
+- Relasi `uploadedBy` **hanya memilih field `name`**, menyembunyikan identitas email dan role pengunggah dari publik.
+- Metadata ekstraksi internal Vision-LLM (`extractionRawResponse`, `extractionModel`, `extractionError`) **tidak pernah dibocorkan** ke pengunjung publik tanpa hak staf.
+
+### 6. Pembersihan Total Legacy Auth
+- Dependensi `iron-session`, berkas helper `lib/session.ts`, serta endpoint usang `app/api/auth/login` dan `app/api/auth/logout` telah dihapus sepenuhnya dari kode sumber demi menjaga kebersihan arsitektur sistem.
+
+
+
 
 ## Environment Variables
 
@@ -95,6 +136,8 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
+  role          String?       // "ADMIN" | "BENDAHARA" | null (Jamaah)
+  verifiedTransactions Transaction[] @relation("VerifiedBy")
   reports       Report[]
 }
 
@@ -225,7 +268,7 @@ const schema = {
 
 **`POST /api/attachments/:id/extract`**
 
-**Wajib: Request harus memiliki Sesi NextAuth yang valid.**
+**Wajib: Khusus Staf DKM (`ADMIN` atau `BENDAHARA`). Akses tanpa sesi mengembalikan `401`, role `null` mengembalikan `403 Forbidden`.**
 
 **Logika Server-Side:**
 1. Validasi sesi — 401 jika tidak ada.
@@ -272,7 +315,7 @@ Di halaman detail laporan, sistem menghitung:
   Jika terdapat transaksi yang sudah diverifikasi (`isVerified = true`), API merespons dengan `409 Conflict` dan payload `{ hasVerifiedTransactions: true, verifiedCount: N }`.
   Penghapusan paksa hanya diizinkan jika menyertakan query parameter `?force=true` setelah dikonfirmasi eksplisit lewat `AlertDialog`.
 
-Semua endpoint di atas wajib sesi NextAuth valid (`401` jika tidak).
+Semua endpoint mutasi di atas dilindungi RBAC: `DELETE /api/reports/:id` khusus untuk Administrator (`ADMIN`), sedangkan `DELETE /api/attachments/:id` dapat diakses oleh Staf (`ADMIN` atau `BENDAHARA`). Akses tanpa sesi mengembalikan `401`, dan akun non-staf (`role: null`) mengembalikan `403 Forbidden`.
 
 ## Estimasi Biaya Fase Mendatang (Catatan V4)
 

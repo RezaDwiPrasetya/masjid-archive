@@ -1,10 +1,28 @@
-# 14. API Specification (Revisi — V5: Financial Intelligence & Dashboard Publik)
+# 14. API Specification (Revisi — Penguatan Keamanan & Otorisasi RBAC 3-Tier)
 
-> **Catatan revisi:** Dokumen ini memperbarui API Specification untuk mendukung Fase V5 (Financial Intelligence, Dashboard Publik, Tracking Donatur, serta Penyempurnaan Alur Verifikasi Transaksi dari Issue #051 dan #053).
+> **Catatan revisi:** Dokumen ini diperbarui untuk mencerminkan sistem otorisasi Role-Based Access Control (RBAC) 3-Tier yang ketat (`ADMIN`, `BENDAHARA`, dan `null` untuk Jamaah/Publik), penutupan celah mutasi data ber-role null, proteksi kebocoran data publik melalui query `select` eksplisit, serta penghapusan total dependensi legacy `iron-session`.
 
 ## Overview
 
-API di-implementasi sebagai Next.js Route Handlers (`app/api/**/route.ts`). Semua endpoint di bawah `/api/reports`, `/api/users`, `/api/attachments`, dan `/api/transactions` **wajib** memiliki *session cookie* NextAuth yang valid. Akses tanpa sesi akan langsung ditolak dengan status `401 Unauthorized`.
+API di-implementasi sebagai Next.js Route Handlers (`app/api/**/route.ts`). Keamanan sistem menerapkan prinsip **Least Privilege** dan **Separation of Concerns**:
+
+### Tingkatan Hak Akses (Role Model):
+1. **Publik / Jamaah (`role: null` atau tanpa sesi)**:
+   - Akses **baca publik** pada laporan keuangan kas, dashboard tren mingguan/bulanan, rekap donatur, rincian pengeluaran per kategori, dan unduhan dokumen resmi (PDF/Excel).
+   - Seluruh mutasi data (`POST`, `PATCH`, `DELETE`) **ditolak**.
+   - Transaksi draf yang belum diverifikasi (`isVerified: false`) **disembunyikan** otomatis dari endpoint dan halaman web.
+2. **Staf Operasional DKM (`role: "BENDAHARA"`)**:
+   - Berhak melakukan aksi operasional keuangan: mengunggah berkas laporan (`POST /api/reports`), menambah lampiran, memicu ekstraksi AI vision-LLM, mengonfirmasi/membatalkan verifikasi transaksi, mengedit nama donatur, serta mengklasifikasikan kategori pengeluaran kas.
+   - **Dilarang** menghapus laporan kas utama (`DELETE /api/reports/:id`) dan dilarang mengelola peran pengguna.
+3. **Administrator Sistem (`role: "ADMIN"`)**:
+   - Memiliki wewenang tertinggi: seluruh hak operasional staf, manajemen akun dan hak akses pengguna (`/api/users`), serta hak eksklusif menghapus dokumen laporan kas (`DELETE /api/reports/:id`).
+
+### Format Kode Status HTTP Standar:
+- `200 OK` / `201 Created`: Permintaan berhasil diproses.
+- `401 Unauthorized`: Endpoint membutuhkan sesi login Google, tetapi tidak ada sesi aktif.
+- `403 Forbidden`: Pengguna memiliki sesi login, namun tidak memiliki peran/hak akses yang memadai untuk tindakan tersebut (mis. role `null` mencoba mutasi data, atau `BENDAHARA` mencoba menghapus laporan).
+- `404 Not Found`: Entitas tidak ditemukan.
+- `409 Conflict`: Terjadi konflik integritas data (mis. tanggal laporan duplikat, atau menghapus laporan yang telah memiliki transaksi terverifikasi tanpa parameter `?force=true`).
 
 Format response standar:
 
@@ -13,18 +31,18 @@ Format response standar:
 { "data": ... }
 
 // Error
-{ "error": "Pesan error singkat" }
+{ "error": "Pesan error singkat yang ramah pengguna" }
 ```
 
 ---
 
-## Auth (NextAuth V3)
+## Auth (NextAuth.js SSO)
 
 ### `GET/POST /api/auth/[...nextauth]`
 
-Endpoint dinamis bawaan NextAuth.js. Menangani seluruh alur OAuth Google, *callback* verifikasi, dan manajemen sesi secara otomatis.
+Endpoint dinamis bawaan NextAuth.js (menggunakan runtime JWT + sinkronisasi role database Prisma). Menangani seluruh alur OAuth Google, callback, dan pembaruan token sesi secara otomatis.
 
-*Catatan: Endpoint manual `/api/auth/login` dan `/api/auth/logout` dari V1 telah dihapus sepenuhnya.*
+*Catatan: Modul dan endpoint legacy `iron-session` (`/api/auth/login` dan `/api/auth/logout`) telah dihapus secara permanen dari kode sumber dan dependensi.*
 
 ---
 
@@ -120,13 +138,15 @@ List laporan, terkelompok Tahun → Bulan (untuk Arsip Laporan), atau hasil filt
               "reportDate": "2026-08-14",
               "weekOfMonth": 2,
               "uploadedAt": "2026-08-14T10:00:00Z",
-              "uploadedBy": { "id": "clxyz123...", "name": "Bapak Kosasih", "image": "https://lh3.googleusercontent.com/..." },
+              "uploadedBy": { "name": "Bapak Kosasih" },
               "attachments": [
                 {
                   "id": "att_1",
                   "fileType": "image",
+                  "originalFileName": "foto-kas.jpg",
+                  "fileSizeBytes": 204800,
                   "fileUrl": "https://[supabase-url]/storage/v1/object/public/report-photos/foto.jpg",
-                  "extractionStatus": "not_extracted"
+                  "uploadedAt": "2026-08-14T10:00:00Z"
                 }
               ]
             }
@@ -137,11 +157,12 @@ List laporan, terkelompok Tahun → Bulan (untuk Arsip Laporan), atau hasil filt
   ]
 }
 ```
+*Catatan Keamanan (Data Hardening):* Query `GET /api/reports` menggunakan `select` eksplisit. Informasi sensitif seperti ID/email pengunggah (`uploadedBy`) dan data teknis LLM (`extractionRawResponse`, `extractionModel`, `extractionError`) tidak dibocorkan ke publik. Untuk staf yang sedang login, field metadata proses seperti `extractionStatus` tetap disertakan.
 
 ### `POST /api/reports`
 
 Unggah laporan baru dengan banyak file pendukung. `multipart/form-data`.
-**Wajib: Request harus memiliki Sesi NextAuth yang valid.**
+**Wajib: Khusus Staf DKM (`ADMIN` atau `BENDAHARA`). Akses tanpa sesi mengembalikan `401 Unauthorized`, sedangkan akun Google ber-role `null` (Jamaah) mengembalikan `403 Forbidden`.**
 
 **Form fields**
 
@@ -150,15 +171,15 @@ Unggah laporan baru dengan banyak file pendukung. `multipart/form-data`.
 | `files`        | array of files      | Yes   | Mendukung `.jpg`, `.png`, `.pdf`, `.xlsx`. Minimal 1 file. |
 | `reportDate`   | date (`YYYY-MM-DD`) | Yes   | Tanggal laporan mingguan (harus hari Jumat). |
 
-*Catatan V3: Field `uploadedById` telah dihapus dari form payload karena rentan dimanipulasi. Server kini mengekstrak ID pengguna secara langsung dari objek `session.user.id` NextAuth.*
+*Catatan Keamanan: Field `uploadedById` dilarang dikirim dari klien. Server mengekstrak ID pengguna secara langsung dan aman dari token sesi NextAuth terverifikasi.*
 
 **Logika Transaksi Server-Side:**
-1. **Validasi Sesi**: API mengekstrak ID pengguna dari sesi NextAuth. Jika tidak ada, kembalikan `401`.
+1. **Validasi Otorisasi**: Periksa sesi NextAuth dan validasi `isStaff(session)`. Tolak `401` jika tanpa sesi, atau `403 Forbidden` jika bukan pengurus.
 2. Validasi file: Ekstrak file dari *form data* dan validasi tipe/ukuran.
 3. Cek duplikat `reportDate` di Vercel Postgres (kembalikan `409` jika duplikat).
 4. `Promise.all` unggah seluruh *file* secara paralel ke **Supabase Storage**.
 5. Jika berhasil, susun data lampiran dan eksekusi `prisma.$transaction` untuk *insert* ke tabel `Report` (dengan `uploadedById` dari sesi) DAN `Attachment` (dengan `extractionStatus` default `not_extracted`) secara atomik di **Vercel Postgres**.
-6. Jika transaksi database gagal atau ada upload Supabase yang *error*, server otomatis menghapus (`storage.remove()`) file yang sempat terunggah agar tidak terjadi *orphan files* di bucket.
+6. Jika transaksi database gagal atau ada upload Supabase yang *error*, server otomatis membersihkan (`storage.remove()`) file yang sempat terunggah agar tidak terjadi *orphan files* di bucket.
 
 **Response 201**
 
@@ -177,26 +198,31 @@ Unggah laporan baru dengan banyak file pendukung. `multipart/form-data`.
 }
 ```
 
-**Response Error Umum:**
-- `401 Unauthorized`: Sesi NextAuth tidak valid atau kadaluarsa.
-- `400 Bad Request`: Validasi tipe file/ukuran gagal.
-- `409 Conflict`: Laporan untuk tanggal tersebut sudah tersimpan.
-- `500 Internal Server Error`: Gagal transaksi penyimpanan.
+**Response Error:**
+- `401 Unauthorized`: Belum login ke sistem.
+- `403 Forbidden`: Login sebagai Jamaah (`role: null`) — tidak memiliki hak unggah laporan kas.
+- `400 Bad Request`: Validasi tipe file/ukuran gagal atau format tanggal salah.
+- `409 Conflict`: Laporan untuk tanggal tersebut sudah tersimpan di arsip.
+- `500 Internal Server Error`: Gagal transaksi penyimpanan database/storage.
 
 ### `GET /api/reports/:id`
 
-Detail satu laporan (untuk halaman Detail Laporan).
+Detail satu laporan (untuk halaman Detail Laporan). Dapat diakses oleh publik (mode baca).
 
-**Response 200**
+**Response 200 (Publik)**
 
 ```json
 {
   "data": {
     "id": "rpt_1",
     "reportDate": "2026-08-14",
+    "year": 2026,
+    "month": 8,
     "weekOfMonth": 2,
     "uploadedAt": "2026-08-14T09:00:00Z",
-    "uploadedBy": { "id": "clxyz123...", "name": "Bapak Kosasih", "image": "https://lh3.google..." },
+    "initialBalance": 1485000,
+    "finalBalance": 1605000,
+    "uploadedBy": { "name": "Bapak Kosasih" },
     "attachments": [
       {
         "id": "att_1",
@@ -204,25 +230,30 @@ Detail satu laporan (untuk halaman Detail Laporan).
         "originalFileName": "laporan-rekap.pdf",
         "fileSizeBytes": 1200000,
         "fileUrl": "https://[supabase-url]/...",
-        "extractionStatus": "not_extracted"
+        "uploadedAt": "2026-08-14T09:00:00Z"
       }
     ]
   }
 }
 ```
+*Catatan Keamanan & Hak Akses:*
+- **Akses Publik**: Query menggunakan `select` ketat tanpa memaparkan email/role pengunggah maupun dump teknis AI.
+- **Akses Staf (`ADMIN`/`BENDAHARA`)**: Menambahkan field teknis lampiran: `extractionStatus`, `extractionModel`, `extractionError`, dan `extractedAt` untuk kebutuhan antarmuka ekstraksi. Field mentah `extractionRawResponse` tetap ditahan di server dan tidak pernah dikirim ke browser.
 
 ### `DELETE /api/reports/:id`
 
 Menghapus seluruh laporan beserta lampiran file di Supabase Storage dan seluruh data transaksi terkait di database.
-**Wajib: Sesi NextAuth yang valid.**
+**Wajib: Khusus Administrator (`role: ADMIN`).**
+*Akun dengan peran `BENDAHARA` atau `null` akan ditolak dengan status `403 Forbidden`.*
 
 **Query params:**
 - `force` (boolean, opsional): Jika `true`, memaksa penghapusan meskipun terdapat transaksi yang sudah diverifikasi.
 
 **Logika Server-Side:**
-1. Cek keberadaan transaksi terverifikasi (`isVerified = true`) pada laporan ini.
-2. Jika ada dan `force !== "true"`, sistem mengembalikan `409 Conflict` dengan payload `{ error: "...", hasVerifiedTransactions: true, verifiedCount: X }`.
-3. Jika tidak ada transaksi terverifikasi atau `force === "true"`: hapus seluruh file lampiran dari Supabase Storage dan hapus record laporan via `prisma.report.delete` (cascade delete di Postgres).
+1. Validasi sesi dan hak akses: `!session` → `401`, `!isAdmin(session)` → `403 Forbidden: Hanya Administrator yang dapat menghapus laporan kas`.
+2. Cek keberadaan transaksi terverifikasi (`isVerified = true`) pada laporan ini.
+3. Jika ada dan `force !== "true"`, sistem mengembalikan `409 Conflict` dengan payload `{ error: "...", hasVerifiedTransactions: true, verifiedCount: X }`.
+4. Jika tidak ada transaksi terverifikasi atau `force === "true"`: hapus seluruh file lampiran dari Supabase Storage dan hapus record laporan via `prisma.report.delete` (cascade delete di Postgres).
 
 **Response 200**
 ```json
@@ -230,25 +261,29 @@ Menghapus seluruh laporan beserta lampiran file di Supabase Storage dan seluruh 
 ```
 
 **Response Error:**
-- `401 Unauthorized`: Sesi tidak valid
-- `404 Not Found`: Laporan tidak ditemukan
-- `409 Conflict`: Memiliki transaksi terverifikasi, butuh konfirmasi lanjutan (`?force=true`)
+- `401 Unauthorized`: Belum login ke sistem.
+- `403 Forbidden`: Pengguna bukan Administrator (misal peran `BENDAHARA` atau `null`).
+- `404 Not Found`: Laporan tidak ditemukan.
+- `409 Conflict`: Memiliki transaksi terverifikasi, butuh konfirmasi lanjutan (`?force=true`).
 
 ### `DELETE /api/attachments/:id`
 
 Menghapus satu file lampiran tertentu dari suatu laporan.
-**Wajib: Sesi NextAuth yang valid.**
+**Wajib: Khusus Staf DKM (`ADMIN` atau `BENDAHARA`). Akses tanpa sesi mengembalikan `401`, role `null` mengembalikan `403 Forbidden`.**
 
 **Query params:**
 - `force` (boolean, opsional): Jika `true`, memaksa penghapusan meskipun terdapat transaksi yang sudah diverifikasi pada lampiran ini.
 
 **Logika Server-Side:**
-1. Cek keberadaan transaksi terverifikasi (`isVerified = true`) pada lampiran ini.
-2. Jika ada dan `force !== "true"`, sistem mengembalikan `409 Conflict` dengan payload `{ error: "...", hasVerifiedTransactions: true, verifiedCount: X }`.
-3. Jika tidak ada transaksi terverifikasi atau `force === "true"`: hapus file dari Supabase Storage dan hapus record attachment via `prisma.attachment.delete`.
+1. Validasi otorisasi: `!session` → `401`, `!isStaff(session)` → `403 Forbidden`.
+2. Cek keberadaan transaksi terverifikasi (`isVerified = true`) pada lampiran ini.
+3. Jika ada dan `force !== "true"`, sistem mengembalikan `409 Conflict` dengan payload `{ error: "...", hasVerifiedTransactions: true, verifiedCount: X }`.
+4. Jika tidak ada transaksi terverifikasi atau `force === "true"`: hapus file dari Supabase Storage dan hapus record attachment via `prisma.attachment.delete`.
 
 **Response Error:**
-- `409 Conflict`: Memiliki transaksi terverifikasi, butuh konfirmasi lanjutan (`?force=true`)
+- `401 Unauthorized`: Belum login ke sistem.
+- `403 Forbidden`: Peran tidak memadai (misal role `null`).
+- `409 Conflict`: Memiliki transaksi terverifikasi, butuh konfirmasi lanjutan (`?force=true`).
 
 ---
 
@@ -257,7 +292,7 @@ Menghapus satu file lampiran tertentu dari suatu laporan.
 ### `POST /api/attachments/:id/extract`
 
 Memicu ekstraksi data transaksi dari satu lampiran bergambar/PDF (Gemini Vision) atau Excel (Parser tabular).
-**Wajib: Request harus memiliki Sesi NextAuth yang valid.**
+**Wajib: Khusus Staf DKM (`ADMIN` atau `BENDAHARA`). Akses tanpa sesi mengembalikan `401`, role `null` mengembalikan `403 Forbidden`.**
 
 **Request Body (Opsional):**
 ```json
@@ -267,7 +302,7 @@ Memicu ekstraksi data transaksi dari satu lampiran bergambar/PDF (Gemini Vision)
 ```
 
 **Logika Server-Side:**
-1. Validasi sesi — `401` jika tidak ada.
+1. Validasi sesi dan peran staf (`isStaff(session)`). Tolak `401` jika tanpa sesi, `403` jika role `null`.
 2. Ambil `Attachment` sesuai `:id`. Tolak `400` jika `fileType` tidak didukung, atau `409` jika `extractionStatus` sedang `processing` (mencegah trigger ganda).
 3. Update `extractionStatus` → `processing`.
 4. Jalankan ekstraksi/parsing sesuai jenis berkas.
@@ -306,10 +341,11 @@ Memicu ekstraksi data transaksi dari satu lampiran bergambar/PDF (Gemini Vision)
 ```
 
 **Response Error Umum:**
-- `401 Unauthorized`: Sesi tidak valid
-- `400 Bad Request`: Lampiran bukan bertipe gambar
-- `409 Conflict`: Lampiran sedang dalam status `processing`
-- `502 Bad Gateway`: Gemini API tidak bisa dihubungi sama sekali (bukan gagal parsing — itu masuk kategori `extractionStatus: "failed"` di atas)
+- `401 Unauthorized`: Belum login.
+- `403 Forbidden`: Akun tidak memiliki peran staf (`role: null`).
+- `400 Bad Request`: Lampiran bukan bertipe gambar/PDF/Excel yang valid.
+- `409 Conflict`: Lampiran sedang dalam status `processing`.
+- `502 Bad Gateway`: Gemini API tidak bisa dihubungi sama sekali (bukan gagal parsing — itu masuk kategori `extractionStatus: "failed"` di atas).
 
 ---
 
@@ -317,13 +353,13 @@ Memicu ekstraksi data transaksi dari satu lampiran bergambar/PDF (Gemini Vision)
 
 ### `GET /api/reports/:id/transactions`
 
-Daftar transaksi untuk satu laporan tertentu — dipakai UI review di halaman Detail Laporan.
+Daftar transaksi untuk satu laporan tertentu — dipakai UI review di halaman Detail Laporan dan tabel publik.
 
-**Wajib diperhatikan:** endpoint ini **tidak menolak** akses tanpa sesi (`401`), tapi **hasilnya difilter berdasarkan status sesi**:
-- **Tanpa sesi valid**: hanya mengembalikan transaksi dengan `isVerified = true`
-- **Dengan sesi valid**: mengembalikan semua transaksi (verified & unverified), untuk keperluan review bendahara
+**Aturan Otorisasi Filter Data:**
+- **Akses Publik / Jamaah (`role: null` atau tanpa sesi)**: Sistem **hanya mengembalikan transaksi terverifikasi** (`isVerified: true`). Seluruh transaksi draf disembunyikan secara otomatis demi menjaga kerahasiaan proses verifikasi kas.
+- **Akses Staf DKM (`ADMIN` atau `BENDAHARA`)**: Sistem mengembalikan seluruh transaksi (baik terverifikasi maupun draf yang belum dikonfirmasi) untuk keperluan peninjauan bendahara.
 
-**Response 200 (dengan sesi — semua transaksi)**
+**Response 200 (Staf DKM — Termasuk Draf)**
 
 ```json
 {
@@ -345,7 +381,7 @@ Daftar transaksi untuk satu laporan tertentu — dipakai UI review di halaman De
 
 ### `PATCH /api/transactions/:id`
 
-Mengedit field transaksi hasil ekstraksi sebelum dikonfirmasi. **Hanya diizinkan jika `isVerified = false`.**
+Mengedit field transaksi hasil ekstraksi sebelum dikonfirmasi. **Khusus Staf DKM (`ADMIN` atau `BENDAHARA`). Hanya diizinkan jika `isVerified = false`.**
 
 **Body**
 
@@ -365,11 +401,13 @@ Mengedit field transaksi hasil ekstraksi sebelum dikonfirmasi. **Hanya diizinkan
 ```
 
 **Response Error:**
+- `401 Unauthorized`: Belum login.
+- `403 Forbidden`: Akun bukan staf DKM (`role: null`).
 - `409 Conflict`: Transaksi sudah `isVerified = true`, tidak bisa diedit lewat endpoint ini.
 
 ### `POST /api/transactions/:id/confirm`
 
-Mengonfirmasi satu baris transaksi sebagai data resmi.
+Mengonfirmasi satu baris transaksi sebagai data resmi. **Khusus Staf DKM (`ADMIN` atau `BENDAHARA`).**
 
 **Body (opsional, V5)**
 
@@ -380,11 +418,12 @@ Mengonfirmasi satu baris transaksi sebagai data resmi.
 `donorNameRaw` hanya relevan untuk transaksi bertipe `pemasukan`. Boleh dikosongkan (`null`/tidak dikirim) jika transaksi memang tidak punya nama donatur tertulis.
 
 **Logika Server-Side:**
-1. Jika `donorNameRaw` dikirim dan tidak kosong:
+1. Validasi sesi dan hak staf (`isStaff(session)`). Tolak `401` jika tanpa sesi, `403` jika role `null`.
+2. Jika `donorNameRaw` dikirim dan tidak kosong:
    - Normalisasi nama (lihat `normalizeDonorName()` di 12-Technical-Specification.md)
    - Jika hasil normalisasi cocok pola anonim ("hamba allah"/"anonim"/"tanpa nama") → `donorId` tetap `null`
    - Jika tidak, cari `Donor.normalizedName` yang cocok persis → tautkan; jika tidak ada, buat `Donor` baru
-2. Set `isVerified = true`, `verifiedById` dari `session.user.id`, `verifiedAt = now()` (logika V4, tidak berubah)
+3. Set `isVerified = true`, `verifiedById` dari `session.user.id`, `verifiedAt = now()`
 
 **Response 200**
 
@@ -409,11 +448,18 @@ Mengonfirmasi satu baris transaksi sebagai data resmi.
 *Keterangan `matchingResult.status`: `"existing"` (ditautkan ke donatur yang sudah ada), `"created"` (donatur baru dibuat), `"anonymous"` (terdeteksi anonim, `donorId: null`), atau `"none"` (transaksi pengeluaran atau tanpa input donatur).*
 
 **Response Error:**
+- `401 Unauthorized`: Belum login.
+- `403 Forbidden`: Akun bukan staf DKM (`role: null`).
 - `409 Conflict`: Transaksi sudah dikonfirmasi sebelumnya.
 
 ### `DELETE /api/transactions/:id`
 
-Menghapus baris transaksi yang tidak valid (salah baca, duplikat, dll).
+Menghapus baris transaksi yang tidak valid (salah baca, duplikat, dll). **Khusus Staf DKM (`ADMIN` atau `BENDAHARA`).**
+
+**Logika Server-Side:**
+1. Validasi sesi dan peran staf (`isStaff(session)`). Tolak `401` jika tanpa sesi, `403` jika role `null`.
+2. Jika `transaction.isVerified === true`, tolak dengan `403 Forbidden` (transaksi terverifikasi tidak boleh dihapus demi integritas saldo).
+3. Hapus baris transaksi via `prisma.transaction.delete`.
 
 **Response 200**
 
@@ -422,13 +468,15 @@ Menghapus baris transaksi yang tidak valid (salah baca, duplikat, dll).
 ```
 
 **Response Error:**
-- `403 Forbidden`: Transaksi sudah `isVerified = true` — tidak bisa dihapus lewat alur normal ini (sesuai business rule F-012).
+- `401 Unauthorized`: Belum login.
+- `403 Forbidden`: Bukan staf DKM, atau mencoba menghapus transaksi yang sudah terverifikasi.
+- `404 Not Found`: Transaksi tidak ditemukan.
 
 ### `POST /api/transactions/:id/unverify` (Issue #051)
 
 Membatalkan status verifikasi transaksi yang sebelumnya telah dikonfirmasi. Mengembalikan `isVerified = false`, memperbarui total donatur (jika transaksi memiliki donatur), dan otomatis mengeluarkan transaksi dari dashboard publik.
 
-**Auth:** Wajib sesi NextAuth (Bendahara / Admin).
+**Auth:** Khusus Staf DKM (`ADMIN` atau `BENDAHARA`). Tolak `401` jika tanpa sesi, `403` jika role `null`.
 
 **Response 200**
 
@@ -447,7 +495,7 @@ Membatalkan status verifikasi transaksi yang sebelumnya telah dikonfirmasi. Meng
 
 Mengedit nama donatur khusus pada transaksi pemasukan yang sudah berstatus `isVerified = true` tanpa mengubah nominal kas ataupun integritas pembukuan lainnya.
 
-**Auth:** Wajib sesi NextAuth (Bendahara / Admin).
+**Auth:** Khusus Staf DKM (`ADMIN` atau `BENDAHARA`). Tolak `401` jika tanpa sesi, `403` jika role `null`.
 
 **Body Request**
 
@@ -690,7 +738,7 @@ Mengambil daftar rincian transaksi pengeluaran terverifikasi dengan dukungan fil
 
 Mengubah kategori fungsional pada transaksi pengeluaran yang **sudah berstatus terverifikasi** tanpa membatalkan status verifikasi atau mengganggu keutuhan nominal finansial.
 
-**Akses**: Pengguna terautentikasi (Sesi NextAuth aktif)
+**Akses**: Khusus Staf DKM (`ADMIN` atau `BENDAHARA`). Akses tanpa sesi mengembalikan `401 Unauthorized`, sedangkan akun Google ber-role `null` (Jamaah) mengembalikan `403 Forbidden`.
 
 **Request Body:**
 
@@ -714,8 +762,9 @@ Mengubah kategori fungsional pada transaksi pengeluaran yang **sudah berstatus t
 ```
 
 **Response Error:**
-- `401 Unauthorized`: Sesi tidak valid / belum login
-- `400 Bad Request`: Transaksi bukan tipe `pengeluaran` atau kategori tidak valid
+- `401 Unauthorized`: Belum login ke sistem
+- `403 Forbidden`: Akun bukan staf pengurus DKM (`role: null`)
+- `400 Bad Request`: Transaksi bukan tipe `pengeluaran` atau nilai enum kategori tidak valid
 - `404 Not Found`: ID transaksi tidak ditemukan
 
 ---
@@ -760,44 +809,42 @@ Unduh rekapitulasi pembukuan kas bulanan terverifikasi dalam format dokumen PDF 
 
 ---
 
-## Ringkasan Endpoint Mutasi & Transaksi (V4, V5, V6, & V7)
+## Matriks Hak Akses & Ringkasan Seluruh Endpoint API (RBAC 3-Tier)
 
-| Method | Path                                   | Fungsi                                           | Akses Publik |
-| ------ | -------------------------------------- | ------------------------------------------------- | ------------ |
-| POST   | `/api/attachments/:id/extract`         | Memicu ekstraksi data vision-LLM (Gambar & PDF V6)| **Tidak**    |
-| GET    | `/api/reports/:id/transactions`        | Daftar transaksi (publik hanya yang terverifikasi)| Ya (terbatas)|
-| PATCH  | `/api/transactions/:id`                | Edit transaksi sebelum konfirmasi (dukung kategori)| **Tidak**    |
-| POST   | `/api/transactions/:id/confirm`        | Konfirmasi transaksi + assign donatur (V5)        | **Tidak**    |
-| POST   | `/api/transactions/:id/unverify`       | Batalkan verifikasi transaksi (#051)              | **Tidak**    |
-| PATCH  | `/api/transactions/:id/donor`          | Edit nama donatur transaksi terverifikasi (#051)  | **Tidak**    |
-| PATCH  | `/api/transactions/:id/category`       | Edit kategori pengeluaran terverifikasi (V7, #059)| **Tidak**    |
-| DELETE | `/api/transactions/:id`                | Hapus transaksi (hanya jika belum verified)       | **Tidak**    |
+Tabel berikut merangkum seluruh endpoint backend di `app/api/` beserta batasan otorisasi dan penanganan status kode HTTP yang berlaku secara presisi:
 
-## Ringkasan Endpoint Publik (Financial Intelligence & V6/V7)
-
-| Method | Path                                  | Fungsi                                              | Akses Publik |
-| ------ | ------------------------------------- | --------------------------------------------------- | ------------ |
-| GET    | `/api/dashboard/trend`                | Data tren kas mingguan (Jumat)/bulanan (F-014, #053) | Ya           |
-| GET    | `/api/donors`                         | Daftar donatur + agregat anonim (F-015)              | Ya           |
-| GET    | `/api/donors/:id`                     | Riwayat transaksi satu donatur (F-015)               | Ya           |
-| GET    | `/api/donors/anonymous/transactions`  | Rincian transaksi infaq anonim (F-018, #054)         | Ya           |
-| GET    | `/api/reports/:id/export/pdf`         | Unduh langsung rekapitulasi mingguan format PDF A4   | Ya           |
-| GET    | `/api/reports/:id/export/excel`       | Unduh rekapitulasi kas mingguan format Excel (.xlsx) | Ya           |
-| GET    | `/api/reports/export/monthly/pdf`     | Unduh langsung rekapitulasi bulanan format PDF A4   | Ya           |
-| GET    | `/api/reports/export/monthly/excel`   | Unduh rekapitulasi kas bulanan format Excel (.xlsx)  | Ya           |
-| GET    | `/api/expenses`                       | Agregasi total pengeluaran per kategori (F-023, V7)  | Ya           |
-| GET    | `/api/expenses/transactions`          | Rincian transaksi pengeluaran, filter per kategori (F-023, V7) | Ya  |
-
-## Ringkasan Endpoint V3 (Referensi)
-
-| Method | Path                           | Fungsi                         | Akses Publik |
-| ------ | ------------------------------ | ------------------------------ | ------------ |
-| GET/POST| `/api/auth/[...nextauth]`      | Alur SSO & Sesi NextAuth       | Ya           |
-| GET    | `/api/users`                   | Daftar pengguna (admin)        | Tidak        |
-| PATCH  | `/api/users`                   | Update role pengguna (admin)   | Tidak        |
-| DELETE | `/api/users`                   | Hapus pengguna dgn proteksi audit | Tidak     |
-| GET    | `/api/reports`                 | List/kelompok/cari laporan     | Ya (Baca)    |
-| POST   | `/api/reports`                 | Unggah laporan (Multi-File)    | **Tidak**    |
-| GET    | `/api/reports/:id`             | Detail laporan & lampiran      | Ya (Baca)    |
-| DELETE | `/api/reports/:id`             | Hapus laporan beserta lampiran | **Tidak**    |
-| DELETE | `/api/reports/:id/attachments` | Hapus satu lampiran spesifik   | **Tidak**    |
+| Method | Path | Deskripsi Fungsional | Akses Minimal | Tanpa Sesi | Role `null` (Jamaah) |
+| :--- | :--- | :--- | :--- | :---: | :---: |
+| **Auth** | | | | | |
+| `GET/POST` | `/api/auth/[...nextauth]` | Handlers SSO OAuth Google & token sesi JWT | Publik | `200` | `200` |
+| **Pengguna** | | | | | |
+| `GET` | `/api/users` | Daftar akun, peran, dan riwayat audit | **ADMIN** | `401` | `403` |
+| `PATCH` | `/api/users` | Ubah peran pengguna (`ADMIN`, `BENDAHARA`, `null`) | **ADMIN** | `401` | `403` |
+| `DELETE` | `/api/users` | Hapus akun pengguna (dilindungi proteksi riwayat audit) | **ADMIN** | `401` | `403` |
+| **Laporan & Lampiran** | | | | | |
+| `GET` | `/api/reports` | Daftar laporan kas mingguan (select aman tanpa AI dump) | Publik | `200` | `200` |
+| `POST` | `/api/reports` | Unggah laporan baru dan berkas fisik ke Supabase | **Staf** (`ADMIN`/`BENDAHARA`) | `401` | `403` |
+| `GET` | `/api/reports/:id` | Detail laporan dan metadata berkas | Publik | `200` | `200` |
+| `DELETE` | `/api/reports/:id` | Hapus laporan beserta seluruh transaksi & storage | **ADMIN** | `401` | `403` |
+| `POST` | `/api/reports/:id/attachments` | Tambah berkas lampiran baru ke laporan | **Staf** (`ADMIN`/`BENDAHARA`) | `401` | `403` |
+| `DELETE` | `/api/attachments/:id` | Hapus satu berkas lampiran tertentu | **Staf** (`ADMIN`/`BENDAHARA`) | `401` | `403` |
+| **Ekstraksi AI & Mutasi Transaksi** | | | | | |
+| `POST` | `/api/attachments/:id/extract` | Picu ekstraksi OCR Vision-LLM Gemini | **Staf** (`ADMIN`/`BENDAHARA`) | `401` | `403` |
+| `GET` | `/api/reports/:id/transactions` | Daftar transaksi (publik/null: hanya verified; staf: +draf) | Publik (terfilter) | `200` | `200` (verified) |
+| `PATCH` | `/api/transactions/:id` | Koreksi transaksi sebelum verifikasi | **Staf** (`ADMIN`/`BENDAHARA`) | `401` | `403` |
+| `DELETE` | `/api/transactions/:id` | Hapus transaksi unverified / draf | **Staf** (`ADMIN`/`BENDAHARA`) | `401` | `403` |
+| `POST` | `/api/transactions/:id/confirm` | Verifikasi transaksi & tautkan donatur | **Staf** (`ADMIN`/`BENDAHARA`) | `401` | `403` |
+| `POST` | `/api/transactions/:id/unverify` | Batalkan verifikasi transaksi kas | **Staf** (`ADMIN`/`BENDAHARA`) | `401` | `403` |
+| `PATCH` | `/api/transactions/:id/donor` | Edit nama donatur transaksi terverifikasi | **Staf** (`ADMIN`/`BENDAHARA`) | `401` | `403` |
+| `PATCH` | `/api/transactions/:id/category` | Klasifikasi kategori pengeluaran kas | **Staf** (`ADMIN`/`BENDAHARA`) | `401` | `403` |
+| **Financial Intelligence & Ekspor** | | | | | |
+| `GET` | `/api/dashboard/trend` | Data grafik tren kas mingguan Jumat / bulanan | Publik | `200` | `200` |
+| `GET` | `/api/donors` | Daftar donatur agregat & anonim (filter tahun/bulan) | Publik | `200` | `200` |
+| `GET` | `/api/donors/:id` | Riwayat transaksi infaq per donatur | Publik | `200` | `200` |
+| `GET` | `/api/donors/anonymous/transactions` | Rincian transaksi infaq anonim terverifikasi | Publik | `200` | `200` |
+| `GET` | `/api/expenses` | Agregasi persentase pengeluaran per kategori | Publik | `200` | `200` |
+| `GET` | `/api/expenses/transactions` | Rincian transaksi pengeluaran per kategori | Publik | `200` | `200` |
+| `GET` | `/api/reports/:id/export/pdf` | Unduh file resmi PDF A4 laporan mingguan | Publik | `200` | `200` |
+| `GET` | `/api/reports/:id/export/excel` | Unduh spreadsheet Excel laporan mingguan | Publik | `200` | `200` |
+| `GET` | `/api/reports/export/monthly/pdf` | Unduh file resmi PDF A4 rekapitulasi bulanan | Publik | `200` | `200` |
+| `GET` | `/api/reports/export/monthly/excel` | Unduh spreadsheet Excel rekapitulasi bulanan | Publik | `200` | `200` |
