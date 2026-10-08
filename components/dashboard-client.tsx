@@ -27,6 +27,7 @@ import { MonthlyExportDialog } from "@/components/monthly-export-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PageShell } from "@/components/page-shell";
+import { cn } from "@/lib/utils";
 import {
   ChartContainer,
   ChartTooltip,
@@ -275,9 +276,17 @@ export function DashboardClient({
     };
   }, []);
 
+  const [isSwitching, setIsSwitching] = React.useState(false);
+
   const handleGranularityChange = (newGran: "weekly" | "monthly") => {
     if (newGran === granularity) return;
-    setGranularity(newGran);
+    setIsSwitching(true);
+    setTimeout(() => {
+      setGranularity(newGran);
+      setTimeout(() => {
+        setIsSwitching(false);
+      }, 40);
+    }, 120);
   };
 
   const handleRetry = () => {
@@ -608,93 +617,98 @@ export function DashboardClient({
               </p>
             </div>
           ) : (
-            <div className="w-full pt-2">
+            <div
+              className={cn(
+                "w-full pt-2 transition-all duration-300 ease-out",
+                isSwitching
+                  ? "opacity-20 scale-[0.985] blur-[1px]"
+                  : "opacity-100 scale-100 blur-0"
+              )}
+            >
               <ChartContainer config={chartConfig} className="h-[360px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    key={granularity}
-                    data={chartData}
-                    margin={{
-                      top: isMobile ? 12 : 36,
-                      right: isMobile ? 8 : 16,
-                      left: isMobile ? -6 : 8,
-                      bottom: isMobile ? 8 : 20,
-                    }}
-                    barGap={isMobile ? 3 : 6}
-                    barCategoryGap={isMobile ? "18%" : "22%"}
+                <BarChart
+                  key={granularity}
+                  data={chartData}
+                  margin={{
+                    top: isMobile ? 12 : 36,
+                    right: isMobile ? 8 : 16,
+                    left: isMobile ? -6 : 8,
+                    bottom: isMobile ? 8 : 20,
+                  }}
+                  barGap={isMobile ? 3 : 6}
+                  barCategoryGap={isMobile ? "18%" : "22%"}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    className="stroke-outline-variant/60"
+                  />
+                  <XAxis
+                    dataKey="label"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={isMobile ? 6 : 10}
+                    interval={0}
+                    className="text-[10px] sm:text-xs fill-on-surface-variant font-medium"
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={isMobile ? 4 : 8}
+                    tickFormatter={formatShortRupiah}
+                    domain={[
+                      0,
+                      (dataMax: number) =>
+                        dataMax > 0
+                          ? Math.ceil((dataMax * 1.15) / 50000) * 50000
+                          : "auto",
+                    ]}
+                    className="text-[10px] sm:text-xs fill-on-surface-variant"
+                    width={isMobile ? 56 : 70}
+                  />
+                  <ChartTooltip
+                    cursor={{ fill: "currentColor", opacity: 0.08 }}
+                    content={
+                      <ChartTooltipContent
+                        labelFormatter={(_, payload) => {
+                          const item = payload?.[0]?.payload as
+                            | { tooltipLabel?: string }
+                            | undefined;
+                          return `Periode: ${item?.tooltipLabel || ""}`;
+                        }}
+                        valueFormatter={(val) => formatRupiah(val)}
+                      />
+                    }
+                  />
+                  <Bar
+                    dataKey="pemasukan"
+                    fill="hsl(150, 65%, 40%)"
+                    radius={[4, 4, 0, 0]}
+                    maxBarSize={isMobile ? 22 : 38}
+                    isAnimationActive={true}
+                    animationDuration={600}
+                    animationEasing="ease-out"
                   >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      vertical={false}
-                      className="stroke-outline-variant/60"
-                    />
-                    <XAxis
-                      dataKey="label"
-                      tickLine={false}
-                      axisLine={false}
-                      tickMargin={isMobile ? 6 : 10}
-                      interval={0}
-                      className="text-[10px] sm:text-xs fill-on-surface-variant font-medium"
-                    />
-                    <YAxis
-                      tickLine={false}
-                      axisLine={false}
-                      tickMargin={isMobile ? 4 : 8}
-                      tickFormatter={formatShortRupiah}
-                      domain={[
-                        0,
-                        (dataMax: number) =>
-                          dataMax > 0
-                            ? Math.ceil((dataMax * 1.15) / 50000) * 50000
-                            : "auto",
-                      ]}
-                      className="text-[10px] sm:text-xs fill-on-surface-variant"
-                      width={isMobile ? 56 : 70}
-                    />
-                    <ChartTooltip
-                      cursor={{ fill: "currentColor", opacity: 0.08 }}
-                      content={
-                        <ChartTooltipContent
-                          labelFormatter={(_, payload) => {
-                            const item = payload?.[0]?.payload as
-                              | { tooltipLabel?: string }
-                              | undefined;
-                            return `Periode: ${item?.tooltipLabel || ""}`;
-                          }}
-                          valueFormatter={(val) => formatRupiah(val)}
-                        />
-                      }
-                    />
-                    <Bar
+                    <LabelList
                       dataKey="pemasukan"
-                      fill="hsl(150, 65%, 40%)"
-                      radius={[4, 4, 0, 0]}
-                      maxBarSize={isMobile ? 22 : 38}
-                      isAnimationActive={true}
-                      animationDuration={600}
-                      animationEasing="ease-out"
-                    >
-                      <LabelList
-                        dataKey="pemasukan"
-                        content={renderBarLabel}
-                      />
-                    </Bar>
-                    <Bar
+                      content={renderBarLabel}
+                    />
+                  </Bar>
+                  <Bar
+                    dataKey="pengeluaran"
+                    fill="hsl(0, 72%, 56%)"
+                    radius={[4, 4, 0, 0]}
+                    maxBarSize={isMobile ? 22 : 38}
+                    isAnimationActive={true}
+                    animationDuration={600}
+                    animationEasing="ease-out"
+                  >
+                    <LabelList
                       dataKey="pengeluaran"
-                      fill="hsl(0, 72%, 56%)"
-                      radius={[4, 4, 0, 0]}
-                      maxBarSize={isMobile ? 22 : 38}
-                      isAnimationActive={true}
-                      animationDuration={600}
-                      animationEasing="ease-out"
-                    >
-                      <LabelList
-                        dataKey="pengeluaran"
-                        content={renderBarLabel}
-                      />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+                      content={renderBarLabel}
+                    />
+                  </Bar>
+                </BarChart>
               </ChartContainer>
               <p className="mt-3 text-center text-xs text-on-surface-variant">
                 Hijau menunjukkan uang masuk, merah menunjukkan uang keluar.
