@@ -396,19 +396,30 @@
 
 ### F-021 — Ekspor & Unduh Rekapitulasi Kas Mingguan & Bulanan (Cetak PDF & Excel)
 
-**Objective:** Memfasilitasi transparansi fisik DKM Masjid Al-Luqman untuk mencetak laporan pembukuan kas mingguan dan bulanan ke mading/papan pengumuman masjid serta mengunduh arsip spreadsheet Excel.
+**Objective:** Memfasilitasi transparansi fisik DKM Masjid Al-Luqman untuk mencetak laporan pembukuan kas mingguan dan bulanan ke mading/papan pengumuman masjid serta mengunduh arsip dokumen PDF dan spreadsheet Excel secara instan.
 **User:** Publik (jemaah), Pengurus DKM
 **Process:**
-- **Ekspor Mingguan**: Pada halaman detail laporan (`/laporan/:id`), pengguna dapat memilih tombol "Cetak / PDF" untuk membuka tampilan siap cetak A4 formal (Kop Surat resmi DKM Al-Luqman, tabel mutasi kas, saldo awal & akhir, serta lembar tanda tangan pengesahan) atau "Unduh Excel" via `GET /api/reports/:id/export/excel`.
-- **Ekspor Bulanan**: Pada dashboard publik (`/dashboard`), pengguna dapat menekan tombol "Ekspor Rekap Bulanan" untuk memilih periode bulan/tahun lalu mencetak rekap bulanan A4 formal (`/laporan/cetak/bulanan?year=YYYY&month=M`) atau mengunduh spreadsheet Excel via `GET /api/reports/export/monthly/excel?year=YYYY&month=M`.
+- **Ekspor Mingguan**: Pada halaman detail laporan (`/laporan/:id`), pengguna dapat memilih:
+  1. "Unduh PDF" via `GET /api/reports/:id/export/pdf` (unduhan langsung berkas PDF resmi murni vektor, memicu notifikasi unduhan browser & tercatat di history unduhan).
+  2. "Unduh Excel" via `GET /api/reports/:id/export/excel`.
+  3. "Cetak / A4" untuk membuka tampilan siap cetak A4 formal ke printer fisik via `window.print()`.
+- **Ekspor Bulanan**: Pada dashboard publik (`/dashboard`), pengguna dapat menekan tombol "Ekspor Rekap Bulanan" untuk memilih periode bulan/tahun lalu:
+  1. Mengunduh PDF resmi via `GET /api/reports/export/monthly/pdf?year=YYYY&month=M`.
+  2. Mengunduh spreadsheet Excel via `GET /api/reports/export/monthly/excel?year=YYYY&month=M`.
+  3. Membuka pratinjau cetak A4 mading via `/laporan/cetak/bulanan?year=YYYY&month=M`.
 **Business Rules:**
 - Seluruh data transaksi yang diekspor/dicetak MUTLAK hanya berstatus `isVerified = true`.
-- Tampilan cetak menggunakan aturan `@media print` sehingga elemen navigasi/tombol web otomatis disembunyikan saat dicetak ke printer atau disimpan sebagai PDF.
+- Tampilan cetak menggunakan aturan `@media print` dengan ukuran baku `@page { size: A4 portrait; margin: 8mm 10mm 10mm 10mm; }`.
+- Preservasi warna cetak diaktifkan via `print-color-adjust: exact !important;` agar angka pemasukan (hijau) dan pengeluaran (merah) tidak dipudarkan menjadi hitam-putih.
+- Elemen baris tabel dan blok tanda tangan dilindungi dengan `break-inside-avoid` agar tidak terpotong secara janggal di tengah halaman.
+- Berkas PDF unduhan langsung dikirim dengan header HTTP `Content-Disposition: attachment` agar memicu notifikasi unduhan browser dan masuk ke folder unduhan perangkat pengguna secara otomatis.
 **Acceptance Criteria:**
-- [x] Dokumen kas mingguan dapat diunduh dalam format Excel (.xlsx) dengan struktur tabel rapi.
-- [x] Halaman cetak mingguan menyediakan format A4 resmi dengan Kop DKM, tabel mutasi kas, dan kolom tanda tangan pengesahan.
-- [x] Dashboard memiliki tombol dialog untuk mengekspor rekapitulasi kas bulanan ke Excel (.xlsx) dan format cetak PDF.
+- [x] Dokumen kas mingguan dapat diunduh langsung dalam format Excel (.xlsx) dan PDF (.pdf).
+- [x] Halaman cetak mingguan menyediakan format A4 resmi dengan Kop DKM, tabel mutasi kas, dan kolom tanda tangan pengesahan pas 1 lembar (15–25 transaksi).
+- [x] Dashboard memiliki tombol dialog untuk mengekspor rekapitulasi kas bulanan ke PDF, Excel (.xlsx), dan format cetak fisik.
 - [x] Data transaksi unverified (`isVerified = false`) tidak pernah muncul di berkas ekspor maupun cetakan.
+- [x] Warna merah (pengeluaran) dan hijau (pemasukan) tetap tampil konsisten saat dicetak atau diunduh sebagai PDF.
+- [x] Unduhan PDF langsung memunculkan notifikasi download di peramban desktop maupun ponsel pintar.
 
 ### F-022 — Mobile Responsiveness & Touch Optimization System
 

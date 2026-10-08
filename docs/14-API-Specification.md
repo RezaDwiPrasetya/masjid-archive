@@ -720,6 +720,46 @@ Mengubah kategori fungsional pada transaksi pengeluaran yang **sudah berstatus t
 
 ---
 
+## Ekspor Rekapitulasi Kas (F-021, V6 & V7 Refinement)
+
+### `GET /api/reports/:id/export/excel`
+Unduh rekapitulasi pembukuan kas mingguan terverifikasi dalam format spreadsheet Excel (`.xlsx`). Akses Publik.
+
+**Response 200:**
+- `Content-Type`: `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
+- `Content-Disposition`: `attachment; filename="Kas-Masjid-Al-Luqman-YYYY-MM-DD.xlsx"`
+
+---
+
+### `GET /api/reports/export/monthly/excel`
+Unduh rekapitulasi pembukuan kas bulanan terverifikasi dalam format spreadsheet Excel (`.xlsx`). Akses Publik.
+- **Query Params:** `year` (number), `month` (1–12)
+
+**Response 200:**
+- `Content-Type`: `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
+- `Content-Disposition`: `attachment; filename="Rekap-Kas-Bulanan-Al-Luqman-YYYY-MM.xlsx"`
+
+---
+
+### `GET /api/reports/:id/export/pdf`
+Unduh rekapitulasi pembukuan kas mingguan terverifikasi dalam format dokumen PDF vektor resmi A4 (`.pdf`). Menghasilkan file lampiran langsung sehingga memicu notifikasi unduhan browser dan masuk ke riwayat unduhan. Akses Publik.
+
+**Response 200:**
+- `Content-Type`: `application/pdf`
+- `Content-Disposition`: `attachment; filename="Kas-Masjid-Al-Luqman-YYYY-MM-DD.pdf"`
+
+---
+
+### `GET /api/reports/export/monthly/pdf`
+Unduh rekapitulasi pembukuan kas bulanan terverifikasi dalam format dokumen PDF vektor resmi A4 (`.pdf`). Lengkap dengan Kop DKM, kartu ringkasan saldo, tabel mutasi kas, dan kolom tanda tangan pengesahan. Akses Publik.
+- **Query Params:** `year` (number), `month` (1–12)
+
+**Response 200:**
+- `Content-Type`: `application/pdf`
+- `Content-Disposition`: `attachment; filename="Rekap-Kas-Bulanan-Al-Luqman-YYYY-MM.pdf"`
+
+---
+
 ## Ringkasan Endpoint Mutasi & Transaksi (V4, V5, V6, & V7)
 
 | Method | Path                                   | Fungsi                                           | Akses Publik |
@@ -733,7 +773,7 @@ Mengubah kategori fungsional pada transaksi pengeluaran yang **sudah berstatus t
 | PATCH  | `/api/transactions/:id/category`       | Edit kategori pengeluaran terverifikasi (V7, #059)| **Tidak**    |
 | DELETE | `/api/transactions/:id`                | Hapus transaksi (hanya jika belum verified)       | **Tidak**    |
 
-## Ringkasan Endpoint Publik (Financial Intelligence & V6)
+## Ringkasan Endpoint Publik (Financial Intelligence & V6/V7)
 
 | Method | Path                                  | Fungsi                                              | Akses Publik |
 | ------ | ------------------------------------- | --------------------------------------------------- | ------------ |
@@ -741,7 +781,9 @@ Mengubah kategori fungsional pada transaksi pengeluaran yang **sudah berstatus t
 | GET    | `/api/donors`                         | Daftar donatur + agregat anonim (F-015)              | Ya           |
 | GET    | `/api/donors/:id`                     | Riwayat transaksi satu donatur (F-015)               | Ya           |
 | GET    | `/api/donors/anonymous/transactions`  | Rincian transaksi infaq anonim (F-018, #054)         | Ya           |
+| GET    | `/api/reports/:id/export/pdf`         | Unduh langsung rekapitulasi mingguan format PDF A4   | Ya           |
 | GET    | `/api/reports/:id/export/excel`       | Unduh rekapitulasi kas mingguan format Excel (.xlsx) | Ya           |
+| GET    | `/api/reports/export/monthly/pdf`     | Unduh langsung rekapitulasi bulanan format PDF A4   | Ya           |
 | GET    | `/api/reports/export/monthly/excel`   | Unduh rekapitulasi kas bulanan format Excel (.xlsx)  | Ya           |
 | GET    | `/api/expenses`                       | Agregasi total pengeluaran per kategori (F-023, V7)  | Ya           |
 | GET    | `/api/expenses/transactions`          | Rincian transaksi pengeluaran, filter per kategori (F-023, V7) | Ya  |

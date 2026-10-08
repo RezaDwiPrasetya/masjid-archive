@@ -478,40 +478,33 @@ Setelah seluruh transaksi selesai diverifikasi, periksa bagian **Rekap Saldo Kas
 
 ## 13. Cetak & Ekspor Rekapitulasi Kas
 
-Sistem menyediakan dua format ekspor resmi yang dapat digunakan untuk ditempel di papan mading fisik masjid atau disimpan sebagai arsip digital.
+Sistem menyediakan dua format ekspor resmi yang dapat digunakan untuk ditempel di papan mading fisik masjid atau disimpan sebagai arsip digital:
 
-### Ekspor Rekap Mingguan (dari Halaman Detail Laporan)
+### A. Ekspor Rekap Mingguan (dari Halaman Detail Laporan)
 
-1. Buka halaman **Detail Laporan** laporan yang ingin dicetak.
-2. Klik tombol **"Cetak / PDF"** yang tersedia di halaman tersebut.
-3. Halaman pratinjau cetak akan terbuka dalam format A4 resmi berkop surat DKM Al-Luqman.
-4. Dialog cetak browser akan terbuka — pilih:
-   - **"Save as PDF"** untuk menyimpan sebagai berkas PDF.
-   - **Nama printer** untuk mencetak langsung ke printer fisik.
-
-Selain cetak PDF, tersedia juga tombol **"Unduh Excel"** untuk mengunduh rekap mingguan dalam format `.xlsx`.
+Pada halaman **Detail Laporan** (`/laporan/:id`), tersedia 3 tombol aksi cepat di bagian atas:
+1. **Unduh PDF**: Mengunduh berkas `.pdf` resmi A4 langsung ke perangkat Anda. Berkas otomatis memicu notifikasi unduhan browser dan tercatat di daftar riwayat unduhan (*Downloads*). Sangat praktis untuk pengguna smartphone (HP) agar berkas langsung tersimpan di galeri berkas.
+2. **Unduh Excel**: Mengunduh rekapitulasi kas mingguan dalam format spreadsheet `.xlsx`.
+3. **Cetak / A4**: Membuka halaman pratinjau cetak berkop surat DKM Al-Luqman. Di halaman ini, Anda dapat:
+   - Mengklik **"Unduh PDF"** untuk mengunduh berkas digital, atau
+   - Mengklik **"Cetak (Printer)"** untuk mencetak langsung ke kertas fisik via printer yang terhubung. Seluruh tata letak sudah dioptimalkan agar pas 1 lembar A4 tanpa terpotong, dan warna hijau (pemasukan) serta merah (pengeluaran) tetap tampil cerah.
 
 ---
 
-### Ekspor Rekap Bulanan (dari Dashboard)
+### B. Ekspor Rekap Bulanan (dari Dashboard)
 
 1. Buka halaman **Dashboard** (`/dashboard`).
-2. Klik tombol **"Ekspor Rekap Bulanan"** di pojok kanan atas grafik.
+2. Klik tombol **"Ekspor Rekap Bulanan"** di pojok kanan atas grafik tren kas.
 3. Dialog **Ekspor Rekapitulasi Kas** akan terbuka.
-4. Pilih **Bulan** dan **Tahun** yang diinginkan menggunakan dropdown.
-5. Pilih format ekspor:
+4. Pilih **Bulan** dan **Tahun** pembukuan yang diinginkan.
+5. Tersedia 3 opsi format:
+   - **Unduh PDF (.pdf)**: Langsung mengunduh berkas rekap kas bulanan format A4 lengkap dengan Kop DKM, ringkasan saldo, tabel transaksi, dan tanda tangan pengesahan. Notifikasi download peramban akan muncul seketika.
+   - **Unduh Excel (.xlsx)**: Mengunduh arsip spreadsheet rekap kas bulanan.
+   - **Buka Pratinjau Cetak / Mading (A4)**: Membuka pratinjau cetak di browser untuk diperiksa sebelum dicetak ke printer mading masjid.
 
-#### Cetak / PDF Mading
-- Klik tombol **"Cetak / PDF Mading"**.
-- Anda akan diarahkan ke halaman pratinjau cetak format A4 resmi.
-- Dialog cetak browser akan terbuka — pilih printer atau simpan sebagai PDF.
-
-#### Unduh Excel (.xlsx)
-- Klik tombol **"Unduh Excel (.xlsx)"**.
-- File spreadsheet rekap kas bulan tersebut akan otomatis diunduh ke perangkat Anda.
-- Berkas berisi tabel seluruh laporan mingguan dalam bulan yang dipilih beserta detail transaksi terverifikasi.
-
-> **Catatan**: Ekspor hanya mencakup transaksi dengan status **terverifikasi**. Transaksi draft tidak pernah masuk ke dalam berkas ekspor.
+> **Catatan Penting**:
+> - Ekspor hanya mencakup transaksi dengan status **terverifikasi** (`isVerified = true`). Transaksi draf atau yang belum diverifikasi tidak pernah dimasukkan ke dalam berkas laporan.
+> - Pada saat mencetak ke kertas fisik dari browser, ukuran kertas standar adalah **A4 (Portrait)**. Tata letak sistem telah dirancang presisi agar rekap mutasi 15–25 transaksi tertata rapi dalam 1 lembar.
 
 ---
 

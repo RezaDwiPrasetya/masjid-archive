@@ -1,30 +1,30 @@
 "use client";
 
-import { Printer, ArrowLeft } from "lucide-react";
+import { Printer, ArrowLeft, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
 interface PrintActionBarProps {
   backUrl: string;
+  pdfDownloadUrl?: string;
   excelDownloadUrl?: string;
   title: string;
 }
 
 export function PrintActionBar({
   backUrl,
+  pdfDownloadUrl,
   title,
 }: PrintActionBarProps) {
   const router = useRouter();
 
   const handleBack = () => {
-    // 1. Jika tab ini dibuka di tab baru dengan opener, tutup window agar tab tidak menumpuk
     if (typeof window !== "undefined") {
       if (window.opener) {
         window.close();
         return;
       }
 
-      // 2. Jika riwayat peramban tersedia, navigasi mundur secara normal
       if (window.history.length > 1) {
         router.back();
         return;
@@ -38,6 +38,19 @@ export function PrintActionBar({
     }
 
     router.push(backUrl);
+  };
+
+  const handleDownloadPdf = () => {
+    if (!pdfDownloadUrl) {
+      window.print();
+      return;
+    }
+    const link = document.createElement("a");
+    link.href = pdfDownloadUrl;
+    link.setAttribute("download", "");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -55,19 +68,30 @@ export function PrintActionBar({
           <ArrowLeft size={14} /> Kembali
         </Button>
         <span className="hidden sm:inline text-xs font-semibold text-on-surface-variant">
-          Pratinjau Cetak: <span className="text-on-surface">{title}</span>
+          Pratinjau: <span className="text-on-surface">{title}</span>
         </span>
       </div>
 
       <div className="flex items-center gap-2">
+        {pdfDownloadUrl && (
+          <Button
+            size="sm"
+            onClick={handleDownloadPdf}
+            className="gap-1.5 text-xs bg-emerald-700 hover:bg-emerald-800 text-white font-semibold shadow-xs"
+          >
+            <Download size={14} /> Unduh PDF
+          </Button>
+        )}
         <Button
+          variant="outline"
           size="sm"
           onClick={() => window.print()}
-          className="gap-1.5 text-xs bg-primary hover:bg-primary/90 text-on-primary font-semibold shadow-xs"
+          className="gap-1.5 text-xs font-semibold border-outline-variant hover:bg-surface-container-high"
         >
-          <Printer size={14} /> Cetak / Simpan PDF
+          <Printer size={14} /> Cetak (Printer)
         </Button>
       </div>
     </aside>
   );
 }
+

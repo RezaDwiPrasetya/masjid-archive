@@ -132,16 +132,21 @@ export default async function DetailLaporanPage({
             </div>
             {/* Tombol Ekspor Rekapitulasi Kas (Issue #057) */}
             <div className="flex items-center gap-2 flex-wrap">
-              <Link href={`/laporan/${report.id}/cetak`}>
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs font-semibold">
-                  <Printer size={14} /> Cetak / PDF
+              <a href={`/api/reports/${report.id}/export/pdf`} download>
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs font-semibold text-emerald-800 hover:text-emerald-900 border-outline-variant">
+                  <Download size={14} /> Unduh PDF
                 </Button>
-              </Link>
+              </a>
               <a href={`/api/reports/${report.id}/export/excel`} download>
                 <Button variant="outline" size="sm" className="gap-1.5 text-xs font-semibold">
                   <FileSpreadsheet size={14} className="text-emerald-700" /> Unduh Excel
                 </Button>
               </a>
+              <Link href={`/laporan/${report.id}/cetak`}>
+                <Button variant="ghost" size="sm" className="gap-1.5 text-xs font-medium text-on-surface-variant">
+                  <Printer size={14} /> Cetak / A4
+                </Button>
+              </Link>
             </div>
           </div>
 

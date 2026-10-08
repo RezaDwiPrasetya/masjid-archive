@@ -38,12 +38,23 @@ export function MonthlyExportDialog() {
   const currentYear = now.getFullYear();
   const yearOptions = [currentYear, currentYear - 1, currentYear - 2, currentYear - 3];
 
+  const pdfUrl = `/api/reports/export/monthly/pdf?year=${year}&month=${month}`;
   const excelUrl = `/api/reports/export/monthly/excel?year=${year}&month=${month}`;
   const printUrl = `/laporan/cetak/bulanan?year=${year}&month=${month}`;
 
   const handlePrint = () => {
     setOpen(false);
     router.push(printUrl);
+  };
+
+  const handleDownloadPdf = () => {
+    setOpen(false);
+    const link = document.createElement("a");
+    link.href = pdfUrl;
+    link.setAttribute("download", "");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleDownloadExcel = () => {
@@ -138,11 +149,11 @@ export function MonthlyExportDialog() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
               <Button
-                onClick={handlePrint}
-                className="w-full gap-2 text-xs font-semibold h-10 bg-primary hover:bg-primary/90 text-on-primary shadow-xs"
+                onClick={handleDownloadPdf}
+                className="w-full gap-2 text-xs font-semibold h-10 bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs"
               >
-                <Printer size={14} />
-                <span>Cetak / PDF Mading</span>
+                <Download size={14} />
+                <span>Unduh PDF (.pdf)</span>
               </Button>
 
               <Button
@@ -154,6 +165,15 @@ export function MonthlyExportDialog() {
                 <span>Unduh Excel (.xlsx)</span>
               </Button>
             </div>
+
+            <Button
+              variant="ghost"
+              onClick={handlePrint}
+              className="w-full gap-2 text-xs font-medium h-9 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high"
+            >
+              <Printer size={14} />
+              <span>Buka Pratinjau Cetak / Mading (A4)</span>
+            </Button>
           </div>
         </div>
       </DialogPopup>

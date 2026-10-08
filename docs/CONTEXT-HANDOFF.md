@@ -231,7 +231,18 @@ Shared logic di `lib/donor-matching.ts`, `lib/donor-service.ts`, dan `lib/expens
 ## 14. STATUS & LANGKAH BERIKUTNYA
 1. **Fase V8 (Issue #66) Telah Tuntas Penuh**:
    - Seluruh endpoint filtering, komponen `PeriodFilterBar`, dan integrasi reaktif di `/pengeluaran` dan `/donatur` telah selesai, diuji visual di browser, dan digabung ke branch `main`.
-2. **Kandidat Eksplorasi Fase Berikutnya (Fase V9)**:
+2. **Penyempurnaan Fitur Ekspor & Cetak Kas A4 (Maintenance / Issue #057 Refinement - Selesai)**:
+   - **Optimasi Cetak A4 Pas 1 Lembar**: Mengatur CSS `@page { size: A4 portrait; margin: 8mm 10mm 10mm 10mm; }`, memadatkan padding tabel (`print:py-1 print:px-1.5`, font `10px`), dan merampingkan ruang tanda tangan (`print:h-12`) dengan aturan `print:break-inside-avoid`.
+   - **Preservasi Warna Penuh**: Menghilangkan class `print:text-neutral-900` dan mengaktifkan `print-color-adjust: exact !important` di `app/globals.css`, memastikan angka pemasukan (hijau) dan pengeluaran (merah) tetap tampil cerah saat dicetak atau disimpan ke PDF.
+   - **Direct PDF Download API (Berbasis `pdf-lib`)**:
+     - Ditambahkan endpoint `GET /api/reports/export/monthly/pdf?year=YYYY&month=M` dan `GET /api/reports/:id/export/pdf`.
+     - Generator PDF server-side di `lib/export-pdf.ts` menghasilkan PDF vektor A4 resmi dengan Kop DKM, kartu ringkasan, tabel mutasi kas, dan tanda tangan.
+     - Berkas dikirim dengan header HTTP `Content-Disposition: attachment`, memicu notifikasi unduhan Chrome/Edge dan otomatis tersimpan di riwayat unduhan (`chrome://downloads`), sangat ergonomis bagi pengguna smartphone (HP) maupun desktop.
+   - **Pembaruan Komponen UI**:
+     - `components/monthly-export-dialog.tsx`: Menyediakan opsi tombol mandiri "Unduh PDF (.pdf)", "Unduh Excel (.xlsx)", dan "Buka Pratinjau Cetak / Mading (A4)".
+     - `components/print-action-bar.tsx`: Menyediakan tombol aksi cepat "Unduh PDF" berdampingan dengan "Cetak (Printer)".
+     - `app/laporan/[id]/page.tsx`: Menyediakan tombol unduh PDF langsung.
+3. **Kandidat Eksplorasi Fase Berikutnya (Fase V9)**:
    - Evaluasi masukan pengguna / pengurus DKM Masjid Al-Luqman terkait penambahan visualisasi grafik perbandingan antar-periode atau fitur cetak khusus rekap laporan per kategori pengeluaran.
    - Pemeliharaan performa dan audit berkala data kas.
 
