@@ -539,7 +539,7 @@ Pada dashboard, tombol aksi cetak dan ekspor otomatis menyesuaikan dengan mode g
    - **Cetak Laporan**: Membuka pratinjau cetak resmi A4 berkop surat DKM Al-Luqman.
      - Pada mode Mingguan: membuka rekapitulasi kas bulanan (`/laporan/cetak/bulanan`).
      - Pada mode Tahunan: membuka rekapitulasi kas tahunan penuh 12 bulan (`/laporan/cetak/tahunan`), lengkap dengan tabel ringkasan akumulasi per bulan (Jan–Des) dan riwayat transaksi tahunan.
-     *(Di dalam halaman pratinjau cetak, tersedia tombol terpadu **"Cetak / Unduh PDF Resmi"** yang dilengkapi indikator pemrosesan dan notifikasi otomatis).*
+     *(Di dalam halaman pratinjau cetak, tersedia tombol tunggal **"Cetak Laporan"** yang secara otomatis mengunduh berkas PDF resmi berkualitas tinggi siap cetak, dilengkapi indikator pemrosesan dan notifikasi otomatis tanpa tombol peramban ganda yang membingungkan).*
    - **Excel**: Mengunduh berkas spreadsheet `.xlsx` resmi (bulanan atau tahunan sesuai mode yang aktif).
 
 > **Catatan Penting**:

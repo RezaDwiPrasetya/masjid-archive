@@ -568,9 +568,10 @@
     - Halaman 1: Ringkasan Eksekutif Mading (Kop DKM, 4 kartu ringkasan saldo lega, tabel rekapitulasi 12 bulan bernapas lega baris 18pt, dan blok pengesahan tanda tangan DKM).
     - Halaman 2+: Lampiran Buku Besar Mutasi Transaksi Kas Tahun Berjalan dengan header tabel otomatis di setiap lembar baru, baris 16pt, dan footer akumulasi.
   - `GET /api/reports/export/yearly/excel?year=YYYY`: Berkas spreadsheet Excel rekapitulasi kas tahunan (via `xlsx`).
-- **Penyatuan Tombol Cetak Dokumen (`components/print-action-bar.tsx`)**:
-  - Menggabungkan opsi cetak menjadi tombol primer terpadu **"Cetak / Unduh PDF Resmi"** berikon ganda Download/Printer (Issue #070).
-  - Dilengkapi *state* interaktif memuat (*spinner* + teks *"Menyiapkan PDF..."*) dan notifikasi *toast* konfirmasi setelah unduhan berhasil dimulai.
+- **Tombol Tunggal Aksi Cetak Dokumen (`components/print-action-bar.tsx`)**:
+  - Menyederhanakan tombol aksi menjadi **1 tombol tunggal yang jelas**: **"Cetak Laporan"** (ikon dokumen/cetak) (Issue #071).
+  - Menghapus tombol kedua "Cetak Browser" yang redundan karena pratinjau sudah ada di layar dan kebutuhan utama pengurus adalah mencetak laporan resmi tanpa label web.
+  - Alur otomatis cerdas: jika URL ekspor PDF tersedia, tombol memicu pengunduhan berkas PDF resmi berstandar A4 siap cetak dengan indikator pemrosesan (*spinner*) dan notifikasi visual instan. Jika tidak ada URL PDF, tombol memanggil dialog cetak sistem sebagai *fallback*.
 **Acceptance Criteria:**
 - [x] Tombol PDF redundan dihilangkan dari toolbar dashboard.
 - [x] Tombol cetak berganti nama menjadi "Cetak Laporan" dan mengarah ke rute tahunan saat mode tahunan aktif.
@@ -580,7 +581,7 @@
 - [x] Berkas PDF tahunan (`/api/reports/export/yearly/pdf`) memuat rincian mutasi transaksi kas lengkap multi-halaman, identik dengan halaman pratinjau (Issue #069).
 - [x] Saat mencetak lewat browser printer (`window.print()`), baris Total Mutasi tidak terulang di setiap lembar halaman yang terpotong, melainkan hanya satu kali di akhir (Issue #069).
 - [x] Dokumen PDF tahunan memiliki layout lega & profesional: Halaman 1 sebagai Ringkasan Eksekutif Mading lengkap dengan tanda tangan, Halaman 2+ sebagai Lampiran Mutasi Transaksi (Issue #070).
-- [x] Tombol di PrintActionBar terpadu dan menampilkan status loading serta feedback notifikasi unduh yang jelas (Issue #070).
+- [x] Toolbar pratinjau cetak (`PrintActionBar`) hanya memiliki 1 tombol tunggal "Cetak Laporan" yang ringkas, tanpa tombol kedua yang redundan (Issue #071).
 
 
 
