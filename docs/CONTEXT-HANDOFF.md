@@ -41,12 +41,14 @@ Aplikasi web arsip & manajemen keuangan untuk **DKM Masjid Al-Luqman** (Kel. Sok
     - Komponen universal `AppShell` (`components/app-shell.tsx`) dengan sidebar desktop 260px permanen, bottom bar mobile thumb-friendly, dan header konteks.
     - Ikon brand sidebar `MasjidEmblem` disinkronkan 1:1 dengan vektor favicon resmi masjid (`/favicon.svg`).
     - Format judul tab peramban Shopee-style: `Masjid Archive | [Halaman]`.
-  - **V10 (Issue #068 & Issue #069 / F-027 — Selesai Penuh)**:
+  - **V10 (Issue #068, #069, #070 / F-027 — Selesai Penuh)**:
     - Perapihan toolbar ringkasan kas: eliminasi tombol PDF direct-download yang redundan dan penggantian nama tombol menjadi "Cetak Laporan".
     - Dukungan Cetak & Ekspor Tahunan Penuh (`/laporan/cetak/tahunan`, `/api/reports/export/yearly/pdf`, `/api/reports/export/yearly/excel`).
     - Penyelarasan dinamis: mode Mingguan mencetak rekap bulanan, mode Tahunan mencetak rekap 12 bulan penuh.
     - Sinkronisasi kelengkapan berkas PDF Tahunan: mencakup Rekapitulasi 12 Bulan dan Rincian Transaksi Kas Multi-Halaman secara lengkap, 100% konsisten dengan pratinjau cetak web (Issue #069).
     - Pencegahan pengulangan total table footer (`<tfoot>`) di setiap lembar cetak printer multi-halaman (Issue #069).
+    - Desain PDF tahunan profesional 2-bagian: Halaman 1 sebagai Resume Eksekutif Mading (Kop, 4 Kartu Saldo, Rekap 12 Bulan, Tanda Tangan), Halaman 2+ sebagai Lampiran Buku Besar Mutasi Transaksi Kas (Issue #070).
+    - Penyatuan tombol aksi di `PrintActionBar` menjadi tombol cerdas "Cetak / Unduh PDF Resmi" dengan status loading dan notifikasi toast (Issue #070).
 - **PENGUATAN KEAMANAN & OTORISASI RBAC 3-TIER (Selesai)**:
   - **Audit & Pengetatan RBAC**: Mengganti pemeriksaan permisif `if (!session)` dengan sistem otorisasi 3-Tier yang ketat: Jamaah (`null` / Guest umum), Bendahara (`BENDAHARA`), Administrator (`ADMIN` / Ketua DKM).
   - **Helper Terpusat (`lib/auth-guard.ts`)**: `isStaff(session)` untuk hak operasional (unggah, ekstraksi AI, verifikasi, edit donatur & kategori) dan `isAdmin(session)` untuk wewenang tertinggi (kelola pengguna & hapus laporan).

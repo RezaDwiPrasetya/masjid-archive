@@ -55,7 +55,7 @@
 - [x] Sinkronisasi ikon logo sidebar masjid dengan aset vektor favicon resmi (`/favicon.svg`)
 - [x] Standarisasi format judul tab peramban Shopee-style (`Masjid Archive | [Page]`)
 
-### Milestone 10 — Full Annual Report Export & Toolbar Streamlining (V10, Issue #068 & Issue #069)
+### Milestone 10 — Full Annual Report Export & Toolbar Streamlining (V10, Issue #068, #069, #070)
 - [x] Hapus tombol redundant "PDF" langsung dari toolbar ringkasan dashboard
 - [x] Ganti label dan aksi tombol menjadi "Cetak Laporan" dengan integrasi dinamis (Bulanan vs Tahunan)
 - [x] Halaman cetak laporan tahunan penuh (`/laporan/cetak/tahunan?year=YYYY`) dengan rekap 12 bulan dan daftar mutasi kas tahunan
@@ -64,6 +64,9 @@
 - [x] Adaptasi tombol ekspor Excel di dashboard agar mengekspor tahunan saat mode tahunan aktif
 - [x] Sinkronisasi konten PDF Tahunan: mencakup Rincian Mutasi Transaksi Kas (Bagian II) lengkap dan konsisten dengan halaman pratinjau (Issue #069)
 - [x] Pencegahan pengulangan table footer (`<tfoot>` / baris total) di setiap lembar cetak printer multi-halaman (Issue #069)
+- [x] Redesain arsitektur dokumen PDF Tahunan: Halaman 1 sebagai Ringkasan Eksekutif Mading (Kop, Kartu Saldo, Rekap 12 Bulan, Tanda Tangan), Halaman 2+ sebagai Lampiran Buku Besar Mutasi Transaksi (Issue #070)
+- [x] Penyatuan tombol aksi cetak di `PrintActionBar` menjadi tombol cerdas "Cetak / Unduh PDF Resmi" dengan animasi loading dan notifikasi toast (Issue #070)
+- [x] Penyesuaian `<title>` halaman cetak resmi DKM Al-Luqman untuk mengeliminasi label teknis default saat dicetak via browser (Issue #070)
 
 ## Release Criteria
 
@@ -74,12 +77,28 @@
 
 ## Version
 
-Current: `0.10.1` (Fase V10.1: Konsistensi PDF Tahunan & Fix Table Footer Print Multi-Halaman — Issue #069)
+Current: `0.10.2` (Fase V10.2: Desain PDF Tahunan Profesional 2-Bagian & Penyatuan Tombol Cetak PDF — Issue #070)
 Next: `1.0.0`
 
 ## Changelog
 
-### 0.10.1 (2026-10-09) — Fase V10.1: Konsistensi PDF Tahunan & Fix Table Footer Print Multi-Halaman (Issue #069)
+### 0.10.2 (2026-10-09) — Fase V10.2: Desain PDF Tahunan Profesional 2-Bagian & Penyatuan Tombol Cetak PDF (Issue #070)
+- **Redesain Tata Letak PDF Tahunan 2-Bagian yang Lega & Berwibawa (`lib/export-pdf.ts`)**:
+  - **Halaman 1 (Ringkasan Eksekutif Mading)**:
+    - Kop Surat resmi DKM Masjid Al-Luqman dan judul dokumen yang elegan.
+    - 4 Kartu Ringkasan Saldo yang lapang dan bernapas lega (tinggi 42pt, padding proporsional).
+    - Tabel Rekapitulasi 12 Bulan yang nyaman dibaca: tinggi baris ditingkatkan menjadi 18pt, font 7.5pt, zebra striping halus, dan baris Total Tahunan hijau resmi yang tegas.
+    - Blok Pengesahan Tanda Tangan DKM (Ketua DKM & Bendahara) langsung di bawah tabel rekapitulasi pada Halaman 1, sehingga lembar pertama dapat berdiri sendiri sebagai dokumen mading / laporan rapat tahunan.
+  - **Halaman 2+ (Lampiran Buku Besar Mutasi Transaksi Kas)**:
+    - Dimulai di halaman baru (*clean page break*) dengan tajuk lampiran resmi: `LAMPIRAN: RINCIAN MUTASI TRANSAKSI KAS TAHUN {year}`.
+    - Tabel transaksi yang lapang: tinggi baris 16pt, font tajam 7pt, padding cell yang lega, dan header tabel otomatis diulang di setiap lembar baru.
+    - Footer baris Total Mutasi Tahunan dan blok pengesahan penutup di akhir lampiran.
+- **Penyatuan Tombol Aksi di `PrintActionBar` (`components/print-action-bar.tsx`)**:
+  - Menyatukan tombol menjadi aksi primer terpadu: **"Cetak / Unduh PDF Resmi"**.
+  - Menyediakan *feedback* interaktif: tombol menampilkan indikator loading (*spinner* + teks *"Menyiapkan PDF..."*) saat pemrosesan berlangsung.
+  - Menampilkan notifikasi visual toast setelah unduhan dimulai agar pengguna mendapatkan kepastian instan.
+- **Standarisasi Judul Halaman Cetak**:
+  - Mengatur metadata `<title>` pada halaman cetak (`app/laporan/cetak/tahunan/page.tsx` & `bulanan`) menjadi `Laporan Kas Tahunan {year} - DKM Masjid Al-Luqman` agar header bawaan peramban tidak lagi memunculkan label teknis repositori.
 - **Konsistensi Total PDF Tahunan (`generateYearlyReportPdf`)**:
   - Mengintegrasikan Tabel Bagian II: Rincian Mutasi Transaksi Kas Tahunan (No, Tanggal, Uraian, Donatur/Sumber, Pemasukan, Pengeluaran, Saldo Berjalan) secara lengkap ke dalam berkas PDF yang diunduh.
   - Implementasi mekanisme *multi-page pagination* otomatis di engine `pdf-lib` agar rincian transaksi kas mengalir ke halaman berikutnya dengan *header* tabel yang rapi jika volume transaksi melebihi kapasitas halaman.
