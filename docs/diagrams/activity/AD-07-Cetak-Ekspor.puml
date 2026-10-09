@@ -7,16 +7,16 @@ skinparam defaultFontSize 12
 |Pengurus / Bendahara|
 start
 :Membuka halaman detail laporan kas atau menu cetak (/laporan/cetak);
-:Memilih opsi cetak: Mingguan atau Bulanan;
+:Memilih opsi cetak: Mingguan, Bulanan, atau Tahunan;
 
 |Sistem|
 :Mengambil data transaksi terverifikasi & saldo laporan terkait;
 :Merender tata letak formal DKM standar kertas A4;
-:Menampilkan dialog pratinjau cetak cetak mading;
+:Menampilkan halaman pratinjau cetak resmi ("Cetak Laporan");
 
 |Pengurus / Bendahara|
-if (Pilihan Aksi?) then (Cetak PDF Mading)
-  :Menekan tombol "Cetak / Simpan PDF";
+if (Pilihan Aksi?) then (Cetak Fisik / Unduh PDF)
+  :Menekan tombol "Cetak (Printer)" atau "Unduh PDF";
   |Sistem|
   :Memicu fungsi print browser (window.print()) format A4 resmi DKM;
   |Pengurus / Bendahara|

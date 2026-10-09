@@ -14,7 +14,6 @@ import {
   FileText,
   Info,
   Printer,
-  Download,
   FileSpreadsheet,
 } from "lucide-react";
 import {
@@ -516,31 +515,40 @@ export function DashboardClient({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => router.push(`/laporan/cetak/bulanan?year=${selectedYear}&month=${selectedMonth}`)}
+                onClick={() => {
+                  if (granularity === "monthly") {
+                    router.push(`/laporan/cetak/tahunan?year=${selectedYear}`);
+                  } else {
+                    router.push(`/laporan/cetak/bulanan?year=${selectedYear}&month=${selectedMonth}`);
+                  }
+                }}
                 className="h-8 gap-1.5 text-xs font-semibold px-2.5 border-outline-variant hover:bg-surface-container-high transition-colors"
-                title="Buka pratinjau cetak mading A4"
+                title={
+                  granularity === "monthly"
+                    ? `Buka pratinjau cetak laporan kas tahun ${selectedYear} (A4)`
+                    : `Buka pratinjau cetak laporan kas bulan ${currentMonthName} ${selectedYear} (A4)`
+                }
               >
                 <Printer size={13} className="text-primary" />
-                <span>Cetak Mading</span>
+                <span>Cetak Laporan</span>
               </Button>
 
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleDownload(`/api/reports/export/monthly/pdf?year=${selectedYear}&month=${selectedMonth}`)}
-                className="h-8 gap-1.5 text-xs font-semibold px-2.5 border-outline-variant hover:bg-surface-container-high text-emerald-700 dark:text-emerald-400 transition-colors"
-                title="Unduh berkas PDF resmi"
-              >
-                <Download size={13} />
-                <span>PDF</span>
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleDownload(`/api/reports/export/monthly/excel?year=${selectedYear}&month=${selectedMonth}`)}
+                onClick={() => {
+                  if (granularity === "monthly") {
+                    handleDownload(`/api/reports/export/yearly/excel?year=${selectedYear}`);
+                  } else {
+                    handleDownload(`/api/reports/export/monthly/excel?year=${selectedYear}&month=${selectedMonth}`);
+                  }
+                }}
                 className="h-8 gap-1.5 text-xs font-semibold px-2.5 border-outline-variant hover:bg-surface-container-high text-primary transition-colors"
-                title="Unduh berkas spreadsheet Excel"
+                title={
+                  granularity === "monthly"
+                    ? `Unduh rekapitulasi Excel tahun ${selectedYear}`
+                    : `Unduh rekapitulasi Excel bulan ${currentMonthName} ${selectedYear}`
+                }
               >
                 <FileSpreadsheet size={13} />
                 <span>Excel</span>

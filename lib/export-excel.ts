@@ -46,6 +46,34 @@ export interface MonthlyReportExportData {
   }[];
 }
 
+export interface YearlyMonthSummary {
+  month: number;
+  monthName: string;
+  reportCount: number;
+  income: number;
+  expense: number;
+  net: number;
+  closingBalance: number;
+}
+
+export interface YearlyReportExportData {
+  year: number;
+  initialBalance: number;
+  totalIncome: number;
+  totalExpense: number;
+  finalBalance: number;
+  monthSummaries: YearlyMonthSummary[];
+  transactions: {
+    transactionDate: Date | null;
+    type: string;
+    amount: number;
+    description: string;
+    donorNameRaw: string | null;
+    donorNameCanonical?: string | null;
+    reportDate: Date;
+  }[];
+}
+
 const MONTH_NAMES = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
   "Juli", "Agustus", "September", "Oktober", "November", "Desember"
@@ -282,5 +310,174 @@ export function generateMonthlyReportExcel(data: MonthlyReportExportData): Buffe
   ];
 
   XLSX.utils.book_append_sheet(wb, ws, `Kas ${monthName}`);
+  return XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+}
+
+/**
+ * Membuat buffer Excel (.xlsx) untuk laporan kas tahunan penuh
+ */
+export function generateYearlyReportExcel(data: YearlyReportExportData): Buffer {
+  const wb = XLSX.utils.book_new();
+
+  // === SHEET 1: REKAPITULASI 12 BULAN TAHUNAN ===
+  const totalReportsCount = data.monthSummaries.reduce((acc, m) => acc + m.reportCount, 0);
+
+  const wsSummaryData: (string | number)[][] = [
+    ["DEWAN KEMAKMURAN MASJID (DKM) AL-LUQMAN"],
+    ["Jl. Mayjen Sutoyo, Kel. Soklat, Kec. Subang, Kab. Subang - Jawa Barat"],
+    [`REKAPITULASI BUKU KAS TAHUNAN — TAHUN ${data.year}`],
+    [],
+    ["Periode Fiskal:", `Tahun ${data.year} (Januari - Desember)`],
+    ["Total Laporan Pekanan:", totalReportsCount],
+    ["Total Transaksi Terverifikasi:", data.transactions.length],
+    [],
+    ["RINGKASAN FINANSIAL TAHUNAN"],
+    ["Saldo Awal Tahun:", data.initialBalance],
+    ["Total Pemasukan Tahunan:", data.totalIncome],
+    ["Total Pengeluaran Tahunan:", data.totalExpense],
+    ["Arus Kas Bersih (Surplus/Defisit):", data.totalIncome - data.totalExpense],
+    ["Saldo Akhir Kas Tahun Ini:", data.finalBalance],
+    [],
+    ["REKAPITULASI KAS PER BULAN"],
+    ["No", "Bulan", "Jumlah Laporan", "Pemasukan (Rp)", "Pengeluaran (Rp)", "Surplus/Defisit (Rp)", "Saldo Akhir Bulan (Rp)"],
+  ];
+
+  data.monthSummaries.forEach((ms) => {
+    wsSummaryData.push([
+      ms.month,
+      ms.monthName,
+      ms.reportCount,
+      ms.income,
+      ms.expense,
+      ms.net,
+      ms.closingBalance,
+    ]);
+  });
+
+  // Baris Total Akumulasi
+  wsSummaryData.push([]);
+  wsSummaryData.push([
+    "TOTAL",
+    "",
+    totalReportsCount,
+    data.totalIncome,
+    data.totalExpense,
+    data.totalIncome - data.totalExpense,
+    data.finalBalance,
+  ]);
+
+  // Kolom Tanda Tangan
+  wsSummaryData.push([]);
+  wsSummaryData.push([]);
+  wsSummaryData.push(["", "", "", "", `Subang, 31 Desember ${data.year}`]);
+  wsSummaryData.push(["", "Mengetahui,", "", "", "Petugas Bendahara,"]);
+  wsSummaryData.push(["", "Ketua DKM Al-Luqman", "", "", "Bendahara DKM"]);
+  wsSummaryData.push([]);
+  wsSummaryData.push([]);
+  wsSummaryData.push(["", "( .................................... )", "", "", "( .................................... )"]);
+
+  const wsSummary = XLSX.utils.aoa_to_sheet(wsSummaryData);
+  wsSummary["!cols"] = [
+    { wch: 6 },
+    { wch: 16 },
+    { wch: 18 },
+    { wch: 20 },
+    { wch: 20 },
+    { wch: 24 },
+    { wch: 24 },
+  ];
+  XLSX.utils.book_append_sheet(wb, wsSummary, `Rekap Tahunan ${data.year}`);
+
+  // === SHEET 2: DAFTAR TRANSAKSI MUTASI TAHUNAN ===
+  const wsTxData: (string | number)[][] = [
+    ["DEWAN KEMAKMURAN MASJID (DKM) AL-LUQMAN"],
+    [`MUTASI TRANSAKSI KAS TAHUNAN — TAHUN ${data.year}`],
+    [],
+    ["No", "Tanggal", "Bulan", "Jenis", "Donatur / Sumber", "Uraian / Keterangan", "Pemasukan (Rp)", "Pengeluaran (Rp)", "Saldo Berjalan (Rp)"],
+  ];
+
+  let currentBalance = data.initialBalance;
+
+  // Baris Saldo Awal
+  wsTxData.push([
+    "-",
+    "-",
+    "-",
+    "Saldo Awal",
+    "-",
+    `Saldo awal kas per 1 Januari ${data.year}`,
+    "",
+    "",
+    currentBalance,
+  ]);
+
+  data.transactions.forEach((tx, idx) => {
+    const isIncome = tx.type === "pemasukan";
+    const amount = tx.amount;
+    if (isIncome) {
+      currentBalance += amount;
+    } else {
+      currentBalance -= amount;
+    }
+
+    const txDate = tx.transactionDate
+      ? new Date(tx.transactionDate).toLocaleDateString("id-ID", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        })
+      : new Date(tx.reportDate).toLocaleDateString("id-ID", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        });
+
+    const mIndex = tx.transactionDate
+      ? new Date(tx.transactionDate).getMonth()
+      : new Date(tx.reportDate).getMonth();
+    const monthLabel = MONTH_NAMES[mIndex] || "-";
+
+    const donor = tx.donorNameCanonical || tx.donorNameRaw || (isIncome ? "Hamba Allah (Anonim)" : "-");
+
+    wsTxData.push([
+      idx + 1,
+      txDate,
+      monthLabel,
+      isIncome ? "Pemasukan" : "Pengeluaran",
+      donor,
+      tx.description,
+      isIncome ? amount : "",
+      !isIncome ? amount : "",
+      currentBalance,
+    ]);
+  });
+
+  wsTxData.push([]);
+  wsTxData.push([
+    "TOTAL",
+    "",
+    "",
+    "",
+    "",
+    "",
+    data.totalIncome,
+    data.totalExpense,
+    data.finalBalance,
+  ]);
+
+  const wsTx = XLSX.utils.aoa_to_sheet(wsTxData);
+  wsTx["!cols"] = [
+    { wch: 6 },
+    { wch: 14 },
+    { wch: 14 },
+    { wch: 14 },
+    { wch: 26 },
+    { wch: 38 },
+    { wch: 18 },
+    { wch: 18 },
+    { wch: 20 },
+  ];
+  XLSX.utils.book_append_sheet(wb, wsTx, `Mutasi Transaksi ${data.year}`);
+
   return XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
 }
