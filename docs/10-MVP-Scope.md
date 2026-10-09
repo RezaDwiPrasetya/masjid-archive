@@ -265,9 +265,49 @@ Melengkapi simetri transparansi keuangan masjid. Jika V5 menjawab *"Siapa yang m
 **Alur publik (jemaah):** Buka halaman `/pengeluaran` tanpa login → lihat total pengeluaran & breakdown per kategori → klik filter kategori untuk mempersempit daftar → klik link laporan pada baris transaksi untuk melihat bukti fisik buku kas.
 
 ### MVP Success Criteria (V7)
-- [ ] Dropdown kategori muncul di panel review untuk transaksi pengeluaran
-- [ ] Halaman `/pengeluaran` dapat diakses publik dan menampilkan data yang akurat
-- [ ] Total pengeluaran per kategori konsisten dengan penjumlahan manual dari laporan
-- [ ] Transaksi `isVerified=false` tidak pernah bocor ke halaman publik ini
-- [ ] Transaksi lama tanpa kategori ditampilkan dengan label "Tidak Dikategorikan" tanpa error
+- [x] Dropdown kategori muncul di panel review untuk transaksi pengeluaran
+- [x] Halaman `/pengeluaran` dapat diakses publik dan menampilkan data yang akurat
+- [x] Total pengeluaran per kategori konsisten dengan penjumlahan manual dari laporan
+- [x] Transaksi `isVerified=false` tidak pernah bocor ke halaman publik ini
+- [x] Transaksi lama tanpa kategori ditampilkan dengan label "Tidak Dikategorikan" tanpa error
+
+---
+
+## V8 — Filter Periode Waktu & Analisis Keuangan Berkala (Selesai)
+
+### MVP Objective (V8)
+Menyediakan kemampuan analisis keuangan berkala (bulanan dan tahunan) pada halaman publik Donatur (`/donatur`) dan Pengeluaran (`/pengeluaran`) melalui pemfilteran waktu yang responsif dan terpadu, sehingga data keuangan tetap relevan seiring akumulasi arsip tahunan.
+
+### Must Have (V8)
+- Komponen bar filter periode universal (`PeriodFilterBar`) dengan selector Tahun, Bulan, dan tombol preset ("Semua Waktu", "Tahun Ini", "Bulan Ini")
+- Ekstensi query param `year` dan `month` pada endpoint donatur (`/api/donors`, `/api/donors/anonymous/transactions`) dan pengeluaran (`/api/expenses`, `/api/expenses/transactions`)
+- Reaktivitas instan seluruh indikator KPI, progress bar proporsi pengeluaran, daftar peringkat donatur, dan tabel mutasi
+- Pembatasan data mutlak hanya untuk transaksi `isVerified = true`
+
+### MVP Success Criteria (V8)
+- [x] Jemaah dapat memilih filter Tahun dan Bulan di halaman `/pengeluaran` dan angka KPI + tabel berubah sesuai periode.
+- [x] Jemaah dapat memilih filter Tahun dan Bulan di halaman `/donatur` dan kartu donatur + peringkat donatur berubah dinamis.
+- [x] Tombol preset "Semua Waktu", "Tahun Ini", dan "Bulan Ini" bekerja seketika.
+- [x] Tampilan fallback kosong ramah pengguna jika periode terpilih belum memiliki catatan kas.
+
+---
+
+## V9 — Filter Periode Fiskal & Ekspor Terpadu Tanpa Modal (Selesai)
+
+### MVP Objective (V9)
+Menghadirkan kendali audit fiskal presisi pada dashboard utama dengan memindahkan filter periode langsung ke toolbar ringkasan kas, menyajikan grafik tren mingguan/tahunan yang teratur di seluruh ukuran layar, serta menyediakan ekspor dokumen kas (Cetak A4 Mading, PDF resmi, Excel) tanpa hambatan modal dialog (Zero-Modal Export).
+
+### Must Have (V9)
+- Selector Bulan dan Tahun terintegrasi di toolbar dashboard utama berdampingan dengan toggle mode grafik
+- Mode Mingguan memplot pekan-pekan (Jumat) spesifik di bulan & tahun terpilih
+- Mode Tahunan menampilkan 12 bulan penuh di desktop dan toggle Semester 1 & 2 di mobile (< 768px)
+- Tombol Cetak A4, Unduh PDF, dan Unduh Excel terpasang langsung di toolbar dashboard untuk ekspor instan
+- Penyelarasan kartu KPI ringkasan kas (Pemasukan, Pengeluaran, Arus Kas Bersih) dengan periode terpilih
+
+### MVP Success Criteria (V9)
+- [x] Dashboard toolbar menyediakan selector Bulan & Tahun yang menyaring grafik dan kartu KPI secara terpadu.
+- [x] Mode mingguan memplot Jumat-Jumat presisi sesuai kalender bulan terpilih.
+- [x] Mode tahunan mobile menyajikan toggle Semester 1 dan 2 agar tampilan grafik tetap proporsional dan tidak bertumpuk.
+- [x] Tombol ekspor Cetak A4, Unduh PDF, dan Unduh Excel dapat diklik langsung tanpa popup dialog.
+- [x] Format judul tab peramban Shopee-style dan ikon brand AppShell selaras 100% dengan favicon resmi masjid.
 

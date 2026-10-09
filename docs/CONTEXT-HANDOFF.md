@@ -1,6 +1,6 @@
 # CONTEXT HANDOFF — Proyek "Masjid Archive"
-> **Terakhir diperbarui**: 6 Oktober 2026  
-> **Status**: **V1–V7 FEATURE-COMPLETE (SELESAI PENUH & TERUJI) — Merged to Main & Pushed to Remote**
+> **Terakhir diperbarui**: 9 Oktober 2026  
+> **Status**: **V1–V9 FEATURE-COMPLETE (SELESAI PENUH & TERUJI) — Merged to Main & Pushed to Remote**
 
 ---
 
@@ -11,7 +11,7 @@ Aplikasi web arsip & manajemen keuangan untuk **DKM Masjid Al-Luqman** (Kel. Sok
 ---
 
 ## 2. KONDISI PROJECT SAAT INI
-- **SELURUH FITUR V1–V7 SELESAI 100% (PROJEK TAMAT / FEATURE-COMPLETE)**:
+- **SELURUH FITUR V1–V9 SELESAI 100% (PROJEK TAMAT / FEATURE-COMPLETE)**:
   - **V1–V2**: Multi-format upload (JPG, PNG, PDF, Excel) & arsip berjenjang.
   - **V3**: Google SSO NextAuth & Role-based Access Control (Admin / Guest).
   - **V4**: Pipeline ekstraksi multimodal vision-LLM (Gemini API) + fallback model cadangan + review & konfirmasi transaksi manual + rekonsiliasi kas.
@@ -28,6 +28,19 @@ Aplikasi web arsip & manajemen keuangan untuk **DKM Masjid Al-Luqman** (Kel. Sok
     - Dropdown pemilihan kategori langsung di review panel (sebelum & sesudah verifikasi).
     - API publik agregasi per kategori (`/api/expenses`) & rincian transaksi (`/api/expenses/transactions`).
     - Penyelarasan layout full-width responsif & penanganan kompatibilitas Next.js 16 context.params Promise NextAuth.
+  - **V8 (Issue #66 / F-024)**:
+    - Filter periode waktu terpadu (`PeriodFilterBar`) di halaman Donatur (`/donatur`) dan Pengeluaran (`/pengeluaran`).
+    - Modul bersama `lib/period-filter.ts` dengan deteksi tahun dinamis dari database (`getAvailableYears()`) dan preset cepat (Semua Waktu, Tahun Ini, Bulan Ini).
+    - Reaktivitas instan seluruh indikator KPI, progress bar proporsi alokasi dana, dan tabel mutasi kas.
+  - **V9 (Issue #067 / F-025)**:
+    - Toolbar filter periode fiskal (Bulan & Tahun) langsung di samping toggle grafik tren kas dashboard.
+    - Mode Mingguan presisi memplot Jumat-Jumat spesifik dari kalender bulan terpilih.
+    - Mode Tahunan responsif: 12 bulan penuh di desktop dan toggle Semester 1 & 2 di mobile (< 768px).
+    - Zero-Modal Export: Tombol Cetak A4 Mading, Unduh PDF (.pdf), dan Unduh Excel (.xlsx) terpasang langsung di dashboard tanpa popup modal.
+  - **Unified AppShell & Brand Identity Polish (F-026)**:
+    - Komponen universal `AppShell` (`components/app-shell.tsx`) dengan sidebar desktop 260px permanen, bottom bar mobile thumb-friendly, dan header konteks.
+    - Ikon brand sidebar `MasjidEmblem` disinkronkan 1:1 dengan vektor favicon resmi masjid (`/favicon.svg`).
+    - Format judul tab peramban Shopee-style: `Masjid Archive | [Halaman]`.
 - **PENGUATAN KEAMANAN & OTORISASI RBAC 3-TIER (Selesai)**:
   - **Audit & Pengetatan RBAC**: Mengganti pemeriksaan permisif `if (!session)` dengan sistem otorisasi 3-Tier yang ketat: Jamaah (`null` / Guest umum), Bendahara (`BENDAHARA`), Administrator (`ADMIN` / Ketua DKM).
   - **Helper Terpusat (`lib/auth-guard.ts`)**: `isStaff(session)` untuk hak operasional (unggah, ekstraksi AI, verifikasi, edit donatur & kategori) dan `isAdmin(session)` untuk wewenang tertinggi (kelola pengguna & hapus laporan).

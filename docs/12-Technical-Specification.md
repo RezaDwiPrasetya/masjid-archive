@@ -470,6 +470,32 @@ Endpoint V5 (`GET /api/dashboard/trend`, `GET /api/donors`, `GET /api/donors/:id
 
 ---
 
+## Spesifikasi Teknis — Fase V8: Filter Periode Waktu & Analisis Keuangan Berkala (Issue #66)
+
+### Modul Bersama Filter Waktu (`lib/period-filter.ts`)
+Modul terpusat untuk standardisasi parsing dan pembentukan query filter waktu di seluruh endpoint dan UI:
+1. **`parsePeriodParams(searchParams: URLSearchParams): PeriodFilter`**:
+   - Membaca `year` dan `month` dari query URL.
+   - Memvalidasi rentang tahun `2000 <= year <= 2100` dan bulan `1 <= month <= 12`.
+   - Mengembalikan `{ year: number | null, month: number | null }`.
+2. **`buildReportRelationFilter(period: PeriodFilter)`**:
+   - Menghasilkan klausa filter relasi Prisma: `{ year?: number, month?: number }` yang disisipkan ke kondisi `where.report`.
+3. **`getAvailableYears(): Promise<number[]>`**:
+   - Menjalankan `prisma.report.findMany({ select: { year: true }, distinct: ["year"], orderBy: { year: "desc" } })` untuk mendeteksi tahun-tahun yang memiliki arsip data kas aktif secara otomatis, disortir descending dan selalu menyertakan tahun berjalan.
+
+### Komponen Antarmuka `PeriodFilterBar`
+- Komponen client interaktif yang dipasang di halaman `/pengeluaran` dan `/donatur`.
+- Dilengkapi tombol preset cepat: **Semua Waktu**, **Tahun Ini**, dan **Bulan Ini** untuk navigasi satu-klik.
+- Selector dropdown Tahun dinamis dan selector Bulan (Semua Bulan, Jan–Des).
+- Mendukung pembaruan URL via query parameter tanpa full page reload.
+
+### Ekstensi Endpoint Backend V8
+- **`GET /api/expenses` & `GET /api/expenses/transactions`**: Menerima parameter `year` dan `month`. Total pengeluaran, breakdown proporsi kategori, dan tabel rincian transaksi otomatis tersaring sesuai periode tersebut.
+- **`GET /api/donors` & `GET /api/donors/anonymous/transactions`**: Menerima parameter `year` dan `month`. Kartu agregat Donatur Terdata, Infaq Anonim, dan ranking kontribusi donatur dihitung dinamis sesuai periode yang dipilih.
+- **Isolasi Mutlak**: Query tetap mempertahankan `where: { isVerified: true }`.
+
+---
+
 ## Spesifikasi Teknis — Fase V9: Filter Periode Fiskal & Ekspor Terpadu Tanpa Modal (Issue #067)
 
 ### Latar Belakang & Masalah
@@ -488,4 +514,25 @@ Endpoint V5 (`GET /api/dashboard/trend`, `GET /api/donors`, `GET /api/donors/:id
    - Mengklik cetak atau unduh langsung mengeksekusi dokumen untuk bulan dan tahun yang sedang aktif di layar tanpa popup tambahan.
 3. **Penyelarasan Kartu KPI & Sumbu X**:
    - Kartu KPI (Total Pemasukan, Total Pengeluaran, Arus Kas Bersih) menghitung data agregat dari periode yang dipilih di dropdown.
+
+---
+
+## Arsitektur Shell Universal & Identitas Brand Resmi (AppShell & Brand Icon)
+
+### 1. Komponen Universal `AppShell` (`components/app-shell.tsx`)
+- Menggantikan layout terfragmentasi dengan wrapper arsitektural tunggal yang mencakup seluruh halaman aplikasi.
+- **Desktop Sidebar**:
+  - Lebar tetap `260px` (`w-[260px]`), posisi fixed di sisi kiri dengan background `surface-container` dan pembatas `border-r border-outline-variant`.
+  - Brand header dengan logo masjid, judul "Masjid Archive", dan subjudul "Sistem Kas & Arsip".
+  - Navigasi link berikon Lucide (`Laporan`, `Dashboard`, `Donatur`, `Pengeluaran`, `Cari`, `Unggah`, dan dinamis `Pengguna` khusus role `ADMIN`).
+  - Kartu transparansi di bagian bawah sidebar.
+- **Mobile Navigation**:
+  - Bilah navigasi bawah (*bottom bar*) responsif dengan tap target WCAG (≥ 44px) dan padding safe area.
+  - Header konteks ringkas dengan logo dan tombol autentikasi Google.
+
+### 2. Standarisasi Ikon Brand & Favicon Resmi
+- Seluruh aset identitas brand diselaraskan menggunakan vektor resmi kubah masjid hijau dan aksen emas:
+  - `public/favicon.svg` & `app/icon.svg`: Vektor SVG resolusi tinggi dengan squircle base, gradien hijau Islamic brand (`#0f340d` → `#1b5417`), kubah putih, dan finial bulan sabit emas (`#fde047` → `#eab308`).
+  - Komponen `MasjidEmblem` di `components/app-shell.tsx` menampilkan ikon vektor resmi tersebut (`/favicon.svg`) sehingga identitas visual di sidebar desktop, header mobile, dan tab peramban 100% konsisten.
+  - Judul tab peramban distandarisasi dengan format Shopee-style: `Masjid Archive | [Halaman]` di seluruh rute via metadata Next.js.
 

@@ -1,8 +1,8 @@
 # Panduan Pengguna — Masjid Archive
 ### Sistem Arsip & Manajemen Keuangan DKM Masjid Al-Luqman
 
-> **Versi Sistem**: V7 (Feature-Complete)  
-> **Terakhir diperbarui**: 6 Oktober 2026  
+> **Versi Sistem**: V9 (0.9.0 — Feature-Complete)  
+> **Terakhir diperbarui**: 9 Oktober 2026  
 > **Disusun oleh**: Reza Dwi Prasetya — PKL PT Gothru Media Indonesia
 
 ---
@@ -149,20 +149,34 @@ Halaman publik yang menampilkan ringkasan dan tren keuangan kas masjid berdasark
 
 ### Konten Halaman Dashboard
 
-#### 1. Saldo Kas Terakhir
-Menampilkan saldo kas akhir dari laporan mingguan terbaru yang sudah diverifikasi, beserta tanggal laporannya.
+#### 1. Kartu Saldo Kas Terkini
+Menampilkan angka saldo kas akhir fisik dari laporan kas mingguan terbaru yang telah terverifikasi sebagai acuan utama kas masjid saat ini.
 
-#### 2. Grafik Tren Kas
-Grafik batang yang menampilkan perbandingan **Pemasukan** dan **Pengeluaran** per periode.
+#### 2. Toolbar Periode Fiskal & Ekspor Terpadu (Zero-Modal)
+Di bagian atas area grafik kas, terdapat bilah alat terpadu yang memadukan filter waktu dan tombol ekspor langsung:
+- **Selector Bulan**: Memilih bulan spesifik (`Semua Bulan`, atau `Januari` s/d `Desember`).
+- **Selector Tahun**: Memilih tahun fiskal yang tersedia di arsip pembukuan kas.
+- **Tombol Ekspor Langsung**:
+  - **Cetak (Mading A4)**: Membuka pratinjau siap cetak format A4 formal untuk ditempel di papan mading fisik masjid.
+  - **Unduh PDF**: Mengunduh berkas `.pdf` resmi rekapitulasi kas bulanan langsung ke perangkat.
+  - **Unduh Excel**: Mengunduh berkas spreadsheet `.xlsx` untuk keperluan pencatatan dan olah data lanjutan.
+  *(Seluruh tombol ekspor bekerja secara instan sesuai Bulan dan Tahun yang sedang aktif tanpa perantara dialog popup).*
 
-- **Toggle Mingguan**: Menampilkan tren per minggu (selaras dengan hari Jumat, sesuai jadwal laporan kas DKM)
-- **Toggle Bulanan**: Menampilkan tren per bulan (agregasi seluruh transaksi dalam satu bulan)
-- Rentang data dimulai dari laporan pertama yang ada hingga maksimal 12 periode terakhir
+#### 3. Tiga Kartu Ringkasan Indikator Keuangan (KPI)
+Tiga kartu di bawah toolbar yang otomatis terhitung ulang mengikuti filter periode yang dipilih:
+- **Total Pemasukan**: Akumulasi infaq, donatur, dan penerimaan kas pada periode aktif.
+- **Total Pengeluaran**: Akumulasi seluruh pos belanja operasional kas pada periode aktif.
+- **Arus Kas Bersih**: Selisih bersih pemasukan dikurangi pengeluaran (surplus bernilai positif/hijau, defisit bernilai negatif/merah).
 
-#### 3. Ekspor Rekapitulasi Bulanan
-Tombol **"Ekspor Rekap Bulanan"** di pojok kanan atas grafik membuka dialog untuk memilih periode dan format ekspor. Lihat [Bab 13](#13-cetak--ekspor-rekapitulasi-kas) untuk panduan lengkap.
+#### 4. Grafik Tren Kas Interaktif
+Grafik batang interaktif membandingkan **Pemasukan** (hijau) dan **Pengeluaran** (merah):
+- **Mode Mingguan**: Memplot pekan-pekan (hari Jumat) spesifik di dalam bulan dan tahun yang dipilih, bukan rolling-window acak.
+- **Mode Tahunan**:
+  - Pada layar komputer/laptop (desktop ≥ 768px): Menampilkan 12 batang bulan penuh (Januari s/d Desember).
+  - Pada layar ponsel pintar (mobile < 768px): Menyediakan toggle cepat **Semester 1** (`Jan - Jun`) dan **Semester 2** (`Jul - Des`) agar tampilan grafik tetap lega, proporsional, dan nyaman disentuh jari tanpa tumpang tindih label teks.
+- **Touch Tooltip**: Sentuh atau arahkan kursor ke batang grafik untuk melihat rincian angka pemasukan dan pengeluaran pada periode terkait.
 
-> **Info**: Seluruh data yang ditampilkan di dashboard hanya berasal dari transaksi dengan status **terverifikasi**. Data draft yang belum dikonfirmasi bendahara tidak pernah ditampilkan.
+> **Info**: Seluruh data yang ditampilkan di dashboard hanya berasal dari transaksi dengan status **terverifikasi** (`isVerified = true`). Data draft yang belum dikonfirmasi bendahara tidak pernah ditampilkan ke publik.
 
 ---
 
@@ -172,21 +186,33 @@ Tombol **"Ekspor Rekap Bulanan"** di pojok kanan atas grafik membuka dialog untu
 
 Halaman publik yang menyajikan transparansi alokasi dana kas masjid dengan mengelompokkan seluruh pengeluaran terverifikasi ke dalam kategori fungsional.
 
-### 1. Tiga Kartu Indikator Utama (KPI)
+### 1. Bar Filter Periode Waktu (PeriodFilterBar)
+
+Di bagian atas halaman, terdapat bilah filter waktu terpadu:
+- **Tombol Preset Instan**:
+  - **Semua Waktu**: Menampilkan seluruh data pengeluaran sepanjang sejarah arsip kas.
+  - **Tahun Ini**: Menyaring pengeluaran pada tahun kalender berjalan.
+  - **Bulan Ini**: Menyaring pengeluaran pada bulan dan tahun berjalan saat ini.
+- **Selector Manual**:
+  - Dropdown **Tahun**: Memilih tahun tertentu (misal `2026`).
+  - Dropdown **Bulan**: Memilih bulan tertentu (`Semua Bulan`, atau `Januari` s/d `Desember`).
+*(Seluruh kartu KPI, bar visual proporsi alokasi, dan tabel rincian mutasi otomatis terhitung ulang secara instan mengikuti periode yang dipilih).*
+
+### 2. Tiga Kartu Indikator Utama (KPI)
 
 | Kartu | Penjelasan |
 |---|---|
-| **Total Pengeluaran** | Akumulasi seluruh pengeluaran terverifikasi sepanjang masa arsip |
+| **Total Pengeluaran** | Akumulasi pengeluaran terverifikasi pada periode waktu yang dipilih |
 | **Kategori Terbesar** | Kategori dengan alokasi pengeluaran tertinggi beserta badge persentase proporsinya terhadap total |
-| **Total Transaksi** | Jumlah frekuensi transaksi pengeluaran yang telah diverifikasi |
+| **Total Transaksi** | Jumlah frekuensi transaksi pengeluaran yang telah diverifikasi pada periode terpilih |
 
-### 2. Bar Proporsi Alokasi Dana (Visual Breakdown)
+### 3. Bar Proporsi Alokasi Dana (Visual Breakdown)
 
 Di bawah kartu KPI, terdapat bilah kemajuan (*progress bar*) multi-warna yang memvisualisasikan komposisi persentase pengeluaran:
 - Setiap warna mewakili kategori tertentu (misalnya hijau untuk Operasional, oranye untuk Honor, biru untuk Pembangunan, dsb.).
-- Di bawah bar terdapat ringkasan persentase dan nominal per kategori yang memudahkan jamaah membaca porsi penggunaan kas secara sekilas.
+- Di bawah bar terdapat ringkasan persentase dan nominal per kategori yang memudahkan jamaah membaca porsi penggunaan kas secara sekilas pada periode terkait.
 
-### 3. Filter Kategori Interaktif (Chips)
+### 4. Filter Kategori Interaktif (Chips)
 
 Anda dapat menyaring rincian transaksi dengan menekan tombol kategori:
 - **Semua Kategori** — Menampilkan seluruh transaksi pengeluaran.
@@ -199,14 +225,14 @@ Anda dapat menyaring rincian transaksi dengan menekan tombol kategori:
 - **Lain-lain** — Pengeluaran insidental yang tidak tergolong ke pos utama di atas.
 - **Belum Dikategorikan** — Transaksi pengeluaran masa lampau yang belum diberi kategori oleh bendahara.
 
-### 4. Pencarian Cepat & Pengurutan
+### 5. Pencarian Cepat & Pengurutan
 
 - **Kolom Cari Transaksi**: Mengetik kata kunci untuk memfilter deskripsi pengeluaran secara instan.
 - **Pengurutan (Sort)**:
   - **Tanggal Terbaru / Terlama** — Menelusuri pengeluaran secara kronologis.
   - **Nominal Terbesar / Terkecil** — Menemukan pos pengeluaran bernilai signifikan.
 
-### 5. Tabel Rincian Pengeluaran Terverifikasi
+### 6. Tabel Rincian Pengeluaran Terverifikasi
 
 Menampilkan daftar detail setiap transaksi:
 - **Tanggal Transaksi**
@@ -222,24 +248,31 @@ Menampilkan daftar detail setiap transaksi:
 
 Halaman transparansi keuangan yang menampilkan informasi donatur dan infaq masjid.
 
-### Dua Kartu KPI Utama
+### 1. Bar Filter Periode Waktu (PeriodFilterBar)
+
+Sama seperti pada halaman pengeluaran, di bagian atas halaman Donatur tersedia filter waktu terpadu:
+- **Preset Instan**: **Semua Waktu**, **Tahun Ini**, dan **Bulan Ini**.
+- **Selector Manual**: Dropdown **Tahun** dan **Bulan**.
+*(Seluruh angka pada kartu KPI Donatur Terdata, Infaq Anonim, serta peringkat kontribusi donatur di bawahnya akan menyesuaikan dengan periode yang dipilih).*
+
+### 2. Dua Kartu KPI Utama
 
 | Kartu | Isi |
 |---|---|
-| **Donatur Terdata** | Jumlah donatur yang teridentifikasi + total kontribusi terverifikasi |
-| **Infaq Anonim (Tromol / Kotak Amal)** | Total nominal + jumlah transaksi dari kotak amal dan donasi tanpa nama |
+| **Donatur Terdata** | Jumlah donatur yang teridentifikasi + total kontribusi terverifikasi pada periode terpilih |
+| **Infaq Anonim (Tromol / Kotak Amal)** | Total nominal + jumlah transaksi dari kotak amal dan donasi tanpa nama pada periode terpilih |
 
-### Melihat Rincian Infaq Anonim
+### 3. Melihat Rincian Infaq Anonim
 
 1. Klik tombol **"Lihat Rincian"** pada kartu Infaq Anonim.
-2. Dialog akan terbuka dan memuat daftar seluruh transaksi infaq anonim terverifikasi.
+2. Dialog akan terbuka dan memuat daftar seluruh transaksi infaq anonim terverifikasi pada periode terkait.
 3. Setiap baris menampilkan: **keterangan transaksi**, **tanggal**, **tautan ke laporan asal**, dan **nominal**.
 4. Jika ada lebih dari 5 transaksi, kotak pencarian akan muncul untuk memudahkan filter.
 5. Klik tautan **laporan** pada baris transaksi untuk membuka laporan fisik asal transaksi tersebut.
 
-### Daftar Profil Donatur
+### 4. Daftar Profil Donatur
 
-Di bawah kartu KPI terdapat daftar profil seluruh donatur teridentifikasi, diurutkan berdasarkan **total kontribusi tertinggi ke terendah**. Donatur teratas mendapat badge peringkat emas (#1).
+Di bawah kartu KPI terdapat daftar profil seluruh donatur teridentifikasi, diurutkan berdasarkan **total kontribusi tertinggi ke terendah** pada periode yang dipilih. Donatur teratas mendapat badge peringkat emas (#1).
 
 - Gunakan **kotak pencarian** di atas daftar untuk mencari nama donatur tertentu.
 - Klik nama donatur untuk membuka halaman **Detail Profil Donatur** (`/donatur/[id]`) yang berisi riwayat transaksi lengkap donatur tersebut.
@@ -494,16 +527,15 @@ Pada halaman **Detail Laporan** (`/laporan/:id`), tersedia 3 tombol aksi cepat d
 
 ---
 
-### B. Ekspor Rekap Bulanan (dari Dashboard)
+### B. Ekspor Rekap Bulanan (Langsung dari Toolbar Dashboard — Zero-Modal)
 
+Pada versi terbaru, ekspor kas bulanan tidak lagi memerlukan dialog popup terpisah:
 1. Buka halaman **Dashboard** (`/dashboard`).
-2. Klik tombol **"Ekspor Rekap Bulanan"** di pojok kanan atas grafik tren kas.
-3. Dialog **Ekspor Rekapitulasi Kas** akan terbuka.
-4. Pilih **Bulan** dan **Tahun** pembukuan yang diinginkan.
-5. Tersedia 3 opsi format:
-   - **Unduh PDF (.pdf)**: Langsung mengunduh berkas rekap kas bulanan format A4 lengkap dengan Kop DKM, ringkasan saldo, tabel transaksi, dan tanda tangan pengesahan. Notifikasi download peramban akan muncul seketika.
-   - **Unduh Excel (.xlsx)**: Mengunduh arsip spreadsheet rekap kas bulanan.
-   - **Buka Pratinjau Cetak / Mading (A4)**: Membuka pratinjau cetak di browser untuk diperiksa sebelum dicetak ke printer mading masjid.
+2. Pada toolbar di atas grafik kas, pilih **Bulan** dan **Tahun** pembukuan yang ingin diekspor.
+3. Klik salah satu tombol ekspor langsung yang tersedia di samping selector periode:
+   - **Cetak (Mading A4)**: Membuka pratinjau cetak resmi A4 berkop DKM Al-Luqman di tab browser baru, siap dicetak langsung ke kertas fisik mading masjid.
+   - **Unduh PDF (.pdf)**: Mengunduh berkas rekapitulasi kas bulanan format A4 lengkap dengan kartu ringkasan saldo, rincian transaksi, dan kolom pengesahan pengurus.
+   - **Unduh Excel (.xlsx)**: Mengunduh data tabel mutasi kas bulanan dalam format spreadsheet Excel.
 
 > **Catatan Penting**:
 > - Ekspor hanya mencakup transaksi dengan status **terverifikasi** (`isVerified = true`). Transaksi draf atau yang belum diverifikasi tidak pernah dimasukkan ke dalam berkas laporan.

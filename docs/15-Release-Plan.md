@@ -44,11 +44,16 @@
 - [x] Reaktivitas penuh kartu KPI donatur/infaq anonim dan peringkat donatur di `/donatur`
 
 ### Milestone 8 — Fiscal Period Filter & Zero-Modal Export (V9, Issue #067)
-- [ ] Selector Bulan & Tahun terintegrasi di toolbar dashboard utama
-- [ ] Mode Mingguan: 4–5 pekan (Jumat) spesifik bulan & tahun terpilih
-- [ ] Mode Tahunan: 12 bulan (Jan–Des) di desktop, toggle Semester 1 & 2 di mobile
-- [ ] Ekspor & Cetak terpadu (A4 Mading, PDF, Excel) langsung dari toolbar tanpa modal dialog
-- [ ] Penyelarasan kartu KPI dan tabel data dengan periode aktif
+- [x] Selector Bulan & Tahun terintegrasi di toolbar dashboard utama
+- [x] Mode Mingguan: 4–5 pekan (Jumat) spesifik bulan & tahun terpilih
+- [x] Mode Tahunan: 12 bulan (Jan–Des) di desktop, toggle Semester 1 & 2 di mobile
+- [x] Ekspor & Cetak terpadu (A4 Mading, PDF, Excel) langsung dari toolbar tanpa modal dialog
+- [x] Penyelarasan kartu KPI dan tabel data dengan periode aktif
+
+### Milestone 9 — Unified AppShell Navigation & Official Brand Identity (Polish)
+- [x] Komponen layout universal `AppShell` (sidebar desktop permanen + mobile bottom navigation)
+- [x] Sinkronisasi ikon logo sidebar masjid dengan aset vektor favicon resmi (`/favicon.svg`)
+- [x] Standarisasi format judul tab peramban Shopee-style (`Masjid Archive | [Page]`)
 
 ## Release Criteria
 

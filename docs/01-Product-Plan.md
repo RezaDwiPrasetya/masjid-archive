@@ -41,6 +41,9 @@ Bendahara tetap bekerja seperti biasa (mencatat manual, lalu unggah foto/file la
 | **V5** | Financial intelligence: tren keuangan (mingguan/bulanan), tracking & riwayat donatur, dashboard publik — seluruhnya dihitung hanya dari transaksi yang sudah terverifikasi | ✅ Selesai |
 | **V6** | Advanced Transparency & Multimodal Data Pipeline: Rincian transparansi infaq anonim (audit kotak amal/hamba Allah), ekstraksi lampiran PDF via vision-LLM, direct parser spreadsheet kas Excel (.xlsx), ekspor cetak & Excel | ✅ Selesai |
 | **Maintenance & Polish** | Perbaikan responsivitas mobile: eliminasi overlap teks grafik mingguan, ergonomi sentuh bottom-bar, perbaikan visual kartu | ✅ Selesai (Issue #058) |
+| **V7** | Rekap & Transparansi Pengeluaran Per Kategori: field additive `category`, rekapitulasi alokasi belanja kas, halaman publik `/pengeluaran` | ✅ Selesai (Issue #059) |
+| **V8** | Filter Periode Waktu & Analisis Keuangan Berkala: komponen `PeriodFilterBar` (Tahun, Bulan, preset cepat) pada Donatur & Pengeluaran | ✅ Selesai (Issue #66) |
+| **V9** | Filter Periode Fiskal & Ekspor Terpadu Tanpa Modal: toolbar dashboard terintegrasi (Bulan/Tahun, mode mingguan/tahunan, semester mobile), zero-modal export (Cetak A4, PDF, Excel), dan penyelarasan identitas AppShell | ✅ Selesai (Issue #067) |
 
 ## Out of Scope
 

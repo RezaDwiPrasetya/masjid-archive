@@ -21,12 +21,15 @@
 | F-015 | Tracking & Profil Donatur (Publik) | Must | ✅ Done (V5) |
 | F-016 | Assign Nama Donatur saat Review Transaksi | Should | ✅ Done (V5) |
 | F-017 | Penyempurnaan Alur Verifikasi (Edit Donatur & Batalkan Verifikasi) | Should | ✅ Done (V5) |
-| F-018 | Rincian Transparansi Infaq Anonim (Publik) | Must | Planned (V6) |
-| F-019 | Ekstraksi Dokumen Kas PDF (Vision-LLM) | Should | Planned (V6) |
-| F-020 | Impor Langsung Dokumen Kas Excel (.xlsx) | Should | Planned (V6) |
+| F-018 | Rincian Transparansi Infaq Anonim (Publik) | Must | ✅ Done (V6) |
+| F-019 | Ekstraksi Dokumen Kas PDF (Vision-LLM) | Should | ✅ Done (V6) |
+| F-020 | Impor Langsung Dokumen Kas Excel (.xlsx) | Should | ✅ Done (V6) |
 | F-021 | Ekspor & Cetak Rekapitulasi Kas (PDF & Excel) | Should | ✅ Done (V6) |
 | F-022 | Mobile Responsiveness & Touch Ergonomics | Should | ✅ Done (V6) |
-| F-023 | Rekap & Transparansi Pengeluaran Per Kategori (Publik) | Must | Planned (V7) |
+| F-023 | Rekap & Transparansi Pengeluaran Per Kategori (Publik) | Must | ✅ Done (V7) |
+| F-024 | Filter Periode Waktu & Analisis Keuangan Berkala | Must | ✅ Done (V8) |
+| F-025 | Filter Periode Fiskal & Ekspor Terpadu Tanpa Modal | Must | ✅ Done (V9) |
+| F-026 | Unified AppShell & Sinkronisasi Ikon Brand | Should | ✅ Done (V9) |
 
 ## Feature Details — V1
 
@@ -486,12 +489,57 @@
 - **Isolasi Mutlak**:
   - Seluruh query hanya memperhitungkan transaksi dengan status `isVerified = true`.
 **Acceptance Criteria:**
-- [ ] Pengguna publik dapat memilih Tahun & Bulan di halaman `/pengeluaran`, dan angka KPI + grafik proporsi + tabel mencerminkan periode tersebut.
-- [ ] Pengguna publik dapat memilih Tahun & Bulan di halaman `/donatur`, dan angka KPI + ranking donatur mencerminkan periode tersebut.
-- [ ] Tombol cepat "Semua Waktu", "Tahun Ini", dan "Bulan Ini" berfungsi mulus.
-- [ ] Tersedia fallback yang anggun jika pada periode yang dipilih belum ada transaksi (menampilkan status kosong ramah pengguna tanpa crash).
-- [ ] Seluruh endpoint publik aman dan hanya menyajikan data `isVerified = true`.
-- [ ] `tsc --noEmit` lolos 0 error dan `npm run lint` lolos 0 error.
+- [x] Pengguna publik dapat memilih Tahun & Bulan di halaman `/pengeluaran`, dan angka KPI + grafik proporsi + tabel mencerminkan periode tersebut.
+- [x] Pengguna publik dapat memilih Tahun & Bulan di halaman `/donatur`, dan angka KPI + ranking donatur mencerminkan periode tersebut.
+- [x] Tombol cepat "Semua Waktu", "Tahun Ini", dan "Bulan Ini" berfungsi mulus.
+- [x] Tersedia fallback yang anggun jika pada periode yang dipilih belum ada transaksi (menampilkan status kosong ramah pengguna tanpa crash).
+- [x] Seluruh endpoint publik aman dan hanya menyajikan data `isVerified = true`.
+- [x] `tsc --noEmit` lolos 0 error dan `npm run lint` lolos 0 error.
+
+---
+
+### F-025 — Filter Periode Fiskal & Ekspor Terpadu Tanpa Modal (Dashboard)
+
+**Objective:** Mengintegrasikan pemilihan periode bulan & tahun langsung di toolbar ringkasan dashboard, menyediakan visualisasi tren kas mingguan/tahunan yang presisi dan proporsional di seluruh ukuran layar, serta memfasilitasi ekspor dokumen (Cetak A4 Mading, PDF resmi, Excel) langsung tanpa hambatan dialog modal (Zero-Modal Export).
+**User:** Publik (jemaah), Pengurus DKM
+**Process:**
+- **Toolbar Terpadu Dashboard**:
+  - Selector Bulan (`Semua Bulan`, `Januari` s/d `Desember`) dan Selector `Tahun` ditempatkan sejajar dengan tombol toggle mode grafik (Mingguan vs Tahunan).
+  - Selector periode secara instan menyaring metrik ringkasan kartu KPI (Total Pemasukan, Total Pengeluaran, Arus Kas Bersih) dan grafik tren kas.
+- **Mode Mingguan Presisi**:
+  - Memplot 4 hingga 5 pekan (hari Jumat) yang ada pada bulan dan tahun terpilih, bukan window mundur dinamis yang bergeser.
+- **Mode Tahunan Responsif (Semesteran Mobile)**:
+  - Layar Desktop (≥ 768px): Menampilkan 12 batang bulan penuh (Jan–Des).
+  - Layar Mobile (< 768px): Menyediakan toggle Semester 1 (`Jan - Jun`) dan Semester 2 (`Jul - Des`) agar batang grafik tetap lega, proporsional, dan nyaman disentuh jari.
+- **Zero-Modal Export**:
+  - Tombol **Cetak (Mading A4)**, **Unduh PDF (.pdf)**, dan **Unduh Excel (.xlsx)** terpasang langsung di samping selector periode.
+  - Mengklik tombol ekspor langsung memicu pengunduhan/pratinjau dokumen kas untuk periode aktif saat itu tanpa perantara dialog popup.
+**Acceptance Criteria:**
+- [x] Selector Bulan dan Tahun terintegrasi langsung di toolbar dashboard utama.
+- [x] Mode mingguan memplot Jumat-Jumat spesifik dari bulan & tahun yang dipilih.
+- [x] Mode tahunan menampilkan 12 bulan di desktop dan toggle Semester 1 & 2 di layar ponsel.
+- [x] Tombol ekspor (Cetak A4, PDF, Excel) dapat dijalankan langsung secara WYSIWYG tanpa modal popup.
+- [x] Kartu KPI (Pemasukan, Pengeluaran, Arus Kas Bersih) sinkron dengan filter periode aktif.
+
+---
+
+### F-026 — Unified AppShell & Sinkronisasi Ikon Brand Resmi
+
+**Objective:** Menyelaraskan tata letak antarmuka aplikasi secara universal menggunakan komponen shell terpadu (`AppShell`) dengan navigasi sidebar permanen di desktop, mobile bottom navigation, serta konsistensi identitas visual (logo masjid selaras dengan vektor favicon resmi).
+**User:** Seluruh pengguna (Publik, Bendahara, Administrator)
+**Process:**
+- **Komponen Layout `AppShell` (`components/app-shell.tsx`)**:
+  - Membungkus seluruh halaman aplikasi (`/`, `/dashboard`, `/pengeluaran`, `/donatur`, `/cari`, `/unggah`, `/pengguna`).
+  - Desktop: Sidebar permanen selebar 260px (`surface-container`) dengan brand header, daftar tautan menu berikon Lucide, dan kartu ringkasan transparansi.
+  - Mobile: Bilah navigasi bawah (*bottom bar*) ergonomis dengan target sentuh ≥ 44px dan label teks proporsional.
+- **Sinkronisasi Ikon Brand Resmi (`MasjidEmblem`)**:
+  - Mengganti motif generik lama dengan logo resmi kubah masjid hijau dan aksen emas yang selaras 1:1 dengan favicon peramban (`/favicon.svg`).
+  - Penyelarasan format judul tab peramban dengan standar Shopee-style (`Masjid Archive | [Nama Halaman]`).
+**Acceptance Criteria:**
+- [x] Seluruh halaman aplikasi terintegrasi rapi dengan komponen `AppShell`.
+- [x] Ikon logo di sidebar desktop dan mobile header identik dengan aset favicon resmi masjid.
+- [x] Format judul tab peramban seragam dan profesional di seluruh rute.
+- [x] Desain responsif berjalan mulus di resolusi desktop, tablet, dan smartphone.
 
 
 
