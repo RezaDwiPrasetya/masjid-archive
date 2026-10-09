@@ -1083,6 +1083,8 @@ export function drawLedgerTable(options: DrawLedgerTableOptions): { lastPage: PD
     width: contentWidth,
     height: balAwalRowHeight,
     color: rgb(0.96, 0.975, 0.96),
+    borderColor: cBorderSoft,
+    borderWidth: 0.7,
   });
 
   const balAwalBaseline = y - 13.5;
@@ -1120,29 +1122,26 @@ export function drawLedgerTable(options: DrawLedgerTableOptions): { lastPage: PD
     color: cBlack,
   });
 
-  page.drawLine({
-    start: { x: marginX, y: y - balAwalRowHeight },
-    end: { x: pageWidth - marginX, y: y - balAwalRowHeight },
-    thickness: 0.5,
-    color: cBorderSoft,
-  });
   y -= balAwalRowHeight;
 
   // Render Transaksi Kas
   if (transactions.length === 0) {
     const emptyRowH = 22;
+    page.drawRectangle({
+      x: marginX,
+      y: y - emptyRowH,
+      width: contentWidth,
+      height: emptyRowH,
+      color: rgb(1, 1, 1),
+      borderColor: cBorderSoft,
+      borderWidth: 0.7,
+    });
     page.drawText(`Tidak ada mutasi transaksi kas terverifikasi pada periode ini.`, {
       x: marginX + 12,
       y: y - 14.5,
       size: 8.5,
       font: fontItalic,
       color: cMuted,
-    });
-    page.drawLine({
-      start: { x: marginX, y: y - emptyRowH },
-      end: { x: pageWidth - marginX, y: y - emptyRowH },
-      thickness: 0.5,
-      color: cBorderSoft,
     });
     y -= emptyRowH;
   } else {
@@ -1189,7 +1188,7 @@ export function drawLedgerTable(options: DrawLedgerTableOptions): { lastPage: PD
         y = drawPageHeaderAndTableHeader(page, true);
       }
 
-      // Zebra striping
+      // Zebra striping & border baris
       const rowBg = i % 2 === 0 ? rgb(1, 1, 1) : rgb(0.97, 0.985, 0.97);
       page.drawRectangle({
         x: marginX,
@@ -1197,6 +1196,8 @@ export function drawLedgerTable(options: DrawLedgerTableOptions): { lastPage: PD
         width: contentWidth,
         height: txRowHeight,
         color: rowBg,
+        borderColor: cBorderSoft,
+        borderWidth: 0.7,
       });
 
       const firstLineBaseline = y - 13.5;
@@ -1275,14 +1276,6 @@ export function drawLedgerTable(options: DrawLedgerTableOptions): { lastPage: PD
         size: 8.5,
         font: fontBold,
         color: cBlack,
-      });
-
-      // Garis pemisah tipis (#c2c9bb)
-      page.drawLine({
-        start: { x: marginX, y: y - txRowHeight },
-        end: { x: pageWidth - marginX, y: y - txRowHeight },
-        thickness: 0.5,
-        color: cBorderSoft,
       });
 
       y -= txRowHeight;
