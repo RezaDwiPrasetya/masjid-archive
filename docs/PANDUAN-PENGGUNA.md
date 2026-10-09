@@ -153,14 +153,15 @@ Halaman publik yang menampilkan ringkasan dan tren keuangan kas masjid berdasark
 Menampilkan angka saldo kas akhir fisik dari laporan kas mingguan terbaru yang telah terverifikasi sebagai acuan utama kas masjid saat ini.
 
 #### 2. Toolbar Periode Fiskal & Ekspor Terpadu (Zero-Modal)
-Di bagian atas area grafik kas, terdapat bilah alat terpadu yang memadukan filter waktu dan tombol ekspor langsung:
+Di bagian atas area grafik kas, terdapat bilah alat terpadu yang memadukan filter waktu dan tombol ekspor langsung yang rapi:
 - **Selector Bulan**: Memilih bulan spesifik (`Semua Bulan`, atau `Januari` s/d `Desember`).
 - **Selector Tahun**: Memilih tahun fiskal yang tersedia di arsip pembukuan kas.
-- **Tombol Ekspor Langsung**:
-  - **Cetak (Mading A4)**: Membuka pratinjau siap cetak format A4 formal untuk ditempel di papan mading fisik masjid.
-  - **Unduh PDF**: Mengunduh berkas `.pdf` resmi rekapitulasi kas bulanan langsung ke perangkat.
-  - **Unduh Excel**: Mengunduh berkas spreadsheet `.xlsx` untuk keperluan pencatatan dan olah data lanjutan.
-  *(Seluruh tombol ekspor bekerja secara instan sesuai Bulan dan Tahun yang sedang aktif tanpa perantara dialog popup).*
+- **Dua Tombol Aksi Langsung**:
+  - **Cetak Laporan**: Membuka pratinjau dokumen resmi A4 berkop surat DKM Al-Luqman siap cetak (lengkap dengan opsi unduh PDF dan cetak printer). Secara cerdas menyesuaikan dengan mode yang aktif:
+    - Jika mode **Mingguan** aktif: membuka pratinjau **Laporan Kas Bulanan** (`/laporan/cetak/bulanan`) sesuai bulan dan tahun terpilih.
+    - Jika mode **Tahunan** aktif: membuka pratinjau **Laporan Kas Tahunan Penuh** (`/laporan/cetak/tahunan`) yang merekap seluruh 12 bulan (Januari s/d Desember) di tahun tersebut.
+  - **Excel**: Mengunduh berkas spreadsheet `.xlsx` resmi (rekap bulanan saat mode Mingguan aktif, atau rekap tahunan penuh saat mode Tahunan aktif).
+  *(Tombol direct download PDF yang redundan telah dihilangkan agar antarmuka lebih bersih dan tidak membingungkan pengguna).*
 
 #### 3. Tiga Kartu Ringkasan Indikator Keuangan (KPI)
 Tiga kartu di bawah toolbar yang otomatis terhitung ulang mengikuti filter periode yang dipilih:
@@ -527,19 +528,23 @@ Pada halaman **Detail Laporan** (`/laporan/:id`), tersedia 3 tombol aksi cepat d
 
 ---
 
-### B. Ekspor Rekap Bulanan (Langsung dari Toolbar Dashboard — Zero-Modal)
+### B. Ekspor Rekap Bulanan & Tahunan (Langsung dari Toolbar Dashboard)
 
-Pada versi terbaru, ekspor kas bulanan tidak lagi memerlukan dialog popup terpisah:
+Pada dashboard, tombol aksi cetak dan ekspor otomatis menyesuaikan dengan mode grafik yang aktif:
 1. Buka halaman **Dashboard** (`/dashboard`).
-2. Pada toolbar di atas grafik kas, pilih **Bulan** dan **Tahun** pembukuan yang ingin diekspor.
-3. Klik salah satu tombol ekspor langsung yang tersedia di samping selector periode:
-   - **Cetak (Mading A4)**: Membuka pratinjau cetak resmi A4 berkop DKM Al-Luqman di tab browser baru, siap dicetak langsung ke kertas fisik mading masjid.
-   - **Unduh PDF (.pdf)**: Mengunduh berkas rekapitulasi kas bulanan format A4 lengkap dengan kartu ringkasan saldo, rincian transaksi, dan kolom pengesahan pengurus.
-   - **Unduh Excel (.xlsx)**: Mengunduh data tabel mutasi kas bulanan dalam format spreadsheet Excel.
+2. Tentukan periode yang ingin dilaporkan:
+   - **Laporan Bulanan**: Pilih tab **Mingguan**, lalu pilih **Bulan** dan **Tahun** yang diinginkan.
+   - **Laporan Tahunan**: Pilih tab **Tahunan**, lalu pilih **Tahun** fiskal yang diinginkan.
+3. Gunakan dua tombol aksi yang tersedia di toolbar:
+   - **Cetak Laporan**: Membuka pratinjau cetak resmi A4 berkop surat DKM Al-Luqman.
+     - Pada mode Mingguan: membuka rekapitulasi kas bulanan (`/laporan/cetak/bulanan`).
+     - Pada mode Tahunan: membuka rekapitulasi kas tahunan penuh 12 bulan (`/laporan/cetak/tahunan`), lengkap dengan tabel ringkasan akumulasi per bulan (Jan–Des) dan riwayat transaksi tahunan.
+     *(Di dalam halaman pratinjau cetak, Anda dapat langsung mengklik tombol **Unduh PDF** untuk menyimpan berkas digital atau **Cetak (Printer)** untuk mencetak fisik).*
+   - **Excel**: Mengunduh berkas spreadsheet `.xlsx` resmi (bulanan atau tahunan sesuai mode yang aktif).
 
 > **Catatan Penting**:
-> - Ekspor hanya mencakup transaksi dengan status **terverifikasi** (`isVerified = true`). Transaksi draf atau yang belum diverifikasi tidak pernah dimasukkan ke dalam berkas laporan.
-> - Pada saat mencetak ke kertas fisik dari browser, ukuran kertas standar adalah **A4 (Portrait)**. Tata letak sistem telah dirancang presisi agar rekap mutasi 15–25 transaksi tertata rapi dalam 1 lembar.
+> - Seluruh laporan hanya mencakup transaksi dengan status **terverifikasi** (`isVerified = true`). Transaksi draf yang belum diverifikasi tidak pernah dimasukkan ke dalam laporan.
+> - Tata letak cetak telah dioptimasi dengan format **A4 Portrait** resmi berkop DKM Masjid Al-Luqman dan kolom pengesahan pengurus.
 
 ---
 

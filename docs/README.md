@@ -10,9 +10,9 @@ Membantu DKM Masjid Al-Luqman (dan pengurus masjid sejenis) menjaga arsip lapora
 
 ### Current Status
 
-- Phase: Fase V9 (Filter Periode Fiskal & Ekspor Terpadu Tanpa Modal — Issue #067) Selesai
-- Version: 0.9.0
-- Last Updated: 2026-10-09 (Fase V9 Selesai, Penyelarasan Navigasi AppShell & Ikon Resmi Favicon)
+- Phase: Fase V10 (Fitur Cetak & Ekspor Kas Tahunan Penuh & Perapihan Toolbar Laporan — Issue #068) Dalam Pengerjaan
+- Version: 0.10.0
+- Last Updated: 2026-10-09 (Fase V10: Cetak & Ekspor Tahunan Penuh & Tombol Cetak Laporan)
 
 ### Daftar Isi
 

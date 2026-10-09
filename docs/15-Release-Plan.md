@@ -55,6 +55,14 @@
 - [x] Sinkronisasi ikon logo sidebar masjid dengan aset vektor favicon resmi (`/favicon.svg`)
 - [x] Standarisasi format judul tab peramban Shopee-style (`Masjid Archive | [Page]`)
 
+### Milestone 10 — Full Annual Report Export & Toolbar Streamlining (V10, Issue #068)
+- [ ] Hapus tombol redundant "PDF" langsung dari toolbar ringkasan dashboard
+- [ ] Ganti label dan aksi tombol menjadi "Cetak Laporan" dengan integrasi dinamis (Bulanan vs Tahunan)
+- [ ] Halaman cetak laporan tahunan penuh (`/laporan/cetak/tahunan?year=YYYY`) dengan rekap 12 bulan dan daftar mutasi kas tahunan
+- [ ] Endpoint ekspor PDF tahunan resmi (`GET /api/reports/export/yearly/pdf?year=YYYY`)
+- [ ] Endpoint ekspor Excel tahunan resmi (`GET /api/reports/export/yearly/excel?year=YYYY`)
+- [ ] Adaptasi tombol ekspor Excel di dashboard agar mengekspor tahunan saat mode tahunan aktif
+
 ## Release Criteria
 
 - [x] Alur inti (unggah, arsip, cari, detail, ekstraksi, verifikasi) berjalan tanpa error
@@ -64,12 +72,22 @@
 
 ## Version
 
-Current: `0.9.0` (Fase V9: Fiscal Period Filter & Zero-Modal Export — Issue #067)
+Current: `0.10.0` (Fase V10: Full Annual Report Export & Toolbar Streamlining — Issue #068)
 Next: `1.0.0`
 
 ## Changelog
 
-### 0.9.0 (2026-10-08) — Fase V9: Filter Periode Fiskal & Ekspor Terpadu Tanpa Modal (Issue #067)
+### 0.10.0 (2026-10-09) — Fase V10: Cetak & Ekspor Kas Tahunan Penuh & Perapihan Toolbar Laporan (Issue #068)
+- **Perapihan Toolbar Dashboard**: Menghapus tombol direct download "PDF" yang membingungkan dan redundan dari toolbar dashboard, menyisakan 2 tombol aksi bersih: `Cetak Laporan` dan `Excel`.
+- **Dukungan Cetak Laporan Tahunan**:
+  - Halaman pratinjau cetak A4 khusus tahunan (`/laporan/cetak/tahunan?year=YYYY`) dengan Kop DKM, kartu ringkasan saldo awal/akhir tahun, tabel ringkasan akumulasi 12 bulan (Jan–Des), rincian mutasi transaksi kas terverifikasi, dan kolom tanda tangan pengesahan.
+  - Bar aksi cetak (`PrintActionBar`) menyediakan tombol Unduh PDF dan Cetak Printer.
+- **Ekspor Tahunan PDF & Excel**:
+  - Endpoint baru `GET /api/reports/export/yearly/pdf` untuk berkas vektor PDF resmi tahunan.
+  - Endpoint baru `GET /api/reports/export/yearly/excel` untuk arsip spreadsheet tahunan.
+- **Reaktivitas Mode Toolbar**:
+  - Saat mode Mingguan aktif: tombol mencetak & mengekspor laporan bulanan (`month & year`).
+  - Saat mode Tahunan aktif: tombol mencetak & mengekspor laporan tahunan penuh (`year`).
 - **Toolbar Filter Terpadu**: Pemindahan selector Bulan dan Tahun langsung ke dashboard utama di samping toggle mode grafik.
 - **Mode Mingguan Presisi**: Grafik mingguan memplot pekan (Jumat) dalam bulan dan tahun yang dipilih, bukan rolling window acak.
 - **Mode Tahunan Responsif (Semesteran Mobile)**: Di desktop menampilkan 12 bulan penuh, di mobile menyediakan toggle Semester 1 (Jan–Jun) dan Semester 2 (Jul–Des) agar tetap lega dan proporsional.

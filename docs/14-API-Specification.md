@@ -811,12 +811,32 @@ Unduh rekapitulasi pembukuan kas bulanan terverifikasi dalam format dokumen PDF 
 
 ---
 
+### `GET /api/reports/export/yearly/excel` (V10 — Issue #068)
+Unduh rekapitulasi pembukuan kas tahunan terverifikasi 1 tahun penuh dalam format spreadsheet Excel (`.xlsx`). Dilengkapi sheet ringkasan 12 bulan (Januari s/d Desember) dan mutasi lengkap tahunan. Akses Publik.
+- **Query Params:** `year` (number)
+
+**Response 200:**
+- `Content-Type`: `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
+- `Content-Disposition`: `attachment; filename="Rekap-Kas-Tahunan-Al-Luqman-YYYY.xlsx"`
+
+---
+
+### `GET /api/reports/export/yearly/pdf` (V10 — Issue #068)
+Unduh rekapitulasi pembukuan kas tahunan terverifikasi 1 tahun penuh dalam format dokumen PDF vektor multi-halaman A4 (`.pdf`). Lengkap dengan Kop DKM, ringkasan saldo awal/akhir tahun, tabel rekap per bulan (Jan–Des), dan kolom pengesahan pengurus. Akses Publik.
+- **Query Params:** `year` (number)
+
+**Response 200:**
+- `Content-Type`: `application/pdf`
+- `Content-Disposition`: `attachment; filename="Rekap-Kas-Tahunan-Al-Luqman-YYYY.pdf"`
+
+---
+
 ## Matriks Hak Akses & Ringkasan Seluruh Endpoint API (RBAC 3-Tier)
 
 Tabel berikut merangkum seluruh endpoint backend di `app/api/` beserta batasan otorisasi dan penanganan status kode HTTP yang berlaku secara presisi:
 
 | Method | Path | Deskripsi Fungsional | Akses Minimal | Tanpa Sesi | Role `null` (Jamaah) |
-| :--- | :--- | :--- | :--- | :---: | :---: |
+| :--- | :--- | :--- | :--- | :--- | :---: |
 | **Auth** | | | | | |
 | `GET/POST` | `/api/auth/[...nextauth]` | Handlers SSO OAuth Google & token sesi JWT | Publik | `200` | `200` |
 | **Pengguna** | | | | | |
@@ -850,3 +870,5 @@ Tabel berikut merangkum seluruh endpoint backend di `app/api/` beserta batasan o
 | `GET` | `/api/reports/:id/export/excel` | Unduh spreadsheet Excel laporan mingguan | Publik | `200` | `200` |
 | `GET` | `/api/reports/export/monthly/pdf` | Unduh file resmi PDF A4 rekapitulasi bulanan | Publik | `200` | `200` |
 | `GET` | `/api/reports/export/monthly/excel` | Unduh spreadsheet Excel rekapitulasi bulanan | Publik | `200` | `200` |
+| `GET` | `/api/reports/export/yearly/pdf` | Unduh file resmi PDF A4 rekapitulasi tahunan | Publik | `200` | `200` |
+| `GET` | `/api/reports/export/yearly/excel` | Unduh spreadsheet Excel rekapitulasi tahunan | Publik | `200` | `200` |

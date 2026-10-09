@@ -536,3 +536,32 @@ Modul terpusat untuk standardisasi parsing dan pembentukan query filter waktu di
   - Komponen `MasjidEmblem` di `components/app-shell.tsx` menampilkan ikon vektor resmi tersebut (`/favicon.svg`) sehingga identitas visual di sidebar desktop, header mobile, dan tab peramban 100% konsisten.
   - Judul tab peramban distandarisasi dengan format Shopee-style: `Masjid Archive | [Halaman]` di seluruh rute via metadata Next.js.
 
+---
+
+## Spesifikasi Teknis — Fase V10: Cetak & Ekspor Kas Tahunan Penuh & Perapihan Toolbar (Issue #068)
+
+### 1. Perapihan Toolbar Dashboard (`components/dashboard-client.tsx`)
+- Menghapus tombol `PDF` (direct download) yang memicu redundansi UX dengan pratinjau cetak.
+- Mengubah tombol pertama menjadi **`Cetak Laporan`** dengan perilaku dinamis:
+  - Mode Mingguan: memanggil rute bulanan `/laporan/cetak/bulanan?year=${selectedYear}&month=${selectedMonth}`.
+  - Mode Tahunan: memanggil rute tahunan `/laporan/cetak/tahunan?year=${selectedYear}`.
+- Tombol `Excel` secara dinamis mengekspor bulanan (`/api/reports/export/monthly/excel`) saat mode mingguan, atau tahunan (`/api/reports/export/yearly/excel`) saat mode tahunan.
+
+### 2. Halaman Cetak Laporan Tahunan (`app/laporan/cetak/tahunan/page.tsx`)
+- Komponen Server Component yang menerima parameter `year` (contoh: `?year=2026`).
+- Mengumpulkan seluruh laporan dan transaksi kas terverifikasi (`isVerified: true`) di tahun tersebut.
+- Menyusun rekapitulasi 12 bulan (Januari s/d Desember) mencakup:
+  - Jumlah laporan pekanan per bulan
+  - Pemasukan bulanan & pengeluaran bulanan
+  - Selisih surplus/defisit bersih per bulan
+  - Saldo akhir kas kumulatif
+- Menghadirkan tabel seluruh mutasi transaksi kas tahunan secara kronologis.
+- Dilengkapi Kop DKM Al-Luqman, ringkasan saldo, kolom pengesahan (Ketua DKM & Bendahara), dan bar aksi cetak `PrintActionBar`.
+
+### 3. Modul Ekspor PDF & Excel Tahunan
+- **`lib/export-pdf.ts`**: Menambahkan fungsi `generateYearlyReportPdf(data: YearlyReportExportData)` berbasis `pdf-lib` untuk dokumen PDF vektor multi-halaman A4.
+- **`lib/export-excel.ts`**: Menambahkan fungsi `generateYearlyReportExcel(data: YearlyReportExportData)` berbasis `xlsx` dengan sheet ringkasan 12 bulan dan sheet mutasi detail.
+- **Endpoint Route Handlers**:
+  - `app/api/reports/export/yearly/pdf/route.ts`: mengembalikan file `.pdf`.
+  - `app/api/reports/export/yearly/excel/route.ts`: mengembalikan file `.xlsx`.
+

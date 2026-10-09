@@ -30,6 +30,7 @@
 | F-024 | Filter Periode Waktu & Analisis Keuangan Berkala | Must | ✅ Done (V8) |
 | F-025 | Filter Periode Fiskal & Ekspor Terpadu Tanpa Modal | Must | ✅ Done (V9) |
 | F-026 | Unified AppShell & Sinkronisasi Ikon Brand | Should | ✅ Done (V9) |
+| F-027 | Cetak & Ekspor Rekapitulasi Kas Tahunan Penuh & Perapihan Toolbar | Must | Planned (V10) |
 
 ## Feature Details — V1
 
@@ -540,6 +541,36 @@
 - [x] Ikon logo di sidebar desktop dan mobile header identik dengan aset favicon resmi masjid.
 - [x] Format judul tab peramban seragam dan profesional di seluruh rute.
 - [x] Desain responsif berjalan mulus di resolusi desktop, tablet, dan smartphone.
+
+---
+
+### F-027 — Cetak & Ekspor Rekapitulasi Kas Tahunan Penuh & Perapihan Toolbar
+
+**Objective:** Menyediakan kemampuan mencetak dan mengekspor rekapitulasi pembukuan kas 1 tahun penuh (Januari s/d Desember) secara akurat saat mode tahunan aktif, serta merapikan toolbar ringkasan kas dashboard dengan mengeliminasi tombol PDF yang redundan dan mengganti tombol cetak menjadi "Cetak Laporan".
+**User:** Publik (jemaah), Pengurus DKM
+**Process:**
+- **Perapihan Toolbar Dashboard (`components/dashboard-client.tsx`)**:
+  - Menghapus tombol direct download "PDF" dari toolbar.
+  - Mengubah tombol "Cetak Mading" menjadi **"Cetak Laporan"** dengan ikon printer.
+  - Menghubungkan tombol aksi secara dinamis dengan mode aktif:
+    - Mode Mingguan: Tombol "Cetak Laporan" membuka `/laporan/cetak/bulanan?year=YYYY&month=MM` dan tombol "Excel" memicu `/api/reports/export/monthly/excel?year=YYYY&month=MM`.
+    - Mode Tahunan: Tombol "Cetak Laporan" membuka `/laporan/cetak/tahunan?year=YYYY` dan tombol "Excel" memicu `/api/reports/export/yearly/excel?year=YYYY`.
+- **Halaman Cetak Laporan Tahunan (`/laporan/cetak/tahunan`)**:
+  - Halaman siap cetak formal A4 berkop DKM Masjid Al-Luqman.
+  - Kartu Ringkasan Keuangan Tahunan: Saldo Awal Tahun, Total Pemasukan Tahunan, Total Pengeluaran Tahunan, dan Saldo Akhir Kas Tahun Berjalan.
+  - Tabel Rekapitulasi 12 Bulan (Januari s/d Desember): Jumlah laporan, total pemasukan, total pengeluaran, surplus/defisit bulanan, dan saldo kas per akhir bulan.
+  - Tabel Daftar Transaksi Terverifikasi Sepanjang Tahun.
+  - Kolom pengesahan tanda tangan Ketua DKM dan Bendahara.
+  - Header aksi cetak (`PrintActionBar`) dengan tombol "Kembali", "Unduh PDF", dan "Cetak (Printer)".
+- **Endpoint Ekspor PDF & Excel Tahunan**:
+  - `GET /api/reports/export/yearly/pdf?year=YYYY`: Berkas vektor PDF resmi tahunan (via `pdf-lib`).
+  - `GET /api/reports/export/yearly/excel?year=YYYY`: Berkas spreadsheet Excel rekapitulasi kas tahunan (via `xlsx`).
+**Acceptance Criteria:**
+- [ ] Tombol PDF redundan dihilangkan dari toolbar dashboard.
+- [ ] Tombol cetak berganti nama menjadi "Cetak Laporan" dan mengarah ke rute tahunan saat mode tahunan aktif.
+- [ ] Tombol Excel mengekspor data tahunan saat mode tahunan aktif.
+- [ ] Halaman `/laporan/cetak/tahunan` memuat data rekap 12 bulan dan seluruh transaksi tahun tersebut (bukan hanya 1 bulan).
+- [ ] Endpoint ekspor PDF dan Excel tahunan berfungsi dengan baik menghasilkan unduhan berkas.
 
 
 

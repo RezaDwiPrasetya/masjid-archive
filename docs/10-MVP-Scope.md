@@ -311,3 +311,22 @@ Menghadirkan kendali audit fiskal presisi pada dashboard utama dengan memindahka
 - [x] Tombol ekspor Cetak A4, Unduh PDF, dan Unduh Excel dapat diklik langsung tanpa popup dialog.
 - [x] Format judul tab peramban Shopee-style dan ikon brand AppShell selaras 100% dengan favicon resmi masjid.
 
+---
+
+## V10 — Cetak & Ekspor Kas Tahunan Penuh & Perapihan Toolbar (Dalam Pengerjaan)
+
+### MVP Objective (V10)
+Menyempurnakan alur kerja pelaporan keuangan dengan menyediakan dokumen cetak dan ekspor kas tahunan penuh (12 bulan) saat mode tahunan aktif di dashboard, serta merampingkan toolbar dashboard dengan menghapus tombol PDF yang redundan dan menyelaraskan penamaan aksi menjadi "Cetak Laporan".
+
+### Must Have (V10)
+- Tombol aksi di dashboard toolbar disederhanakan menjadi 2 tombol: `Cetak Laporan` dan `Excel`.
+- Tombol `Cetak Laporan` secara cerdas mengarahkan ke halaman cetak bulanan (`/laporan/cetak/bulanan`) jika mode Mingguan aktif, atau ke halaman cetak tahunan (`/laporan/cetak/tahunan`) jika mode Tahunan aktif.
+- Halaman cetak tahunan (`app/laporan/cetak/tahunan/page.tsx`) menyajikan data rekapitulasi mutasi 12 bulan dan seluruh transaksi kas tahun tersebut dengan kop surat DKM Al-Luqman.
+- Endpoint ekspor PDF tahunan (`/api/reports/export/yearly/pdf`) dan Excel tahunan (`/api/reports/export/yearly/excel`).
+
+### MVP Success Criteria (V10)
+- [ ] Toolbar dashboard bersih tanpa tombol direct download PDF yang membingungkan.
+- [ ] Saat mode Tahunan dipilih, mengklik "Cetak Laporan" membuka laporan kas 1 tahun penuh (bukan hanya bulan tertentu).
+- [ ] Tombol Excel mengekspor spreadsheet tahunan saat mode Tahunan aktif.
+- [ ] Dokumen tahunan menyajikan rekap per bulan (Jan–Des), total pemasukan, total pengeluaran, saldo awal tahun, dan saldo akhir tahun.
+
