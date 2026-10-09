@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import {
   Archive,
@@ -16,25 +17,14 @@ import { useSession } from "next-auth/react";
 
 function MasjidEmblem({ className = "h-8 w-8" }: { className?: string }) {
   return (
-    <div
-      className={`shrink-0 flex items-center justify-center rounded-lg bg-primary text-primary-fixed select-none shadow-xs ${className}`}
-      aria-hidden="true"
-    >
-      <svg
-        className="w-5 h-5"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        {/* Octagram / 8-pointed geometric architectural star motif */}
-        <rect x="5" y="5" width="14" height="14" rx="2" transform="rotate(0 12 12)" />
-        <rect x="5" y="5" width="14" height="14" rx="2" transform="rotate(45 12 12)" opacity="0.75" />
-        <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none" />
-      </svg>
-    </div>
+    <Image
+      src="/favicon.svg"
+      alt="Logo Masjid Archive"
+      width={36}
+      height={36}
+      priority
+      className={`shrink-0 select-none ${className}`}
+    />
   );
 }
 
