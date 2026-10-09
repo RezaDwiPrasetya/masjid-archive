@@ -558,19 +558,22 @@
 - **Halaman Cetak Laporan Tahunan (`/laporan/cetak/tahunan`)**:
   - Halaman siap cetak formal A4 berkop DKM Masjid Al-Luqman.
   - Kartu Ringkasan Keuangan Tahunan: Saldo Awal Tahun, Total Pemasukan Tahunan, Total Pengeluaran Tahunan, dan Saldo Akhir Kas Tahun Berjalan.
-  - Tabel Rekapitulasi 12 Bulan (Januari s/d Desember): Jumlah laporan, total pemasukan, total pengeluaran, surplus/defisit bulanan, dan saldo kas per akhir bulan.
-  - Tabel Daftar Transaksi Terverifikasi Sepanjang Tahun.
-  - Kolom pengesahan tanda tangan Ketua DKM dan Bendahara.
-  - Header aksi cetak (`PrintActionBar`) dengan tombol "Kembali", "Unduh PDF", dan "Cetak (Printer)".
+  - Bagian I: Tabel Rekapitulasi 12 Bulan (Januari s/d Desember) beserta total akumulasi tahunan.
+  - Bagian II: Tabel Rincian Mutasi Transaksi Terverifikasi Sepanjang Tahun.
+  - Baris Total Mutasi ditempatkan secara struktural di baris penutup `tbody` (atau dengan `display: table-row-group !important;`) sehingga browser print engine **TIDAK MENGULANG** baris total di setiap potongan halaman multi-halaman. Baris total hanya muncul persis satu kali di akhir tabel (Issue #069).
+  - Kolom pengesahan tanda tangan Ketua DKM dan Bendahara di akhir dokumen.
+  - Header aksi cetak (`PrintActionBar`) dengan tombol "Kembali", "Unduh PDF", "Unduh Excel", dan "Cetak (Printer)".
 - **Endpoint Ekspor PDF & Excel Tahunan**:
-  - `GET /api/reports/export/yearly/pdf?year=YYYY`: Berkas vektor PDF resmi tahunan (via `pdf-lib`).
+  - `GET /api/reports/export/yearly/pdf?year=YYYY`: Berkas vektor PDF resmi tahunan (via `pdf-lib`) yang mencakup Bagian I (Rekap 12 Bulan) dan Bagian II (Rincian Mutasi Transaksi Kas dengan multi-page pagination otomatis) serta blok tanda tangan pengesahan di akhir dokumen, sinkron 100% dengan pratinjau cetak web (Issue #069).
   - `GET /api/reports/export/yearly/excel?year=YYYY`: Berkas spreadsheet Excel rekapitulasi kas tahunan (via `xlsx`).
 **Acceptance Criteria:**
-- [ ] Tombol PDF redundan dihilangkan dari toolbar dashboard.
-- [ ] Tombol cetak berganti nama menjadi "Cetak Laporan" dan mengarah ke rute tahunan saat mode tahunan aktif.
-- [ ] Tombol Excel mengekspor data tahunan saat mode tahunan aktif.
-- [ ] Halaman `/laporan/cetak/tahunan` memuat data rekap 12 bulan dan seluruh transaksi tahun tersebut (bukan hanya 1 bulan).
-- [ ] Endpoint ekspor PDF dan Excel tahunan berfungsi dengan baik menghasilkan unduhan berkas.
+- [x] Tombol PDF redundan dihilangkan dari toolbar dashboard.
+- [x] Tombol cetak berganti nama menjadi "Cetak Laporan" dan mengarah ke rute tahunan saat mode tahunan aktif.
+- [x] Tombol Excel mengekspor data tahunan saat mode tahunan aktif.
+- [x] Halaman `/laporan/cetak/tahunan` memuat data rekap 12 bulan dan seluruh transaksi tahun tersebut (bukan hanya 1 bulan).
+- [x] Endpoint ekspor PDF dan Excel tahunan berfungsi dengan baik menghasilkan unduhan berkas.
+- [x] Berkas PDF tahunan (`/api/reports/export/yearly/pdf`) memuat rincian mutasi transaksi kas lengkap multi-halaman, identik dengan halaman pratinjau (Issue #069).
+- [x] Saat mencetak lewat browser printer (`window.print()`), baris Total Mutasi tidak terulang di setiap lembar halaman yang terpotong, melainkan hanya satu kali di akhir (Issue #069).
 
 
 

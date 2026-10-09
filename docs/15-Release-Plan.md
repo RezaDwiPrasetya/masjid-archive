@@ -55,13 +55,15 @@
 - [x] Sinkronisasi ikon logo sidebar masjid dengan aset vektor favicon resmi (`/favicon.svg`)
 - [x] Standarisasi format judul tab peramban Shopee-style (`Masjid Archive | [Page]`)
 
-### Milestone 10 — Full Annual Report Export & Toolbar Streamlining (V10, Issue #068)
-- [ ] Hapus tombol redundant "PDF" langsung dari toolbar ringkasan dashboard
-- [ ] Ganti label dan aksi tombol menjadi "Cetak Laporan" dengan integrasi dinamis (Bulanan vs Tahunan)
-- [ ] Halaman cetak laporan tahunan penuh (`/laporan/cetak/tahunan?year=YYYY`) dengan rekap 12 bulan dan daftar mutasi kas tahunan
-- [ ] Endpoint ekspor PDF tahunan resmi (`GET /api/reports/export/yearly/pdf?year=YYYY`)
-- [ ] Endpoint ekspor Excel tahunan resmi (`GET /api/reports/export/yearly/excel?year=YYYY`)
-- [ ] Adaptasi tombol ekspor Excel di dashboard agar mengekspor tahunan saat mode tahunan aktif
+### Milestone 10 — Full Annual Report Export & Toolbar Streamlining (V10, Issue #068 & Issue #069)
+- [x] Hapus tombol redundant "PDF" langsung dari toolbar ringkasan dashboard
+- [x] Ganti label dan aksi tombol menjadi "Cetak Laporan" dengan integrasi dinamis (Bulanan vs Tahunan)
+- [x] Halaman cetak laporan tahunan penuh (`/laporan/cetak/tahunan?year=YYYY`) dengan rekap 12 bulan dan daftar mutasi kas tahunan
+- [x] Endpoint ekspor PDF tahunan resmi (`GET /api/reports/export/yearly/pdf?year=YYYY`)
+- [x] Endpoint ekspor Excel tahunan resmi (`GET /api/reports/export/yearly/excel?year=YYYY`)
+- [x] Adaptasi tombol ekspor Excel di dashboard agar mengekspor tahunan saat mode tahunan aktif
+- [x] Sinkronisasi konten PDF Tahunan: mencakup Rincian Mutasi Transaksi Kas (Bagian II) lengkap dan konsisten dengan halaman pratinjau (Issue #069)
+- [x] Pencegahan pengulangan table footer (`<tfoot>` / baris total) di setiap lembar cetak printer multi-halaman (Issue #069)
 
 ## Release Criteria
 
@@ -72,10 +74,20 @@
 
 ## Version
 
-Current: `0.10.0` (Fase V10: Full Annual Report Export & Toolbar Streamlining — Issue #068)
+Current: `0.10.1` (Fase V10.1: Konsistensi PDF Tahunan & Fix Table Footer Print Multi-Halaman — Issue #069)
 Next: `1.0.0`
 
 ## Changelog
+
+### 0.10.1 (2026-10-09) — Fase V10.1: Konsistensi PDF Tahunan & Fix Table Footer Print Multi-Halaman (Issue #069)
+- **Konsistensi Total PDF Tahunan (`generateYearlyReportPdf`)**:
+  - Mengintegrasikan Tabel Bagian II: Rincian Mutasi Transaksi Kas Tahunan (No, Tanggal, Uraian, Donatur/Sumber, Pemasukan, Pengeluaran, Saldo Berjalan) secara lengkap ke dalam berkas PDF yang diunduh.
+  - Implementasi mekanisme *multi-page pagination* otomatis di engine `pdf-lib` agar rincian transaksi kas mengalir ke halaman berikutnya dengan *header* tabel yang rapi jika volume transaksi melebihi kapasitas halaman.
+  - Penempatan baris Total Akumulasi Mutasi dan blok Pengesahan Tanda Tangan DKM di lembar paling akhir dokumen, persis sama dengan tampilan pratinjau cetak web.
+- **Pencegahan Pengulangan Total Table Footer pada Cetak Printer Multi-Halaman**:
+  - Memperbaiki perilaku bawaan browser print engine yang mengulang elemen `<tfoot>` di bawah setiap potongan tabel per lembar cetak.
+  - Memindahkan baris Total Mutasi ke baris penutup di dalam `<tbody>` (atau menerapkan `display: table-row-group !important;`) pada halaman cetak tahunan (`/laporan/cetak/tahunan`) dan bulanan (`/laporan/cetak/bulanan`).
+  - Hasil cetak printer kini hanya menampilkan baris total persis SATU KALI di akhir tabel mutasi setelah transaksi terakhir.
 
 ### 0.10.0 (2026-10-09) — Fase V10: Cetak & Ekspor Kas Tahunan Penuh & Perapihan Toolbar Laporan (Issue #068)
 - **Perapihan Toolbar Dashboard**: Menghapus tombol direct download "PDF" yang membingungkan dan redundan dari toolbar dashboard, menyisakan 2 tombol aksi bersih: `Cetak Laporan` dan `Excel`.

@@ -1,7 +1,7 @@
 # Panduan Pengguna — Masjid Archive
 ### Sistem Arsip & Manajemen Keuangan DKM Masjid Al-Luqman
 
-> **Versi Sistem**: V9 (0.9.0 — Feature-Complete)  
+> **Versi Sistem**: V10.1 (0.10.1 — Feature-Complete)  
 > **Terakhir diperbarui**: 9 Oktober 2026  
 > **Disusun oleh**: Reza Dwi Prasetya — PKL PT Gothru Media Indonesia
 
@@ -545,6 +545,8 @@ Pada dashboard, tombol aksi cetak dan ekspor otomatis menyesuaikan dengan mode g
 > **Catatan Penting**:
 > - Seluruh laporan hanya mencakup transaksi dengan status **terverifikasi** (`isVerified = true`). Transaksi draf yang belum diverifikasi tidak pernah dimasukkan ke dalam laporan.
 > - Tata letak cetak telah dioptimasi dengan format **A4 Portrait** resmi berkop DKM Masjid Al-Luqman dan kolom pengesahan pengurus.
+> - **Kelengkapan Dokumen PDF**: Berkas unduhan PDF tahunan memuat data 100% lengkap identik dengan pratinjau web, mencakup Rekapitulasi 12 Bulan (Jan–Des) dan Rincian Seluruh Mutasi Transaksi Kas terpaginasi rapi secara multi-halaman.
+> - **Cetak Printer Multi-Halaman Bebas Redundansi**: Saat mencetak ke printer (`window.print()`), baris Total Mutasi telah dikunci hanya muncul satu kali di bagian akhir tabel mutasi (setelah seluruh transaksi selesai), tidak akan terulang di setiap potongan lembar halaman kertas.
 
 ---
 
