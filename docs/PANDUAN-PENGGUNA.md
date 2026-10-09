@@ -539,14 +539,17 @@ Pada dashboard, tombol aksi cetak dan ekspor otomatis menyesuaikan dengan mode g
    - **Cetak Laporan**: Membuka pratinjau cetak resmi A4 berkop surat DKM Al-Luqman.
      - Pada mode Mingguan: membuka rekapitulasi kas bulanan (`/laporan/cetak/bulanan`).
      - Pada mode Tahunan: membuka rekapitulasi kas tahunan penuh 12 bulan (`/laporan/cetak/tahunan`), lengkap dengan tabel ringkasan akumulasi per bulan (Jan–Des) dan riwayat transaksi tahunan.
-     *(Di dalam halaman pratinjau cetak, Anda dapat langsung mengklik tombol **Unduh PDF** untuk menyimpan berkas digital atau **Cetak (Printer)** untuk mencetak fisik).*
+     *(Di dalam halaman pratinjau cetak, tersedia tombol terpadu **"Cetak / Unduh PDF Resmi"** yang dilengkapi indikator pemrosesan dan notifikasi otomatis).*
    - **Excel**: Mengunduh berkas spreadsheet `.xlsx` resmi (bulanan atau tahunan sesuai mode yang aktif).
 
 > **Catatan Penting**:
 > - Seluruh laporan hanya mencakup transaksi dengan status **terverifikasi** (`isVerified = true`). Transaksi draf yang belum diverifikasi tidak pernah dimasukkan ke dalam laporan.
 > - Tata letak cetak telah dioptimasi dengan format **A4 Portrait** resmi berkop DKM Masjid Al-Luqman dan kolom pengesahan pengurus.
-> - **Kelengkapan Dokumen PDF**: Berkas unduhan PDF tahunan memuat data 100% lengkap identik dengan pratinjau web, mencakup Rekapitulasi 12 Bulan (Jan–Des) dan Rincian Seluruh Mutasi Transaksi Kas terpaginasi rapi secara multi-halaman.
+> - **Kelengkapan Dokumen PDF**: Berkas unduhan PDF tahunan dirancang dengan layout 2-bagian profesional:
+>   - **Halaman 1 (Ringkasan Eksekutif Mading)**: Memuat Kop Surat resmi DKM, 4 kartu saldo lapang, tabel rekapitulasi 12 bulan bernapas lega, dan tanda tangan pengesahan DKM (siap ditempel di mading).
+>   - **Halaman 2+ (Buku Besar Mutasi Transaksi)**: Memuat seluruh rincian transaksi kas sepanjang tahun secara mendalam dengan penomoran dan header tabel otomatis.
 > - **Cetak Printer Multi-Halaman Bebas Redundansi**: Saat mencetak ke printer (`window.print()`), baris Total Mutasi telah dikunci hanya muncul satu kali di bagian akhir tabel mutasi (setelah seluruh transaksi selesai), tidak akan terulang di setiap potongan lembar halaman kertas.
+> - **Bebas Label URL**: Berkas PDF resmi tidak mengandung URL browser atau watermark teknis situs web, menjamin integritas dokumen fisik DKM.
 
 ---
 
