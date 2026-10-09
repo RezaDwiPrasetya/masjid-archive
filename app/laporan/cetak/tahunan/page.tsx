@@ -7,6 +7,16 @@ interface CetakTahunanPageProps {
   searchParams: Promise<{ year?: string }>;
 }
 
+export async function generateMetadata({ searchParams }: CetakTahunanPageProps) {
+  const { year: qYear } = await searchParams;
+  const now = new Date();
+  const year = parseInt(qYear || String(now.getFullYear()), 10);
+  return {
+    title: `Laporan Kas Tahunan ${year} - DKM Masjid Al-Luqman`,
+    description: `Rekapitulasi pembukuan kas tahunan DKM Masjid Al-Luqman periode tahun ${year}.`,
+  };
+}
+
 export default async function CetakLaporanTahunanPage({ searchParams }: CetakTahunanPageProps) {
   const { year: qYear } = await searchParams;
   const now = new Date();

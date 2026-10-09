@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { PrintActionBar } from "@/components/print-action-bar";
 
@@ -11,6 +12,19 @@ const MONTH_NAMES = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
   "Juli", "Agustus", "September", "Oktober", "November", "Desember"
 ];
+
+export async function generateMetadata({ searchParams }: CetakBulananPageProps): Promise<Metadata> {
+  const { year: qYear, month: qMonth } = await searchParams;
+  const now = new Date();
+  const year = parseInt(qYear || String(now.getFullYear()), 10);
+  const month = parseInt(qMonth || String(now.getMonth() + 1), 10);
+  const monthName = MONTH_NAMES[month - 1] || `Bulan ${month}`;
+
+  return {
+    title: `Laporan Kas ${monthName} ${year} - DKM Masjid Al-Luqman`,
+    description: `Lembar resmi cetak laporan kas mading Masjid Al-Luqman periode ${monthName} ${year}.`,
+  };
+}
 
 export default async function CetakLaporanBulananPage({ searchParams }: CetakBulananPageProps) {
   const { year: qYear, month: qMonth } = await searchParams;

@@ -1,6 +1,7 @@
 "use client";
 
-import { Printer, ArrowLeft, Download } from "lucide-react";
+import * as React from "react";
+import { Printer, ArrowLeft, FileDown, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
@@ -17,6 +18,8 @@ export function PrintActionBar({
   title,
 }: PrintActionBarProps) {
   const router = useRouter();
+  const [isDownloading, setIsDownloading] = React.useState(false);
+  const [feedback, setFeedback] = React.useState<{ type: "success" | "error"; message: string } | null>(null);
 
   const handleBack = () => {
     if (typeof window !== "undefined") {
@@ -40,58 +43,146 @@ export function PrintActionBar({
     router.push(backUrl);
   };
 
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = async () => {
     if (!pdfDownloadUrl) {
       window.print();
       return;
     }
-    const link = document.createElement("a");
-    link.href = pdfDownloadUrl;
-    link.setAttribute("download", "");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+
+    setIsDownloading(true);
+    setFeedback(null);
+
+    try {
+      // Ambil berkas via fetch untuk memantau status jaringan dan menampilkan feedback visual
+      const res = await fetch(pdfDownloadUrl);
+      if (!res.ok) {
+        throw new Error(`Gagal mengunduh berkas PDF (${res.status})`);
+      }
+
+      const blob = await res.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+
+      // Dapatkan nama file dari header Content-Disposition jika tersedia
+      const disposition = res.headers.get("content-disposition");
+      let filename = "Laporan-Kas-Al-Luqman.pdf";
+      if (disposition && disposition.includes("filename=")) {
+        const matches = /filename="?([^"]+)"?/.exec(disposition);
+        if (matches && matches[1]) {
+          filename = matches[1];
+        }
+      }
+
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+
+      setFeedback({
+        type: "success",
+        message: "Berkas PDF resmi berhasil diunduh. Silakan buka berkas untuk mencetak atau membagikan.",
+      });
+
+      // Hilangkan pesan notifikasi setelah 5 detik
+      setTimeout(() => {
+        setFeedback(null);
+      }, 5000);
+    } catch (err) {
+      console.error("Error downloading PDF:", err);
+      setFeedback({
+        type: "error",
+        message: "Terjadi kendala saat mengunduh berkas PDF. Silakan coba lagi.",
+      });
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   return (
     <aside
       aria-label="Aksi Dokumen Cetak"
-      className="print:hidden sticky top-0 z-50 flex items-center justify-between gap-4 border-b border-outline-variant bg-surface-container/95 backdrop-blur px-6 py-3.5 shadow-level-1"
+      className="print:hidden sticky top-0 z-50 flex flex-col border-b border-outline-variant bg-surface-container/95 backdrop-blur shadow-level-1"
     >
-      <div className="flex items-center gap-3">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleBack}
-          className="gap-1.5 text-xs font-semibold"
-        >
-          <ArrowLeft size={14} /> Kembali
-        </Button>
-        <span className="hidden sm:inline text-xs font-semibold text-on-surface-variant">
-          Pratinjau: <span className="text-on-surface">{title}</span>
-        </span>
+      <div className="flex items-center justify-between gap-4 px-6 py-3.5">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleBack}
+            className="gap-1.5 text-xs font-semibold border-outline-variant hover:bg-surface-container-high"
+          >
+            <ArrowLeft size={14} /> Kembali
+          </Button>
+          <span className="hidden sm:inline text-xs font-semibold text-on-surface-variant">
+            Pratinjau: <span className="text-on-surface">{title}</span>
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {pdfDownloadUrl && (
+            <Button
+              size="sm"
+              onClick={handleDownloadPdf}
+              disabled={isDownloading}
+              className="gap-2 text-xs bg-emerald-700 hover:bg-emerald-800 text-white font-semibold shadow-xs transition-all"
+              title="Unduh berkas PDF resmi berstandar A4 siap cetak dan bebas dari label situs web"
+            >
+              {isDownloading ? (
+                <>
+                  <Loader2 size={14} className="animate-spin text-white" />
+                  <span>Menyiapkan PDF...</span>
+                </>
+              ) : (
+                <>
+                  <FileDown size={14} />
+                  <span>Cetak / Unduh PDF Resmi</span>
+                </>
+              )}
+            </Button>
+          )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.print()}
+            className="gap-1.5 text-xs font-semibold border-outline-variant hover:bg-surface-container-high text-neutral-700 dark:text-neutral-300"
+            title="Cetak langsung via dialog peramban (Ctrl+P)"
+          >
+            <Printer size={13} />
+            <span className="hidden sm:inline">Cetak Browser</span>
+          </Button>
+        </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        {pdfDownloadUrl && (
-          <Button
-            size="sm"
-            onClick={handleDownloadPdf}
-            className="gap-1.5 text-xs bg-emerald-700 hover:bg-emerald-800 text-white font-semibold shadow-xs"
-          >
-            <Download size={14} /> Unduh PDF
-          </Button>
-        )}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => window.print()}
-          className="gap-1.5 text-xs font-semibold border-outline-variant hover:bg-surface-container-high"
+      {/* Banner Feedback / Notifikasi Unduhan */}
+      {feedback && (
+        <div
+          role="status"
+          aria-live="polite"
+          className={`px-6 py-2 text-xs font-medium flex items-center justify-between border-t transition-all ${
+            feedback.type === "success"
+              ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800"
+              : "bg-rose-50 dark:bg-rose-950/60 text-rose-900 dark:text-rose-200 border-rose-200 dark:border-rose-800"
+          }`}
         >
-          <Printer size={14} /> Cetak (Printer)
-        </Button>
-      </div>
+          <div className="flex items-center gap-2">
+            {feedback.type === "success" ? (
+              <CheckCircle2 size={15} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+            ) : (
+              <AlertCircle size={15} className="text-rose-600 dark:text-rose-400 shrink-0" />
+            )}
+            <span>{feedback.message}</span>
+          </div>
+          <button
+            onClick={() => setFeedback(null)}
+            className="text-[11px] font-bold underline cursor-pointer hover:opacity-80 ml-4 shrink-0"
+          >
+            Tutup
+          </button>
+        </div>
+      )}
     </aside>
   );
 }
-
