@@ -313,20 +313,26 @@ Menghadirkan kendali audit fiskal presisi pada dashboard utama dengan memindahka
 
 ---
 
-## V10 — Cetak & Ekspor Kas Tahunan Penuh & Perapihan Toolbar (Dalam Pengerjaan)
+## V10 — Cetak & Ekspor Kas Tahunan Penuh, Perapihan Toolbar & Lampiran PDF (Selesai)
 
 ### MVP Objective (V10)
-Menyempurnakan alur kerja pelaporan keuangan dengan menyediakan dokumen cetak dan ekspor kas tahunan penuh (12 bulan) saat mode tahunan aktif di dashboard, serta merampingkan toolbar dashboard dengan menghapus tombol PDF yang redundan dan menyelaraskan penamaan aksi menjadi "Cetak Laporan".
+Menyempurnakan alur kerja pelaporan keuangan dengan menyediakan dokumen cetak dan ekspor kas tahunan penuh (12 bulan) saat mode tahunan aktif di dashboard, merampingkan toolbar dashboard dengan menghapus tombol PDF yang redundan dan menyelaraskan penamaan aksi menjadi "Cetak Laporan", serta menyempurnakan Lampiran PDF resmi menjadi multi-halaman lega dengan word-wrap teks penuh dan border pemisah yang tajam.
 
 ### Must Have (V10)
 - Tombol aksi di dashboard toolbar disederhanakan menjadi 2 tombol: `Cetak Laporan` dan `Excel`.
 - Tombol `Cetak Laporan` secara cerdas mengarahkan ke halaman cetak bulanan (`/laporan/cetak/bulanan`) jika mode Mingguan aktif, atau ke halaman cetak tahunan (`/laporan/cetak/tahunan`) jika mode Tahunan aktif.
 - Halaman cetak tahunan (`app/laporan/cetak/tahunan/page.tsx`) menyajikan data rekapitulasi mutasi 12 bulan dan seluruh transaksi kas tahun tersebut dengan kop surat DKM Al-Luqman.
 - Endpoint ekspor PDF tahunan (`/api/reports/export/yearly/pdf`) dan Excel tahunan (`/api/reports/export/yearly/excel`).
+- Lampiran PDF multi-halaman lega dengan paginasi otomatis, word-wrap tanpa pemotongan "…", header tabel berulang, baris TOTAL tunggal, dan border grid tajam (#c2c9bb).
 
 ### MVP Success Criteria (V10)
-- [ ] Toolbar dashboard bersih tanpa tombol direct download PDF yang membingungkan.
-- [ ] Saat mode Tahunan dipilih, mengklik "Cetak Laporan" membuka laporan kas 1 tahun penuh (bukan hanya bulan tertentu).
-- [ ] Tombol Excel mengekspor spreadsheet tahunan saat mode Tahunan aktif.
-- [ ] Dokumen tahunan menyajikan rekap per bulan (Jan–Des), total pemasukan, total pengeluaran, saldo awal tahun, dan saldo akhir tahun.
+- [x] Toolbar dashboard bersih tanpa tombol direct download PDF yang membingungkan.
+- [x] Saat mode Tahunan dipilih, mengklik "Cetak Laporan" membuka laporan kas 1 tahun penuh (bukan hanya bulan tertentu).
+- [x] Tombol Excel mengekspor spreadsheet tahunan saat mode Tahunan aktif.
+- [x] Dokumen tahunan menyajikan rekap per bulan (Jan–Des), total pemasukan, total pengeluaran, saldo awal tahun, dan saldo akhir tahun.
+- [x] Dokumen PDF tahunan memiliki arsitektur 2-bagian: Halaman 1 sebagai Resume Eksekutif Mading lengkap dengan tanda tangan, Halaman 2+ sebagai Lampiran Mutasi Transaksi Kas (Issue #070).
+- [x] Tombol aksi di pratinjau cetak disatukan menjadi 1 tombol tunggal "Cetak Laporan" bebas dari tombol kedua yang redundan (Issue #071).
+- [x] Lampiran PDF terpaginasi otomatis multi-halaman tanpa memaksakan 35+ baris ke satu lembar, dengan teks uraian/donatur membungkus rapi (word-wrap) tanpa teks terpotong "…" (Issue #072).
+- [x] Garis pemisah baris tabel lampiran PDF (#c2c9bb) tampil jelas dan konsisten tanpa tertimpa latar belakang zebra striping (Issue #072).
+
 

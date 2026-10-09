@@ -30,7 +30,7 @@
 | F-024 | Filter Periode Waktu & Analisis Keuangan Berkala | Must | ✅ Done (V8) |
 | F-025 | Filter Periode Fiskal & Ekspor Terpadu Tanpa Modal | Must | ✅ Done (V9) |
 | F-026 | Unified AppShell & Sinkronisasi Ikon Brand | Should | ✅ Done (V9) |
-| F-027 | Cetak & Ekspor Rekapitulasi Kas Tahunan Penuh & Perapihan Toolbar | Must | Planned (V10) |
+| F-027 | Cetak & Ekspor Rekapitulasi Kas Tahunan Penuh & Perapihan Toolbar | Must | ✅ Done (V10) |
 
 ## Feature Details — V1
 
@@ -582,6 +582,12 @@
 - [x] Saat mencetak lewat browser printer (`window.print()`), baris Total Mutasi tidak terulang di setiap lembar halaman yang terpotong, melainkan hanya satu kali di akhir (Issue #069).
 - [x] Dokumen PDF tahunan memiliki layout lega & profesional: Halaman 1 sebagai Ringkasan Eksekutif Mading lengkap dengan tanda tangan, Halaman 2+ sebagai Lampiran Mutasi Transaksi (Issue #070).
 - [x] Toolbar pratinjau cetak (`PrintActionBar`) hanya memiliki 1 tombol tunggal "Cetak Laporan" yang ringkas, tanpa tombol kedua yang redundan (Issue #071).
+- [x] Lampiran PDF terpaginasi dinamis multi-halaman tanpa memaksakan seluruh baris ke satu lembar, dengan tinggi baris lega (~20pt) dan font 8.5pt yang nyaman dibaca (Issue #072).
+- [x] Helper `wrapText` membungkus teks Uraian dan Sumber/Donatur tanpa terpotong "…" dan satu transaksi tidak pernah terbelah antar-halaman (Issue #072).
+- [x] Header tabel lampiran diulang otomatis di setiap halaman lanjutan, dan baris TOTAL hanya muncul sekali di akhir tabel (Issue #072).
+- [x] Prefiks "Rp" hanya muncul di header kolom nominal dan baris TOTAL; sel data transaksi hanya menampilkan angka berformat id-ID atau "-" (Issue #072).
+- [x] Garis pemisah tabel (#c2c9bb) tampil jelas dan konsisten dengan properti border pada rectangle baris, tidak tertimpa latar belakang zebra striping (Issue #072).
+- [x] Penomoran halaman global two-pass ("Halaman X dari Y") dan identitas DKM tercetak di margin bawah setiap lembar (Issue #072).
 
 
 

@@ -67,6 +67,8 @@
 - [x] Redesain arsitektur dokumen PDF Tahunan: Halaman 1 sebagai Ringkasan Eksekutif Mading (Kop, Kartu Saldo, Rekap 12 Bulan, Tanda Tangan), Halaman 2+ sebagai Lampiran Buku Besar Mutasi Transaksi (Issue #070)
 - [x] Penyatuan tombol aksi cetak di `PrintActionBar` menjadi tombol cerdas "Cetak / Unduh PDF Resmi" dengan animasi loading dan notifikasi toast (Issue #070)
 - [x] Penyesuaian `<title>` halaman cetak resmi DKM Al-Luqman untuk mengeliminasi label teknis default saat dicetak via browser (Issue #070)
+- [x] Refaktor Lampiran PDF Mutasi Kas menjadi multi-halaman dinamis dengan font 8.5pt, baris 20pt, word-wrap tanpa pemotongan "…", header berulang, dan baris total tunggal (Issue #072)
+- [x] Perbaikan garis border pemisah baris tabel lampiran PDF (#c2c9bb) langsung pada rectangle agar tidak tertimpa latar belakang zebra striping (Issue #072)
 
 ## Release Criteria
 
@@ -77,10 +79,20 @@
 
 ## Version
 
-Current: `0.10.3` (Fase V10.3: Penyatuan Tombol Tunggal "Cetak Laporan" pada Pratinjau Cetak — Issue #071)
+Current: `0.10.4` (Fase V10.4: Refaktor Lampiran PDF Multi-Halaman & Border Grid — Issue #072)
 Next: `1.0.0`
 
 ## Changelog
+
+### 0.10.4 (2026-10-09) — Fase V10.4: Refaktor Lampiran PDF Multi-Halaman & Border Grid (Issue #072)
+- **Refaktor Lampiran PDF Multi-Halaman Lega (`lib/export-pdf.ts`)**:
+  - **Paginasi Dinamis Otomatis**: Lampiran *Rincian Mutasi Transaksi Kas* tidak lagi dipaksa muat dalam 1 lembar. Menghitung sisa tinggi halaman secara dinamis (`y - txRowHeight < 50`) dan membuat halaman baru jika tidak muat. Target 25–30 baris per lembar.
+  - **Tipografi Nyaman & Proporsional**: Font isi tabel ditingkatkan menjadi 8.5pt regular, header 8.5pt bold + subjudul `(Rp)` 7.5pt muted bold, tinggi baris dasar 20pt dengan line-height 11pt, dan padding sel proporsional.
+  - **Word-Wrap Tanpa Truncate ("…")**: Helper `wrapText` mengeliminasi pemotongan teks menggunakan pengukuran lebar teks riil (`font.widthOfTextAtSize`). Kolom Uraian dan Sumber/Donatur yang panjang membungkus aman ke baris berikutnya. Satu transaksi dijamin tidak pernah terbelah antar-halaman.
+  - **Header Berulang & Baris TOTAL Tunggal**: Header tabel diulang otomatis di setiap lembar baru lampiran, sedangkan baris TOTAL hanya muncul sekali di akhir tabel dengan latar hijau muda (`rgb(0.90, 0.94, 0.90)`) dan border `#154212`.
+  - **Penyelarasan Kolom & Prefiks Angka**: Prefiks "Rp" hanya muncul pada header kolom nominal (`Pemasukan (Rp)`, `Pengeluaran (Rp)`, `Saldo Kas (Rp)`) dan di baris TOTAL. Sel transaksi hanya memuat angka terformat `id-ID` atau `-` jika nol.
+  - **Perbaikan Garis Border Pemisah Baris**: Memindahkan border langsung ke properti `borderColor: cBorderSoft` (#c2c9bb) dan `borderWidth: 0.7` di dalam `page.drawRectangle` untuk mengeliminasi bug visual painter's algorithm PDF di mana border tertimpa balok latar belakang baris berikutnya.
+  - **Footer Global Two-Pass**: Menghitung total halaman dokumen secara dinamis (`doc.getPageCount()`) setelah seluruh lembar terbuat, menampilkan format `Halaman X dari Y` dan identitas resmi DKM di margin bawah dokumen.
 
 ### 0.10.3 (2026-10-09) — Fase V10.3: Penyatuan Tombol Tunggal "Cetak Laporan" (Issue #071)
 - **Penyederhanaan Menjadi 1 Tombol Tunggal (`components/print-action-bar.tsx`)**:
