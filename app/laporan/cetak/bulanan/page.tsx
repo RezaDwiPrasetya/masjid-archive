@@ -248,8 +248,6 @@ export default async function CetakLaporanBulananPage({ searchParams }: CetakBul
                   );
                 })
               )}
-            </tbody>
-            <tfoot>
               <tr className="bg-neutral-100 print:bg-neutral-200 font-bold border-t-2 border-neutral-400 print:break-inside-avoid">
                 <td colSpan={4} className="border border-neutral-400 p-2 print:py-1 print:px-1.5 text-center uppercase tracking-wider">
                   Total Mutasi Bulan Ini
@@ -264,7 +262,7 @@ export default async function CetakLaporanBulananPage({ searchParams }: CetakBul
                   {fmt(finalBalance)}
                 </td>
               </tr>
-            </tfoot>
+            </tbody>
           </table>
         </section>
 

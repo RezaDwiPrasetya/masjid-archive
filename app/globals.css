@@ -195,4 +195,9 @@
     background: #ffffff !important;
     color: #171717 !important;
   }
+
+  /* Cegah print engine browser mengulang baris tfoot/total di setiap page break */
+  tfoot {
+    display: table-row-group !important;
+  }
 }

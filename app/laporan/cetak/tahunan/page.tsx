@@ -150,8 +150,6 @@ export default async function CetakLaporanTahunanPage({ searchParams }: CetakTah
                   </tr>
                 );
               })}
-            </tbody>
-            <tfoot>
               <tr className="bg-neutral-100 print:bg-neutral-200 font-bold border-t-2 border-neutral-400 print:break-inside-avoid">
                 <td colSpan={2} className="border border-neutral-400 p-2 print:py-1 print:px-1.5 text-center uppercase tracking-wider">
                   Total Tahunan
@@ -178,7 +176,7 @@ export default async function CetakLaporanTahunanPage({ searchParams }: CetakTah
                   {fmt(data.finalBalance)}
                 </td>
               </tr>
-            </tfoot>
+            </tbody>
           </table>
         </section>
 
@@ -276,8 +274,6 @@ export default async function CetakLaporanTahunanPage({ searchParams }: CetakTah
                   );
                 })
               )}
-            </tbody>
-            <tfoot>
               <tr className="bg-neutral-100 print:bg-neutral-200 font-bold border-t-2 border-neutral-400 print:break-inside-avoid">
                 <td colSpan={4} className="border border-neutral-400 p-2 print:py-1 print:px-1.5 text-center uppercase tracking-wider">
                   Total Mutasi Seluruh Tahun {year}
@@ -292,7 +288,7 @@ export default async function CetakLaporanTahunanPage({ searchParams }: CetakTah
                   {fmt(data.finalBalance)}
                 </td>
               </tr>
-            </tfoot>
+            </tbody>
           </table>
         </section>
 
