@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Printer, ArrowLeft, FileDown, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Printer, ArrowLeft, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
@@ -43,7 +43,7 @@ export function PrintActionBar({
     router.push(backUrl);
   };
 
-  const handleDownloadPdf = async () => {
+  const handlePrint = async () => {
     if (!pdfDownloadUrl) {
       window.print();
       return;
@@ -56,7 +56,7 @@ export function PrintActionBar({
       // Ambil berkas via fetch untuk memantau status jaringan dan menampilkan feedback visual
       const res = await fetch(pdfDownloadUrl);
       if (!res.ok) {
-        throw new Error(`Gagal mengunduh berkas PDF (${res.status})`);
+        throw new Error(`Gagal menyiapkan berkas PDF (${res.status})`);
       }
 
       const blob = await res.blob();
@@ -82,7 +82,7 @@ export function PrintActionBar({
 
       setFeedback({
         type: "success",
-        message: "Berkas PDF resmi berhasil diunduh. Silakan buka berkas untuk mencetak atau membagikan.",
+        message: "Berkas PDF resmi berhasil diunduh. Silakan buka berkas untuk mencetak ke printer atau mengarsipkan.",
       });
 
       // Hilangkan pesan notifikasi setelah 5 detik
@@ -93,7 +93,7 @@ export function PrintActionBar({
       console.error("Error downloading PDF:", err);
       setFeedback({
         type: "error",
-        message: "Terjadi kendala saat mengunduh berkas PDF. Silakan coba lagi.",
+        message: "Terjadi kendala saat menyiapkan berkas PDF. Silakan coba lagi.",
       });
     } finally {
       setIsDownloading(false);
@@ -121,37 +121,24 @@ export function PrintActionBar({
         </div>
 
         <div className="flex items-center gap-2">
-          {pdfDownloadUrl && (
-            <Button
-              size="sm"
-              onClick={handleDownloadPdf}
-              disabled={isDownloading}
-              className="gap-2 text-xs bg-emerald-700 hover:bg-emerald-800 text-white font-semibold shadow-xs transition-all"
-              title="Unduh berkas PDF resmi berstandar A4 siap cetak dan bebas dari label situs web"
-            >
-              {isDownloading ? (
-                <>
-                  <Loader2 size={14} className="animate-spin text-white" />
-                  <span>Menyiapkan PDF...</span>
-                </>
-              ) : (
-                <>
-                  <FileDown size={14} />
-                  <span>Cetak / Unduh PDF Resmi</span>
-                </>
-              )}
-            </Button>
-          )}
-
           <Button
-            variant="outline"
             size="sm"
-            onClick={() => window.print()}
-            className="gap-1.5 text-xs font-semibold border-outline-variant hover:bg-surface-container-high text-neutral-700 dark:text-neutral-300"
-            title="Cetak langsung via dialog peramban (Ctrl+P)"
+            onClick={handlePrint}
+            disabled={isDownloading}
+            className="gap-2 text-xs bg-emerald-700 hover:bg-emerald-800 text-white font-semibold shadow-xs transition-all"
+            title="Cetak laporan resmi berstandar A4 bebas dari label situs web"
           >
-            <Printer size={13} />
-            <span className="hidden sm:inline">Cetak Browser</span>
+            {isDownloading ? (
+              <>
+                <Loader2 size={14} className="animate-spin text-white" />
+                <span>Menyiapkan Dokumen...</span>
+              </>
+            ) : (
+              <>
+                <Printer size={14} />
+                <span>Cetak Laporan</span>
+              </>
+            )}
           </Button>
         </div>
       </div>

@@ -48,7 +48,7 @@ Aplikasi web arsip & manajemen keuangan untuk **DKM Masjid Al-Luqman** (Kel. Sok
     - Sinkronisasi kelengkapan berkas PDF Tahunan: mencakup Rekapitulasi 12 Bulan dan Rincian Transaksi Kas Multi-Halaman secara lengkap, 100% konsisten dengan pratinjau cetak web (Issue #069).
     - Pencegahan pengulangan total table footer (`<tfoot>`) di setiap lembar cetak printer multi-halaman (Issue #069).
     - Desain PDF tahunan profesional 2-bagian: Halaman 1 sebagai Resume Eksekutif Mading (Kop, 4 Kartu Saldo, Rekap 12 Bulan, Tanda Tangan), Halaman 2+ sebagai Lampiran Buku Besar Mutasi Transaksi Kas (Issue #070).
-    - Penyatuan tombol aksi di `PrintActionBar` menjadi tombol cerdas "Cetak / Unduh PDF Resmi" dengan status loading dan notifikasi toast (Issue #070).
+    - Tombol tunggal aksi cetak di `PrintActionBar`: hanya menyisakan satu tombol jelas "Cetak Laporan" dengan alur otomatis PDF resmi dan eliminasi tombol browser ganda yang membingungkan (Issue #071).
 - **PENGUATAN KEAMANAN & OTORISASI RBAC 3-TIER (Selesai)**:
   - **Audit & Pengetatan RBAC**: Mengganti pemeriksaan permisif `if (!session)` dengan sistem otorisasi 3-Tier yang ketat: Jamaah (`null` / Guest umum), Bendahara (`BENDAHARA`), Administrator (`ADMIN` / Ketua DKM).
   - **Helper Terpusat (`lib/auth-guard.ts`)**: `isStaff(session)` untuk hak operasional (unggah, ekstraksi AI, verifikasi, edit donatur & kategori) dan `isAdmin(session)` untuk wewenang tertinggi (kelola pengguna & hapus laporan).

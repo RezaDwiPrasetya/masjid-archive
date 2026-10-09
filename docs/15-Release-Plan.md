@@ -77,10 +77,17 @@
 
 ## Version
 
-Current: `0.10.2` (Fase V10.2: Desain PDF Tahunan Profesional 2-Bagian & Penyatuan Tombol Cetak PDF — Issue #070)
+Current: `0.10.3` (Fase V10.3: Penyatuan Tombol Tunggal "Cetak Laporan" pada Pratinjau Cetak — Issue #071)
 Next: `1.0.0`
 
 ## Changelog
+
+### 0.10.3 (2026-10-09) — Fase V10.3: Penyatuan Tombol Tunggal "Cetak Laporan" (Issue #071)
+- **Penyederhanaan Menjadi 1 Tombol Tunggal (`components/print-action-bar.tsx`)**:
+  - Menghilangkan tombol sekunder "Cetak Browser" yang redundan.
+  - Menyediakan **satu-satunya tombol aksi**: **"Cetak Laporan"** (ikon dokumen/cetak) yang secara otomatis menyiapkan dan mengunduh berkas PDF resmi berkualitas tinggi bebas dari teks URL atau header peramban.
+  - Jika URL ekspor PDF tidak tersedia (fallback), tombol otomatis memanggil dialog cetak sistem tanpa membingungkan pengguna dengan dua pilihan terpisah.
+  - Pengalaman pengguna menjadi intuitif, konsisten, dan bebas dari kebingungan pilihan ganda untuk tujuan yang sama.
 
 ### 0.10.2 (2026-10-09) — Fase V10.2: Desain PDF Tahunan Profesional 2-Bagian & Penyatuan Tombol Cetak PDF (Issue #070)
 - **Redesain Tata Letak PDF Tahunan 2-Bagian yang Lega & Berwibawa (`lib/export-pdf.ts`)**:
