@@ -28,6 +28,68 @@ function truncateText(text: string, maxWidth: number, font: PDFFont, fontSize: n
   return truncated.trim() + "...";
 }
 
+function formatNumberId(num: number): string {
+  const isNegative = num < 0;
+  const absVal = Math.abs(num);
+  const formatted = new Intl.NumberFormat("id-ID", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(absVal);
+  return `${isNegative ? "- " : ""}${formatted}`;
+}
+
+function wrapText(text: string, maxWidth: number, font: PDFFont, fontSize: number): string[] {
+  if (!text || text.trim() === "") return ["-"];
+  const rawParagraphs = text.trim().split(/\r?\n/);
+  const allLines: string[] = [];
+
+  for (const paragraph of rawParagraphs) {
+    const words = paragraph.trim().split(/\s+/).filter(Boolean);
+    if (words.length === 0) continue;
+    let currentLine = "";
+
+    for (const word of words) {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      if (font.widthOfTextAtSize(testLine, fontSize) <= maxWidth) {
+        currentLine = testLine;
+      } else {
+        if (currentLine) {
+          allLines.push(currentLine);
+          if (font.widthOfTextAtSize(word, fontSize) > maxWidth) {
+            let part = "";
+            for (const ch of word) {
+              if (font.widthOfTextAtSize(part + ch, fontSize) <= maxWidth) {
+                part += ch;
+              } else {
+                if (part) allLines.push(part);
+                part = ch;
+              }
+            }
+            currentLine = part;
+          } else {
+            currentLine = word;
+          }
+        } else {
+          let part = "";
+          for (const ch of word) {
+            if (font.widthOfTextAtSize(part + ch, fontSize) <= maxWidth) {
+              part += ch;
+            } else {
+              if (part) allLines.push(part);
+              part = ch;
+            }
+          }
+          currentLine = part;
+        }
+      }
+    }
+    if (currentLine) {
+      allLines.push(currentLine);
+    }
+  }
+  return allLines.length > 0 ? allLines : ["-"];
+}
+
 /**
  * Generate native vector A4 PDF for Monthly Report
  */
@@ -823,6 +885,472 @@ export async function generateWeeklyReportPdf(data: WeeklyReportExportData): Pro
   return await doc.save();
 }
 
+export interface LedgerTransactionItem {
+  id?: string;
+  transactionDate?: Date | string | null;
+  reportDate?: Date | string | null;
+  description?: string | null;
+  donorNameCanonical?: string | null;
+  donorNameRaw?: string | null;
+  type: string;
+  amount: number;
+}
+
+export interface DrawLedgerTableOptions {
+  doc: PDFDocument;
+  startPage: PDFPage;
+  startY: number;
+  transactions: LedgerTransactionItem[];
+  initialBalance: number;
+  initialBalanceLabel?: string;
+  totalIncome: number;
+  totalExpense: number;
+  finalBalance: number;
+  year?: number;
+  isAppendix?: boolean;
+  totalLabel?: string;
+  fonts: {
+    fontRegular: PDFFont;
+    fontBold: PDFFont;
+    fontItalic: PDFFont;
+  };
+  dimensions: {
+    pageWidth: number;
+    pageHeight: number;
+    marginX: number;
+    contentWidth: number;
+  };
+}
+
+/**
+ * Helper bersama untuk menggambar tabel buku besar transaksi kas berstandar A4 resmi.
+ * Mendukung paginasi dinamis multi-halaman, word-wrap tanpa pemotongan "...",
+ * perulangan header tabel di setiap lembar baru, dan baris TOTAL tunggal di akhir tabel.
+ */
+export function drawLedgerTable(options: DrawLedgerTableOptions): { lastPage: PDFPage; lastY: number } {
+  const {
+    doc,
+    startPage,
+    startY,
+    transactions,
+    initialBalance,
+    initialBalanceLabel,
+    totalIncome,
+    totalExpense,
+    finalBalance,
+    year,
+    isAppendix = false,
+    totalLabel,
+    fonts: { fontRegular, fontBold, fontItalic },
+    dimensions: { pageWidth, pageHeight, marginX, contentWidth },
+  } = options;
+
+  // Colors
+  const cBlack = rgb(0.1, 0.1, 0.1);
+  const cMuted = rgb(0.4, 0.4, 0.4);
+  const cBorderSoft = rgb(0.761, 0.788, 0.733); // #c2c9bb
+  const cGreen = rgb(0.02, 0.45, 0.32);
+  const cRed = rgb(0.75, 0.1, 0.2);
+  const cPrimary = rgb(0.082, 0.259, 0.071); // #154212
+
+  // Kolom proporsional (total width = 523.28 pt)
+  // No(22) + Tanggal(54) + Uraian(144) + Sumber(95) + Pemasukan(68) + Pengeluaran(70) + Saldo(70.28) = 523.28
+  const cols = [
+    { key: "no", title: "No", w: 22, align: "center" as const },
+    { key: "date", title: "Tanggal", w: 54, align: "center" as const },
+    { key: "desc", title: "Uraian / Keterangan", w: 144, align: "left" as const },
+    { key: "donor", title: "Sumber / Donatur", w: 95, align: "left" as const },
+    { key: "in", title: "Pemasukan", subTitle: "(Rp)", w: 68, align: "right" as const },
+    { key: "out", title: "Pengeluaran", subTitle: "(Rp)", w: 70, align: "right" as const },
+    { key: "bal", title: "Saldo Kas", subTitle: "(Rp)", w: 70.28, align: "right" as const },
+  ];
+
+  const colOffsets = [
+    marginX,                                             // Col 0: No (x = 36, w = 22)
+    marginX + 22,                                        // Col 1: Tanggal (x = 58, w = 54)
+    marginX + 22 + 54,                                   // Col 2: Uraian (x = 112, w = 144)
+    marginX + 22 + 54 + 144,                             // Col 3: Sumber (x = 256, w = 95)
+    marginX + 22 + 54 + 144 + 95,                       // Col 4: Pemasukan (x = 351, w = 68)
+    marginX + 22 + 54 + 144 + 95 + 68,                  // Col 5: Pengeluaran (x = 419, w = 70)
+    marginX + 22 + 54 + 144 + 95 + 68 + 70,             // Col 6: Saldo (x = 489, w = 70.28)
+  ];
+
+  const drawTableHeader = (p: PDFPage, currentY: number): number => {
+    const headerHeight = 24;
+    p.drawRectangle({
+      x: marginX,
+      y: currentY - headerHeight,
+      width: contentWidth,
+      height: headerHeight,
+      color: rgb(0.88, 0.92, 0.88),
+      borderColor: cBorderSoft,
+      borderWidth: 0.6,
+    });
+
+    cols.forEach((col, idx) => {
+      const cx = colOffsets[idx];
+      if ("subTitle" in col && col.subTitle) {
+        // Dua baris untuk kolom nominal: Judul di baris 1, (Rp) di baris 2
+        const tWidth = fontBold.widthOfTextAtSize(col.title, 8.5);
+        const subWidth = fontBold.widthOfTextAtSize(col.subTitle, 7.5);
+
+        p.drawText(col.title, {
+          x: cx + col.w - tWidth - 5,
+          y: currentY - 10.5,
+          size: 8.5,
+          font: fontBold,
+          color: cPrimary,
+        });
+
+        p.drawText(col.subTitle, {
+          x: cx + col.w - subWidth - 5,
+          y: currentY - 19.5,
+          size: 7.5,
+          font: fontBold,
+          color: cMuted,
+        });
+      } else {
+        // Satu baris untuk kolom teks/no
+        let txPos = cx + 5;
+        if (col.align === "center") {
+          txPos = cx + (col.w - fontBold.widthOfTextAtSize(col.title, 9)) / 2;
+        } else if (col.align === "right") {
+          txPos = cx + col.w - fontBold.widthOfTextAtSize(col.title, 9) - 5;
+        }
+        p.drawText(col.title, {
+          x: txPos,
+          y: currentY - 15.5,
+          size: 9,
+          font: fontBold,
+          color: cPrimary,
+        });
+      }
+    });
+
+    p.drawLine({
+      start: { x: marginX, y: currentY - headerHeight },
+      end: { x: pageWidth - marginX, y: currentY - headerHeight },
+      thickness: 0.8,
+      color: cBorderSoft,
+    });
+
+    return currentY - headerHeight;
+  };
+
+  const drawPageHeaderAndTableHeader = (p: PDFPage, isContinuation: boolean): number => {
+    let curY = pageHeight - 36;
+    if (isAppendix) {
+      p.drawText(`LAMPIRAN: RINCIAN MUTASI TRANSAKSI KAS TAHUN ${year || ""}${isContinuation ? " (Lanjutan)" : ""}`, {
+        x: marginX,
+        y: curY,
+        size: 9.5,
+        font: fontBold,
+        color: cPrimary,
+      });
+      curY -= 12;
+
+      p.drawText(`Dewan Kemakmuran Masjid (DKM) Al-Luqman — Buku Kas Terverifikasi (${transactions.length} Mutasi Transaksi)`, {
+        x: marginX,
+        y: curY,
+        size: 7.5,
+        font: fontRegular,
+        color: cMuted,
+      });
+      curY -= 8;
+
+      p.drawLine({
+        start: { x: marginX, y: curY },
+        end: { x: pageWidth - marginX, y: curY },
+        thickness: 0.8,
+        color: cBorderSoft,
+      });
+      curY -= 14;
+    }
+
+    return drawTableHeader(p, curY);
+  };
+
+  let page = startPage;
+  let y = isAppendix ? drawPageHeaderAndTableHeader(page, false) : drawTableHeader(page, startY);
+
+  let runningBalance = initialBalance;
+
+  // Render Baris Saldo Awal
+  const balAwalRowHeight = 20;
+  page.drawRectangle({
+    x: marginX,
+    y: y - balAwalRowHeight,
+    width: contentWidth,
+    height: balAwalRowHeight,
+    color: rgb(0.96, 0.975, 0.96),
+  });
+
+  const balAwalBaseline = y - 13.5;
+  const dashW = fontRegular.widthOfTextAtSize("-", 8.5);
+
+  // No & Tanggal: "-"
+  page.drawText("-", { x: colOffsets[0] + (22 - dashW) / 2, y: balAwalBaseline, size: 8.5, font: fontRegular, color: cMuted });
+  page.drawText("-", { x: colOffsets[1] + (54 - dashW) / 2, y: balAwalBaseline, size: 8.5, font: fontRegular, color: cMuted });
+
+  // Uraian Saldo Awal
+  const initLabel = initialBalanceLabel || `Saldo Awal per 1 Januari ${year || ""}`.trim();
+  page.drawText(initLabel, {
+    x: colOffsets[2] + 5,
+    y: balAwalBaseline,
+    size: 8.5,
+    font: fontItalic,
+    color: cBlack,
+  });
+
+  // Sumber: "-"
+  page.drawText("-", { x: colOffsets[3] + 5, y: balAwalBaseline, size: 8.5, font: fontRegular, color: cMuted });
+
+  // Pemasukan & Pengeluaran: "-"
+  page.drawText("-", { x: colOffsets[4] + 68 - 5 - dashW, y: balAwalBaseline, size: 8.5, font: fontRegular, color: cMuted });
+  page.drawText("-", { x: colOffsets[5] + 70 - 5 - dashW, y: balAwalBaseline, size: 8.5, font: fontRegular, color: cMuted });
+
+  // Saldo Kas Awal (formatNumberId, tanpa "Rp")
+  const initBalStr = formatNumberId(runningBalance);
+  const initBalW = fontBold.widthOfTextAtSize(initBalStr, 8.5);
+  page.drawText(initBalStr, {
+    x: pageWidth - marginX - 5 - initBalW,
+    y: balAwalBaseline,
+    size: 8.5,
+    font: fontBold,
+    color: cBlack,
+  });
+
+  page.drawLine({
+    start: { x: marginX, y: y - balAwalRowHeight },
+    end: { x: pageWidth - marginX, y: y - balAwalRowHeight },
+    thickness: 0.5,
+    color: cBorderSoft,
+  });
+  y -= balAwalRowHeight;
+
+  // Render Transaksi Kas
+  if (transactions.length === 0) {
+    const emptyRowH = 22;
+    page.drawText(`Tidak ada mutasi transaksi kas terverifikasi pada periode ini.`, {
+      x: marginX + 12,
+      y: y - 14.5,
+      size: 8.5,
+      font: fontItalic,
+      color: cMuted,
+    });
+    page.drawLine({
+      start: { x: marginX, y: y - emptyRowH },
+      end: { x: pageWidth - marginX, y: y - emptyRowH },
+      thickness: 0.5,
+      color: cBorderSoft,
+    });
+    y -= emptyRowH;
+  } else {
+    for (let i = 0; i < transactions.length; i++) {
+      const tx = transactions[i];
+      const isIncome = tx.type === "pemasukan";
+      if (isIncome) {
+        runningBalance += tx.amount;
+      } else {
+        runningBalance -= tx.amount;
+      }
+
+      const txDateStr = tx.transactionDate
+        ? new Date(tx.transactionDate).toLocaleDateString("id-ID", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          })
+        : tx.reportDate
+        ? new Date(tx.reportDate).toLocaleDateString("id-ID", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          })
+        : "-";
+
+      // Word wrap Uraian (usable width: 144 - 10 = 134 pt)
+      const descLines = wrapText(tx.description || "-", 134, fontRegular, 8.5);
+
+      // Word wrap Sumber / Donatur (usable width: 95 - 10 = 85 pt)
+      const donorText =
+        tx.donorNameCanonical ||
+        tx.donorNameRaw ||
+        (isIncome ? "Hamba Allah / Kotak Amal" : "-");
+      const donorLines = wrapText(donorText, 85, fontRegular, 8.5);
+
+      const maxLines = Math.max(1, descLines.length, donorLines.length);
+      const txRowHeight = 20 + (maxLines - 1) * 11;
+
+      // Paginasi: jika sisa halaman tidak cukup untuk seluruh baris ini, buat halaman baru
+      // bottomReserve = 50 pt untuk footer garis dan nomor halaman
+      if (y - txRowHeight < 50) {
+        page = doc.addPage([pageWidth, pageHeight]);
+        y = drawPageHeaderAndTableHeader(page, true);
+      }
+
+      // Zebra striping
+      const rowBg = i % 2 === 0 ? rgb(1, 1, 1) : rgb(0.97, 0.985, 0.97);
+      page.drawRectangle({
+        x: marginX,
+        y: y - txRowHeight,
+        width: contentWidth,
+        height: txRowHeight,
+        color: rowBg,
+      });
+
+      const firstLineBaseline = y - 13.5;
+
+      // No
+      const noStr = String(i + 1);
+      page.drawText(noStr, {
+        x: colOffsets[0] + (22 - fontRegular.widthOfTextAtSize(noStr, 8.5)) / 2,
+        y: firstLineBaseline,
+        size: 8.5,
+        font: fontRegular,
+        color: cBlack,
+      });
+
+      // Tanggal
+      page.drawText(txDateStr, {
+        x: colOffsets[1] + (54 - fontRegular.widthOfTextAtSize(txDateStr, 8.5)) / 2,
+        y: firstLineBaseline,
+        size: 8.5,
+        font: fontRegular,
+        color: cMuted,
+      });
+
+      // Uraian (multi-line)
+      descLines.forEach((line, lIdx) => {
+        page.drawText(line, {
+          x: colOffsets[2] + 5,
+          y: firstLineBaseline - lIdx * 11,
+          size: 8.5,
+          font: fontRegular,
+          color: cBlack,
+        });
+      });
+
+      // Sumber / Donatur (multi-line)
+      donorLines.forEach((line, lIdx) => {
+        page.drawText(line, {
+          x: colOffsets[3] + 5,
+          y: firstLineBaseline - lIdx * 11,
+          size: 8.5,
+          font: fontRegular,
+          color: cMuted,
+        });
+      });
+
+      // Pemasukan (formatNumberId, tanpa "Rp")
+      const incStr = isIncome ? formatNumberId(tx.amount) : "-";
+      const incFont = isIncome ? fontBold : fontRegular;
+      const incW = incFont.widthOfTextAtSize(incStr, 8.5);
+      page.drawText(incStr, {
+        x: colOffsets[4] + 68 - 5 - incW,
+        y: firstLineBaseline,
+        size: 8.5,
+        font: incFont,
+        color: isIncome ? cGreen : cMuted,
+      });
+
+      // Pengeluaran (formatNumberId, tanpa "Rp")
+      const expStr = !isIncome ? formatNumberId(tx.amount) : "-";
+      const expFont = !isIncome ? fontBold : fontRegular;
+      const expW = expFont.widthOfTextAtSize(expStr, 8.5);
+      page.drawText(expStr, {
+        x: colOffsets[5] + 70 - 5 - expW,
+        y: firstLineBaseline,
+        size: 8.5,
+        font: expFont,
+        color: !isIncome ? cRed : cMuted,
+      });
+
+      // Saldo Kas (formatNumberId, tanpa "Rp")
+      const balStr = formatNumberId(runningBalance);
+      const balW = fontBold.widthOfTextAtSize(balStr, 8.5);
+      page.drawText(balStr, {
+        x: pageWidth - marginX - 5 - balW,
+        y: firstLineBaseline,
+        size: 8.5,
+        font: fontBold,
+        color: cBlack,
+      });
+
+      // Garis pemisah tipis (#c2c9bb)
+      page.drawLine({
+        start: { x: marginX, y: y - txRowHeight },
+        end: { x: pageWidth - marginX, y: y - txRowHeight },
+        thickness: 0.5,
+        color: cBorderSoft,
+      });
+
+      y -= txRowHeight;
+    }
+  }
+
+  // Render Baris TOTAL (Hanya SEKALI di akhir tabel)
+  const totalRowHeight = 22;
+  if (y - totalRowHeight < 50) {
+    page = doc.addPage([pageWidth, pageHeight]);
+    y = drawPageHeaderAndTableHeader(page, true);
+  }
+
+  page.drawRectangle({
+    x: marginX,
+    y: y - totalRowHeight,
+    width: contentWidth,
+    height: totalRowHeight,
+    color: rgb(0.90, 0.94, 0.90),
+    borderColor: cPrimary,
+    borderWidth: 0.8,
+  });
+
+  const totalBaseline = y - 14.5;
+  const finalTotalLabel = totalLabel || `TOTAL MUTASI SELURUH TAHUN ${year || ""}`.trim();
+  page.drawText(finalTotalLabel, {
+    x: marginX + 10,
+    y: totalBaseline,
+    size: 8.5,
+    font: fontBold,
+    color: cPrimary,
+  });
+
+  // TOTAL Pemasukan (WITH "Rp")
+  const totIncStr = formatRupiah(totalIncome);
+  page.drawText(totIncStr, {
+    x: colOffsets[4] + 68 - 5 - fontBold.widthOfTextAtSize(totIncStr, 8.5),
+    y: totalBaseline,
+    size: 8.5,
+    font: fontBold,
+    color: cGreen,
+  });
+
+  // TOTAL Pengeluaran (WITH "Rp")
+  const totExpStr = formatRupiah(totalExpense);
+  page.drawText(totExpStr, {
+    x: colOffsets[5] + 70 - 5 - fontBold.widthOfTextAtSize(totExpStr, 8.5),
+    y: totalBaseline,
+    size: 8.5,
+    font: fontBold,
+    color: cRed,
+  });
+
+  // Saldo Kas Akhir (WITH "Rp")
+  const totFinStr = formatRupiah(finalBalance);
+  page.drawText(totFinStr, {
+    x: pageWidth - marginX - 5 - fontBold.widthOfTextAtSize(totFinStr, 8.5),
+    y: totalBaseline,
+    size: 8.5,
+    font: fontBold,
+    color: cBlack,
+  });
+
+  y -= totalRowHeight;
+
+  return { lastPage: page, lastY: y };
+}
+
 /**
  * Generate native vector A4 PDF for Yearly Report
  */
@@ -845,7 +1373,7 @@ export async function generateYearlyReportPdf(data: YearlyReportExportData): Pro
   const marginX = 36;
   const contentWidth = pageWidth - marginX * 2; // 523.28
 
-  let page = doc.addPage([pageWidth, pageHeight]);
+  const page = doc.addPage([pageWidth, pageHeight]);
   let y = pageHeight - 36;
 
   // 1. KOP SURAT
@@ -1159,309 +1687,87 @@ export async function generateYearlyReportPdf(data: YearlyReportExportData): Pro
   // HALAMAN 2 DST: LAMPIRAN BUKU BESAR MUTASI TRANSAKSI KAS TAHUNAN
   // Dimulai di halaman baru agar bernapas lega dan tidak berdesakan dengan Halaman 1!
   // =========================================================================
-  page = doc.addPage([pageWidth, pageHeight]);
-  y = pageHeight - 36;
+  const appendixPage = doc.addPage([pageWidth, pageHeight]);
 
-  // Header Lampiran
-  page.drawText(`LAMPIRAN: RINCIAN MUTASI TRANSAKSI KAS TAHUN ${data.year}`, {
-    x: marginX,
-    y,
-    size: 9.5,
-    font: fontBold,
-    color: rgb(0.04, 0.38, 0.25),
-  });
-  y -= 12;
-
-  page.drawText(`Dewan Kemakmuran Masjid (DKM) Al-Luqman — Buku Kas Terverifikasi (${data.transactions.length} Mutasi Transaksi)`, {
-    x: marginX,
-    y,
-    size: 7.5,
-    font: fontRegular,
-    color: cMuted,
-  });
-  y -= 8;
-
-  page.drawLine({
-    start: { x: marginX, y },
-    end: { x: pageWidth - marginX, y },
-    thickness: 0.8,
-    color: cBorder,
-  });
-  y -= 14;
-
-  const txCols = [
-    { key: "no", title: "No", w: 24, align: "center" },
-    { key: "date", title: "Tanggal", w: 56, align: "left" },
-    { key: "desc", title: "Uraian / Keterangan", w: 160, align: "left" },
-    { key: "donor", title: "Sumber / Donatur", w: 95, align: "left" },
-    { key: "in", title: "Pemasukan (Rp)", w: 62, align: "right" },
-    { key: "out", title: "Pengeluaran (Rp)", w: 62, align: "right" },
-    { key: "bal", title: "Saldo Kas (Rp)", w: 64.28, align: "right" },
-  ];
-
-  const drawTxTableHeader = (p: PDFPage, currentY: number) => {
-    p.drawRectangle({
-      x: marginX,
-      y: currentY - 15,
-      width: contentWidth,
-      height: 15,
-      color: rgb(0.88, 0.92, 0.88),
-      borderColor: cBorder,
-      borderWidth: 0.5,
-    });
-    let cxPos = marginX;
-    txCols.forEach((col) => {
-      let txPos = cxPos + 3;
-      if (col.align === "center") {
-        txPos = cxPos + (col.w - fontBold.widthOfTextAtSize(col.title, 7)) / 2;
-      } else if (col.align === "right") {
-        txPos = cxPos + col.w - fontBold.widthOfTextAtSize(col.title, 7) - 3;
-      }
-      p.drawText(col.title, {
-        x: txPos,
-        y: currentY - 10.5,
-        size: 7,
-        font: fontBold,
-        color: cBlack,
-      });
-      cxPos += col.w;
-    });
-    return currentY - 15;
-  };
-
-  y = drawTxTableHeader(page, y);
-
-  let runningBalance = data.initialBalance;
-  const txRowHeight = 15; // Lapang dan proporsional
-
-  const drawTxRowBorder = (p: PDFPage, ry: number) => {
-    p.drawLine({
-      start: { x: marginX, y: ry },
-      end: { x: pageWidth - marginX, y: ry },
-      thickness: 0.4,
-      color: cBorder,
-    });
-  };
-
-  // Baris Saldo Awal per 1 Januari
-  page.drawText("-", { x: marginX + 10, y: y - 10.5, size: 7, font: fontRegular, color: cMuted });
-  page.drawText("-", { x: marginX + 24 + 3, y: y - 10.5, size: 7, font: fontRegular, color: cMuted });
-  page.drawText(`Saldo Awal per 1 Januari ${data.year}`, {
-    x: marginX + 24 + 56 + 3,
-    y: y - 10.5,
-    size: 7,
-    font: fontItalic,
-    color: cBlack,
-  });
-  const balAwalStr = formatRupiah(runningBalance);
-  page.drawText(balAwalStr, {
-    x: pageWidth - marginX - fontBold.widthOfTextAtSize(balAwalStr, 7) - 3,
-    y: y - 10.5,
-    size: 7,
-    font: fontBold,
-    color: cBlack,
-  });
-  drawTxRowBorder(page, y - txRowHeight);
-  y -= txRowHeight;
-
-  // Render Seluruh Transaksi Tahunan
-  if (data.transactions.length === 0) {
-    page.drawText(`Tidak ada mutasi transaksi kas terverifikasi pada tahun ${data.year}.`, {
-      x: marginX + 12,
-      y: y - 10.5,
-      size: 7,
-      font: fontItalic,
-      color: cMuted,
-    });
-    drawTxRowBorder(page, y - txRowHeight);
-    y -= txRowHeight;
-  } else {
-    for (let i = 0; i < data.transactions.length; i++) {
-      const tx = data.transactions[i];
-      const isIncome = tx.type === "pemasukan";
-      if (isIncome) {
-        runningBalance += tx.amount;
-      } else {
-        runningBalance -= tx.amount;
-      }
-
-      // Cek apakah halaman masih muat (sisakan 65pt untuk footer)
-      if (y - txRowHeight < 65) {
-        // Catatan nomor halaman bawah
-        page.drawText(`Dokumen Lampiran Kas DKM Al-Luqman — Tahun ${data.year}`, {
-          x: marginX,
-          y: 20,
-          size: 6.5,
-          font: fontRegular,
-          color: cMuted,
-        });
-
-        page = doc.addPage([pageWidth, pageHeight]);
-        y = pageHeight - 36;
-        y = drawTxTableHeader(page, y);
-      }
-
-      const txDateStr = tx.transactionDate
-        ? new Date(tx.transactionDate).toLocaleDateString("id-ID", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          })
-        : new Date(tx.reportDate).toLocaleDateString("id-ID", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          });
-
-      const descTrunc = truncateText(tx.description || "-", 154, fontRegular, 6.8);
-      const donorTrunc = truncateText(
-        tx.donorNameCanonical || tx.donorNameRaw || (isIncome ? "Hamba Allah / Kotak Amal" : "-"),
-        90,
-        fontRegular,
-        6.8
-      );
-
-      const rowBg = i % 2 === 0 ? rgb(1, 1, 1) : rgb(0.98, 0.99, 0.98);
-      page.drawRectangle({
-        x: marginX,
-        y: y - txRowHeight,
-        width: contentWidth,
-        height: txRowHeight,
-        color: rowBg,
-      });
-
-      // No
-      page.drawText(String(i + 1), {
-        x: marginX + (24 - fontRegular.widthOfTextAtSize(String(i + 1), 6.8)) / 2,
-        y: y - 10.5,
-        size: 6.8,
-        font: fontRegular,
-        color: cBlack,
-      });
-
-      // Tanggal
-      page.drawText(txDateStr, {
-        x: marginX + 24 + 3,
-        y: y - 10.5,
-        size: 6.8,
-        font: fontRegular,
-        color: cMuted,
-      });
-
-      // Uraian
-      page.drawText(descTrunc, {
-        x: marginX + 24 + 56 + 3,
-        y: y - 10.5,
-        size: 6.8,
-        font: fontRegular,
-        color: cBlack,
-      });
-
-      // Sumber
-      page.drawText(donorTrunc, {
-        x: marginX + 24 + 56 + 160 + 3,
-        y: y - 10.5,
-        size: 6.8,
-        font: fontRegular,
-        color: cMuted,
-      });
-
-      // Pemasukan (Green)
-      const incStr = isIncome ? formatRupiah(tx.amount) : "-";
-      page.drawText(incStr, {
-        x: marginX + 24 + 56 + 160 + 95 + 62 - fontBold.widthOfTextAtSize(incStr, 6.8) - 3,
-        y: y - 10.5,
-        size: 6.8,
-        font: fontBold,
-        color: isIncome ? cGreen : cMuted,
-      });
-
-      // Pengeluaran (Red)
-      const expStr = !isIncome ? formatRupiah(tx.amount) : "-";
-      page.drawText(expStr, {
-        x: marginX + 24 + 56 + 160 + 95 + 62 + 62 - fontBold.widthOfTextAtSize(expStr, 6.8) - 3,
-        y: y - 10.5,
-        size: 6.8,
-        font: fontBold,
-        color: !isIncome ? cRed : cMuted,
-      });
-
-      // Saldo Kas
-      const balStr = formatRupiah(runningBalance);
-      page.drawText(balStr, {
-        x: pageWidth - marginX - fontBold.widthOfTextAtSize(balStr, 6.8) - 3,
-        y: y - 10.5,
-        size: 6.8,
-        font: fontBold,
-        color: cBlack,
-      });
-
-      drawTxRowBorder(page, y - txRowHeight);
-      y -= txRowHeight;
-    }
-  }
-
-  // Footer Total Mutasi Seluruh Tahun
-  if (y - 18 < 65) {
-    page = doc.addPage([pageWidth, pageHeight]);
-    y = pageHeight - 36;
-  }
-
-  page.drawRectangle({
-    x: marginX,
-    y: y - 16,
-    width: contentWidth,
-    height: 16,
-    color: rgb(0.90, 0.94, 0.90),
-    borderColor: cBlack,
-    borderWidth: 0.5,
+  const { lastPage, lastY } = drawLedgerTable({
+    doc,
+    startPage: appendixPage,
+    startY: pageHeight - 36,
+    transactions: data.transactions,
+    initialBalance: data.initialBalance,
+    initialBalanceLabel: `Saldo Awal per 1 Januari ${data.year}`,
+    totalIncome: data.totalIncome,
+    totalExpense: data.totalExpense,
+    finalBalance: data.finalBalance,
+    year: data.year,
+    isAppendix: true,
+    totalLabel: `TOTAL MUTASI SELURUH TAHUN ${data.year}`,
+    fonts: { fontRegular, fontBold, fontItalic },
+    dimensions: { pageWidth, pageHeight, marginX, contentWidth },
   });
 
-  const footerLabel = `TOTAL MUTASI SELURUH TAHUN ${data.year}`;
-  page.drawText(footerLabel, {
-    x: marginX + (24 + 56 + 160 + 95 - fontBold.widthOfTextAtSize(footerLabel, 7.5)) / 2,
-    y: y - 11.5,
-    size: 7.5,
-    font: fontBold,
-    color: cBlack,
-  });
-
-  const totIncStr = formatRupiah(data.totalIncome);
-  page.drawText(totIncStr, {
-    x: marginX + 24 + 56 + 160 + 95 + 62 - fontBold.widthOfTextAtSize(totIncStr, 7.5) - 3,
-    y: y - 11.5,
-    size: 7.5,
-    font: fontBold,
-    color: cGreen,
-  });
-
-  const totExpStr = formatRupiah(data.totalExpense);
-  page.drawText(totExpStr, {
-    x: marginX + 24 + 56 + 160 + 95 + 62 + 62 - fontBold.widthOfTextAtSize(totExpStr, 7.5) - 3,
-    y: y - 11.5,
-    size: 7.5,
-    font: fontBold,
-    color: cRed,
-  });
-
-  const totFinStr = formatRupiah(data.finalBalance);
-  page.drawText(totFinStr, {
-    x: pageWidth - marginX - fontBold.widthOfTextAtSize(totFinStr, 7.5) - 3,
-    y: y - 11.5,
-    size: 7.5,
-    font: fontBold,
-    color: cBlack,
-  });
-  y -= 25;
+  let activePage = lastPage;
+  let activeY = lastY;
 
   // Catatan penutup lampiran di bawah tabel
-  page.drawText(`Subang, 31 Desember ${data.year} — Lembar Buku Besar Mutasi Kas Terverifikasi DKM Al-Luqman Subang.`, {
+  if (activeY - 20 < 35) {
+    activePage = doc.addPage([pageWidth, pageHeight]);
+    activeY = pageHeight - 36;
+  }
+  activePage.drawText(`Subang, 31 Desember ${data.year} — Lembar Buku Besar Mutasi Kas Terverifikasi DKM Al-Luqman Subang.`, {
     x: marginX,
-    y: 20,
-    size: 6.8,
+    y: Math.max(activeY - 16, 34),
+    size: 7,
     font: fontItalic,
     color: cMuted,
   });
+
+  // Footer tiap halaman: "Halaman X dari Y" & nama DKM kecil di bawah (Two-pass)
+  const totalPages = doc.getPageCount();
+  const pages = doc.getPages();
+
+  for (let idx = 0; idx < totalPages; idx++) {
+    const p = pages[idx];
+    const pageNum = idx + 1;
+    const pageNumStr = `Halaman ${pageNum} dari ${totalPages}`;
+    const pageNumW = fontRegular.widthOfTextAtSize(pageNumStr, 7.5);
+
+    if (idx === 0) {
+      // Halaman 1 (Resume Eksekutif): Jangan ubah isi Halaman 1.
+      // Tambahkan nomor halaman di sudut kanan bawah y=24 seimbang dengan catatan mading di kiri:
+      p.drawText(pageNumStr, {
+        x: pageWidth - marginX - pageNumW,
+        y: 24,
+        size: 7.5,
+        font: fontRegular,
+        color: cMuted,
+      });
+    } else {
+      // Halaman Lampiran (Halaman 2 dst)
+      p.drawLine({
+        start: { x: marginX, y: 26 },
+        end: { x: pageWidth - marginX, y: 26 },
+        thickness: 0.5,
+        color: rgb(0.761, 0.788, 0.733),
+      });
+
+      p.drawText(`DKM Masjid Al-Luqman — Dokumen Lampiran Kas Tahun ${data.year}`, {
+        x: marginX,
+        y: 16,
+        size: 7,
+        font: fontRegular,
+        color: cMuted,
+      });
+
+      p.drawText(pageNumStr, {
+        x: pageWidth - marginX - pageNumW,
+        y: 16,
+        size: 7.5,
+        font: fontRegular,
+        color: cMuted,
+      });
+    }
+  }
 
   return await doc.save();
 }
