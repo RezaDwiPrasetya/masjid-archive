@@ -1,9 +1,9 @@
 # Panduan Pengguna — Masjid Archive
 ### Sistem Arsip & Manajemen Keuangan DKM Masjid Al-Luqman
 
-> **Versi Sistem**: V10.1 (0.10.1 — Feature-Complete)  
-> **Terakhir diperbarui**: 9 Oktober 2026  
-> **Disusun oleh**: Reza Dwi Prasetya — PKL PT Gothru Media Indonesia
+> **Versi Sistem**: V10.1 (Feature-Complete & Production-Grade)  
+> **Terakhir diperbarui**: 12 Oktober 2026  
+> **Penyusun**: Pengurus DKM Masjid Al-Luqman & Tim Pengembang Masjid Archive
 
 ---
 

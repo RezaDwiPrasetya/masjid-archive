@@ -37,18 +37,16 @@ Ini adalah salinan lokal dari [GitHub Wiki](https://github.com/RezaDwiPrasetya/m
 17. [Diagram UML Sistem](./diagrams/README.md)
 
 
-### Team
+### Tim & Pengelola
 
-| Role          | Name                      |
+| Peran | Pihak Terkait |
 | ------------- | ------------------------- |
-| Product Owner | Reza                      |
-| Product/UX    | Reza                      |
-| Engineer      | Reza                      |
-| Mentor PKL    | PT Gothru Media Indonesia |
+| Pengelola & Administrator | DKM Masjid Al-Luqman |
+| Pengembang Sistem | Tim Pengembang Masjid Archive |
 
-### Document Priority (jika ada konflik)
+### Prioritas Dokumen (Jika Terjadi Konflik Ketentuan)
 
-Sesuai instruksi mentor untuk AI coding agent, urutan prioritas dokumen jika terjadi konflik:
+Urutan prioritas dokumen spesifikasi sistem jika terjadi perbedaan penafsiran:
 
 1. MVP Scope
 2. Product Requirements Document

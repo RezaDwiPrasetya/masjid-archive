@@ -5,7 +5,7 @@
 ---
 
 ## 1. TUJUAN UTAMA PROJECT
-Aplikasi web arsip & manajemen keuangan untuk **DKM Masjid Al-Luqman** (Kel. Soklat, Kec. Subang). Proyek PKL & Tugas Akhir Reza (D IV TRPL) di PT Gothru Media Indonesia.  
+Aplikasi web arsip & manajemen keuangan digital untuk **DKM Masjid Al-Luqman** (Kel. Soklat, Kec. Subang).  
 **Tujuan**: Mengubah pencatatan buku kas fisik mingguan (difoto, dipajang di mading) menjadi platform digital yang mengarsipkan, mengekstrak data via vision-LLM, memverifikasi manual, dan menyajikan transparansi keuangan (tren, donatur, infaq anonim, pengeluaran kas per kategori, ekspor cetak & Excel) ke publik/jemaah tanpa login.
 
 ---
@@ -69,7 +69,7 @@ Aplikasi web arsip & manajemen keuangan untuk **DKM Masjid Al-Luqman** (Kel. Sok
   - **Pembersihan Total Legacy Auth**: Menghapus dependensi `iron-session`, berkas `lib/session.ts`, dan endpoint usang `app/api/auth/login` serta `app/api/auth/logout`.
 - Seluruh commit sudah digabungkan ke `main` dan sinkron dengan remote GitHub `origin/main`.
 - Status kode: `tsc --noEmit` lolos 0 error, `npm run lint` lolos 0 error, production build lolos 100%, 80 suite test (otorisasi + QA hardening + file validation) lolos 100%.
-- **Fokus Saat Ini**: Pemeliharaan stabil, operasional riil DKM Al-Luqman, dan dokumentasi laporan Tugas Akhir.
+- **Fokus Saat Ini**: Pemeliharaan stabil, operasional riil DKM Al-Luqman, dan keandalan sistem produksi.
 
 ---
 
@@ -239,7 +239,7 @@ Tidak ada bug fungsional aktif di codebase. Seluruh fase V1 s/d V7 telah tuntas 
 - Palet warna: primary `#154212` (hijau tua), surface `#fafaf4`, surface-container `#ffffff`, outline-variant `#c2c9bb`.
 - Font: Outfit. Ikon: Lucide.
 - Layout: Full-width proporsional (`w-full px-6 md:px-8 lg:px-10`).
-- Enum kategori pengeluaran disimpan sebagai hardcoded shared config di `lib/expense-categories.ts`, bukan tabel database relasional terpisah, guna menjaga kesederhanaan skema dan kemudahan deployment tugas akhir.
+- Enum kategori pengeluaran disimpan sebagai hardcoded shared config di `lib/expense-categories.ts`, bukan tabel database relasional terpisah, guna menjaga kesederhanaan skema dan kemudahan deployment sistem kas.
 - Transaksi tanpa kategori disimpan sebagai `null` di database dan disajikan ramah pengguna sebagai "Tidak Dikategorikan".
 - Rincian Infaq Anonim menggunakan dialog/modal responsif dengan format tabel/list ledger rapi, tanpa membuat entity `Donor` palsu di database.
 - Proteksi Ekstrak Ulang: Jika berkas sudah memiliki transaksi terverifikasi (`verifiedCount > 0`), tombol "Ekstrak Ulang" wajib memicu dialog konfirmasi (`AlertDialog`). Opsi eksplisit yang disediakan adalah:
@@ -312,7 +312,7 @@ Shared logic di `lib/donor-matching.ts`, `lib/donor-service.ts`, dan `lib/expens
 ---
 
 ## 15. KONTEKS LAIN YANG PENTING
-- Reza adalah mahasiswa akhir Software Engineering (D IV TRPL), selalu sertakan penjelasan singkat fungsi perintah terminal/git.
+- Selalu sertakan penjelasan singkat yang jelas mengenai fungsi perintah terminal/git.
 - Reza selalu melakukan review manual sebelum commit/push.
 - Scope tetap fokus pada Masjid Al-Luqman (bukan aplikasi umum/multi-tenant).
 - Pola kerja bertahap: 1 issue dalam satu waktu, laporkan dengan bukti konkret.
