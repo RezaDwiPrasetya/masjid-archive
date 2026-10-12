@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { supabase } from "@/lib/supabase";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { isStaff } from "@/lib/auth-guard";
+import { validateUploadFiles, buildSafeStoragePath } from "@/lib/file-validation";
 
 export async function POST(
   request: NextRequest,
@@ -35,44 +35,9 @@ export async function POST(
   const formData = await request.formData();
   const rawFiles = formData.getAll("files") as File[];
 
-  if (rawFiles.length === 0) {
-    return NextResponse.json(
-      { error: "Minimal satu file wajib dipilih." },
-      { status: 400 }
-    );
-  }
-
-  // Validasi tipe & ukuran per file
-  const ALLOWED_TYPES: Record<string, { fileType: string; ext: string; maxBytes: number }> = {
-    "image/jpeg":       { fileType: "image",  ext: "jpg",  maxBytes: 5  * 1024 * 1024 },
-    "image/png":        { fileType: "image",  ext: "png",  maxBytes: 5  * 1024 * 1024 },
-    "application/pdf":  { fileType: "pdf",    ext: "pdf",  maxBytes: 10 * 1024 * 1024 },
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
-      fileType: "excel", ext: "xlsx", maxBytes: 5 * 1024 * 1024,
-    },
-    "application/vnd.ms-excel": {
-      fileType: "excel", ext: "xls",  maxBytes: 5 * 1024 * 1024,
-    },
-  };
-
-  for (const file of rawFiles) {
-    const rule = ALLOWED_TYPES[file.type];
-    if (!rule) {
-      return NextResponse.json(
-        { error: `Tipe file tidak didukung: "${file.name}" (${file.type || "tidak dikenal"}).` },
-        { status: 400 }
-      );
-    }
-    if (file.size > rule.maxBytes) {
-      const limitMB = rule.maxBytes / 1024 / 1024;
-      const actualMB = (file.size / 1024 / 1024).toFixed(2);
-      return NextResponse.json(
-        {
-          error: `File "${file.name}" melebihi batas ${limitMB} MB untuk tipe ${rule.fileType.toUpperCase()} (ukuran: ${actualMB} MB).`,
-        },
-        { status: 400 }
-      );
-    }
+  const validation = validateUploadFiles(rawFiles);
+  if (!validation.ok) {
+    return NextResponse.json({ error: validation.error }, { status: validation.status });
   }
 
   // Gunakan ID laporan sebagai folder prefix agar rapi
@@ -82,16 +47,14 @@ export async function POST(
 
   try {
     uploadResults = await Promise.all(
-      rawFiles.map(async (file) => {
-        const rule = ALLOWED_TYPES[file.type]!;
-        const uniqueName = `${randomUUID()}-${file.name}`;
-        const storagePath = `reports/${folderId}/${uniqueName}`;
+      validation.validatedFiles.map(async (item) => {
+        const { storagePath } = buildSafeStoragePath(`reports/${folderId}`, item.file.name);
 
-        const buffer = Buffer.from(await file.arrayBuffer());
+        const buffer = Buffer.from(await item.file.arrayBuffer());
         const { error: uploadError } = await supabase.storage
           .from("report-photos")
           .upload(storagePath, buffer, {
-            contentType: file.type,
+            contentType: item.file.type,
             upsert: false,
           });
 
@@ -105,8 +68,8 @@ export async function POST(
         return {
           storagePath,
           publicUrl: publicUrlData.publicUrl,
-          file,
-          fileType: rule.fileType,
+          file: item.file,
+          fileType: item.fileType,
         };
       })
     );

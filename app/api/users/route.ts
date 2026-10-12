@@ -71,16 +71,53 @@ export async function PATCH(req: Request) {
       return new NextResponse("Invalid role", { status: 400 });
     }
 
-    const user = await prisma.user.update({
-      where: {
-        id: userId,
-      },
-      data: {
-        role,
-      },
+    const result = await prisma.$transaction(async (tx) => {
+      const targetUser = await tx.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!targetUser) {
+        return { error: "Pengguna tidak ditemukan.", status: 404 };
+      }
+
+      const isTargetAdmin = targetUser.role?.trim().toUpperCase() === "ADMIN";
+      const isNewRoleAdmin = typeof role === "string" && role.trim().toUpperCase() === "ADMIN";
+
+      if (isTargetAdmin && !isNewRoleAdmin) {
+        const adminCount = await tx.user.count({
+          where: {
+            role: {
+              equals: "ADMIN",
+              mode: "insensitive",
+            },
+          },
+        });
+
+        if (adminCount <= 1) {
+          return {
+            error: "Tidak dapat mencabut hak akses Admin dari Administrator terakhir.",
+            status: 400,
+          };
+        }
+      }
+
+      const updatedUser = await tx.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          role,
+        },
+      });
+
+      return { data: updatedUser };
     });
 
-    return NextResponse.json(user);
+    if ("error" in result) {
+      return NextResponse.json({ error: result.error }, { status: result.status });
+    }
+
+    return NextResponse.json(result.data);
   } catch (error) {
     console.error("[USER_PATCH]", error);
     return new NextResponse("Internal Error", { status: 500 });

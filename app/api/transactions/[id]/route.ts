@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isStaff } from "@/lib/auth-guard";
+import { EXPENSE_CATEGORIES } from "@/lib/expense-categories";
 
 // PATCH /api/transactions/:id
 // Edit field transaksi sebelum dikonfirmasi (hanya jika isVerified = false)
@@ -50,6 +51,53 @@ export async function PATCH(
     category?: string | null;
   };
 
+  // Validasi amount: harus number finite dan > 0
+  if (body.amount !== undefined) {
+    if (typeof body.amount !== "number" || !Number.isFinite(body.amount) || body.amount <= 0) {
+      return NextResponse.json(
+        { error: "Nominal transaksi harus berupa angka positif lebih dari 0." },
+        { status: 400 }
+      );
+    }
+  }
+
+  // Validasi type: hanya "pemasukan" atau "pengeluaran"
+  if (body.type !== undefined) {
+    if (body.type !== "pemasukan" && body.type !== "pengeluaran") {
+      return NextResponse.json(
+        { error: "Tipe transaksi hanya boleh 'pemasukan' atau 'pengeluaran'." },
+        { status: 400 }
+      );
+    }
+  }
+
+  // Validasi category: harus ada di EXPENSE_CATEGORIES jika disediakan
+  let validatedCategory: string | null | undefined = undefined;
+  if (body.category !== undefined) {
+    if (body.category === null || body.category === "") {
+      validatedCategory = null;
+    } else if (typeof body.category === "string") {
+      const trimmedCategory = body.category.trim();
+      if (trimmedCategory === "") {
+        validatedCategory = null;
+      } else {
+        const validValues = EXPENSE_CATEGORIES.map((c) => c.value) as string[];
+        if (!validValues.includes(trimmedCategory)) {
+          return NextResponse.json(
+            { error: `Nilai kategori tidak valid: ${body.category}` },
+            { status: 400 }
+          );
+        }
+        validatedCategory = trimmedCategory;
+      }
+    } else {
+      return NextResponse.json(
+        { error: "Nilai kategori tidak valid." },
+        { status: 400 }
+      );
+    }
+  }
+
   // Hanya izinkan field yang ada di spec — tidak ada mass-assignment
   const updated = await prisma.transaction.update({
     where: { id },
@@ -65,8 +113,8 @@ export async function PATCH(
       ...(body.donorNameRaw !== undefined && {
         donorNameRaw: body.donorNameRaw ? body.donorNameRaw.trim() : null,
       }),
-      ...(body.category !== undefined && {
-        category: body.category ? body.category.trim() : null,
+      ...(validatedCategory !== undefined && {
+        category: validatedCategory,
       }),
     },
   });

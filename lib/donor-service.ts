@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { normalizeDonorName, isAnonymousDonor } from "@/lib/donor-matching";
 
 export type DonorMatchingResult = {
@@ -59,17 +60,46 @@ export async function matchAndAssignDonor(
           donorName: existingDonor.name,
         };
       } else {
-        const newDonor = await prisma.donor.create({
-          data: {
-            name: trimmedRaw, // Nama asli sebelum normalisasi sebagai nama canonical
-            normalizedName: normalized,
-          },
-        });
-        donorId = newDonor.id;
-        matchingResult = {
-          status: "created",
-          donorName: newDonor.name,
-        };
+        try {
+          const newDonor = await prisma.donor.create({
+            data: {
+              name: trimmedRaw, // Nama asli sebelum normalisasi sebagai nama canonical
+              normalizedName: normalized,
+            },
+          });
+          donorId = newDonor.id;
+          matchingResult = {
+            status: "created",
+            donorName: newDonor.name,
+          };
+        } catch (createError: unknown) {
+          const isP2002 =
+            createError instanceof Prisma.PrismaClientKnownRequestError
+              ? createError.code === "P2002"
+              : Boolean(
+                  createError &&
+                    typeof createError === "object" &&
+                    "code" in createError &&
+                    (createError as { code: string }).code === "P2002"
+                );
+
+          if (isP2002) {
+            const fallbackDonor = await prisma.donor.findUnique({
+              where: { normalizedName: normalized },
+            });
+            if (fallbackDonor) {
+              donorId = fallbackDonor.id;
+              matchingResult = {
+                status: "existing",
+                donorName: fallbackDonor.name,
+              };
+            } else {
+              throw createError;
+            }
+          } else {
+            throw createError;
+          }
+        }
       }
     }
   }

@@ -115,7 +115,7 @@ export default async function CariLaporanPage({
 
   const filteredReports = keyword
     ? sortedReports.filter((report) =>
-        `${new Date(report.reportDate).toLocaleDateString("id-ID")} ${report.uploadedBy.name}`
+        `${new Date(report.reportDate).toLocaleDateString("id-ID")} ${report.uploadedBy.name ?? ""}`
           .toLowerCase()
           .includes(keyword.toLowerCase())
       )
