@@ -74,6 +74,16 @@ Daftar pengguna terdaftar di sistem beserta ringkasan jejak audit (`_count` lapo
 
 Memperbarui hak akses (role) pengguna (`ADMIN`, `BENDAHARA`, atau `null` untuk Jamaah). Khusus Administrator.
 
+**Logika Server-Side & Proteksi Sole Admin:**
+1. Validasi sesi dan peran `ADMIN` (`isAdmin(session)`). Tolak `401` jika tanpa sesi, atau `403 Forbidden` jika bukan Admin.
+2. Validasi body: `userId` (string) dan `role` (`ADMIN`, `BENDAHARA`, atau `null`).
+3. **Proteksi Sole Admin Lockout (Pembaruan QA Hardening)**:
+   - Jika target user yang akan diubah saat ini berstatus `ADMIN` dan role barunya bukan `ADMIN` (misal diturunkan ke `BENDAHARA` atau dicabut ke `null`):
+   - Sistem menghitung jumlah seluruh akun berstatus `ADMIN` di database di dalam satu transaksi `prisma.$transaction`.
+   - Jika jumlah `ADMIN` tersisa `<= 1`, sistem menolak permintaan dengan status **`400 Bad Request`** dan pesan:
+     `"Tidak dapat mencabut hak akses Admin dari Administrator terakhir."`
+   - Aturan ini berlaku untuk target siapa pun (baik akun sendiri maupun akun admin lain) untuk mencegah dua admin saling menurunkan hak akses secara bersamaan (*race condition*).
+
 **Request Body**
 
 ```json
@@ -82,6 +92,24 @@ Memperbarui hak akses (role) pengguna (`ADMIN`, `BENDAHARA`, atau `null` untuk J
   "role": "BENDAHARA"
 }
 ```
+
+**Response 200 (Berhasil)**
+```json
+{
+  "data": {
+    "id": "clxyz123...",
+    "name": "Bapak Cecep",
+    "email": "cecep@gmail.com",
+    "role": "BENDAHARA"
+  }
+}
+```
+
+**Response Error:**
+- `400 Bad Request`: Format input salah, atau mencoba mencabut hak Admin dari Administrator terakhir (`adminCount <= 1`).
+- `401 Unauthorized`: Belum login ke sistem.
+- `403 Forbidden`: Bukan Administrator.
+- `404 Not Found`: Pengguna target tidak ditemukan.
 
 ### `DELETE /api/users?userId={id}` *(Issue #054)*
 
@@ -168,18 +196,25 @@ Unggah laporan baru dengan banyak file pendukung. `multipart/form-data`.
 
 | Field          | Tipe                | Wajib | Keterangan |
 | -------------- | ------------------- | ----- | ---------- |
-| `files`        | array of files      | Yes   | Mendukung `.jpg`, `.png`, `.pdf`, `.xlsx`. Minimal 1 file. |
-| `reportDate`   | date (`YYYY-MM-DD`) | Yes   | Tanggal laporan mingguan (harus hari Jumat). |
+| `files`        | array of files      | Yes   | Mendukung `.jpg`, `.jpeg`, `.png`, `.webp`, `.pdf`, `.xlsx`, `.xls`. Maksimal 10 MB per file. Minimal 1 file. |
+| `reportDate`   | date (`YYYY-MM-DD`) | Yes   | Tanggal laporan mingguan (harus hari Jumat, divalidasi dengan waktu UTC: `reportDate.getUTCDay() === 5`). |
 
 *Catatan Keamanan: Field `uploadedById` dilarang dikirim dari klien. Server mengekstrak ID pengguna secara langsung dan aman dari token sesi NextAuth terverifikasi.*
 
-**Logika Transaksi Server-Side:**
+**Logika Transaksi Server-Side & Validasi Berkas (`lib/file-validation.ts`):**
 1. **Validasi Otorisasi**: Periksa sesi NextAuth dan validasi `isStaff(session)`. Tolak `401` jika tanpa sesi, atau `403 Forbidden` jika bukan pengurus.
-2. Validasi file: Ekstrak file dari *form data* dan validasi tipe/ukuran.
-3. Cek duplikat `reportDate` di Vercel Postgres (kembalikan `409` jika duplikat).
-4. `Promise.all` unggah seluruh *file* secara paralel ke **Supabase Storage**.
-5. Jika berhasil, susun data lampiran dan eksekusi `prisma.$transaction` untuk *insert* ke tabel `Report` (dengan `uploadedById` dari sesi) DAN `Attachment` (dengan `extractionStatus` default `not_extracted`) secara atomik di **Vercel Postgres**.
-6. Jika transaksi database gagal atau ada upload Supabase yang *error*, server otomatis membersihkan (`storage.remove()`) file yang sempat terunggah agar tidak terjadi *orphan files* di bucket.
+2. **Validasi Berkas (`validateUploadFiles`)**:
+   - Memastikan minimal 1 berkas dikirim.
+   - Ekstensi file wajib terdaftar (`jpg, jpeg, png, webp, pdf, xlsx, xls`) dan **cocok dengan MIME type** berkas.
+   - Batas ukuran file per berkas: **Maks. 10 MB** (`MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024`). Jika melebihi batas, tolak dengan status **`413 Payload Too Large`** dan pesan dalam Bahasa Indonesia.
+3. **Validasi Tanggal**: String `YYYY-MM-DD` dicek menggunakan komponen waktu UTC (`getUTCDay() !== 5`) agar tidak bergeser oleh perbedaan timezone server/klien. Kembalikan `400` jika bukan hari Jumat.
+4. Cek duplikat `reportDate` di Vercel Postgres (kembalikan `409 Conflict` jika duplikat).
+5. **Sanitasi Nama Berkas & Unggah Supabase Storage**:
+   - Nama berkas disanitasi via `sanitizeFileName`: hanya mengizinkan `[a-zA-Z0-9._-]`, karakter lain diganti `-`, dibatasi maksimal 100 karakter.
+   - Disimpan dengan format `${randomUUID()}-${cleanName}` di bucket `report-photos`.
+   - `Promise.all` unggah seluruh *file* secara paralel ke **Supabase Storage**.
+6. Jika berhasil, susun data lampiran dan eksekusi `prisma.$transaction` untuk *insert* ke tabel `Report` (dengan `uploadedById` dari sesi) DAN `Attachment` (dengan `extractionStatus` default `not_extracted`) secara atomik di **Vercel Postgres**.
+7. Jika transaksi database gagal atau ada upload Supabase yang *error*, server otomatis membersihkan (`storage.remove()`) file yang sempat terunggah agar tidak terjadi *orphan files* di bucket.
 
 **Response 201**
 
@@ -199,10 +234,11 @@ Unggah laporan baru dengan banyak file pendukung. `multipart/form-data`.
 ```
 
 **Response Error:**
+- `400 Bad Request`: Format tanggal salah / bukan hari Jumat, atau ekstensi/MIME file tidak didukung.
 - `401 Unauthorized`: Belum login ke sistem.
 - `403 Forbidden`: Login sebagai Jamaah (`role: null`) — tidak memiliki hak unggah laporan kas.
-- `400 Bad Request`: Validasi tipe file/ukuran gagal atau format tanggal salah.
 - `409 Conflict`: Laporan untuk tanggal tersebut sudah tersimpan di arsip.
+- `413 Payload Too Large`: Ukuran salah satu file melebihi batas 10 MB.
 - `500 Internal Server Error`: Gagal transaksi penyimpanan database/storage.
 
 ### `GET /api/reports/:id`
@@ -265,6 +301,48 @@ Menghapus seluruh laporan beserta lampiran file di Supabase Storage dan seluruh 
 - `403 Forbidden`: Pengguna bukan Administrator (misal peran `BENDAHARA` atau `null`).
 - `404 Not Found`: Laporan tidak ditemukan.
 - `409 Conflict`: Memiliki transaksi terverifikasi, butuh konfirmasi lanjutan (`?force=true`).
+
+### `POST /api/reports/:id/attachments`
+
+Menambahkan satu atau beberapa file lampiran baru ke laporan yang sudah ada. `multipart/form-data`.
+**Wajib: Khusus Staf DKM (`ADMIN` atau `BENDAHARA`). Akses tanpa sesi mengembalikan `401`, role `null` mengembalikan `403 Forbidden`.**
+
+**Form fields**
+
+| Field   | Tipe           | Wajib | Keterangan |
+| ------- | -------------- | ----- | ---------- |
+| `files` | array of files | Yes   | Berkas baru (`.jpg`, `.jpeg`, `.png`, `.webp`, `.pdf`, `.xlsx`, `.xls`). Maksimal 10 MB per berkas. Minimal 1 file. |
+
+**Logika Server-Side:**
+1. Validasi sesi & peran staf (`isStaff(session)`). Tolak `401` jika tanpa sesi, atau `403` jika bukan staf.
+2. Validasi keberadaan `Report` (`:id`). Tolak `404 Not Found` jika laporan tidak ada.
+3. Validasi berkas via `validateUploadFiles`: ekstensi & MIME match, ukuran <= 10 MB (tolak `413` jika lebih).
+4. Sanitasi nama berkas & upload ke Supabase Storage via `buildSafeStoragePath('reports/' + reportId, fileName)`.
+5. Insert baris `Attachment` baru ke Vercel Postgres (`extractionStatus: "not_extracted"`). Rollback file storage jika database gagal.
+
+**Response 201**
+```json
+{
+  "data": [
+    {
+      "id": "att_99",
+      "originalFileName": "lampiran-susulan.pdf",
+      "fileType": "pdf",
+      "fileSizeBytes": 450000,
+      "fileUrl": "https://[supabase-url]/...",
+      "extractionStatus": "not_extracted"
+    }
+  ]
+}
+```
+
+**Response Error:**
+- `400 Bad Request`: Berkas kosong atau ekstensi/MIME tidak didukung.
+- `401 Unauthorized`: Belum login.
+- `403 Forbidden`: Bukan staf DKM.
+- `404 Not Found`: Laporan tidak ditemukan.
+- `413 Payload Too Large`: Ukuran salah satu file melebihi 10 MB.
+- `500 Internal Server Error`: Gagal upload storage / transaksi database.
 
 ### `DELETE /api/attachments/:id`
 
@@ -383,6 +461,13 @@ Daftar transaksi untuk satu laporan tertentu — dipakai UI review di halaman De
 
 Mengedit field transaksi hasil ekstraksi sebelum dikonfirmasi. **Khusus Staf DKM (`ADMIN` atau `BENDAHARA`). Hanya diizinkan jika `isVerified = false`.**
 
+**Validasi Server-Side (Pembaruan QA Hardening):**
+- `amount`: Harus berupa number berhingga (*finite*) dan bernilai **> 0**. Tolak `400` jika `NaN`, `<= 0`, atau bukan number.
+- `type`: Harus berupa string `"pemasukan"` atau `"pengeluaran"`. Tolak `400` jika selain kedua nilai tersebut.
+- `category`: Jika dikirim, harus bernilai `null` atau salah satu kategori resmi yang terdaftar di `EXPENSE_CATEGORIES` (`operasional`, `honor`, `sosial`, `pembangunan`, `konsumsi`, `administrasi`, `lainnya`). Tolak `400` jika tidak valid.
+- `description`: String deskripsi/keterangan mutasi kas.
+- `transactionDate`: String format tanggal YYYY-MM-DD.
+
 **Body**
 
 ```json
@@ -390,7 +475,8 @@ Mengedit field transaksi hasil ekstraksi sebelum dikonfirmasi. **Khusus Staf DKM
   "type": "pemasukan",
   "amount": 500000,
   "description": "Infaq Jumat (dikoreksi)",
-  "transactionDate": "2026-08-14"
+  "transactionDate": "2026-08-14",
+  "category": null
 }
 ```
 
@@ -401,8 +487,10 @@ Mengedit field transaksi hasil ekstraksi sebelum dikonfirmasi. **Khusus Staf DKM
 ```
 
 **Response Error:**
+- `400 Bad Request`: Validasi gagal (mis. `amount <= 0`, `type` tidak valid, atau `category` tidak terdaftar).
 - `401 Unauthorized`: Belum login.
 - `403 Forbidden`: Akun bukan staf DKM (`role: null`).
+- `404 Not Found`: Transaksi tidak ditemukan.
 - `409 Conflict`: Transaksi sudah `isVerified = true`, tidak bisa diedit lewat endpoint ini.
 
 ### `POST /api/transactions/:id/confirm`
@@ -417,13 +505,13 @@ Mengonfirmasi satu baris transaksi sebagai data resmi. **Khusus Staf DKM (`ADMIN
 
 `donorNameRaw` hanya relevan untuk transaksi bertipe `pemasukan`. Boleh dikosongkan (`null`/tidak dikirim) jika transaksi memang tidak punya nama donatur tertulis.
 
-**Logika Server-Side:**
+**Logika Server-Side & Ketahanan Konkurensi:**
 1. Validasi sesi dan hak staf (`isStaff(session)`). Tolak `401` jika tanpa sesi, `403` jika role `null`.
 2. Jika `donorNameRaw` dikirim dan tidak kosong:
-   - Normalisasi nama (lihat `normalizeDonorName()` di 12-Technical-Specification.md)
-   - Jika hasil normalisasi cocok pola anonim ("hamba allah"/"anonim"/"tanpa nama") → `donorId` tetap `null`
-   - Jika tidak, cari `Donor.normalizedName` yang cocok persis → tautkan; jika tidak ada, buat `Donor` baru
-3. Set `isVerified = true`, `verifiedById` dari `session.user.id`, `verifiedAt = now()`
+   - Normalisasi nama via `normalizeDonorName()`.
+   - Jika hasil normalisasi cocok pola anonim ("hamba allah"/"anonim"/"tanpa nama") → `donorId` tetap `null`.
+   - **Pencegahan Race Condition (`lib/donor-service.ts`)**: Sistem mencari `Donor.normalizedName`. Jika belum ada, sistem mencoba membuat record donatur baru. Jika terjadi bentrokan konkurensi (Prisma error `P2002: Unique constraint failed`), sistem otomatis menangkap error tersebut dan melakukan fallback ke `findUnique` untuk mengambil ID donatur yang baru saja dibuat oleh request lain secara aman tanpa kegagalan 500.
+3. Set `isVerified = true`, `verifiedById` dari `session.user.id`, `verifiedAt = now()`.
 
 **Response 200**
 

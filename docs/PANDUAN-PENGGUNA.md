@@ -310,9 +310,9 @@ Halaman untuk mengunggah dokumen kas mingguan baru ke sistem arsip.
 
 | Tipe File | Format | Batas Ukuran |
 |---|---|---|
-| Foto buku kas | `.jpg` / `.png` | Maks. 5 MB per file |
+| Foto buku kas | `.jpg` / `.jpeg` / `.png` / `.webp` | Maks. 10 MB per file |
 | Dokumen kas | `.pdf` | Maks. 10 MB per file |
-| Spreadsheet kas | `.xlsx` / `.xls` | Maks. 5 MB per file |
+| Spreadsheet kas | `.xlsx` / `.xls` | Maks. 10 MB per file |
 
 ### Langkah Mengunggah
 
@@ -345,8 +345,8 @@ Klik tombol **"Simpan ke Arsip (N file)"** di bagian bawah halaman.
 
 | Pesan | Penyebab | Solusi |
 |---|---|---|
-| "Tipe file tidak didukung" | Format file selain JPG/PNG/PDF/XLSX/XLS | Konversi file ke format yang didukung |
-| "Melebihi batas ukuran" | File terlalu besar | Kompres atau pecah file menjadi beberapa bagian |
+| "Tipe file tidak didukung" | Format file selain JPG/JPEG/PNG/WEBP/PDF/XLSX/XLS atau ekstensi tidak cocok dengan tipe file | Gunakan berkas dengan format dan ekstensi resmi yang didukung |
+| "Ukuran file melebihi batas 10 MB" | Ukuran berkas melebihi 10 MB | Kompres atau perkecil resolusi berkas sebelum diunggah |
 | "Pilih minimal satu file" | Belum ada file dipilih saat klik Simpan | Pilih file terlebih dahulu |
 | "Tanggal laporan wajib diisi" | Kolom tanggal belum diisi | Isi tanggal laporan |
 
@@ -583,7 +583,9 @@ Di bagian atas halaman terdapat 4 angka statistik:
    - **Administrator** — akses penuh termasuk kelola pengguna
 4. Perubahan langsung tersimpan secara otomatis (ada banner hijau konfirmasi).
 
-> **Catatan**: Anda tidak dapat mengubah role akun Anda sendiri yang sedang aktif digunakan.
+> **Catatan & Proteksi Keamanan**:
+> 1. Anda tidak dapat mengubah role akun Anda sendiri yang sedang aktif digunakan.
+> 2. **Proteksi Administrator Terakhir**: Sistem secara otomatis menolak pencabutan hak akses Administrator jika hanya tersisa 1 orang Admin di database (baik mengubah akun sendiri maupun akun admin lain). Hal ini memastikan sistem tidak akan pernah terkunci tanpa pengelola.
 
 ### Menghapus Pengguna
 

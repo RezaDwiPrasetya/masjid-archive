@@ -1,6 +1,6 @@
 # CONTEXT HANDOFF — Proyek "Masjid Archive"
-> **Terakhir diperbarui**: 9 Oktober 2026  
-> **Status**: **V1–V9 FEATURE-COMPLETE (SELESAI PENUH & TERUJI) — Merged to Main & Pushed to Remote**
+> **Terakhir diperbarui**: 12 Oktober 2026  
+> **Status**: **V1–V10 FEATURE-COMPLETE & QA-HARDENED (SELESAI PENUH & TERUJI) — Merged to Main & Pushed to Remote**
 
 ---
 
@@ -11,7 +11,7 @@ Aplikasi web arsip & manajemen keuangan untuk **DKM Masjid Al-Luqman** (Kel. Sok
 ---
 
 ## 2. KONDISI PROJECT SAAT INI
-- **SELURUH FITUR V1–V9 SELESAI 100% (PROJEK TAMAT / FEATURE-COMPLETE)**:
+- **SELURUH FITUR V1–V10 SELESAI 100% (PROJEK TAMAT / FEATURE-COMPLETE)**:
   - **V1–V2**: Multi-format upload (JPG, PNG, PDF, Excel) & arsip berjenjang.
   - **V3**: Google SSO NextAuth & Role-based Access Control (Admin / Guest).
   - **V4**: Pipeline ekstraksi multimodal vision-LLM (Gemini API) + fallback model cadangan + review & konfirmasi transaksi manual + rekonsiliasi kas.
@@ -50,6 +50,15 @@ Aplikasi web arsip & manajemen keuangan untuk **DKM Masjid Al-Luqman** (Kel. Sok
     - Desain PDF tahunan profesional 2-bagian: Halaman 1 sebagai Resume Eksekutif Mading (Kop, 4 Kartu Saldo, Rekap 12 Bulan, Tanda Tangan), Halaman 2+ sebagai Lampiran Buku Besar Mutasi Transaksi Kas (Issue #070).
     - Tombol tunggal aksi cetak di `PrintActionBar`: hanya menyisakan satu tombol jelas "Cetak Laporan" dengan alur otomatis PDF resmi dan eliminasi tombol browser ganda yang membingungkan (Issue #071).
     - Refaktor Lampiran PDF Multi-Halaman Lega (`drawLedgerTable` di `lib/export-pdf.ts`): paginasi dinamis otomatis (25–30 baris/halaman), font 8.5pt, baris 20pt, word-wrap tanpa truncate "…", header berulang, baris TOTAL tunggal di akhir, dan border grid pemisah baris (#c2c9bb, 0.7pt) pada rectangle agar tidak tertimpa latar belakang (Issue #072).
+- **PENGUATAN AUDIT QA & HARDENING SISTEM (12 Oktober 2026 — Selesai & Pushed to Main)**:
+  - **Sole Admin Lockout Protection (`app/api/users/route.ts`)**: Pencegahan mutasi/pencabutan hak admin terakhir di database dengan atomic check di dalam `prisma.$transaction`.
+  - **Server-Side Validation Ketat Transaksi (`app/api/transactions/[id]/route.ts`)**: Validasi angka `amount` finite `> 0`, `type` (`"pemasukan"` | `"pengeluaran"`), dan `category` terdaftar di `EXPENSE_CATEGORIES`.
+  - **Sanitasi Pencarian Uploader Null (`app/cari/page.tsx`)**: Fallback `(report.uploadedBy.name ?? "")` mencegah query `"null"` mencocokkan uploader tanpa nama.
+  - **Standardisasi Waktu UTC**: Validasi hari Jumat `app/api/reports/route.ts` (`getUTCDay() === 5`) dan derivasi periode `lib/derive-period.ts` (`getUTCFullYear`, `getUTCMonth`, `getUTCDate`) menghilangkan potensi pergeseran tanggal akibat timezone server.
+  - **Ketahanan Konkurensi Donatur (`lib/donor-service.ts`)**: Penanganan Prisma `P2002` (unique constraint) dengan fallback otomatis ke `findUnique` saat dua transaksi membuat donatur baru bersamaan.
+  - **Modul Validasi Berkas Terpadu (`lib/file-validation.ts`)**: Validasi ekstensi & MIME (JPG, JPEG, PNG, WEBP, PDF, XLSX, XLS), batas ukuran 10 MB (tolak HTTP 413), dan sanitasi nama berkas Supabase Storage `[a-zA-Z0-9._-]` dengan prefix `randomUUID()`.
+  - **Optimasi Tooling Linter**: Penambahan `"node_modules/**"` ke `globalIgnores` di `eslint.config.mjs` mempercepat linting ~25%.
+  - **Otomasi Pengujian**: Penambahan unit script `scripts/test-audit-hardening.ts` (15/15 lulus) dan `scripts/test-file-validation.ts` (10/10 lulus).
 - **PENGUATAN KEAMANAN & OTORISASI RBAC 3-TIER (Selesai)**:
   - **Audit & Pengetatan RBAC**: Mengganti pemeriksaan permisif `if (!session)` dengan sistem otorisasi 3-Tier yang ketat: Jamaah (`null` / Guest umum), Bendahara (`BENDAHARA`), Administrator (`ADMIN` / Ketua DKM).
   - **Helper Terpusat (`lib/auth-guard.ts`)**: `isStaff(session)` untuk hak operasional (unggah, ekstraksi AI, verifikasi, edit donatur & kategori) dan `isAdmin(session)` untuk wewenang tertinggi (kelola pengguna & hapus laporan).
@@ -59,7 +68,7 @@ Aplikasi web arsip & manajemen keuangan untuk **DKM Masjid Al-Luqman** (Kel. Sok
   - **Proteksi Data Publik**: Mengganti seluruh query `include: { attachments: true, uploadedBy: true }` dengan `select` eksplisit pada `GET /api/reports`, `GET /api/reports/[id]`, serta Server Component (`app/page.tsx`, `app/cari/page.tsx`, `app/laporan/[id]/page.tsx`) untuk mencegah kebocoran JSON mentah LLM Gemini (`extractionRawResponse`), `extractionError`, serta alamat email pengunggah ke publik tanpa login.
   - **Pembersihan Total Legacy Auth**: Menghapus dependensi `iron-session`, berkas `lib/session.ts`, dan endpoint usang `app/api/auth/login` serta `app/api/auth/logout`.
 - Seluruh commit sudah digabungkan ke `main` dan sinkron dengan remote GitHub `origin/main`.
-- Status kode: `tsc --noEmit` lolos 0 error, `npm run lint` lolos 0 error, production build lolos 100%, 55 suite test otorisasi lolos 100%.
+- Status kode: `tsc --noEmit` lolos 0 error, `npm run lint` lolos 0 error, production build lolos 100%, 80 suite test (otorisasi + QA hardening + file validation) lolos 100%.
 - **Fokus Saat Ini**: Pemeliharaan stabil, operasional riil DKM Al-Luqman, dan dokumentasi laporan Tugas Akhir.
 
 ---
@@ -87,12 +96,16 @@ Aplikasi web arsip & manajemen keuangan untuk **DKM Masjid Al-Luqman** (Kel. Sok
 - `schema.prisma` — model User (role: null/BENDAHARA/ADMIN), Report, Attachment, Transaction (dengan field additive `category`), Donor + model NextAuth (Account, Session, VerificationToken)
 - `lib/gemini.ts` — singleton GoogleGenerativeAI client
 - `lib/extract-transactions.ts` — logika ekstraksi (schema structured output, prompt, fetch gambar/dokumen → Gemini → parse). Skema mencakup `initialBalance`, `finalBalance`, dan per-transaksi: type, amount, description, transactionDate, donorName (nullable)
+- `lib/file-validation.ts` — modul bersama validasi berkas upload (ekstensi, MIME match, batas ukuran 10 MB, sanitasi nama berkas & path storage)
+- `lib/derive-period.ts` — helper penentuan tahun, bulan, dan pekan ke-N berbasis komponen UTC murni
 - `lib/donor-matching.ts` — `normalizeDonorName()`, `isAnonymousDonor()`, `escapeRegex()`, daftar `DONOR_PREFIXES` dan `ANONYMOUS_PATTERNS`
-- `lib/donor-service.ts` — `matchAndAssignDonor(txType, rawInput)`, shared logic dipanggil dari endpoint confirm DAN endpoint edit donor
+- `lib/donor-service.ts` — `matchAndAssignDonor(txType, rawInput)`, shared logic konfirmasi & edit donatur dengan ketahanan race condition (fallback Prisma P2002)
 - `lib/expense-categories.ts` — konstanta kategori pengeluaran kas (operasional, honor, sosial, pembangunan, konsumsi, administrasi, lainnya) & sistem warna badge
 - `lib/auth.ts` — konfigurasi authOptions NextAuth (JWT strategy, sync role DB ke session)
 - `lib/auth-guard.ts` — helper otorisasi `isAdmin(session)` dan `isStaff(session)`
 - `scripts/test-auth-guards.ts` — skrip automated unit & simulation test untuk seluruh role guard
+- `scripts/test-audit-hardening.ts` — skrip automated unit test validasi transaksi, sole admin lockout, uploader null, dan timezone UTC
+- `scripts/test-file-validation.ts` — skrip automated test validasi ekstensi, MIME mismatch, batas 10 MB, dan sanitasi nama berkas
 
 ### API Routes (`app/api/`):
 - `attachments/[id]/extract/route.ts` — POST trigger ekstraksi (khusus Staf: ADMIN & BENDAHARA)
@@ -280,13 +293,21 @@ Shared logic di `lib/donor-matching.ts`, `lib/donor-service.ts`, dan `lib/expens
    - **Pengetatan Endpoint & UI**: Aksi hapus laporan kas (`DELETE /api/reports/:id`) dan tombol hapus di UI hanya dapat diakses oleh Administrator. Aksi mutasi operasional lainnya hanya untuk staf.
    - **Proteksi Data Publik**: Query publik menggunakan `select` eksplisit, menyembunyikan dump respons mentah vision-LLM (`extractionRawResponse`), `extractionError`, serta email pengunggah dari publik tanpa login.
    - **Pembersihan Total Legacy Auth**: Modul `iron-session`, berkas `lib/session.ts`, dan endpoint login/logout lama dihapus permanen.
-4. **Fase V9: Filter Periode Fiskal & Ekspor Terpadu Tanpa Modal (Issue #067 — Sedang Berjalan)**:
-   - Mengganti sistem grafik *rolling window* dengan filter kalender terpadu (Bulan & Tahun).
-   - Mode Mingguan: memplot 4–5 pekan (Jumat) spesifik bulan & tahun terpilih.
-   - Mode Tahunan: memplot 12 bulan (Jan–Des) di desktop, dan toggle Semester 1 (Jan–Jun) / Semester 2 (Jul–Des) di mobile agar grafik tetap lega (maksimal 6 titik).
-   - Zero-Modal Export: tombol Cetak A4, PDF, dan Excel diintegrasikan langsung pada toolbar dashboard tanpa modal popup `MonthlyExportDialog`.
-5. **Kandidat Eksplorasi Fase Berikutnya (Fase V10)**:
-   - Pemeliharaan performa dan audit berkala data kas.
+4. **Fase V9: Filter Periode Fiskal & Ekspor Terpadu Tanpa Modal (Issue #067 — Selesai Penuh)**:
+   - Filter kalender terpadu (Bulan & Tahun) di dashboard.
+   - Mode Mingguan memplot pekan Jumat spesifik bulan terpilih, Mode Tahunan memplot 12 bulan di desktop & semester di mobile.
+   - Tombol Cetak A4, PDF, dan Excel langsung di toolbar dashboard.
+5. **Fase V10: Cetak & Ekspor Tahunan Penuh (Issue #068–#072 — Selesai Penuh)**:
+   - Halaman cetak laporan tahunan 12 bulan penuh (`/laporan/cetak/tahunan`), ekspor PDF vektor multi-halaman A4, dan ekspor spreadsheet Excel.
+   - Refaktor tabel buku besar multi-halaman lega (`drawLedgerTable`) dan perapihan aksi cetak satu tombol.
+6. **Pembaruan QA Audit & Hardening Sistem (12 Oktober 2026 — Selesai Penuh)**:
+   - Proteksi *Sole Admin Lockout* di `app/api/users/route.ts` via `prisma.$transaction`.
+   - Server-side validation ketat transaksi di `app/api/transactions/[id]/route.ts`.
+   - Standardisasi waktu UTC pada `app/api/reports/route.ts` dan `lib/derive-period.ts`.
+   - Modul validasi upload terpadu `lib/file-validation.ts` (10 MB per berkas, HTTP 413, sanitasi nama berkas Supabase).
+   - Ketahanan konkurensi donatur `lib/donor-service.ts` (Prisma error P2002 fallback ke `findUnique`).
+   - Sanitasi query uploader null di `app/cari/page.tsx` dan optimasi ESLint `globalIgnores`.
+   - Seluruh uji regresi otomatis lolos 100% (80 test passed).
 
 ---
 

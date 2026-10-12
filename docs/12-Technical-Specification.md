@@ -191,25 +191,39 @@ model Attachment {
 report-photos/
   reports/
     {reportId}/
-      {uuid}.jpg
-      {uuid}.pdf
-      {uuid}.xlsx
+      {uuid}-{sanitizedFileName}.jpg
+      {uuid}-{sanitizedFileName}.pdf
+      {uuid}-{sanitizedFileName}.xlsx
 ```
 
-### Validasi Tipe File (Server-side)
+### Modul Validasi & Sanitasi Berkas Terpadu (`lib/file-validation.ts`)
+
+Seluruh validasi berkas pada endpoint `POST /api/reports` dan `POST /api/reports/:id/attachments` dikonsolidasikan ke helper bersama `lib/file-validation.ts` untuk menjamin konsistensi:
 
 ```typescript
-const ALLOWED_TYPES = {
-  "image/jpeg": { ext: "jpg", maxSize: 5 * 1024 * 1024 },
-  "image/png": { ext: "png", maxSize: 5 * 1024 * 1024 },
-  "application/pdf": { ext: "pdf", maxSize: 10 * 1024 * 1024 },
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": { ext: "xlsx", maxSize: 5 * 1024 * 1024 },
+export const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB per file
+
+export const ALLOWED_FILE_TYPES: Record<string, { ext: string[]; category: "image" | "pdf" | "excel" }> = {
+  "image/jpeg": { ext: ["jpg", "jpeg"], category: "image" },
+  "image/png": { ext: ["png"], category: "image" },
+  "image/webp": { ext: ["webp"], category: "image" },
+  "application/pdf": { ext: ["pdf"], category: "pdf" },
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": { ext: ["xlsx"], category: "excel" },
+  "application/vnd.ms-excel": { ext: ["xls"], category: "excel" },
 };
 ```
 
+**Aturan Validasi & Sanitasi Keamanan:**
+1. **Pemeriksaan Ganda Ekstensi & MIME**: Ekstensi file wajib cocok dengan MIME type browser (`ALLOWED_FILE_TYPES`). Ekstensi palsu (misal `.exe` diganti `.jpg`) akan ditolak dengan `400 Bad Request`.
+2. **Batas Ukuran Seragam (10 MB)**: Mengakomodasi lembar fisik resolusi tinggi atau berkas PDF mutasi kas tebal tanpa membebani runtime Vercel. Berkas yang melebihi batas ditolak dengan **`413 Payload Too Large`** dan pesan ramah pengguna.
+3. **Sanitasi Nama Berkas (`sanitizeFileName`)**: Mencegah *path traversal* (`../`) dan karakter kontrol:
+   - Karakter di luar `[a-zA-Z0-9._-]` diganti `-`.
+   - Nama dibatasi maksimal 100 karakter.
+   - Disimpan di Supabase Storage dengan prefix `randomUUID()`: `${randomUUID()}-${cleanName}`.
+
 ### Library Frontend
 
-Tidak ada library tambahan yang wajib untuk V2 dasar (native file input + FormData sudah cukup). Opsional: `react-dropzone` untuk UX drag-and-drop yang lebih modern.
+Native file input + FormData sudah cukup untuk form upload. Komponen antarmuka `app/unggah/page.tsx` menyediakan drag-and-drop file multi-format dengan pratinjau daftar berkas sebelum dikirim ke server.
 
 ## V4 — Spesifikasi Teknis: Ekstraksi Data (Vision-LLM)
 
@@ -374,17 +388,18 @@ function isAnonymousDonor(normalized: string): boolean {
 }
 ```
 
-### Alur Matching Saat Konfirmasi Transaksi
+### Alur Matching Saat Konfirmasi Transaksi & Ketahanan Konkurensi
 
-Diterapkan sebagai perluasan pada `POST /api/transactions/:id/confirm` (endpoint yang sama dari V4, bukan endpoint baru):
+Diterapkan sebagai fungsi sentral `matchAndAssignDonor` di `lib/donor-service.ts` yang dipanggil dari `POST /api/transactions/:id/confirm` dan `PATCH /api/transactions/:id/donor`:
 
-1. Ambil `donorNameRaw` dari body request (opsional, cuma relevan untuk `type: "pemasukan"`)
-2. Jika kosong atau `null` → lanjut konfirmasi seperti biasa, `donorId` tetap `null`
-3. Normalisasi via `normalizeDonorName()`. Jika `isAnonymousDonor()` bernilai true → `donorId` tetap `null` (donasi dihitung sebagai agregat "Infaq Anonim", bukan `Donor` individual)
+1. Ambil `donorNameRaw` dari body request (opsional, cuma relevan untuk `type: "pemasukan"`).
+2. Jika kosong atau `null` → lanjut konfirmasi seperti biasa, `donorId` tetap `null`.
+3. Normalisasi via `normalizeDonorName()`. Jika `isAnonymousDonor()` bernilai true → `donorId` tetap `null` (donasi dihitung sebagai agregat "Infaq Anonim", bukan `Donor` individual).
 4. Cari `Donor` dengan `normalizedName` yang cocok persis:
-   - **Ketemu** → `donorId` = id `Donor` tersebut
-   - **Tidak ketemu** → buat `Donor` baru (`name` = teks asli sebelum normalisasi, `normalizedName` = hasil normalisasi)
-5. Set `isVerified = true`, `verifiedById`, `verifiedAt` (logika V4 yang sudah ada, tidak berubah)
+   - **Ketemu** → `donorId` = id `Donor` tersebut.
+   - **Tidak ketemu** → coba buat `Donor` baru via `prisma.donor.create`.
+   - **Ketahanan Konkurensi (Race Condition Safe)**: Jika dua verifikasi transaksi untuk donatur baru yang sama dijalankan bersamaan dan memicu Prisma error `P2002` (*unique constraint violation* pada `normalizedName`), sistem otomatis menangkap error tersebut dan melakukan fallback ke `prisma.donor.findUnique` untuk mengambil id donatur yang sudah dibuat transaksi konkuren tanpa gagal 500.
+5. Set `isVerified = true`, `verifiedById`, `verifiedAt` (logika konfirmasi transaksi).
 
 ### Query Agregasi Tren (Dashboard Publik — Revisi Issue #053)
 
@@ -564,4 +579,35 @@ Modul terpusat untuk standardisasi parsing dan pembentukan query filter waktu di
 - **Endpoint Route Handlers**:
   - `app/api/reports/export/yearly/pdf/route.ts`: mengembalikan file `.pdf`.
   - `app/api/reports/export/yearly/excel/route.ts`: mengembalikan file `.xlsx`.
+
+---
+
+## Spesifikasi Teknis — Pembaruan QA Audit & Hardening Sistem (12 Oktober 2026)
+
+Rangkaian hardening hasil audit QA profesional untuk menjamin ketahanan sistem tingkat produksi (*production-grade resilience*):
+
+### 1. Standardisasi Waktu UTC (Eliminasi Pergeseran Zona Waktu)
+- **Masalah**: String tanggal `"YYYY-MM-DD"` di JavaScript di-parse sebagai waktu UTC midnight. Pemanggilan metode lokal seperti `.getDay()`, `.getFullYear()`, `.getMonth()`, atau `.getDate()` menghasilkan pergeseran tanggal/hari pada server atau lingkungan yang berada di barat UTC (misal server UTC-8).
+- **Solusi**:
+  - `app/api/reports/route.ts`: Validasi hari Jumat menggunakan `reportDate.getUTCDay() !== 5`.
+  - `lib/derive-period.ts`: Ekstraksi periode menggunakan `getUTCFullYear()`, `getUTCMonth() + 1`, dan `getUTCDate()`.
+
+### 2. Proteksi Sole Admin Lockout (`app/api/users/route.ts`)
+- **Masalah**: Administrator dapat secara tidak sengaja mencabut hak akses admin miliknya sendiri atau admin lain saat tersisa 1 orang administrator, menyebabkan sistem terkunci tanpa akun pengelola.
+- **Solusi**:
+  - Jika target yang diubah berstatus `ADMIN` dan peran barunya bukan `ADMIN`, sistem menghitung jumlah user `ADMIN` yang ada di database.
+  - Jika `adminCount <= 1`, mutasi ditolak dengan HTTP `400 Bad Request`: `"Tidak dapat mencabut hak akses Admin dari Administrator terakhir."`.
+  - Pengecekan dan pembaruan dijalankan di dalam satu `prisma.$transaction` untuk mencegah celah *race condition* antar admin.
+
+### 3. Validasi Server Ketat Transaksi (`app/api/transactions/[id]/route.ts`)
+- Menolak nilai `amount` yang non-finite (`NaN`, `Infinity`) atau `<= 0`.
+- Membatasi field `type` hanya untuk string `"pemasukan"` atau `"pengeluaran"`.
+- Memvalidasi kategori pengeluaran terhadap konstanta `EXPENSE_CATEGORIES`.
+
+### 4. Sanitasi Pencarian Uploader Null (`app/cari/page.tsx`)
+- Server Component pencarian menyertakan fallback string kosong `(report.uploadedBy.name ?? "")` saat melakukan pencocokan kata kunci pada nama pengunggah. Ini mencegah kueri pencarian dengan kata `"null"` mencocokkan laporan milik pengunggah yang belum memiliki nama profil Google.
+
+### 5. Optimasi Performa Tooling Linter (`eslint.config.mjs`)
+- Menambahkan `"node_modules/**"` ke dalam blok `globalIgnores`.
+- Mempercepat waktu eksekusi `npm run lint` sekitar ~25% (dari ~1.85s menjadi ~1.40s) pada lingkungan pengembangan Windows/Next.js.
 
