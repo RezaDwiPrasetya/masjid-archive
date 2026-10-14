@@ -25,6 +25,7 @@ interface ExtractButtonProps {
   extractionModel?: string | null;
   transactionCount?: number;
   verifiedCount?: number;
+  manualCount?: number; // F-025: jumlah baris manual (draf + verified) untuk peringatan di dialog
 }
 
 const statusBadge: Record<
@@ -60,6 +61,7 @@ export function ExtractButton({
   extractionModel,
   transactionCount,
   verifiedCount = 0,
+  manualCount = 0,
 }: ExtractButtonProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -221,6 +223,15 @@ export function ExtractButton({
             <AlertDialogDescription className="pt-2 text-stone-600 dark:text-stone-300">
               Lampiran ini sudah memiliki <strong>{verifiedCount} transaksi terverifikasi</strong>.
               Jika Anda menambahkan draf baru tanpa mereset data lama, transaksi berisiko ganda/duplikat dan nilai kas akan terhitung dua kali.
+              {manualCount > 0 && (
+                <>
+                  <br />
+                  <br />
+                  <span className="text-amber-800 font-semibold">
+                    ⚠️ Terdapat {manualCount} baris manual yang akan ikut terhapus jika Anda memilih &quot;Reset & Ekstrak Ulang&quot;.
+                  </span>
+                </>
+              )}
               <br />
               <br />
               Pilih tindakan yang diinginkan:

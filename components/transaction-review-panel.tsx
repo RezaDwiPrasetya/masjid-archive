@@ -21,6 +21,7 @@ import {
   AlertTriangle,
   RotateCcw,
   Tag,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,12 +65,17 @@ interface Transaction {
   } | null;
   // V7: Kategori pengeluaran
   category?: string | null;
+  // F-025: Penanda baris manual
+  isManual?: boolean;
 }
 
 interface TransactionReviewPanelProps {
   transactions: Transaction[];
   hasSession: boolean;
   allVerifiedTransactions?: Transaction[];
+  // F-025: props untuk fitur tambah baris manual
+  attachmentId?: string;
+  extractionStatus?: string;
 }
 
 function formatRupiah(amount: string | number) {
@@ -416,6 +422,14 @@ function TransactionRow({
             <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium border bg-amber-500/15 border-amber-300 text-amber-800">
               <ClipboardCheck size={11} />
               Belum Diverifikasi
+            </span>
+          )}
+
+          {/* F-025: Badge Manual */}
+          {tx.isManual && (
+            <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium border bg-sky-500/15 border-sky-300 text-sky-800">
+              <Plus size={11} />
+              Manual
             </span>
           )}
         </div>
@@ -931,6 +945,8 @@ export function TransactionReviewPanel({
   transactions: initialTransactions,
   hasSession,
   allVerifiedTransactions,
+  attachmentId,
+  extractionStatus,
 }: TransactionReviewPanelProps) {
   const router = useRouter();
   const [transactions, setTransactions] =
@@ -943,6 +959,103 @@ export function TransactionReviewPanel({
     type: "existing" | "created" | "anonymous" | "none";
     message: string;
   } | null>(null);
+
+  // F-025: State dialog tambah baris manual
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [addLoading, setAddLoading] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+  const [addType, setAddType] = useState("pemasukan");
+  const [addAmount, setAddAmount] = useState("");
+  const [addDesc, setAddDesc] = useState("");
+  const [addDate, setAddDate] = useState("");
+  const [addDonorName, setAddDonorName] = useState("");
+  const [addCategory, setAddCategory] = useState<string | null>(null);
+
+  // F-025: Handler tambah baris manual
+  function resetAddForm() {
+    setAddType("pemasukan");
+    setAddAmount("");
+    setAddDesc("");
+    setAddDate("");
+    setAddDonorName("");
+    setAddCategory(null);
+    setAddError(null);
+  }
+
+  async function handleAddManual() {
+    if (!attachmentId) return;
+    setAddError(null);
+
+    const amount = parseFloat(addAmount);
+    if (isNaN(amount) || amount <= 0) {
+      setAddError("Nominal harus berupa angka positif.");
+      return;
+    }
+    if (!addDesc.trim()) {
+      setAddError("Keterangan wajib diisi.");
+      return;
+    }
+    if (!addDate) {
+      setAddError("Tanggal wajib diisi.");
+      return;
+    }
+
+    setAddLoading(true);
+    try {
+      const res = await fetch(`/api/attachments/${attachmentId}/transactions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: addType,
+          amount,
+          description: addDesc.trim(),
+          transactionDate: addDate,
+          donorNameRaw: addType === "pemasukan" ? (addDonorName.trim() || null) : null,
+          category: addType === "pengeluaran" ? (addCategory || null) : null,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setAddError(data.error ?? "Gagal menambahkan transaksi.");
+        return;
+      }
+
+      const json = await res.json();
+      const newTx = json.data;
+
+      // Tambahkan ke state lokal sebagai draf
+      setTransactions((prev) => [
+        ...prev,
+        {
+          id: newTx.id,
+          type: newTx.type,
+          amount: newTx.amount?.toString?.() ?? newTx.amount,
+          description: newTx.description,
+          transactionDate: newTx.transactionDate,
+          donorNameRaw: newTx.donorNameRaw,
+          donorId: null,
+          donor: null,
+          isVerified: false,
+          verifiedAt: null,
+          verifiedBy: null,
+          category: newTx.category,
+          isManual: true,
+        },
+      ]);
+
+      setAddDialogOpen(false);
+      resetAddForm();
+      router.refresh();
+    } catch {
+      setAddError("Tidak dapat terhubung ke server.");
+    } finally {
+      setAddLoading(false);
+    }
+  }
+
+  // Apakah tombol tambah baris manual ditampilkan
+  const canAddManual = hasSession && attachmentId && extractionStatus === "done";
 
   if (initialTransactions !== prevInitialTransactions) {
     setPrevInitialTransactions(initialTransactions);
@@ -1278,11 +1391,193 @@ export function TransactionReviewPanel({
     return null;
   }
 
+  // F-025: Dialog inline untuk tambah baris transaksi manual
+  function renderAddDialog() {
+    return (
+      <AlertDialog
+        open={addDialogOpen}
+        onOpenChange={(v) => {
+          if (!addLoading) {
+            setAddDialogOpen(v);
+            if (!v) resetAddForm();
+          }
+        }}
+      >
+        <AlertDialogPopup>
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Plus className="size-5" />
+              </div>
+              <div>
+                <AlertDialogTitle>Tambah Baris Transaksi</AlertDialogTitle>
+                <span className="text-xs text-muted-foreground">
+                  Baris yang terlewat oleh AI dapat ditambahkan manual
+                </span>
+              </div>
+            </div>
+            <AlertDialogDescription className="pt-2 text-stone-600">
+              Masukkan data transaksi yang terlewat. Baris akan disimpan sebagai draf dan perlu dikonfirmasi sebelum dihitung di dashboard.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-3 py-2">
+            {addError && (
+              <p className="flex items-center gap-1.5 text-xs text-destructive">
+                <AlertCircle size={12} /> {addError}
+              </p>
+            )}
+
+            <div className="grid grid-cols-2 gap-3">
+              {/* Tipe */}
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground font-medium">Tipe</label>
+                <Select
+                  value={addType}
+                  onValueChange={(v) => { if (v !== null) setAddType(v); }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pemasukan">Pemasukan</SelectItem>
+                    <SelectItem value="pengeluaran">Pengeluaran</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* Nominal */}
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground font-medium">
+                  Nominal (Rp)
+                </label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={addAmount}
+                  onChange={(e) => setAddAmount(e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+              {/* Keterangan */}
+              <div className="col-span-2 space-y-1">
+                <label className="text-xs text-muted-foreground font-medium">
+                  Keterangan
+                </label>
+                <Input
+                  value={addDesc}
+                  onChange={(e) => setAddDesc(e.target.value)}
+                  placeholder="Keterangan transaksi"
+                />
+              </div>
+              {/* Tanggal */}
+              <div className="col-span-2 space-y-1">
+                <label className="text-xs text-muted-foreground font-medium">
+                  Tanggal
+                </label>
+                <Input
+                  type="date"
+                  value={addDate}
+                  onChange={(e) => setAddDate(e.target.value)}
+                />
+              </div>
+              {/* Nama Donatur (khusus pemasukan) */}
+              {addType === "pemasukan" && (
+                <div className="col-span-2 space-y-1">
+                  <label className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                    <User size={12} className="text-muted-foreground" />
+                    Nama Donatur (opsional)
+                  </label>
+                  <Input
+                    value={addDonorName}
+                    onChange={(e) => setAddDonorName(e.target.value)}
+                    placeholder="Nama donatur (kosongkan jika tanpa donatur)"
+                    className="text-xs"
+                  />
+                </div>
+              )}
+              {/* Kategori Pengeluaran (khusus pengeluaran) */}
+              {addType === "pengeluaran" && (
+                <div className="col-span-2 space-y-1">
+                  <label className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                    <Tag size={12} className="text-muted-foreground" />
+                    Kategori Pengeluaran (opsional)
+                  </label>
+                  <Select
+                    value={addCategory ?? "__null__"}
+                    onValueChange={(v) =>
+                      setAddCategory(v === "__null__" ? null : v)
+                    }
+                  >
+                    <SelectTrigger className="w-full text-xs">
+                      <span>{getCategoryLabel(addCategory)}</span>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__null__">Tidak Dikategorikan</SelectItem>
+                      {EXPENSE_CATEGORIES.map((c) => (
+                        <SelectItem key={c.value} value={c.value}>
+                          {c.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={addLoading}
+              onClick={() => { setAddDialogOpen(false); resetAddForm(); }}
+            >
+              Batal
+            </Button>
+            <Button
+              size="sm"
+              disabled={addLoading}
+              onClick={handleAddManual}
+              className="gap-1.5"
+            >
+              {addLoading ? (
+                <>
+                  <Loader2 size={13} className="animate-spin" />
+                  Menyimpan…
+                </>
+              ) : (
+                <>
+                  <Plus size={13} />
+                  Tambah Baris
+                </>
+              )}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogPopup>
+      </AlertDialog>
+    );
+  }
+
   if (transactions.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground text-center py-6">
-        Belum ada transaksi yang diekstrak dari lampiran ini.
-      </p>
+      <div className="space-y-3">
+        <p className="text-sm text-muted-foreground text-center py-6">
+          Belum ada transaksi yang diekstrak dari lampiran ini.
+        </p>
+        {canAddManual && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => { resetAddForm(); setAddDialogOpen(true); }}
+            className="w-full gap-1.5 border-dashed border-primary/40 text-primary hover:bg-primary/5"
+          >
+            <Plus size={14} />
+            Tambah Baris Transaksi
+          </Button>
+        )}
+        {/* F-025: Dialog Tambah Baris Manual (empty state) */}
+        {renderAddDialog()}
+      </div>
     );
   }
 
@@ -1395,6 +1690,23 @@ export function TransactionReviewPanel({
           </div>
         </div>
       )}
+
+      {/* F-025: Tombol Tambah Baris Manual */}
+      {canAddManual && (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => { resetAddForm(); setAddDialogOpen(true); }}
+          className="w-full gap-1.5 border-dashed border-primary/40 text-primary hover:bg-primary/5"
+        >
+          <Plus size={14} />
+          Tambah Baris Transaksi
+        </Button>
+      )}
+
+      {/* F-025: Dialog Tambah Baris Manual */}
+      {renderAddDialog()}
     </div>
   );
 }
+

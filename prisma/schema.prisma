@@ -22,6 +22,7 @@ model User {
   sessions             Session[]
   reports              Report[]
   verifiedTransactions Transaction[] @relation("VerifiedBy")
+  createdTransactions  Transaction[] @relation("CreatedBy")
 }
 
 model Report {
@@ -80,6 +81,10 @@ model Transaction {
   verifiedAt      DateTime?  // Waktu konfirmasi
   // V7: Kategorisasi pengeluaran — hanya relevan untuk type = "pengeluaran", null = belum dikategorikan
   category        String?    // "operasional" | "honor" | "sosial" | "pembangunan" | "konsumsi" | "administrasi" | "lainnya" | null
+  // F-025: Penanda baris transaksi yang ditambahkan manual oleh bendahara (bukan hasil AI)
+  isManual        Boolean    @default(false)
+  createdById     String?    // ID User yang menambahkan baris manual; null untuk hasil ekstraksi AI
+  createdBy       User?      @relation("CreatedBy", fields: [createdById], references: [id])
 }
 
 // V5: Entity donatur lintas periode — satu donatur bisa muncul di banyak laporan/minggu
