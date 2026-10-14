@@ -67,8 +67,15 @@ Aplikasi web arsip & manajemen keuangan digital untuk **DKM Masjid Al-Luqman** (
   - **Pengetatan Middleware (`proxy.ts`)**: Rute `/unggah` hanya dapat diakses staf (`ADMIN`/`BENDAHARA`), rute `/pengguna` hanya `ADMIN`. Akun dengan role `null` otomatis dialihkan ke `/dashboard?error=forbidden`.
   - **Proteksi Data Publik**: Mengganti seluruh query `include: { attachments: true, uploadedBy: true }` dengan `select` eksplisit pada `GET /api/reports`, `GET /api/reports/[id]`, serta Server Component (`app/page.tsx`, `app/cari/page.tsx`, `app/laporan/[id]/page.tsx`) untuk mencegah kebocoran JSON mentah LLM Gemini (`extractionRawResponse`), `extractionError`, serta alamat email pengunggah ke publik tanpa login.
   - **Pembersihan Total Legacy Auth**: Menghapus dependensi `iron-session`, berkas `lib/session.ts`, dan endpoint usang `app/api/auth/login` serta `app/api/auth/logout`.
+- **F-025 / Issue #073 — Tambah Baris Transaksi Manual Saat Review Ekstraksi (Selesai Penuh & Teruji)**:
+  - Mitigasi baris transaksi kas yang terlewat oleh Vision-LLM atau dokumen/spreadsheet tanpa harus ekstrak ulang dari nol.
+  - Field additive model `Transaction`: `isManual Boolean @default(false)` dan `createdById String?` (relasi opsional ke `User`).
+  - Endpoint baru `POST /api/attachments/:id/transactions`: dikunci staf (`isStaff`), validasi nominal > 0, tipe (`pemasukan` | `pengeluaran`), tanggal ISO, keterangan max 500 karakter, kategori terdaftar (khusus pengeluaran), dan nama donatur raw (khusus pemasukan).
+  - Menghasilkan baris draf (`isVerified: false`, `isManual: true`), mempertahankan prinsip "satu pintu masuk" (bendahara tetap meninjau & mengonfirmasi sebelum masuk kas resmi).
+  - Preservasi baris manual pada ekstrak ulang: opsi `Simpan Lama & Tambah Draf` (`replaceVerified: false`) mempertahankan baris manual yang belum diverifikasi (`isVerified: false, isManual: false` dihapus). Opsi `Reset & Ekstrak Ulang` (`replaceVerified: true`) menghapus seluruh baris dengan peringatan dinamis di dialog konfirmasi (`manualCount > 0`).
+  - Komponen UI: Tombol `+ Tambah Baris Transaksi` dengan border dashed di `TransactionReviewPanel` (tampil saat ekstraksi selesai, termasuk jika hasil AI 0 baris), form inline dialog lengkap, serta badge visual biru muda `Manual` pada baris transaksi manual.
 - Seluruh commit sudah digabungkan ke `main` dan sinkron dengan remote GitHub `origin/main`.
-- Status kode: `tsc --noEmit` lolos 0 error, `npm run lint` lolos 0 error, production build lolos 100%, 80 suite test (otorisasi + QA hardening + file validation) lolos 100%.
+- Status kode: `tsc --noEmit` lolos 0 error, `npm run lint` lolos 0 error, production build lolos 100%, 95 suite test (otorisasi + QA hardening + file validation + F-025 manual transaction) lolos 100%.
 - **Fokus Saat Ini**: Pemeliharaan stabil, operasional riil DKM Al-Luqman, dan keandalan sistem produksi.
 
 ---
@@ -246,6 +253,11 @@ Tidak ada bug fungsional aktif di codebase. Seluruh fase V1 s/d V7 telah tuntas 
   1. `Reset & Ekstrak Ulang` (mengirim `{ replaceVerified: true }` ke API untuk menghapus transaksi lama sebelum memasukkan hasil baru).
   2. `Simpan Lama & Tambah Draf` (mengirim `{ replaceVerified: false }`, hanya menghapus unverified).
   Hal ini mencegah insiden duplikasi nilai kas ganda akibat konfirmasi berulang dari ekstrak ulang.
+- Proteksi Baris Manual pada Ekstrak Ulang (Issue #073 / F-025):
+  - Sistem tetap "satu pintu masuk": tidak ada form input transaksi liar tanpa konteks laporan. Tambah baris manual HANYA bisa dilakukan dalam konteks review lampiran tertentu (`attachmentId` dan `reportId` wajib, `extractionStatus === "done"`).
+  - Baris manual baru selalu berstatus draf (`isVerified: false`, `isManual: true`), wajib ditinjau dan dikonfirmasi sebelum dihitung di saldo kas resmi.
+  - Pada "Ekstrak Ulang" dengan opsi `Simpan Lama & Tambah Draf` (`replaceVerified: false`), baris manual unverified DIPERTAHANKAN (`isVerified: false, isManual: false` yang dihapus) agar bendahara tidak kehilangan input manual yang telah diketik.
+  - Pada opsi `Reset & Ekstrak Ulang` (`replaceVerified: true`), seluruh transaksi lampiran (termasuk manual) direset, dengan peringatan jumlah baris manual di modal konfirmasi.
 - Pengurutan Halaman Cari (`/cari`): Secara default diurutkan berdasarkan aktivitas terbaru (`terbaru_aktivitas`) dengan menghitung `lastActivity` (waktu terbesar dari `report.uploadedAt`, `attachments.uploadedAt`, `attachments.extractedAt`, dan `transactions.verifiedAt`), serta menyediakan opsi alternatif `tanggal_desc` dan `tanggal_asc`.
 
 ---
@@ -308,6 +320,12 @@ Shared logic di `lib/donor-matching.ts`, `lib/donor-service.ts`, dan `lib/expens
    - Ketahanan konkurensi donatur `lib/donor-service.ts` (Prisma error P2002 fallback ke `findUnique`).
    - Sanitasi query uploader null di `app/cari/page.tsx` dan optimasi ESLint `globalIgnores`.
    - Seluruh uji regresi otomatis lolos 100% (80 test passed).
+7. **F-025: Tambah Baris Transaksi Manual Saat Review Ekstraksi (Issue #073 — Selesai Penuh & Teruji)**:
+   - Skema additive `isManual` & `createdById` pada model `Transaction`.
+   - Endpoint `POST /api/attachments/:id/transactions` dengan validasi ketat & otorisasi staf (`isStaff`).
+   - Logika preservasi baris manual pada endpoint ekstraksi (`deleteMany` hanya `isVerified: false, isManual: false`).
+   - Komponen UI: dialog form tambah baris manual & tombol "+ Tambah Baris Transaksi" di `TransactionReviewPanel`, peringatan baris manual pada dialog konfirmasi `ExtractButton`, serta badge `Manual` pada baris transaksi.
+   - Test suite baru `scripts/test-manual-transaction.ts` lolos 100% (15/15 lulus: skema, validasi input, preservasi ekstrak ulang, dan lifecycle DB). Total test suite proyek kini 95 test passed.
 
 ---
 

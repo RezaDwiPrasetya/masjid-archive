@@ -102,6 +102,7 @@ export default async function DetailLaporanPage({
               verifiedById: true,
               verifiedAt: true,
               category: true,
+              isManual: true,
               verifiedBy: {
                 select: { id: true, name: true },
               },
@@ -204,6 +205,9 @@ export default async function DetailLaporanPage({
               const unverifiedCount = att.transactions.filter(
                 (t) => !t.isVerified
               ).length;
+              const manualCount = att.transactions.filter(
+                (t) => t.isManual
+              ).length;
 
               return (
                 <div
@@ -264,12 +268,13 @@ export default async function DetailLaporanPage({
                               extractionModel={att.extractionModel}
                               transactionCount={txCount}
                               verifiedCount={verifiedCount}
+                              manualCount={manualCount}
                             />
                           </div>
                         )}
 
                         {/* ── Panel Review Transaksi (F-012) ── */}
-                        {txCount > 0 && (
+                        {(txCount > 0 || (staff && att.extractionStatus === "done")) && (
                           <div className="space-y-3 pt-2">
                             <div className="flex items-center justify-between">
                               <h2 className="text-base font-bold text-on-surface font-sans">
@@ -297,9 +302,12 @@ export default async function DetailLaporanPage({
                                 donor: t.donor
                                   ? { id: t.donor.id, name: t.donor.name }
                                   : null,
+                                isManual: t.isManual,
                               }))}
                               hasSession={staff}
                               allVerifiedTransactions={allVerifiedInReport}
+                              attachmentId={att.id}
+                              extractionStatus={att.extractionStatus}
                             />
                           </div>
                         )}
@@ -385,12 +393,13 @@ export default async function DetailLaporanPage({
                               extractionModel={att.extractionModel}
                               transactionCount={txCount}
                               verifiedCount={verifiedCount}
+                              manualCount={manualCount}
                             />
                           </div>
                         )}
 
                         {/* ── Panel Review Transaksi (F-012) ── */}
-                        {txCount > 0 && (
+                        {(txCount > 0 || (staff && att.extractionStatus === "done")) && (
                           <div className="space-y-3 pt-2">
                             <div className="flex items-center justify-between">
                               <h2 className="text-base font-bold text-on-surface font-sans">
@@ -418,9 +427,12 @@ export default async function DetailLaporanPage({
                                 donor: t.donor
                                   ? { id: t.donor.id, name: t.donor.name }
                                   : null,
+                                isManual: t.isManual,
                               }))}
                               hasSession={staff}
                               allVerifiedTransactions={allVerifiedInReport}
+                              attachmentId={att.id}
+                              extractionStatus={att.extractionStatus}
                             />
                           </div>
                         )}
@@ -490,12 +502,13 @@ export default async function DetailLaporanPage({
                             extractionModel={att.extractionModel}
                             transactionCount={txCount}
                             verifiedCount={verifiedCount}
+                            manualCount={manualCount}
                           />
                         </div>
                       )}
 
                       {/* ── Panel Review Transaksi (F-012) ── */}
-                      {txCount > 0 && (
+                      {(txCount > 0 || (staff && att.extractionStatus === "done")) && (
                         <div className="space-y-3 pt-2">
                           <div className="flex items-center justify-between">
                             <h2 className="text-base font-bold text-on-surface font-sans">
@@ -523,9 +536,12 @@ export default async function DetailLaporanPage({
                               donor: t.donor
                                 ? { id: t.donor.id, name: t.donor.name }
                                 : null,
+                              isManual: t.isManual,
                             }))}
                             hasSession={staff}
                             allVerifiedTransactions={allVerifiedInReport}
+                            attachmentId={att.id}
+                            extractionStatus={att.extractionStatus}
                           />
                         </div>
                       )}

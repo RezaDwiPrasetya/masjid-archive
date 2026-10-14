@@ -88,7 +88,10 @@ export async function POST(
       prisma.transaction.deleteMany({
         where: {
           attachmentId: id,
-          ...(replaceVerified ? {} : { isVerified: false }),
+          // F-025: replaceVerified=true → hapus semua (termasuk manual & verified)
+          //        replaceVerified=false → hapus HANYA draf AI (isVerified=false, isManual=false)
+          //        Baris manual draf DIPERTAHANKAN agar bendahara tidak kehilangan input manual
+          ...(replaceVerified ? {} : { isVerified: false, isManual: false }),
         },
       }),
       // Insert baris transaksi baru dari hasil ekstraksi
