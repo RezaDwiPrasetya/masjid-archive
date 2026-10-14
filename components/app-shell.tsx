@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { AuthButton } from "@/components/auth-button";
 import { useSession } from "next-auth/react";
+import { isStaff, isAdmin } from "@/lib/auth-guard";
 
 function MasjidEmblem({ className = "h-8 w-8" }: { className?: string }) {
   return (
@@ -43,10 +44,15 @@ export function AppShell({
     { href: "/donatur", label: "Donatur", icon: HeartHandshake },
     { href: "/pengeluaran", label: "Pengeluaran", icon: Receipt },
     { href: "/cari", label: "Cari", icon: Search },
-    { href: "/unggah", label: "Unggah", icon: ImagePlus },
   ];
 
-  if (session?.user?.role === "ADMIN") {
+  // Rute operasional /unggah khusus staf pengurus DKM (Bendahara atau Admin)
+  if (isStaff(session)) {
+    navItems.push({ href: "/unggah", label: "Unggah", icon: ImagePlus });
+  }
+
+  // Rute administratif /pengguna khusus Administrator sistem (ADMIN)
+  if (isAdmin(session)) {
     navItems.push({ href: "/pengguna", label: "Pengguna", icon: Users });
   }
 

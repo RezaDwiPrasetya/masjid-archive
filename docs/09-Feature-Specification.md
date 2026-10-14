@@ -161,7 +161,9 @@
 3. **Administrator (`role: "ADMIN"`)**: Wewenang penuh staf + manajemen pengguna dan penetapan peran di `/pengguna` + hak eksklusif menghapus laporan kas utama (`DELETE /api/reports/:id`).
 **Acceptance Criteria:**
 - [x] Publik (Jamaah / role `null`) tetap leluasa mengakses Beranda (Arsip), Pencarian, Detail Laporan terverifikasi, Grafik Tren, dan Transparansi Donatur/Pengeluaran (mode baca).
-- [x] Pengguna tanpa sesi atau ber-role `null` diblokir dan dialihkan ke `/dashboard?error=forbidden` jika mencoba mengakses rute `/unggah`.
+- [x] Menu "Unggah" di sidebar desktop dan navigasi mobile disembunyikan secara otomatis untuk Jamaah (role `null`) dan pengunjung publik via `isStaff(session)`.
+- [x] Menu "Pengguna" di navigasi disembunyikan secara otomatis untuk non-admin via `isAdmin(session)`.
+- [x] Pengguna tanpa sesi atau ber-role `null` diblokir dan dialihkan ke `/dashboard?error=forbidden` jika mencoba mengakses rute `/unggah` secara manual, dan Dashboard menyajikan banner notifikasi akses ditolak yang jelas dan dapat ditutup.
 - [x] Rute `/pengguna` dilindungi ketat dan hanya dapat dibuka oleh akun dengan peran `ADMIN`.
 - [x] Seluruh endpoint API mutasi data (POST / PATCH / DELETE) menolak akses tanpa sesi dengan `401 Unauthorized` dan menolak akun login ber-role `null` dengan `403 Forbidden`.
 - [x] Aksi hapus dokumen laporan kas (`DELETE /api/reports/:id`) dan tombol "Hapus Laporan" di UI dibatasi secara eksklusif hanya untuk Administrator (`ADMIN`).

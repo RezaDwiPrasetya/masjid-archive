@@ -77,7 +77,12 @@
 - [x] Logika preservasi baris manual saat ekstrak ulang (`POST /api/attachments/:id/extract`)
 - [x] Warning alert baris manual pada modal dialog konfirmasi ekstrak ulang (`ExtractButton`)
 - [x] Visual badge penanda "Manual" pada tabel review transaksi
-- [x] Otomatisasi pengujian komprehensif manual transaction (`scripts/test-manual-transaction.ts` 15/15 lulus)
+- [x] Otomatisasi pengujian komprehensif manual transaction (`scripts/test-manual-transaction.ts` 21/21 lulus)
+
+### Milestone 12 — Role-Based Upload Navigation & Access Denial Alert (V10.6, Issue #074 / F-028)
+- [x] Kondisional menu navigasi "Unggah" di sidebar desktop dan bilah navigasi mobile (`components/app-shell.tsx`) khusus staf DKM (`isStaff(session)`)
+- [x] Penangkapan parameter `?error=forbidden` pada Dashboard (`app/dashboard/page.tsx` & `components/dashboard-client.tsx`)
+- [x] Komponen Banner Alert interaktif di Dashboard dengan penjelasan peran Jemaah vs Staf DKM dan tombol tutup (dismiss) dengan sinkronisasi URL tanpa reload
 
 ## Release Criteria
 
@@ -88,10 +93,19 @@
 
 ## Version
 
-Current: `0.10.5` (Fase V10.5: Tambah Baris Transaksi Manual Saat Review Ekstraksi — Issue #073 / F-025)
+Current: `0.10.6` (Fase V10.6: Kendali Visibilitas Menu Unggah Berbasis Role & Notifikasi Akses Terbatas — Issue #074 / F-028)
 Next: `1.0.0`
 
 ## Changelog
+
+### 0.10.6 (2026-10-14) — Fase V10.6: Kendali Visibilitas Menu Unggah Berbasis Role & Notifikasi Akses Terbatas (Issue #074 / F-028)
+- **Kendali Visibilitas Navigasi Berbasis Peran (`components/app-shell.tsx`)**:
+  - Menu **"Unggah"** kini disembunyikan secara otomatis bagi pengguna publik dan akun yang login dengan peran **Jemaah** (`role: null`) menggunakan helper `isStaff(session)`.
+  - Hanya staf operasional DKM (**Bendahara** dan **Administrator**) yang dapat melihat dan mengakses tombol Unggah di sidebar desktop dan navigasi mobile.
+- **Banner Notifikasi Akses Ditolak di Dashboard (`components/dashboard-client.tsx`)**:
+  - Menangkap parameter `?error=forbidden` ketika pengguna tanpa hak akses staf mencoba membuka rute `/unggah` secara langsung.
+  - Menampilkan banner peringatan ramah pengguna berwarna kuning/amber dengan ikon `ShieldAlert`, menjelaskan mengapa akses ditolak dan peran akun saat ini.
+  - Dilengkapi tombol tutup (*dismiss*) yang menghapus parameter URL via `window.history.replaceState` tanpa *reload*.
 
 ### 0.10.5 (2026-10-14) — Fase V10.5: Penambahan Baris Transaksi Manual Saat Review Ekstraksi (Issue #073 / F-025)
 - **Fitur Tambah Baris Transaksi Manual (`components/transaction-review-panel.tsx`)**:

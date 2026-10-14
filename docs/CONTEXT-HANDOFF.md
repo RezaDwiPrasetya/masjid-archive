@@ -64,7 +64,7 @@ Aplikasi web arsip & manajemen keuangan digital untuk **DKM Masjid Al-Luqman** (
   - **Helper Terpusat (`lib/auth-guard.ts`)**: `isStaff(session)` untuk hak operasional (unggah, ekstraksi AI, verifikasi, edit donatur & kategori) dan `isAdmin(session)` untuk wewenang tertinggi (kelola pengguna & hapus laporan).
   - **Pengetatan Seluruh Handler Mutasi (`app/api/`)**: Aksi `DELETE /api/reports/:id` dikunci eksklusif `ADMIN` (403 untuk lainnya); seluruh aksi mutasi `POST`/`PATCH`/`DELETE` lainnya dikunci untuk `isStaff`.
   - **Penyembunyian Transaksi Draf**: Endpoint `GET /api/reports/[id]/transactions` dan Server Component `app/laporan/[id]/page.tsx` mengunci transaksi belum terverifikasi (`isVerified: false`) khusus bagi staf (`isStaff`).
-  - **Pengetatan Middleware (`proxy.ts`)**: Rute `/unggah` hanya dapat diakses staf (`ADMIN`/`BENDAHARA`), rute `/pengguna` hanya `ADMIN`. Akun dengan role `null` otomatis dialihkan ke `/dashboard?error=forbidden`.
+  - **Pengetatan Middleware (`proxy.ts`) & Navigasi**: Rute `/unggah` hanya dapat diakses staf (`ADMIN`/`BENDAHARA`), rute `/pengguna` hanya `ADMIN`. Akun dengan role `null` otomatis dialihkan ke `/dashboard?error=forbidden` dan disajikan banner notifikasi ramah pengguna. Menu navigasi "Unggah" di sidebar desktop dan navigasi mobile dikendalikan kondisional via `isStaff(session)` sehingga disembunyikan bagi Jamaah.
   - **Proteksi Data Publik**: Mengganti seluruh query `include: { attachments: true, uploadedBy: true }` dengan `select` eksplisit pada `GET /api/reports`, `GET /api/reports/[id]`, serta Server Component (`app/page.tsx`, `app/cari/page.tsx`, `app/laporan/[id]/page.tsx`) untuk mencegah kebocoran JSON mentah LLM Gemini (`extractionRawResponse`), `extractionError`, serta alamat email pengunggah ke publik tanpa login.
   - **Pembersihan Total Legacy Auth**: Menghapus dependensi `iron-session`, berkas `lib/session.ts`, dan endpoint usang `app/api/auth/login` serta `app/api/auth/logout`.
 - **F-025 / Issue #073 — Tambah Baris Transaksi Manual Saat Review Ekstraksi (Selesai Penuh & Teruji)**:
@@ -329,7 +329,10 @@ Shared logic di `lib/donor-matching.ts`, `lib/donor-service.ts`, dan `lib/expens
    - Endpoint `POST /api/attachments/:id/transactions` dengan validasi ketat & otorisasi staf (`isStaff`).
    - Logika preservasi baris manual pada endpoint ekstraksi (`deleteMany` hanya `isVerified: false, isManual: false`).
    - Komponen UI: dialog form tambah baris manual & tombol "+ Tambah Baris Transaksi" di `TransactionReviewPanel`, peringatan baris manual pada dialog konfirmasi `ExtractButton`, serta badge `Manual` pada baris transaksi.
-   - Test suite baru `scripts/test-manual-transaction.ts` lolos 100% (15/15 lulus: skema, validasi input, preservasi ekstrak ulang, dan lifecycle DB). Total test suite proyek kini 95 test passed.
+8. **F-028: Kendali Visibilitas Menu Unggah Berbasis Role & Notifikasi Akses Terbatas (Issue #074 — Selesai Penuh)**:
+   - Menu `Unggah` di sidebar desktop dan navigasi mobile (`components/app-shell.tsx`) kini dikendalikan oleh `isStaff(session)`, sehingga disembunyikan secara elegan bagi akun Jamaah (`role: null`) dan pengunjung publik.
+   - Penangkapan parameter `?error=forbidden` pada Dashboard (`app/dashboard/page.tsx` & `components/dashboard-client.tsx`) ketika pengguna tanpa wewenang staf dialihkan oleh middleware/proxy.
+   - Komponen banner notifikasi informatif di Dashboard dengan penjelasan ramah peran akun serta tombol tutup (*dismiss*) yang membersihkan URL peramban via `window.history.replaceState` tanpa *page reload*.
 
 ---
 

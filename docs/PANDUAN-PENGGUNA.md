@@ -116,6 +116,9 @@ Sistem dapat diakses melalui navigasi di sidebar (desktop) atau bilah navigasi b
 | **Unggah** | ➕ | `/unggah` — Unggah laporan baru | Bendahara & Admin |
 | **Pengguna** | 👥 | `/pengguna` — Manajemen akun | Admin saja |
 
+> **Catatan Kendali Akses Cerdas (Role-Based Visibility)**:  
+> Untuk menjaga kenyamanan jemaah, menu **Unggah** dan **Pengguna** disembunyikan secara otomatis dari bilah navigasi jika akun Anda belum masuk (*guest*) atau memiliki peran **Jemaah**. Jika pengguna tanpa wewenang staf mencoba membuka alamat `/unggah` secara langsung melalui peramban, sistem akan mengalihkan kembali ke Dashboard disertai kotak pemberitahuan (*Banner Alert*) berwarna kuning yang menjelaskan bahwa halaman tersebut khusus bagi pengurus DKM.
+
 ---
 
 ## 5. Arsip Laporan — Halaman Utama

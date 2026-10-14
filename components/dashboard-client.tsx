@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   TrendingUp,
   TrendingDown,
@@ -15,6 +15,8 @@ import {
   Info,
   Printer,
   FileSpreadsheet,
+  ShieldAlert,
+  X,
 } from "lucide-react";
 import {
   BarChart,
@@ -61,6 +63,7 @@ interface DashboardClientProps {
   initialFinalBalance: number | null;
   latestReportDate: string | null;
   latestReportId: string | null;
+  authError?: string | null;
 }
 
 const chartConfig = {
@@ -225,8 +228,19 @@ export function DashboardClient({
   initialFinalBalance,
   latestReportDate,
   latestReportId,
+  authError,
 }: DashboardClientProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isForbidden = authError === "forbidden" || searchParams?.get("error") === "forbidden";
+  const [showForbiddenAlert, setShowForbiddenAlert] = React.useState(isForbidden);
+
+  React.useEffect(() => {
+    if (isForbidden) {
+      setShowForbiddenAlert(true);
+    }
+  }, [isForbidden]);
+
   const [granularity, setGranularity] = React.useState<"weekly" | "monthly">("weekly");
   const animatedBalance = useCountUp(initialFinalBalance ?? 0, 600);
   const [trendData, setTrendData] = React.useState<{
@@ -487,6 +501,38 @@ export function DashboardClient({
   return (
     <PageShell heroBand={heroContent}>
       <div className="space-y-8">
+        {/* Banner Notifikasi Akses Ditolak (Issue #074) */}
+        {showForbiddenAlert && (
+          <div className="rounded-xl border border-amber-300/80 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/40 p-4 text-amber-950 dark:text-amber-100 flex items-start justify-between gap-3 shadow-xs animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="flex items-start gap-3 min-w-0">
+              <ShieldAlert className="h-5 w-5 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div className="flex-1 text-xs space-y-1">
+                <div className="font-semibold text-sm text-amber-900 dark:text-amber-200">
+                  Akses Ditolak — Fitur Khusus Staf Pengurus DKM
+                </div>
+                <p className="leading-relaxed text-amber-800 dark:text-amber-300">
+                  Anda dialihkan kembali ke Dashboard karena halaman yang dituju (seperti <strong>Unggah Laporan</strong> atau <strong>Manajemen Pengguna</strong>) memerlukan hak akses staf (<strong>Bendahara</strong> atau <strong>Administrator</strong>). Akun Anda saat ini memiliki hak akses sebagai <strong>Jemaah</strong>. Silakan hubungi Administrator DKM jika memerlukan peningkatan wewenang operasional.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setShowForbiddenAlert(false);
+                if (typeof window !== "undefined" && window.history.replaceState) {
+                  const url = new URL(window.location.href);
+                  url.searchParams.delete("error");
+                  window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+                }
+              }}
+              className="p-1 rounded-md text-amber-700 hover:text-amber-900 hover:bg-amber-200/50 dark:text-amber-400 dark:hover:text-amber-200 dark:hover:bg-amber-900/40 transition-colors shrink-0"
+              title="Tutup pemberitahuan"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
+
         {/* Banner Status Pengumpulan Data */}
         <Alert
           variant="info"

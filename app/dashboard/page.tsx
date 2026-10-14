@@ -9,7 +9,13 @@ export const metadata = {
   description: "Visualisasi tren pemasukan, pengeluaran kas masjid, dan saldo kas terkini.",
 };
 
-export default async function DashboardPage() {
+interface DashboardPageProps {
+  searchParams: Promise<{ error?: string }>;
+}
+
+export default async function DashboardPage({ searchParams }: DashboardPageProps) {
+  const { error } = await searchParams;
+
   // Ambil laporan terbaru yang memiliki finalBalance terisi untuk KPI Saldo Kas Terkini
   const latestReportWithBalance = await prisma.report.findFirst({
     where: {
@@ -43,6 +49,7 @@ export default async function DashboardPage() {
         initialFinalBalance={initialFinalBalance}
         latestReportDate={latestReportDate}
         latestReportId={latestReportId}
+        authError={error}
       />
     </AppShell>
   );
