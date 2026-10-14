@@ -70,6 +70,15 @@
 - [x] Refaktor Lampiran PDF Mutasi Kas menjadi multi-halaman dinamis dengan font 8.5pt, baris 20pt, word-wrap tanpa pemotongan "…", header berulang, dan baris total tunggal (Issue #072)
 - [x] Perbaikan garis border pemisah baris tabel lampiran PDF (#c2c9bb) langsung pada rectangle agar tidak tertimpa latar belakang zebra striping (Issue #072)
 
+### Milestone 11 — Manual Transaction Addition on Extraction Review (V10.5, Issue #073 / F-025)
+- [x] Tombol & Dialog Tambah Baris Transaksi Manual di `TransactionReviewPanel`
+- [x] Endpoint `POST /api/attachments/:id/transactions` dengan otorisasi staf DKM & validasi ketat
+- [x] Prisma schema additive: `Transaction.isManual` (Boolean) & `Transaction.createdById` (FK User)
+- [x] Logika preservasi baris manual saat ekstrak ulang (`POST /api/attachments/:id/extract`)
+- [x] Warning alert baris manual pada modal dialog konfirmasi ekstrak ulang (`ExtractButton`)
+- [x] Visual badge penanda "Manual" pada tabel review transaksi
+- [x] Otomatisasi pengujian komprehensif manual transaction (`scripts/test-manual-transaction.ts` 15/15 lulus)
+
 ## Release Criteria
 
 - [x] Alur inti (unggah, arsip, cari, detail, ekstraksi, verifikasi) berjalan tanpa error
@@ -79,10 +88,29 @@
 
 ## Version
 
-Current: `0.10.4` (Fase V10.4: Refaktor Lampiran PDF Multi-Halaman & Border Grid — Issue #072)
+Current: `0.10.5` (Fase V10.5: Tambah Baris Transaksi Manual Saat Review Ekstraksi — Issue #073 / F-025)
 Next: `1.0.0`
 
 ## Changelog
+
+### 0.10.5 (2026-10-14) — Fase V10.5: Penambahan Baris Transaksi Manual Saat Review Ekstraksi (Issue #073 / F-025)
+- **Fitur Tambah Baris Transaksi Manual (`components/transaction-review-panel.tsx`)**:
+  - Tombol **`+ Tambah Baris Transaksi`** di header tabel review untuk staf DKM (Admin/Bendahara).
+  - Modal dialog interaktif untuk input: Tanggal, Deskripsi/Uraian, Jenis (Pemasukan/Pengeluaran), Kategori Pengeluaran (wajib untuk pengeluaran), dan Nominal (Rupiah).
+  - Badge visual ungu **"Manual"** untuk memudahkan identifikasi data inputan staf versus data hasil Vision-LLM.
+  - Review panel tetap tampil dan responsif saat ekstraksi selesai meski menghasilkan 0 baris transaksi, memungkinkan staf memasukkan transaksi secara manual.
+- **Backend API & Audit Trail (`app/api/attachments/[id]/transactions/route.ts`)**:
+  - Endpoint baru `POST /api/attachments/:id/transactions` dilindungi otorisasi `ADMIN` & `BENDAHARA`.
+  - Validasi ketat format tanggal ISO, panjang deskripsi, nominal numerik positif finite, serta keselarasan tipe dan kategori pengeluaran.
+  - Jejak audit transparan mencatat `createdById` (relasi FK ke `User`) untuk setiap baris transaksi yang ditambahkan manual.
+- **Preservasi Baris Manual Saat Ekstrak Ulang (`app/api/attachments/[id]/extract/route.ts`)**:
+  - Logika pembersihan draf saat ekstrak ulang hanya menghapus data otomatis (`where: { attachmentId: id, isVerified: false, isManual: false }`).
+  - Baris manual (`isManual: true`) dan baris terverifikasi (`isVerified: true`) aman tersimpan dan tidak terhapus selama proses ekstrak ulang biasa.
+  - Pilihan reset total (`replaceVerified: true`) tetap tersedia jika pengguna secara sadar ingin membersihkan seluruh baris lampiran.
+- **Peringatan Dinamis di Dialog Ekstrak Ulang (`components/extract-button.tsx`)**:
+  - Modal konfirmasi ekstrak ulang mendeteksi jumlah baris manual (`manualCount`) dan menampilkan alert peringatan khusus terkait preservasi baris manual.
+- **Test Automation Suite (`scripts/test-manual-transaction.ts`)**:
+  - 15 uji coba mencakup otentikasi, validasi data, preservasi ekstrak ulang, reset total, dan audit trail, dengan tingkat kelulusan 100% (15/15 passed).
 
 ### 0.10.4 (2026-10-09) — Fase V10.4: Refaktor Lampiran PDF Multi-Halaman & Border Grid (Issue #072)
 - **Refaktor Lampiran PDF Multi-Halaman Lega (`lib/export-pdf.ts`)**:

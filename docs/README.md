@@ -10,9 +10,9 @@ Membantu DKM Masjid Al-Luqman (dan pengurus masjid sejenis) menjaga arsip lapora
 
 ### Current Status
 
-- Phase: Fase V10 (Fitur Cetak & Ekspor Kas Tahunan Penuh & Perapihan Toolbar Laporan — Issue #068, #069, #070, #071) Selesai
-- Version: 0.10.3
-- Last Updated: 2026-10-09 (Fase V10.3: Tombol Tunggal Cetak Laporan pada Pratinjau Cetak)
+- Phase: Fase V10.5 (Tambah Baris Transaksi Manual Saat Review Ekstraksi — Issue #073 / F-025) Selesai
+- Version: 0.10.5
+- Last Updated: 2026-10-14 (Fase V10.5: Fitur Tambah Baris Transaksi Manual & Preservasi Ekstrak Ulang)
 
 ### Daftar Isi
 

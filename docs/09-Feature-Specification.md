@@ -31,6 +31,7 @@
 | F-025 | Filter Periode Fiskal & Ekspor Terpadu Tanpa Modal | Must | ✅ Done (V9) |
 | F-026 | Unified AppShell & Sinkronisasi Ikon Brand | Should | ✅ Done (V9) |
 | F-027 | Cetak & Ekspor Rekapitulasi Kas Tahunan Penuh & Perapihan Toolbar | Must | ✅ Done (V10) |
+| F-028 | Tambah Baris Transaksi Manual Saat Review Ekstraksi (Mitigasi OCR/AI) | Must | ✅ Done (V10.5 / Issue #073) |
 
 ## Feature Details — V1
 
@@ -588,6 +589,46 @@
 - [x] Prefiks "Rp" hanya muncul di header kolom nominal dan baris TOTAL; sel data transaksi hanya menampilkan angka berformat id-ID atau "-" (Issue #072).
 - [x] Garis pemisah tabel (#c2c9bb) tampil jelas dan konsisten dengan properti border pada rectangle baris, tidak tertimpa latar belakang zebra striping (Issue #072).
 - [x] Penomoran halaman global two-pass ("Halaman X dari Y") dan identitas DKM tercetak di margin bawah setiap lembar (Issue #072).
+
+---
+
+### F-028 — Tambah Baris Transaksi Manual Saat Review Ekstraksi (Issue #073 / F-025)
+
+**Objective:** Memitigasi baris transaksi kas yang terlewat oleh Vision-LLM (Gemini) atau berkas dokumen/spreadsheet saat proses ekstraksi tanpa harus memaksa bendahara melakukan "Ekstrak Ulang" berulang kali yang belum tentu membaca baris tersebut, sehingga saldo kas sistem dapat direkonsiliasi secara presisi dengan saldo fisik buku kas.
+**User:** Bendahara DKM & Administrator (khusus staf terautentikasi)
+**Process:**
+- **Prinsip Satu Pintu Masuk:**
+  - Penambahan baris transaksi manual HANYA dapat dilakukan di dalam konteks review lampiran berkas yang sudah ada dan berstatus ekstraksi `done` (`attachmentId` dan `reportId` wajib).
+  - Tidak ada menu input transaksi bebas di navbar yang dapat memicu transaksi liar tanpa berkas bukti kas.
+- **Komponen UI Panel Review (`components/transaction-review-panel.tsx`)**:
+  - Tombol **"+ Tambah Baris Transaksi"** bergaya border *dashed* terpasang di bawah daftar transaksi (dan di dalam *empty state* jika hasil ekstraksi AI membaca 0 baris transaksi).
+  - Dialog modal inline menyediakan formulir lengkap:
+    - **Tipe**: Pemasukan atau Pengeluaran.
+    - **Nominal (Rp)**: Validasi angka positif > 0.
+    - **Keterangan**: Deskripsi transaksi kas (maksimal 500 karakter).
+    - **Tanggal Transaksi**: Format tanggal YYYY-MM-DD.
+    - **Nama Donatur (opsional, khusus pemasukan)**: Terintegrasi dengan alur pencocokan donatur.
+    - **Kategori Pengeluaran (opsional, khusus pengeluaran)**: Dropdown 7 kategori baku (`operasional`, `honor`, `sosial`, `pembangunan`, `konsumsi`, `administrasi`, `lainnya`, atau Tidak Dikategorikan).
+- **Backend API & Integritas Data (`app/api/attachments/:id/transactions/route.ts`)**:
+  - Endpoint `POST /api/attachments/:id/transactions` dikunci ketat khusus staf (`isStaff`).
+  - Baris baru disimpan dengan status draf (`isVerified: false`) dan ditandai `isManual: true` serta mencatat `createdById: session.user.id`.
+  - Bendahara tetap harus meninjau dan mengonfirmasi baris manual tersebut melalui alur verifikasi resmi sebelum masuk ke kalkulasi kas dashboard atau laporan publik.
+- **Preservasi Baris Manual Saat Ekstrak Ulang (`app/api/attachments/:id/extract/route.ts`)**:
+  - Opsi `Simpan Lama & Tambah Draf` (`replaceVerified: false`): Query `deleteMany` hanya menghapus draf AI (`isVerified: false, isManual: false`) dan **mempertahankan baris manual draf** (`isManual: true`) agar input bendahara tidak hilang saat mencoba mengekstrak ulang lampiran.
+  - Opsi `Reset & Ekstrak Ulang` (`replaceVerified: true`): Menghapus seluruh baris transaksi lampiran (termasuk manual & verified) dengan peringatan jumlah baris manual di modal konfirmasi `ExtractButton`.
+- **Badge Visual Identifikasi**:
+  - Setiap baris manual menampilkan badge pill biru muda **"Manual"** dengan ikon `+` di samping status verifikasi, membedakannya secara transparan dari baris yang diekstrak oleh AI.
+**Acceptance Criteria:**
+- [x] Tombol "+ Tambah Baris Transaksi" muncul pada lampiran dengan status `done` untuk staf yang login.
+- [x] Panel review dan tombol tambah baris manual tetap muncul saat AI mengekstrak 0 baris transaksi (empty state).
+- [x] Endpoint `POST /api/attachments/:id/transactions` memvalidasi otorisasi staf (`isStaff`) dan menolak pengguna tanpa role (403).
+- [x] Validasi server-side menolak nominal <= 0, tanggal tidak valid, keterangan kosong, dan kategori pada pemasukan.
+- [x] Baris transaksi manual berstatus draf (`isVerified: false`) dan ditandai `isManual: true` di database.
+- [x] Badge "Manual" muncul pada baris transaksi yang diinput secara manual.
+- [x] Baris manual dapat diedit, dihapus, dan dikonfirmasi menggunakan alur review yang sama dengan hasil ekstraksi AI.
+- [x] Ekstrak ulang dengan opsi `replaceVerified: false` mempertahankan baris manual draf yang belum diverifikasi.
+- [x] Modal konfirmasi `ExtractButton` menampilkan peringatan jumlah baris manual jika `manualCount > 0`.
+- [x] 15/15 pengujian suite otomatis `scripts/test-manual-transaction.ts` lulus 100%.
 
 
 

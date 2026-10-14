@@ -423,11 +423,12 @@ Jika setelah ekstraksi muncul badge **"Model Cadangan"** berwarna kuning, artiny
 #### Ekstrak Ulang & Dialog Proteksi Duplikasi
 
 Jika Anda menekan tombol **"Ekstrak Ulang"** pada berkas yang sudah pernah diproses:
-- **Jika belum ada transaksi terverifikasi**: Sistem akan langsung menghapus draf lama yang belum diverifikasi dan mengekstrak ulang dari nol.
-- **Jika SUDAH ada transaksi terverifikasi**: Sistem akan memunculkan **Dialog Konfirmasi Proteksi** untuk mencegah penggandaan data kas, dengan 2 opsi pilihan:
-  1. **Reset & Ekstrak Ulang** (Direkomendasikan jika ingin mengulang dari awal): Menghapus seluruh transaksi lama dari berkas ini (termasuk yang terverifikasi) dan menggantikannya dengan hasil ekstraksi baru berstatus draft.
-  2. **Simpan Lama & Tambah Draf**: Mempertahankan transaksi lama yang sudah terverifikasi dan menambahkan hasil ekstraksi baru sebagai draft (gunakan opsi ini hanya jika ada baris tambahan baru yang belum terbaca sebelumnya).
-  3. **Batal**: Membatalkan proses tanpa mengubah data apapun.
+- **Jika belum ada transaksi terverifikasi**: Sistem akan langsung menghapus draf lama hasil otomatis AI (`isVerified: false, isManual: false`) dan mengekstrak ulang dari nol. Baris transaksi manual (`isManual: true`) tetap aman tersimpan.
+- **Jika SUDAH ada transaksi terverifikasi atau baris manual**: Sistem akan memunculkan **Dialog Konfirmasi Proteksi** untuk mencegah kehilangan data kas, dengan rincian:
+  - **Peringatan Transaksi Manual**: Jika terdapat baris transaksi yang ditambahkan manual oleh staf, dialog akan menampilkan alert informasi bahwa baris manual tersebut diproteksi dan tidak akan terhapus saat ekstraksi ulang biasa.
+  - **Opsi Reset & Ekstrak Ulang**: Menghapus seluruh transaksi lama dari berkas ini (termasuk yang sudah diverifikasi dan baris manual) lalu menggantikannya dengan hasil ekstraksi baru berstatus draft.
+  - **Opsi Simpan Lama & Tambah Draf**: Mempertahankan transaksi lama yang sudah terverifikasi serta seluruh baris manual, dan hanya memperbarui draf hasil ekstraksi AI.
+  - **Batal**: Membatalkan proses tanpa mengubah data apapun.
 
 #### Perbedaan per Tipe Lampiran
 
@@ -489,6 +490,22 @@ Saat mengonfirmasi transaksi pengeluaran:
 Jika sebuah baris transaksi tidak valid (misalnya duplikat atau hasil baca AI yang keliru), klik tombol **"Hapus 🗑️"** pada baris tersebut.
 
 > **Catatan**: Transaksi yang sudah berstatus **terverifikasi tidak dapat dihapus**.
+
+#### Langkah Tambahan — Menambah Baris Transaksi Manual yang Terlewat oleh AI
+
+Jika Vision-LLM melewatkan satu baris mutasi kas pada foto buku kas fisik (misalnya akibat tulisan tangan berada di tepi lipatan kertas, tinta memudar, atau bayangan foto):
+1. **Tidak Perlu Ekstrak Ulang**: Anda tidak perlu mengulang proses ekstraksi dari awal jika sebagian besar baris sudah terbaca dengan benar.
+2. **Klik Tombol `+ Tambah Baris Transaksi`**: Tombol ini terletak di pojok kanan atas header panel review transaksi (hanya muncul untuk staf `ADMIN` & `BENDAHARA`).
+3. **Isi Formulir Transaksi**:
+   - **Tanggal**: Tanggal terjadinya mutasi kas (default terisi tanggal laporan pekanan terkait).
+   - **Deskripsi / Uraian**: Keterangan mutasi transaksi (minimal 2 karakter, contoh: `Infaq Hamba Allah Subuh`, `Beli Perlengkapan Kebersihan`).
+   - **Jenis Transaksi**: Pilih **Pemasukan** (tombol hijau) atau **Pengeluaran** (tombol merah).
+   - **Kategori Pengeluaran**: Jika jenis transaksi adalah pengeluaran, pilih pos kategori yang sesuai (misal: *Operasional*, *Honor / Imam & Khotib*, *Sosial & Santunan*, *Pembangunan & Sarpras*, dll).
+   - **Nominal (Rp)**: Masukkan nominal rupiah (angka positif, contoh: `150000`).
+4. **Klik `Tambah Transaksi`**: Baris transaksi baru akan langsung tersimpan di server dengan status draft dan ditandai dengan badge khusus berwarna ungu bertuliskan **"Manual"** untuk memudahkan audit.
+5. **Konfirmasi / Verifikasi**: Periksa baris manual tersebut bersama baris hasil OCR lainnya, lalu klik tombol **"Konfirmasi ✓"** untuk memasukkannya ke pembukuan resmi masjid.
+
+> **Proteksi Baris Manual**: Baris transaksi manual yang Anda tambahkan tidak akan terhapus apabila Anda menjalankan fitur "Ekstrak Ulang" biasa (kecuali jika Anda secara sadar memilih opsi "Reset & Ekstrak Ulang").
 
 #### Mengubah Kategori pada Transaksi yang Sudah Diverifikasi
 

@@ -385,8 +385,8 @@ Memicu ekstraksi data transaksi dari satu lampiran bergambar/PDF (Gemini Vision)
 3. Update `extractionStatus` → `processing`.
 4. Jalankan ekstraksi/parsing sesuai jenis berkas.
 5. **Sukses**:
-   - Jika `replaceVerified = true`: Hapus seluruh transaksi lama pada attachment ini (baik `isVerified = true` maupun `false`) untuk mencegah duplikasi nilai saat ekstrak ulang.
-   - Jika `replaceVerified = false` (default): Hapus transaksi lama yang **belum diverifikasi** (`isVerified = false`). Transaksi yang sudah `isVerified = true` tetap dipertahankan.
+   - Jika `replaceVerified = true`: Hapus seluruh transaksi lama pada attachment ini (baik `isVerified = true` maupun `false`, termasuk baris transaksi manual) untuk mereset seluruh data ekstraksi.
+   - Jika `replaceVerified = false` (default): Hapus transaksi lama yang **belum diverifikasi dan bukan manual** (`isVerified = false, isManual = false`). Transaksi yang sudah `isVerified = true` dan baris transaksi manual draf (`isManual = true`) **tetap dipertahankan** agar input manual bendahara tidak hilang (Issue #073 / F-025).
    - Insert baris `Transaction` baru hasil ekstraksi (`isVerified: false`).
    - Update `Attachment` (`extractionStatus: "done"`, `initialBalance`, `finalBalance`, `extractionModel`, `extractionRawResponse`, `extractedAt`, `extractionError: null`).
 6. **Gagal**: update `Attachment` (`extractionStatus: "failed"`, `extractionError`: pesan singkat ramah pengguna).
@@ -424,6 +424,67 @@ Memicu ekstraksi data transaksi dari satu lampiran bergambar/PDF (Gemini Vision)
 - `400 Bad Request`: Lampiran bukan bertipe gambar/PDF/Excel yang valid.
 - `409 Conflict`: Lampiran sedang dalam status `processing`.
 - `502 Bad Gateway`: Gemini API tidak bisa dihubungi sama sekali (bukan gagal parsing — itu masuk kategori `extractionStatus: "failed"` di atas).
+
+### `POST /api/attachments/:id/transactions` *(Issue #073 / F-025)*
+
+Menambahkan baris transaksi kas manual pada berkas lampiran yang sudah selesai diekstrak (`extractionStatus = "done"`). Digunakan oleh bendahara untuk memasukkan transaksi yang terlewat oleh pembacaan AI tanpa harus melakukan ekstraksi ulang dari nol.
+**Wajib: Khusus Staf DKM (`ADMIN` atau `BENDAHARA`). Akses tanpa sesi mengembalikan `401 Unauthorized`, role `null` mengembalikan `403 Forbidden`.**
+
+**Logika Server-Side:**
+1. Validasi sesi & peran staf (`isStaff(session)`). Tolak `401` jika tanpa sesi, atau `403 Forbidden` jika role `null`.
+2. Ambil `Attachment` berdasarkan `:id`. Tolak `404 Not Found` jika lampiran tidak ditemukan.
+3. Validasi status ekstraksi: lampiran harus berstatus `done`. Jika `extractionStatus !== "done"`, tolak dengan status `409 Conflict`.
+4. Validasi body:
+   - `type`: Wajib string `"pemasukan"` atau `"pengeluaran"`. Tolak `400` jika di luar enum.
+   - `amount`: Wajib number berhingga (*finite*) dan bernilai `> 0`. Tolak `400` jika `NaN`, `<= 0`, atau bukan number.
+   - `description`: Wajib string tidak kosong, maksimal 500 karakter. Tolak `400` jika kosong atau melebihi 500 karakter.
+   - `transactionDate`: Wajib string format tanggal ISO (YYYY-MM-DD). Tolak `400` jika tidak valid.
+   - `category`: Opsional khusus untuk `type === "pengeluaran"`. Jika dikirim, harus bernilai salah satu dari `EXPENSE_CATEGORIES`. Jika dikirim pada transaksi `pemasukan`, tolak dengan `400 Bad Request`.
+   - `donorNameRaw`: Opsional khusus untuk `type === "pemasukan"`. String nama donatur mentah jika ada.
+5. Simpan transaksi baru via `prisma.transaction.create` dengan:
+   - `isVerified: false` (berstatus draf, wajib ditinjau dan dikonfirmasi sebelum dihitung di saldo kas resmi).
+   - `isManual: true` (penanda transaksi manual hasil ketikan bendahara).
+   - `createdById: session.user.id` (jejak audit pengguna pembuat).
+   - `reportId: attachment.reportId` (terikat ke laporan induk lampiran).
+
+**Request Body**
+```json
+{
+  "type": "pemasukan",
+  "amount": 250000,
+  "description": "Infaq tromol subuh (terlewat AI)",
+  "transactionDate": "2026-10-16",
+  "donorNameRaw": "H. Kosasih",
+  "category": null
+}
+```
+
+**Response 201 Created**
+```json
+{
+  "data": {
+    "id": "txn_manual_123",
+    "attachmentId": "att_1",
+    "reportId": "rpt_1",
+    "type": "pemasukan",
+    "amount": 250000,
+    "description": "Infaq tromol subuh (terlewat AI)",
+    "transactionDate": "2026-10-16T00:00:00.000Z",
+    "donorNameRaw": "H. Kosasih",
+    "category": null,
+    "isVerified": false,
+    "isManual": true,
+    "createdById": "usr_kosasih_1"
+  }
+}
+```
+
+**Response Error:**
+- `400 Bad Request`: Validasi body gagal (misal `amount <= 0`, keterangan kosong/terlalu panjang, tanggal tidak valid, atau kategori dikirim pada transaksi pemasukan).
+- `401 Unauthorized`: Belum login ke sistem.
+- `403 Forbidden`: Pengguna bukan staf DKM (`role: null`).
+- `404 Not Found`: Lampiran tidak ditemukan.
+- `409 Conflict`: Lampiran belum selesai diekstrak (`extractionStatus !== "done"`).
 
 ---
 

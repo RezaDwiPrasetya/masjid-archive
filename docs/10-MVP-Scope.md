@@ -335,4 +335,28 @@ Menyempurnakan alur kerja pelaporan keuangan dengan menyediakan dokumen cetak da
 - [x] Lampiran PDF terpaginasi otomatis multi-halaman tanpa memaksakan 35+ baris ke satu lembar, dengan teks uraian/donatur membungkus rapi (word-wrap) tanpa teks terpotong "…" (Issue #072).
 - [x] Garis pemisah baris tabel lampiran PDF (#c2c9bb) tampil jelas dan konsisten tanpa tertimpa latar belakang zebra striping (Issue #072).
 
+---
+
+## V10.5 — Penambahan Baris Transaksi Manual Saat Review Ekstraksi (Issue #073 / F-025 — Selesai)
+
+### MVP Objective (V10.5)
+Menyediakan solusi mitigasi terpercaya bagi bendahara ketika Vision-LLM (Gemini) atau berkas dokumen/spreadsheet melewatkan satu atau beberapa baris transaksi kas. Daripada memaksa bendahara melakukan "Ekstrak Ulang" berulang kali tanpa jaminan AI akan membaca baris tersebut, bendahara dapat menambahkan baris transaksi langsung di panel review lampiran terkait dengan tetap menjaga integritas sistem "satu pintu masuk" dan rekonsiliasi saldo kas.
+
+### Must Have (V10.5)
+- Tombol `+ Tambah Baris Transaksi` di `TransactionReviewPanel` pada lampiran berkas yang sudah selesai diekstrak (`extractionStatus === "done"`).
+- Dialog formulir penambahan transaksi manual: Tipe (Pemasukan/Pengeluaran), Nominal, Keterangan, Tanggal, Donatur (khusus pemasukan), dan Kategori (khusus pengeluaran).
+- Endpoint aman `POST /api/attachments/:id/transactions` khusus staf (`isStaff`) dengan validasi data ketat.
+- Status transaksi manual masuk sebagai draf (`isVerified: false`) dengan penanda `isManual: true` dan jejak `createdById: User`.
+- Preservasi baris manual saat ekstrak ulang dengan opsi `replaceVerified: false` (hanya draf AI `isVerified: false, isManual: false` yang dihapus; baris manual draf dipertahankan).
+- Dialog konfirmasi `ExtractButton` menyertakan peringatan jika terdapat baris manual (`manualCount > 0`) sebelum melakukan reset.
+- Badge visual "Manual" pada setiap baris transaksi yang diinput secara manual.
+- Dukungan penambahan baris manual pada kondisi *empty state* (lampiran diekstrak namun AI menghasilkan 0 baris).
+
+### MVP Success Criteria (V10.5)
+- [x] Bendahara dapat menambahkan baris transaksi yang terlewat langsung dari antarmuka review lampiran tanpa keluar halaman.
+- [x] Baris transaksi manual masuk sebagai draf dan wajib diverifikasi manual sebelum masuk ke saldo kas resmi.
+- [x] Ekstrak ulang dengan opsi simpan lama tidak menghapus baris manual yang sudah diketik oleh bendahara.
+- [x] Otorisasi staf divalidasi ketat (role Jamaah/null ditolak HTTP 403 Forbidden).
+- [x] Seluruh 15 skenario pengujian fungsional dan database E2E di `scripts/test-manual-transaction.ts` lolos 100%.
+
 

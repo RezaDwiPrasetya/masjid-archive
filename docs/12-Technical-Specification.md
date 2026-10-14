@@ -292,8 +292,8 @@ const schema = {
 5. **Jika berhasil:**
    - Parse response JSON (`transactions[]`, `initialBalance`, `finalBalance`).
    - `prisma.$transaction`:
-     - Hapus transaksi lama yang **belum diverifikasi** (`where: { attachmentId: id, isVerified: false }`). Transaksi `isVerified = true` tetap utuh.
-     - Insert transaksi baru hasil ekstraksi (`isVerified: false`).
+     - Hapus transaksi lama yang **belum diverifikasi dan bukan manual** (`where: { attachmentId: id, isVerified: false, isManual: false }`). Transaksi `isVerified = true` dan baris draf manual `isManual = true` tetap dipertahankan (Issue #073 / F-025). Jika `replaceVerified: true` dikirimkan secara eksplisit, seluruh transaksi lama dihapus.
+     - Insert transaksi baru hasil ekstraksi (`isVerified: false, isManual: false`).
      - Update `Attachment` (`extractionStatus = "done"`, `extractionModel`, `extractionRawResponse`, `extractedAt`, `extractionError = null`).
      - Jika `initialBalance` atau `finalBalance` berhasil dibaca oleh Gemini: Update `Report` induk dengan nilai saldo tersebut (bukan `Attachment` — saldo adalah properti laporan, bukan file).
      - Jika model yang dipakai adalah model cadangan (bukan model utama), badge **"Model Cadangan"** tampil di UI di samping status ekstraksi.
@@ -610,4 +610,48 @@ Rangkaian hardening hasil audit QA profesional untuk menjamin ketahanan sistem t
 ### 5. Optimasi Performa Tooling Linter (`eslint.config.mjs`)
 - Menambahkan `"node_modules/**"` ke dalam blok `globalIgnores`.
 - Mempercepat waktu eksekusi `npm run lint` sekitar ~25% (dari ~1.85s menjadi ~1.40s) pada lingkungan pengembangan Windows/Next.js.
+
+---
+
+## Spesifikasi Teknis — Fase V10.5: Penambahan Baris Transaksi Manual Saat Review Ekstraksi (Issue #073 / F-025)
+
+### 1. Latar Belakang & Kebutuhan
+Ketika Vision-LLM mengekstraksi nota atau tabel kas fisik, terdapat kemungkinan satu atau dua baris transaksi terlewat karena tulisan buram, lipatan kertas, atau bayangan foto. Sebelumnya bendahara hanya bisa mengklik "Ekstrak Ulang", yang berisiko tetap melewatkan baris tersebut atau menghapus perbaikan yang sudah diedit. Fitur ini memungkinkan bendahara/admin menambahkan baris transaksi manual langsung pada lampiran yang sedang direview.
+
+### 2. Skema Database (`Transaction`)
+- `isManual` (Boolean, default: `false`): Menandai apakah baris transaksi dibuat secara manual oleh staf DKM atau diekstrak otomatis oleh AI.
+- `createdById` (String?, FK ke `User.id`): Menandai staf DKM yang membuat baris manual tersebut untuk jejak audit (*traceability*).
+- Indeks: `@@index([attachmentId, isManual])`.
+
+### 3. Endpoint `POST /api/attachments/:id/transactions`
+- **Autentikasi & Otorisasi**: Wajib login dengan peran `ADMIN` atau `BENDAHARA` (menggunakan `requireRole`).
+- **Validasi State Lampiran**:
+  - Lampiran wajib ditemukan (`404 Not Found`).
+  - `extractionStatus` harus `"done"`. Jika belum diekstrak atau masih dalam proses, ditolak dengan `400 Bad Request`.
+- **Validasi Input Body**:
+  - `date`: String ISO format tanggal valid (`YYYY-MM-DD`).
+  - `description`: String non-kosong minimal 2 karakter (di-trim).
+  - `amount`: Number float/integer positif (`> 0`, finite, bukan NaN).
+  - `type`: Enum `"pemasukan"` atau `"pengeluaran"`.
+  - `category`: Wajib string kategori valid jika tipe `"pengeluaran"`, diatur `null` jika `"pemasukan"`.
+- **Eksekusi Pembuatan**:
+  - Transaksi dibuat dengan `isVerified: false`, `isManual: true`, `createdById: session.user.id`.
+  - Mengembalikan `201 Created` beserta objek transaksi dan informasi `createdByUser` (nama/email).
+
+### 4. Preservasi Baris Manual Saat Ekstrak Ulang
+Pada `POST /api/attachments/:id/extract`:
+- Default (`replaceVerified: false`): Menghapus transaksi lama dengan filter `{ attachmentId: id, isVerified: false, isManual: false }`.
+- Baris berstatus `isVerified: true` ATAU `isManual: true` **tidak dihapus** sehingga bendahara tidak kehilangan baris yang sudah dimasukkan manual.
+- Jika pengguna mencentang "Ganti juga transaksi yang sudah diverifikasi / manual" (`replaceVerified: true`), seluruh transaksi lama lampiran tersebut dihapus (`where: { attachmentId: id }`).
+
+### 5. Komponen UI & Peringatan Pengguna
+- **`components/transaction-review-panel.tsx`**:
+  - Tombol **`+ Tambah Baris Transaksi`** di header tabel review (khusus admin/bendahara).
+  - Dialog modal inline responsif untuk memasukkan: Tanggal, Deskripsi, Tipe (Pemasukan/Pengeluaran), Kategori Pengeluaran (jika pengeluaran), dan Nominal (Rupiah).
+  - Baris manual ditandai dengan badge ungu **"Manual"** di samping badge status verifikasi agar bendahara dapat membedakan data hasil OCR dan input manual.
+  - Memungkinkan review panel tetap muncul saat `extractionStatus === "done"` meskipun `transactions.length === 0` (misal AI menghasilkan 0 baris, staf tetap dapat menambahkan baris manual tanpa perlu ekstrak ulang).
+- **`components/extract-button.tsx`**:
+  - Dialog konfirmasi ekstrak ulang mendeteksi keberadaan baris manual (`manualCount = transactions.filter(t => t.isManual).length`).
+  - Jika ada baris manual, modal menampilkan alert peringatan khusus yang menginformasikan bahwa baris manual akan tetap dipertahankan kecuali opsi pembersihan total dipilih.
+
 
