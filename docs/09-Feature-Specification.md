@@ -415,9 +415,8 @@
 **User:** Publik (jemaah), Pengurus DKM
 **Process:**
 - **Ekspor Mingguan**: Pada halaman detail laporan (`/laporan/:id`), pengguna dapat memilih:
-  1. "Unduh PDF" via `GET /api/reports/:id/export/pdf` (unduhan langsung berkas PDF resmi murni vektor, memicu notifikasi unduhan browser & tercatat di history unduhan).
-  2. "Unduh Excel" via `GET /api/reports/:id/export/excel`.
-  3. "Cetak / A4" untuk membuka tampilan siap cetak A4 formal ke printer fisik via `window.print()`.
+  1. "Cetak Laporan": Membuka tampilan pratinjau siap cetak A4 formal berkop resmi via `/laporan/:id/cetak` yang dilengkapi tombol cerdas unduh PDF murni vektor dan opsi cetak printer fisik via `window.print()`.
+  2. "Unduh Excel": Mengunduh langsung berkas spreadsheet tabular via `GET /api/reports/:id/export/excel`.
 - **Ekspor Bulanan**: Pada dashboard publik (`/dashboard`), pengguna dapat menekan tombol "Ekspor Rekap Bulanan" untuk memilih periode bulan/tahun lalu:
   1. Mengunduh PDF resmi via `GET /api/reports/export/monthly/pdf?year=YYYY&month=M`.
   2. Mengunduh spreadsheet Excel via `GET /api/reports/export/monthly/excel?year=YYYY&month=M`.

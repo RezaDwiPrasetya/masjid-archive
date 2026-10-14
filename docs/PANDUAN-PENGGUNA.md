@@ -536,12 +536,11 @@ Sistem menyediakan dua format ekspor resmi yang dapat digunakan untuk ditempel d
 
 ### A. Ekspor Rekap Mingguan (dari Halaman Detail Laporan)
 
-Pada halaman **Detail Laporan** (`/laporan/:id`), tersedia 3 tombol aksi cepat di bagian atas:
-1. **Unduh PDF**: Mengunduh berkas `.pdf` resmi A4 langsung ke perangkat Anda. Berkas otomatis memicu notifikasi unduhan browser dan tercatat di daftar riwayat unduhan (*Downloads*). Sangat praktis untuk pengguna smartphone (HP) agar berkas langsung tersimpan di galeri berkas.
-2. **Unduh Excel**: Mengunduh rekapitulasi kas mingguan dalam format spreadsheet `.xlsx`.
-3. **Cetak / A4**: Membuka halaman pratinjau cetak berkop surat DKM Al-Luqman. Di halaman ini, Anda dapat:
-   - Mengklik **"Unduh PDF"** untuk mengunduh berkas digital, atau
-   - Mengklik **"Cetak (Printer)"** untuk mencetak langsung ke kertas fisik via printer yang terhubung. Seluruh tata letak sudah dioptimalkan agar pas 1 lembar A4 tanpa terpotong, dan warna hijau (pemasukan) serta merah (pengeluaran) tetap tampil cerah.
+Pada halaman **Detail Laporan** (`/laporan/:id`), tersedia 2 tombol aksi ekspor terpadu di bagian atas (selaras dengan toolbar Dashboard):
+1. **Cetak Laporan**: Membuka halaman pratinjau cetak A4 resmi berkop surat DKM Al-Luqman (`/laporan/:id/cetak`). Di halaman pratinjau ini, Anda dapat:
+   - Melihat susunan dokumen cetak A4 fisik secara utuh,
+   - Mengklik tombol cerdas **"Cetak / Unduh PDF"** untuk mengunduh berkas PDF resmi murni vektor, atau mencetak langsung ke kertas fisik via printer yang terhubung. Seluruh tata letak sudah dioptimalkan agar pas pada lembar A4 tanpa terpotong, dan warna hijau (pemasukan) serta merah (pengeluaran) tetap tampil tajam.
+2. **Unduh Excel**: Mengunduh rekapitulasi kas mingguan dalam format spreadsheet `.xlsx` langsung ke perangkat Anda untuk pengolahan data tabular akuntansi.
 
 ---
 

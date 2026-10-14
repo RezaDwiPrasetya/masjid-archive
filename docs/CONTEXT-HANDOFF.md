@@ -302,7 +302,7 @@ Shared logic di `lib/donor-matching.ts`, `lib/donor-service.ts`, dan `lib/expens
    - **Pembaruan Komponen UI**:
      - `components/monthly-export-dialog.tsx`: Menyediakan opsi tombol mandiri "Unduh PDF (.pdf)", "Unduh Excel (.xlsx)", dan "Buka Pratinjau Cetak / Mading (A4)".
      - `components/print-action-bar.tsx`: Menyediakan tombol aksi cepat "Unduh PDF" berdampingan dengan "Cetak (Printer)".
-     - `app/laporan/[id]/page.tsx`: Menyediakan tombol unduh PDF langsung.
+     - `app/laporan/[id]/page.tsx`: Menyediakan toolbar ekspor terpadu 2 tombol: "Cetak Laporan" (ke pratinjau A4 dengan unduh PDF) dan "Unduh Excel" (unduh .xlsx), selaras dengan toolbar Dashboard.
 3. **Penguatan Keamanan, Otorisasi RBAC 3-Tier, dan Proteksi Data Publik (Selesai)**:
    - **Audit & Eliminasi Celah Role Null**: Memastikan pengguna login Google tanpa penetapan role (`null`) tidak dapat melakukan mutasi data keuangan atau melihat draf transaksi yang belum diverifikasi.
    - **Helper Otorisasi Terpusat (`lib/auth-guard.ts`)**: `isStaff(session)` memvalidasi wewenang `ADMIN` dan `BENDAHARA`, sementara `isAdmin(session)` memvalidasi wewenang eksklusif `ADMIN`.
