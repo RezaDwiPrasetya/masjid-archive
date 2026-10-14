@@ -1,6 +1,6 @@
 # CONTEXT HANDOFF — Proyek "Masjid Archive"
-> **Terakhir diperbarui**: 12 Oktober 2026  
-> **Status**: **V1–V10 FEATURE-COMPLETE & QA-HARDENED (SELESAI PENUH & TERUJI) — Merged to Main & Pushed to Remote**
+> **Terakhir diperbarui**: 14 Oktober 2026  
+> **Status**: **V1–V10.5 FEATURE-COMPLETE & TEST-HARDENED (Issue #073 / F-025 Selesai) — Merged to Main & Pushed to Remote**
 
 ---
 
@@ -113,8 +113,10 @@ Aplikasi web arsip & manajemen keuangan digital untuk **DKM Masjid Al-Luqman** (
 - `scripts/test-auth-guards.ts` — skrip automated unit & simulation test untuk seluruh role guard
 - `scripts/test-audit-hardening.ts` — skrip automated unit test validasi transaksi, sole admin lockout, uploader null, dan timezone UTC
 - `scripts/test-file-validation.ts` — skrip automated test validasi ekstensi, MIME mismatch, batas 10 MB, dan sanitasi nama berkas
+- `scripts/test-manual-transaction.ts` — skrip automated test pemanggilan route handler sungguhan untuk penambahan baris manual, RBAC, validasi payload, isolasi publik, dan deteksi duplikat (21/21 lulus)
 
 ### API Routes (`app/api/`):
+- `attachments/[id]/transactions/route.ts` — POST tambah baris transaksi manual pada lampiran berstatus done (khusus staf: ADMIN & BENDAHARA, isManual=true, createdById tercatat)
 - `attachments/[id]/extract/route.ts` — POST trigger ekstraksi (khusus Staf: ADMIN & BENDAHARA)
 - `reports/[id]/transactions/route.ts` — GET, filter isVerified berdasarkan role staf (publik/guest `null` → hanya isVerified=true, staf → semua termasuk draf)
 - `transactions/[id]/route.ts` — PATCH (edit transaksi, category) + DELETE (hapus tx unverified) (khusus Staf)
@@ -153,11 +155,12 @@ Aplikasi web arsip & manajemen keuangan digital untuk **DKM Masjid Al-Luqman** (
 Model utama:
 - `Report`: reportDate (wajib Jumat, unik), year/month/weekOfMonth (auto-derive), uploadedById, `initialBalance`/`finalBalance` (Decimal?, disimpan di Report)
 - `Attachment`: fileType (image/pdf/excel), extractionStatus (not_extracted/processing/done/failed), extractionModel, extractionRawResponse (Json?), extractionError, extractedAt
-- `Transaction`: type (pemasukan/pengeluaran), amount, description, transactionDate, `category` (nullable String untuk pengeluaran, default null), `donorNameRaw`, `donorId` (nullable), `isVerified` (default false), `verifiedById`, `verifiedAt`. Relasi ke Attachment & Report: `ON DELETE RESTRICT` (konsisten, disengaja)
+- `Transaction`: type (pemasukan/pengeluaran), amount, description, transactionDate, `category` (nullable String untuk pengeluaran, default null), `donorNameRaw`, `donorId` (nullable), `isVerified` (default false), `isManual` (Boolean, default false), `createdById` (nullable String, FK ke User), `verifiedById`, `verifiedAt`. Relasi ke Attachment & Report: `ON DELETE RESTRICT` (konsisten, disengaja)
 - `Donor`: `name` (canonical), `normalizedName` (UNIK — kunci fuzzy matching), `contact`. `totalContribution` DIHITUNG ON-THE-FLY (tanpa cache)
 
 ### Aturan penting yang JANGAN dilanggar:
 - Transaction `isVerified=true` TIDAK BOLEH terhapus otomatis oleh proses apa pun.
+- Transaction `isManual=true` (draf transaksi manual staf) TIDAK BOLEH terhapus oleh proses ekstrak ulang biasa (`replaceVerified=false`).
 - Donasi berpola "hamba allah"/"hamba alloh"/"anonim"/"tanpa nama" / "kas masjid" → `donorId` SELALU null, TIDAK PERNAH jadi entity Donor tersendiri.
 - Nilai `category` pada transaksi pemasukan bernilai `null`. Pada pengeluaran, jika belum dipilih oleh bendahara bernilai `null` dan ditampilkan di antarmuka sebagai "Tidak Dikategorikan".
 
@@ -171,6 +174,7 @@ Model utama:
 - **Issue #047**: initialBalance/finalBalance di Report, badge Model Cadangan
 - **V5 (Issue #048–#053)**: skema Donor, fuzzy matching, endpoint publik, UI assign donatur, edit donor verified, deteksi duplikat, batal verifikasi, Dashboard & Donatur publik
 - **Redesign Visual (Batch 1, 2, 3)**: Diseragamkan ke design tokens, full-width PageShell, dan live di `main`
+- **V10.5 (Issue #073 / F-025)**: Tambah baris transaksi manual saat review ekstraksi, endpoint `POST /api/attachments/:id/transactions`, preservasi baris manual saat ekstrak ulang, dan warning alert di modal dialog konfirmasi.
 
 ---
 
