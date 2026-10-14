@@ -386,7 +386,7 @@ Memicu ekstraksi data transaksi dari satu lampiran bergambar/PDF (Gemini Vision)
 4. Jalankan ekstraksi/parsing sesuai jenis berkas.
 5. **Sukses**:
    - Jika `replaceVerified = true`: Hapus seluruh transaksi lama pada attachment ini (baik `isVerified = true` maupun `false`, termasuk baris transaksi manual) untuk mereset seluruh data ekstraksi.
-   - Jika `replaceVerified = false` (default): Hapus transaksi lama yang **belum diverifikasi dan bukan manual** (`isVerified = false, isManual = false`). Transaksi yang sudah `isVerified = true` dan baris transaksi manual draf (`isManual = true`) **tetap dipertahankan** agar input manual bendahara tidak hilang (Issue #073 / F-025).
+   - Jika `replaceVerified = false` (default): Hapus transaksi lama yang **belum diverifikasi dan bukan manual** (`isVerified = false, isManual = false`). Transaksi yang sudah `isVerified = true` dan baris transaksi manual draf (`isManual = true`) **tetap dipertahankan** agar input manual bendahara tidak hilang (Issue #073 / F-028).
    - Insert baris `Transaction` baru hasil ekstraksi (`isVerified: false`).
    - Update `Attachment` (`extractionStatus: "done"`, `initialBalance`, `finalBalance`, `extractionModel`, `extractionRawResponse`, `extractedAt`, `extractionError: null`).
 6. **Gagal**: update `Attachment` (`extractionStatus: "failed"`, `extractionError`: pesan singkat ramah pengguna).
@@ -425,7 +425,7 @@ Memicu ekstraksi data transaksi dari satu lampiran bergambar/PDF (Gemini Vision)
 - `409 Conflict`: Lampiran sedang dalam status `processing`.
 - `502 Bad Gateway`: Gemini API tidak bisa dihubungi sama sekali (bukan gagal parsing — itu masuk kategori `extractionStatus: "failed"` di atas).
 
-### `POST /api/attachments/:id/transactions` *(Issue #073 / F-025)*
+### `POST /api/attachments/:id/transactions` *(Issue #073 / F-028)*
 
 Menambahkan baris transaksi kas manual pada berkas lampiran yang sudah selesai diekstrak (`extractionStatus = "done"`). Digunakan oleh bendahara untuk memasukkan transaksi yang terlewat oleh pembacaan AI tanpa harus melakukan ekstraksi ulang dari nol.
 **Wajib: Khusus Staf DKM (`ADMIN` atau `BENDAHARA`). Akses tanpa sesi mengembalikan `401 Unauthorized`, role `null` mengembalikan `403 Forbidden`.**

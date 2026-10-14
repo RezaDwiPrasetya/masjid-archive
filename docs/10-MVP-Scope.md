@@ -337,7 +337,7 @@ Menyempurnakan alur kerja pelaporan keuangan dengan menyediakan dokumen cetak da
 
 ---
 
-## V10.5 — Penambahan Baris Transaksi Manual Saat Review Ekstraksi (Issue #073 / F-025 — Selesai)
+## V10.5 — Penambahan Baris Transaksi Manual Saat Review Ekstraksi (Issue #073 / F-028 — Selesai)
 
 ### MVP Objective (V10.5)
 Menyediakan solusi mitigasi terpercaya bagi bendahara ketika Vision-LLM (Gemini) atau berkas dokumen/spreadsheet melewatkan satu atau beberapa baris transaksi kas. Daripada memaksa bendahara melakukan "Ekstrak Ulang" berulang kali tanpa jaminan AI akan membaca baris tersebut, bendahara dapat menambahkan baris transaksi langsung di panel review lampiran terkait dengan tetap menjaga integritas sistem "satu pintu masuk" dan rekonsiliasi saldo kas.

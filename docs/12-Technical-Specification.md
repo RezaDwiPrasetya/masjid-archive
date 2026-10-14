@@ -292,7 +292,7 @@ const schema = {
 5. **Jika berhasil:**
    - Parse response JSON (`transactions[]`, `initialBalance`, `finalBalance`).
    - `prisma.$transaction`:
-     - Hapus transaksi lama yang **belum diverifikasi dan bukan manual** (`where: { attachmentId: id, isVerified: false, isManual: false }`). Transaksi `isVerified = true` dan baris draf manual `isManual = true` tetap dipertahankan (Issue #073 / F-025). Jika `replaceVerified: true` dikirimkan secara eksplisit, seluruh transaksi lama dihapus.
+     - Hapus transaksi lama yang **belum diverifikasi dan bukan manual** (`where: { attachmentId: id, isVerified: false, isManual: false }`). Transaksi `isVerified = true` dan baris draf manual `isManual = true` tetap dipertahankan (Issue #073 / F-028). Jika `replaceVerified: true` dikirimkan secara eksplisit, seluruh transaksi lama dihapus.
      - Insert transaksi baru hasil ekstraksi (`isVerified: false, isManual: false`).
      - Update `Attachment` (`extractionStatus = "done"`, `extractionModel`, `extractionRawResponse`, `extractedAt`, `extractionError = null`).
      - Jika `initialBalance` atau `finalBalance` berhasil dibaca oleh Gemini: Update `Report` induk dengan nilai saldo tersebut (bukan `Attachment` — saldo adalah properti laporan, bukan file).
@@ -613,7 +613,7 @@ Rangkaian hardening hasil audit QA profesional untuk menjamin ketahanan sistem t
 
 ---
 
-## Spesifikasi Teknis — Fase V10.5: Penambahan Baris Transaksi Manual Saat Review Ekstraksi (Issue #073 / F-025)
+## Spesifikasi Teknis — Fase V10.5: Penambahan Baris Transaksi Manual Saat Review Ekstraksi (Issue #073 / F-028)
 
 ### 1. Latar Belakang & Kebutuhan
 Ketika Vision-LLM mengekstraksi nota atau tabel kas fisik, terdapat kemungkinan satu atau dua baris transaksi terlewat karena tulisan buram, lipatan kertas, atau bayangan foto. Sebelumnya bendahara hanya bisa mengklik "Ekstrak Ulang", yang berisiko tetap melewatkan baris tersebut atau menghapus perbaikan yang sudah diedit. Fitur ini memungkinkan bendahara/admin menambahkan baris transaksi manual langsung pada lampiran yang sedang direview.

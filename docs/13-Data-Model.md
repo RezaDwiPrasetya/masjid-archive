@@ -16,7 +16,7 @@ Untuk mendukung Google SSO melalui `@auth/prisma-adapter`, tabel `User` dirombak
 | image | text | Optional | URL avatar dari Google |
 | role | text | Optional | Peran hak akses RBAC: `'ADMIN'` (Administrator/Ketua DKM), `'BENDAHARA'` (Staf operasional kas), atau `null` (Jamaah/tamu Google umum). Dikelola oleh Administrator di antarmuka `/pengguna`. |
 | verifiedTransactions | relation (Transaction[]) | Optional | Relasi jejak audit transaksi kas yang diverifikasi oleh pengguna ini |
-| createdTransactions | relation (Transaction[]) | Optional (V10.5) | Relasi jejak audit baris transaksi kas yang ditambahkan secara manual oleh pengguna ini (Issue #073 / F-025) |
+| createdTransactions | relation (Transaction[]) | Optional (V10.5) | Relasi jejak audit baris transaksi kas yang ditambahkan secara manual oleh pengguna ini (Issue #073 / F-028) |
 
 **2. Infrastruktur NextAuth (Wajib untuk Prisma Adapter)**
 *   **Account**: Menyimpan informasi token akses OAuth dari Google.
@@ -79,8 +79,8 @@ Hasil ekstraksi dari vision-LLM (gambar) atau parsing (PDF/Excel). Satu `Attachm
 | verifiedById | reference ke User | Optional | Siapa yang mengonfirmasi baris ini; diisi otomatis dari sesi aktif saat tombol "Konfirmasi" ditekan |
 | verifiedAt | timestamp | Optional | Kapan verifikasi dilakukan |
 | category | text | Optional (V7) | Kategori pengeluaran — hanya relevan untuk transaksi bertipe `pengeluaran`. Nilai valid: `operasional`, `honor`, `sosial`, `pembangunan`, `konsumsi`, `administrasi`, `lainnya`. Bernilai `null` untuk transaksi `pemasukan` atau pengeluaran yang belum dikategorikan (ditampilkan sebagai "Tidak Dikategorikan") |
-| isManual | boolean, default false | Yes (V10.5) | Penanda baris transaksi yang ditambahkan manual oleh bendahara saat review ekstraksi (bukan hasil ekstraksi otomatis AI/file) (Issue #073 / F-025) |
-| createdById | reference ke User | Optional (V10.5) | ID pengguna (staf DKM) yang membuat baris transaksi manual ini; bernilai `null` untuk baris hasil ekstraksi AI (Issue #073 / F-025) |
+| isManual | boolean, default false | Yes (V10.5) | Penanda baris transaksi yang ditambahkan manual oleh bendahara saat review ekstraksi (bukan hasil ekstraksi otomatis AI/file) (Issue #073 / F-028) |
+| createdById | reference ke User | Optional (V10.5) | ID pengguna (staf DKM) yang membuat baris transaksi manual ini; bernilai `null` untuk baris hasil ekstraksi AI (Issue #073 / F-028) |
 
 > **Catatan V4:** dokumen versi sebelumnya menyimpan `rawExtractedText` per baris `Transaction`. Ini dipindahkan ke level `Attachment` (`extractionRawResponse`) karena satu pemanggilan ekstraksi bisa menghasilkan banyak baris `Transaction` sekaligus — menyimpan payload mentah di tiap baris akan redundan. Baris `Transaction` sekarang murni berisi data yang sudah diparsing/terstruktur.
 
@@ -88,7 +88,7 @@ Hasil ekstraksi dari vision-LLM (gambar) atau parsing (PDF/Excel). Satu `Attachm
 
 > **Catatan V7:** `category` ditambahkan sebagai perluasan **aditif** dari schema V5 — field `String?` nullable baru pada `Transaction`. Seluruh data transaksi lama tetap valid dengan nilai `null`. Kategori hanya diisi oleh bendahara secara manual melalui dropdown di panel review, tidak pernah diisi otomatis oleh proses ekstraksi.
 
-> **Catatan V10.5 (Issue #073 / F-025):** `isManual` dan `createdById` ditambahkan sebagai perluasan **aditif** dari schema V7. Transaksi lama secara otomatis bernilai `isManual = false` dan `createdById = null` tanpa memengaruhi data yang ada. Baris manual tetap berstatus draf (`isVerified = false`) saat dibuat dan wajib diverifikasi oleh bendahara sebelum masuk ke saldo kas resmi.
+> **Catatan V10.5 (Issue #073 / F-028):** `isManual` dan `createdById` ditambahkan sebagai perluasan **aditif** dari schema V7. Transaksi lama secara otomatis bernilai `isManual = false` dan `createdById = null` tanpa memengaruhi data yang ada. Baris manual tetap berstatus draf (`isVerified = false`) saat dibuat dan wajib diverifikasi oleh bendahara sebelum masuk ke saldo kas resmi.
 
 ### Donor (Donatur) — V5
 
@@ -143,7 +143,7 @@ Donor
 - `Attachment.extractionStatus` (V4) dimulai dari `not_extracted`, hanya berubah ke `processing` saat dipicu manual oleh bendahara, lalu ke `done`/`failed`
 - Saat ekstraksi berhasil membaca `initialBalance`/`finalBalance`, nilai disimpan ke **`Report` induk** (bukan `Attachment`) — saldo kas mingguan adalah properti laporan, bukan lampiran individual.
 - Ekstraksi ulang (re-extract) pada `Attachment` yang sudah `done` memiliki dua perilaku:
-  - Jika `replaceVerified = false` (Simpan Lama & Tambah Draf): hanya menghapus `Transaction` draf hasil AI lama (`isVerified = false, isManual = false`). Baris transaksi yang sudah `isVerified = true` dan baris transaksi manual draf (`isManual = true`) **tetap dipertahankan** agar ketikan bendahara tidak hilang (Issue #073 / F-025).
+  - Jika `replaceVerified = false` (Simpan Lama & Tambah Draf): hanya menghapus `Transaction` draf hasil AI lama (`isVerified = false, isManual = false`). Baris transaksi yang sudah `isVerified = true` dan baris transaksi manual draf (`isManual = true`) **tetap dipertahankan** agar ketikan bendahara tidak hilang (Issue #073 / F-028).
   - Jika `replaceVerified = true` (Reset & Ekstrak Ulang): seluruh transaksi lama pada lampiran dihapus (termasuk manual & verified) setelah konfirmasi eksplisit dari pengguna.
 - `Transaction` yang `isVerified = false` tidak dihitung dalam kalkulasi tren/dashboard di V5, **dan tidak boleh terlihat oleh publik lewat endpoint apa pun** (termasuk yang menampilkan agregasi per-donatur)
 - **`Donor.normalizedName` bersifat unik** — proses matching WAJIB mengecek keberadaan `normalizedName` yang sama sebelum membuat `Donor` baru, untuk mencegah duplikasi "Bapak Kosasih" dan "Bpk Kosasih" jadi dua entity terpisah
@@ -158,7 +158,7 @@ Struktur ini modular per fase:
 - **V4** menambahkan field ekstraksi di `Attachment`, entity `Transaction` baru, serta `initialBalance`/`finalBalance` di `Report`.
 - **V5** menambahkan entity `Donor`, field `donorNameRaw` di `Transaction` (perluasan aditif dari skema ekstraksi V4), dan aturan fuzzy matching + pengecualian donasi anonim.
 - **V7** menambahkan field `category` di `Transaction` (perluasan aditif dari V5) untuk mendukung kategorisasi pengeluaran dan halaman transparansi publik `/pengeluaran`.
-- **V10.5** menambahkan field `isManual` dan `createdById` di `Transaction` (perluasan aditif dari V7) untuk mendukung mitigasi penambahan baris transaksi manual saat review ekstraksi (Issue #073 / F-025).
+- **V10.5** menambahkan field `isManual` dan `createdById` di `Transaction` (perluasan aditif dari V7) untuk mendukung mitigasi penambahan baris transaksi manual saat review ekstraksi (Issue #073 / F-028).
 Sehingga tidak perlu migrasi besar ulang tiap fase, cukup menambah tabel/kolom baru.
 
 ## Enum Kategori Pengeluaran (V7)

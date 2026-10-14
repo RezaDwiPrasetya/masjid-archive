@@ -1,6 +1,6 @@
 # CONTEXT HANDOFF — Proyek "Masjid Archive"
 > **Terakhir diperbarui**: 14 Oktober 2026  
-> **Status**: **V1–V10.5 FEATURE-COMPLETE & TEST-HARDENED (Issue #073 / F-025 Selesai) — Merged to Main & Pushed to Remote**
+> **Status**: **V1–V10.5 FEATURE-COMPLETE & TEST-HARDENED (Issue #073 / F-028 Selesai) — Merged to Main & Pushed to Remote**
 
 ---
 
@@ -67,7 +67,7 @@ Aplikasi web arsip & manajemen keuangan digital untuk **DKM Masjid Al-Luqman** (
   - **Pengetatan Middleware (`proxy.ts`) & Navigasi**: Rute `/unggah` hanya dapat diakses staf (`ADMIN`/`BENDAHARA`), rute `/pengguna` hanya `ADMIN`. Akun dengan role `null` otomatis dialihkan ke `/dashboard?error=forbidden` dan disajikan banner notifikasi ramah pengguna. Menu navigasi "Unggah" di sidebar desktop dan navigasi mobile dikendalikan kondisional via `isStaff(session)` sehingga disembunyikan bagi Jamaah.
   - **Proteksi Data Publik**: Mengganti seluruh query `include: { attachments: true, uploadedBy: true }` dengan `select` eksplisit pada `GET /api/reports`, `GET /api/reports/[id]`, serta Server Component (`app/page.tsx`, `app/cari/page.tsx`, `app/laporan/[id]/page.tsx`) untuk mencegah kebocoran JSON mentah LLM Gemini (`extractionRawResponse`), `extractionError`, serta alamat email pengunggah ke publik tanpa login.
   - **Pembersihan Total Legacy Auth**: Menghapus dependensi `iron-session`, berkas `lib/session.ts`, dan endpoint usang `app/api/auth/login` serta `app/api/auth/logout`.
-- **F-025 / Issue #073 — Tambah Baris Transaksi Manual Saat Review Ekstraksi (Selesai Penuh & Teruji)**:
+- **F-028 / Issue #073 — Tambah Baris Transaksi Manual Saat Review Ekstraksi (Selesai Penuh & Teruji)**:
   - Mitigasi baris transaksi kas yang terlewat oleh Vision-LLM atau dokumen/spreadsheet tanpa harus ekstrak ulang dari nol.
   - Field additive model `Transaction`: `isManual Boolean @default(false)` dan `createdById String?` (relasi opsional ke `User`).
   - Endpoint baru `POST /api/attachments/:id/transactions`: dikunci staf (`isStaff`), validasi nominal > 0, tipe (`pemasukan` | `pengeluaran`), tanggal ISO, keterangan max 500 karakter, kategori terdaftar (khusus pengeluaran), dan nama donatur raw (khusus pemasukan).
@@ -75,8 +75,9 @@ Aplikasi web arsip & manajemen keuangan digital untuk **DKM Masjid Al-Luqman** (
   - Preservasi baris manual pada ekstrak ulang: opsi `Simpan Lama & Tambah Draf` (`replaceVerified: false`) mempertahankan baris manual yang belum diverifikasi (`isVerified: false, isManual: false` dihapus). Opsi `Reset & Ekstrak Ulang` (`replaceVerified: true`) menghapus seluruh baris dengan peringatan dinamis di dialog konfirmasi (`manualCount > 0`).
   - Komponen UI: Tombol `+ Tambah Baris Transaksi` dengan border dashed di `TransactionReviewPanel` (tampil saat ekstraksi selesai, termasuk jika hasil AI 0 baris), form inline dialog lengkap, serta badge visual biru muda `Manual` pada baris transaksi manual.
 - Seluruh commit sudah digabungkan ke `main` dan sinkron dengan remote GitHub `origin/main`.
-- Status kode: `tsc --noEmit` lolos 0 error, `npm run lint` lolos 0 error, production build lolos 100%, 95 suite test (otorisasi + QA hardening + file validation + F-025 manual transaction) lolos 100%.
-- **Fokus Saat Ini**: Pemeliharaan stabil, operasional riil DKM Al-Luqman, dan keandalan sistem produksi.
+- Status kode: `tsc --noEmit` lolos 0 error, `npm run lint` lolos 0 error, production build lolos 100%, 101 suite test otomatis (55 auth guards + 15 QA hardening + 10 file validation + 21 manual transaction F-028) lolos 100%.
+- **Status Pengujian & Kesiapan Operasional**: Diuji secara komprehensif oleh penulis/pengembang (101 automated test passed); demonstrasi dan User Acceptance Testing (UAT) bersama Bendahara DKM Al-Luqman dijadwalkan berikutnya.
+- **Status Migrasi Basis Data**: Bersih dan mutakhir (`npx prisma migrate status` up to date, 6 migrasi resmi tercatat dan tersinkronisasi di tabel `_prisma_migrations`).
 
 ---
 
@@ -174,7 +175,7 @@ Model utama:
 - **Issue #047**: initialBalance/finalBalance di Report, badge Model Cadangan
 - **V5 (Issue #048–#053)**: skema Donor, fuzzy matching, endpoint publik, UI assign donatur, edit donor verified, deteksi duplikat, batal verifikasi, Dashboard & Donatur publik
 - **Redesign Visual (Batch 1, 2, 3)**: Diseragamkan ke design tokens, full-width PageShell, dan live di `main`
-- **V10.5 (Issue #073 / F-025)**: Tambah baris transaksi manual saat review ekstraksi, endpoint `POST /api/attachments/:id/transactions`, preservasi baris manual saat ekstrak ulang, dan warning alert di modal dialog konfirmasi.
+- **V10.5 (Issue #073 / F-028)**: Tambah baris transaksi manual saat review ekstraksi, endpoint `POST /api/attachments/:id/transactions`, preservasi baris manual saat ekstrak ulang, dan warning alert di modal dialog konfirmasi.
 
 ---
 
@@ -257,7 +258,7 @@ Tidak ada bug fungsional aktif di codebase. Seluruh fase V1 s/d V7 telah tuntas 
   1. `Reset & Ekstrak Ulang` (mengirim `{ replaceVerified: true }` ke API untuk menghapus transaksi lama sebelum memasukkan hasil baru).
   2. `Simpan Lama & Tambah Draf` (mengirim `{ replaceVerified: false }`, hanya menghapus unverified).
   Hal ini mencegah insiden duplikasi nilai kas ganda akibat konfirmasi berulang dari ekstrak ulang.
-- Proteksi Baris Manual pada Ekstrak Ulang (Issue #073 / F-025):
+- Proteksi Baris Manual pada Ekstrak Ulang (Issue #073 / F-028):
   - Sistem tetap "satu pintu masuk": tidak ada form input transaksi liar tanpa konteks laporan. Tambah baris manual HANYA bisa dilakukan dalam konteks review lampiran tertentu (`attachmentId` dan `reportId` wajib, `extractionStatus === "done"`).
   - Baris manual baru selalu berstatus draf (`isVerified: false`, `isManual: true`), wajib ditinjau dan dikonfirmasi sebelum dihitung di saldo kas resmi.
   - Pada "Ekstrak Ulang" dengan opsi `Simpan Lama & Tambah Draf` (`replaceVerified: false`), baris manual unverified DIPERTAHANKAN (`isVerified: false, isManual: false` yang dihapus) agar bendahara tidak kehilangan input manual yang telah diketik.
@@ -324,12 +325,13 @@ Shared logic di `lib/donor-matching.ts`, `lib/donor-service.ts`, dan `lib/expens
    - Ketahanan konkurensi donatur `lib/donor-service.ts` (Prisma error P2002 fallback ke `findUnique`).
    - Sanitasi query uploader null di `app/cari/page.tsx` dan optimasi ESLint `globalIgnores`.
    - Seluruh uji regresi otomatis lolos 100% (80 test passed).
-7. **F-025: Tambah Baris Transaksi Manual Saat Review Ekstraksi (Issue #073 — Selesai Penuh & Teruji)**:
+7. **F-028: Tambah Baris Transaksi Manual Saat Review Ekstraksi (Issue #073 — Selesai Penuh & Teruji)**:
    - Skema additive `isManual` & `createdById` pada model `Transaction`.
    - Endpoint `POST /api/attachments/:id/transactions` dengan validasi ketat & otorisasi staf (`isStaff`).
    - Logika preservasi baris manual pada endpoint ekstraksi (`deleteMany` hanya `isVerified: false, isManual: false`).
    - Komponen UI: dialog form tambah baris manual & tombol "+ Tambah Baris Transaksi" di `TransactionReviewPanel`, peringatan baris manual pada dialog konfirmasi `ExtractButton`, serta badge `Manual` pada baris transaksi.
-8. **F-028: Kendali Visibilitas Menu Unggah Berbasis Role & Notifikasi Akses Terbatas (Issue #074 — Selesai Penuh)**:
+   - Test suite baru `scripts/test-manual-transaction.ts` lolos 100% (21/21 lulus: skema, otorisasi handler asli, validasi payload, isolasi publik, preservasi ekstrak ulang, lifecycle DB, dan deteksi duplikat). Total test suite proyek mencapai 101 test passed.
+8. **F-029: Kendali Visibilitas Menu Unggah Berbasis Role & Notifikasi Akses Terbatas (Issue #074 — Selesai Penuh)**:
    - Menu `Unggah` di sidebar desktop dan navigasi mobile (`components/app-shell.tsx`) kini dikendalikan oleh `isStaff(session)`, sehingga disembunyikan secara elegan bagi akun Jamaah (`role: null`) dan pengunjung publik.
    - Penangkapan parameter `?error=forbidden` pada Dashboard (`app/dashboard/page.tsx` & `components/dashboard-client.tsx`) ketika pengguna tanpa wewenang staf dialihkan oleh middleware/proxy.
    - Komponen banner notifikasi informatif di Dashboard dengan penjelasan ramah peran akun serta tombol tutup (*dismiss*) yang membersihkan URL peramban via `window.history.replaceState` tanpa *page reload*.

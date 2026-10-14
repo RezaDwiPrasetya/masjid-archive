@@ -10,7 +10,7 @@ Membantu DKM Masjid Al-Luqman (dan pengurus masjid sejenis) menjaga arsip lapora
 
 ### Current Status
 
-- Phase: Fase V10.5 (Tambah Baris Transaksi Manual Saat Review Ekstraksi — Issue #073 / F-025) Selesai
+- Phase: Fase V10.5 (Tambah Baris Transaksi Manual Saat Review Ekstraksi — Issue #073 / F-028) Selesai
 - Version: 0.10.5
 - Last Updated: 2026-10-14 (Fase V10.5: Fitur Tambah Baris Transaksi Manual & Preservasi Ekstrak Ulang)
 

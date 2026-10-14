@@ -70,7 +70,7 @@
 - [x] Refaktor Lampiran PDF Mutasi Kas menjadi multi-halaman dinamis dengan font 8.5pt, baris 20pt, word-wrap tanpa pemotongan "…", header berulang, dan baris total tunggal (Issue #072)
 - [x] Perbaikan garis border pemisah baris tabel lampiran PDF (#c2c9bb) langsung pada rectangle agar tidak tertimpa latar belakang zebra striping (Issue #072)
 
-### Milestone 11 — Manual Transaction Addition on Extraction Review (V10.5, Issue #073 / F-025)
+### Milestone 11 — Manual Transaction Addition on Extraction Review (V10.5, Issue #073 / F-028)
 - [x] Tombol & Dialog Tambah Baris Transaksi Manual di `TransactionReviewPanel`
 - [x] Endpoint `POST /api/attachments/:id/transactions` dengan otorisasi staf DKM & validasi ketat
 - [x] Prisma schema additive: `Transaction.isManual` (Boolean) & `Transaction.createdById` (FK User)
@@ -79,7 +79,7 @@
 - [x] Visual badge penanda "Manual" pada tabel review transaksi
 - [x] Otomatisasi pengujian komprehensif manual transaction (`scripts/test-manual-transaction.ts` 21/21 lulus)
 
-### Milestone 12 — Role-Based Upload Navigation & Access Denial Alert (V10.6, Issue #074 / F-028)
+### Milestone 12 — Role-Based Upload Navigation & Access Denial Alert (V10.6, Issue #074 / F-029)
 - [x] Kondisional menu navigasi "Unggah" di sidebar desktop dan bilah navigasi mobile (`components/app-shell.tsx`) khusus staf DKM (`isStaff(session)`)
 - [x] Penangkapan parameter `?error=forbidden` pada Dashboard (`app/dashboard/page.tsx` & `components/dashboard-client.tsx`)
 - [x] Komponen Banner Alert interaktif di Dashboard dengan penjelasan peran Jemaah vs Staf DKM dan tombol tutup (dismiss) dengan sinkronisasi URL tanpa reload
@@ -93,12 +93,12 @@
 
 ## Version
 
-Current: `0.10.6` (Fase V10.6: Kendali Visibilitas Menu Unggah Berbasis Role & Notifikasi Akses Terbatas — Issue #074 / F-028)
+Current: `0.10.6` (Fase V10.6: Kendali Visibilitas Menu Unggah Berbasis Role & Notifikasi Akses Terbatas — Issue #074 / F-029)
 Next: `1.0.0`
 
 ## Changelog
 
-### 0.10.6 (2026-10-14) — Fase V10.6: Kendali Visibilitas Menu Unggah Berbasis Role & Notifikasi Akses Terbatas (Issue #074 / F-028)
+### 0.10.6 (2026-10-14) — Fase V10.6: Kendali Visibilitas Menu Unggah Berbasis Role & Notifikasi Akses Terbatas (Issue #074 / F-029)
 - **Kendali Visibilitas Navigasi Berbasis Peran (`components/app-shell.tsx`)**:
   - Menu **"Unggah"** kini disembunyikan secara otomatis bagi pengguna publik dan akun yang login dengan peran **Jemaah** (`role: null`) menggunakan helper `isStaff(session)`.
   - Hanya staf operasional DKM (**Bendahara** dan **Administrator**) yang dapat melihat dan mengakses tombol Unggah di sidebar desktop dan navigasi mobile.
@@ -107,7 +107,7 @@ Next: `1.0.0`
   - Menampilkan banner peringatan ramah pengguna berwarna kuning/amber dengan ikon `ShieldAlert`, menjelaskan mengapa akses ditolak dan peran akun saat ini.
   - Dilengkapi tombol tutup (*dismiss*) yang menghapus parameter URL via `window.history.replaceState` tanpa *reload*.
 
-### 0.10.5 (2026-10-14) — Fase V10.5: Penambahan Baris Transaksi Manual Saat Review Ekstraksi (Issue #073 / F-025)
+### 0.10.5 (2026-10-14) — Fase V10.5: Penambahan Baris Transaksi Manual Saat Review Ekstraksi (Issue #073 / F-028)
 - **Fitur Tambah Baris Transaksi Manual (`components/transaction-review-panel.tsx`)**:
   - Tombol **`+ Tambah Baris Transaksi`** di header tabel review untuk staf DKM (Admin/Bendahara).
   - Modal dialog interaktif untuk input: Tanggal, Deskripsi/Uraian, Jenis (Pemasukan/Pengeluaran), Kategori Pengeluaran (wajib untuk pengeluaran), dan Nominal (Rupiah).

@@ -593,7 +593,7 @@
 
 ---
 
-### F-028 — Tambah Baris Transaksi Manual Saat Review Ekstraksi (Issue #073 / F-025)
+### F-028 — Tambah Baris Transaksi Manual Saat Review Ekstraksi (Issue #073 / F-028)
 
 **Objective:** Memitigasi baris transaksi kas yang terlewat oleh Vision-LLM (Gemini) atau berkas dokumen/spreadsheet saat proses ekstraksi tanpa harus memaksa bendahara melakukan "Ekstrak Ulang" berulang kali yang belum tentu membaca baris tersebut, sehingga saldo kas sistem dapat direkonsiliasi secara presisi dengan saldo fisik buku kas.
 **User:** Bendahara DKM & Administrator (khusus staf terautentikasi)
