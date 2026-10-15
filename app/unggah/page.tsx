@@ -3,10 +3,12 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { AppShell } from "@/components/app-shell";
 import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { compressImage } from "@/lib/image-compression";
 import {
   CloudUpload,
   UploadCloud,
@@ -17,6 +19,9 @@ import {
   FileText,
   FileSpreadsheet,
   File,
+  ShieldAlert,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 
 // ─── Tipe & Konstanta ─────────────────────────────────────────────────────────
@@ -25,6 +30,10 @@ type FileEntry = {
   /** ID unik agar React key stabil */
   id: string;
   file: File;
+  originalSize: number;
+  compressedSize: number;
+  isCompressed: boolean;
+  savingsPercent: number;
 };
 
 type ValidationError = {
@@ -33,14 +42,15 @@ type ValidationError = {
 };
 
 const ALLOWED_TYPES: Record<string, { label: string; maxBytes: number }> = {
-  "image/jpeg":  { label: "Gambar JPEG", maxBytes: 5 * 1024 * 1024 },
-  "image/png":   { label: "Gambar PNG",  maxBytes: 5 * 1024 * 1024 },
+  "image/jpeg":  { label: "Gambar JPEG", maxBytes: 10 * 1024 * 1024 },
+  "image/png":   { label: "Gambar PNG",  maxBytes: 10 * 1024 * 1024 },
+  "image/webp":  { label: "Gambar WebP", maxBytes: 10 * 1024 * 1024 },
   "application/pdf": { label: "PDF",     maxBytes: 10 * 1024 * 1024 },
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
-    label: "Excel (.xlsx)", maxBytes: 5 * 1024 * 1024,
+    label: "Excel (.xlsx)", maxBytes: 10 * 1024 * 1024,
   },
   // .xls (MIME lama)
-  "application/vnd.ms-excel": { label: "Excel (.xls)", maxBytes: 5 * 1024 * 1024 },
+  "application/vnd.ms-excel": { label: "Excel (.xls)", maxBytes: 10 * 1024 * 1024 },
 };
 
 // ─── Helper: format ukuran file ───────────────────────────────────────────────
@@ -63,9 +73,6 @@ function FileIcon({ mime }: { mime: string }) {
   return <File size={20} className="shrink-0 text-muted-foreground" />;
 }
 
-import { useSession } from "next-auth/react";
-import { ShieldAlert } from "lucide-react";
-
 // ─── Komponen utama ───────────────────────────────────────────────────────────
 
 export default function UnggahLaporanPage() {
@@ -78,6 +85,8 @@ export default function UnggahLaporanPage() {
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [submitError, setSubmitError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [compressing, setCompressing] = useState(false);
+  const [compressingText, setCompressingText] = useState("");
   const [saved, setSaved] = useState(false);
 
   if (status === "loading") {
@@ -116,13 +125,13 @@ export default function UnggahLaporanPage() {
     );
   }
 
-  // ── #028 & #029 & #031: handle pemilihan file ──────────────────────────────
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  // ── #028 & #029 & #031: handle pemilihan file & kompresi client-side (Issue #075) ──
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selected = Array.from(e.target.files ?? []);
     if (selected.length === 0) return;
 
     const errors: ValidationError[] = [];
-    const accepted: FileEntry[] = [];
+    const validFilesToProcess: File[] = [];
 
     for (const file of selected) {
       const rule = ALLOWED_TYPES[file.type];
@@ -136,7 +145,7 @@ export default function UnggahLaporanPage() {
         continue;
       }
 
-      // Validasi ukuran file
+      // Validasi ukuran file batas maksimal 10 MB
       if (file.size > rule.maxBytes) {
         errors.push({
           fileName: file.name,
@@ -147,16 +156,39 @@ export default function UnggahLaporanPage() {
 
       // Cegah file duplikat (nama + ukuran sama)
       const isDuplicate = files.some(
-        (e) => e.file.name === file.name && e.file.size === file.size
+        (entry) =>
+          (entry.file.name === file.name && entry.originalSize === file.size) ||
+          (entry.file.name === file.name && entry.file.size === file.size)
       );
       if (isDuplicate) continue;
 
-      accepted.push({ id: `${file.name}-${file.size}-${Date.now()}`, file });
+      validFilesToProcess.push(file);
     }
 
     setValidationErrors(errors);
-    if (accepted.length > 0) {
-      setFiles((prev) => [...prev, ...accepted]);
+
+    if (validFilesToProcess.length > 0) {
+      setCompressing(true);
+      const newEntries: FileEntry[] = [];
+
+      for (let i = 0; i < validFilesToProcess.length; i++) {
+        const file = validFilesToProcess[i];
+        setCompressingText(`Mengoptimalkan berkas ${i + 1} dari ${validFilesToProcess.length}...`);
+
+        const result = await compressImage(file);
+        newEntries.push({
+          id: `${file.name}-${file.size}-${Date.now()}-${i}`,
+          file: result.file,
+          originalSize: result.originalSize,
+          compressedSize: result.compressedSize,
+          isCompressed: result.isCompressed,
+          savingsPercent: result.savingsPercent,
+        });
+      }
+
+      setCompressing(false);
+      setCompressingText("");
+      setFiles((prev) => [...prev, ...newEntries]);
     }
 
     // Reset nilai input agar file yang sama bisa dipilih lagi jika dihapus
@@ -242,25 +274,44 @@ export default function UnggahLaporanPage() {
             ref={inputRef}
             type="file"
             multiple
-            accept=".jpg,.jpeg,.png,.pdf,.xlsx,.xls"
-            className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+            accept=".jpg,.jpeg,.png,.webp,.pdf,.xlsx,.xls"
+            className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
             onChange={handleFileChange}
+            disabled={compressing || loading}
           />
           <div className="pointer-events-none flex flex-col items-center gap-3">
-            <div className="rounded-full bg-primary/10 p-4 text-primary">
-              <UploadCloud size={32} />
-            </div>
-            <div>
-              <p className="font-semibold text-base text-on-surface">
-                Ketuk atau seret file laporan ke sini
-              </p>
-              <p className="mt-1 text-sm text-on-surface-variant">
-                Gambar (maks 5 MB) · PDF (maks 10 MB) · Excel (maks 5 MB)
-              </p>
-              <p className="mt-1 text-xs text-on-surface-variant/80">
-                Format: .jpg · .png · .pdf · .xlsx · .xls
-              </p>
-            </div>
+            {compressing ? (
+              <>
+                <div className="rounded-full bg-primary/10 p-4 text-primary animate-pulse">
+                  <Loader2 size={32} className="animate-spin" />
+                </div>
+                <div>
+                  <p className="font-semibold text-base text-on-surface">
+                    {compressingText || "Mengoptimalkan dan mengompresi foto..."}
+                  </p>
+                  <p className="mt-1 text-sm text-on-surface-variant">
+                    Mengonversi ke WebP beresolusi tajam & menghemat kuota penyimpanan
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="rounded-full bg-primary/10 p-4 text-primary">
+                  <UploadCloud size={32} />
+                </div>
+                <div>
+                  <p className="font-semibold text-base text-on-surface">
+                    Ketuk atau seret file laporan ke sini
+                  </p>
+                  <p className="mt-1 text-sm text-on-surface-variant">
+                    Gambar (dioptimasi otomatis ke WebP) · PDF (maks 10 MB) · Excel (maks 10 MB)
+                  </p>
+                  <p className="mt-1 text-xs text-on-surface-variant/80">
+                    Format: .jpg · .png · .webp · .pdf · .xlsx · .xls
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </label>
 
@@ -302,15 +353,31 @@ export default function UnggahLaporanPage() {
                     <p className="truncate text-sm font-medium text-on-surface">
                       {entry.file.name}
                     </p>
-                    <p className="text-xs text-on-surface-variant mt-0.5">
-                      {formatBytes(entry.file.size)}
-                    </p>
+                    {entry.isCompressed ? (
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                        <span className="text-xs text-on-surface-variant line-through">
+                          {formatBytes(entry.originalSize)}
+                        </span>
+                        <span className="text-xs font-semibold text-primary">
+                          → {formatBytes(entry.compressedSize)}
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
+                          <Sparkles className="size-3" />
+                          Hemat {entry.savingsPercent}%
+                        </span>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-on-surface-variant mt-0.5">
+                        {formatBytes(entry.file.size)}
+                      </p>
+                    )}
                   </div>
                   {/* #030: Tombol hapus individual */}
                   <button
                     type="button"
                     onClick={() => removeFile(entry.id)}
-                    className="shrink-0 rounded-lg p-1.5 text-on-surface-variant transition-colors hover:bg-destructive/10 hover:text-destructive"
+                    disabled={compressing || loading}
+                    className="shrink-0 rounded-lg p-1.5 text-on-surface-variant transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
                     aria-label={`Hapus ${entry.file.name}`}
                   >
                     <X size={16} />
@@ -322,7 +389,9 @@ export default function UnggahLaporanPage() {
             <div className="border-t border-outline-variant px-5 py-3 bg-surface-container/70">
               <label
                 htmlFor="file-input"
-                className="cursor-pointer text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1"
+                className={`text-xs font-semibold text-primary inline-flex items-center gap-1 ${
+                  compressing || loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:underline"
+                }`}
               >
                 + Tambah berkas lain
               </label>
@@ -369,11 +438,13 @@ export default function UnggahLaporanPage() {
           type="submit"
           size="lg"
           className="w-full h-11 text-base font-semibold gap-2"
-          disabled={loading || files.length === 0}
+          disabled={loading || compressing || files.length === 0}
         >
           <CloudUpload size={20} />
           {loading
             ? "Mengunggah..."
+            : compressing
+            ? "Mengoptimalkan foto..."
             : files.length === 0
             ? "Pilih file terlebih dahulu"
             : `Simpan ke Arsip (${files.length} file)`}

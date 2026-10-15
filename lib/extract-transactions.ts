@@ -132,6 +132,8 @@ export async function extractTransactionsFromFile(
     resolvedMimeType = "application/pdf";
   } else if (rawMime.includes("png") || urlLower.endsWith(".png")) {
     resolvedMimeType = "image/png";
+  } else if (rawMime.includes("webp") || urlLower.endsWith(".webp")) {
+    resolvedMimeType = "image/webp";
   } else if (
     rawMime.includes("jpeg") ||
     rawMime.includes("jpg") ||
