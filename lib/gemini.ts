@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export const GEMINI_MODEL = "gemini-3.6-flash";
+export const GEMINI_MODEL = "gemini-3-flash-preview";
 
 // Singleton Gemini client — pola identik dengan lib/prisma.ts
 // Tidak perlu menginisialisasi ulang per request.

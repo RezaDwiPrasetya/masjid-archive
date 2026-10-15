@@ -224,7 +224,15 @@ export async function extractTransactionsFromFile(
 
   // Daftar model kandidat berurutan: jika model utama terkena antrean/lonjakan (503/timeout),
   // sistem langsung beralih ke model cadangan tanpa membiarkan request menggantung.
-  const candidateModels = Array.from(new Set([MODEL_NAME, "gemini-3.5-flash"]));
+  const candidateModels = Array.from(
+    new Set([
+      MODEL_NAME,
+      "gemini-3.1-flash-lite",
+      "gemini-3.7-flash",
+      "gemini-3.6-flash",
+      "gemini-3.5-flash",
+    ])
+  );
 
   let lastError: unknown = null;
 
@@ -238,9 +246,9 @@ export async function extractTransactionsFromFile(
       },
     });
 
-    // Batas waktu 25 detik per model untuk mencegah request menggantung di antrean server Google
+    // Batas waktu 30 detik per model untuk mencegah request menggantung di antrean server Google
     const abortController = new AbortController();
-    const timeoutId = setTimeout(() => abortController.abort(), 25000);
+    const timeoutId = setTimeout(() => abortController.abort(), 30000);
 
     try {
       const result = await model.generateContent(
