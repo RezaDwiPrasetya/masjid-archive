@@ -148,17 +148,21 @@ KONTEKS KHUSUS PERIODE LAPORAN KAS (CONTEXT-AWARE BOUNDARY):
 Dokumen ini sedang diproses untuk LAPORAN KAS TANGGAL: ${targetIso} (${targetIndo}, biasanya dibacakan hari Jumat).
 Pekan laporan ini mencakup mutasi kas sejak penutupan pekan sebelumnya (sekitar ${prevIso} / ${prevIndo}) hingga tanggal laporan target ini (${targetIso} / ${targetIndo}).
 
-ATURAN PEMBATASAN PEKAN (MULTI-WEEK SHEET BOUNDARY RULES):
-Kadang kala dalam satu halaman fisik buku kas atau lembaran kertas, pengurus/bendahara menuliskan DUA PEKAN BERBEDA sekaligus pada halaman yang sama (karena menyambung di sisa baris kosong di bagian bawah). Terapkan aturan berikut:
+ATURAN PEMBATASAN PEKAN & REKONSILIASI PENUTUPAN (MULTI-WEEK & CLOSING RECONCILIATION):
+1. ATURAN PENUTUPAN SALDO & TRANSAKSI SUSULAN (CLOSING BALANCE & LATE ENTRIES):
+   - Jika dokumen memuat baris penutupan saldo untuk tanggal target (${targetIso} atau ${targetIndo}), misalnya tulisan "TOTAL KAS MESJID TGL ${targetIso}", "SALDO AKHIR TGL ${targetIso}", atau subtotal kas:
+     * PERIKSA CATATAN TEPAT DI BAWAHNYA: Sering kali bendahara menuliskan transaksi susulan tepat di bawah subtotal (contoh: "- INFAK HAMBA ALLAH Rp 250.000") lalu menjumlahkan ulang subtotal tersebut menghasilkan angka akumulasi akhir baru (contoh: Rp 820.000 + Rp 250.000 = Rp 1.070.000) TANPA adanya judul/header pekan baru.
+     * JIKA ada mutasi tambahan di bawah subtotal yang diakumulasikan ke saldo akhir baru dan TIDAK diawali judul pekan baru, maka:
+       - Transaksi tersebut WAJIB dimasukkan ke array "transactions" (sebagai mutasi pemasukan/pengeluaran pekan ini).
+       - Nilai "finalBalance" yang diambil adalah angka akumulasi TERAKHIR / TERBAWAH yang mencakup transaksi susulan tersebut (misal: 1070000).
+   - KAPAN CATATAN DI BAWAH GARIS DIABAIKAN (PEKAN BERIKUTNYA):
+     * Abaikan catatan di bawah garis penutup HANYA JIKA catatan tersebut secara tegas merupakan BLOK PEKAN BERIKUTNYA, yang ditandai dengan:
+       - Adanya judul atau header penanggalan pekan baru setelah tanggal target (misal tertulis tanggal Jumat pekan depan atau tanggal setelah ${targetIso}).
+       - Dimulainya struktur laporan baru (misal ada tulisan saldo awal baru untuk pekan selanjutnya).
 
-1. ATURAN SALDO PENUTUP (CLOSING BALANCE BOUNDARY):
-   - Jika dokumen ini memuat garis atau baris penutupan saldo untuk tanggal target (${targetIso} atau ${targetIndo}), misalnya tulisan "TOTAL KAS MESJID TGL ${targetIso}", "SALDO AKHIR TGL ${targetIso}", atau subtotal penutup pekan ini, maka nominal tersebut adalah "finalBalance" untuk laporan ini.
-   - Segala catatan mutasi kas yang ditulis SECARA FISIK DI BAWAH garis saldo penutup tanggal ${targetIso} tersebut adalah milik pekan berikutnya dan WAJIB DIABAIKAN (JANGAN dimasukkan ke array transactions).
-   - Segala transaksi yang secara eksplisit bertanggal SETELAH tanggal ${targetIso} WAJIB DIABAIKAN untuk laporan ini.
-
-2. KASUS PEKAN LANJUTAN DI BAWAH (Jika tanggal target laporan ini adalah pekan lanjutan yang ditulis di bagian bawah):
+2. KASUS PEKAN LANJUTAN DI BAWAH (Jika tanggal target laporan ini adalah pekan lanjutan yang ditulis di bagian bawah lembar):
    - Jika dokumen memuat penutupan saldo pekan sebelumnya di bagian atas/tengah (misal penutupan tanggal ${prevIso} atau ${prevIndo}), dan transaksi untuk pekan ini (${targetIso}) ditulis menyambung di bagian bawahnya:
-     * Ambil saldo akhir penutup pekan sebelumnya tersebut sebagai "initialBalance" untuk laporan pekan ini.
+     * Ambil saldo penutup pekan sebelumnya (setelah memperhitungkan transaksi susulan pekan lalu jika ada) sebagai "initialBalance" untuk laporan pekan ini.
      * HANYA ekstrak mutasi-mutasi yang ditulis SETELAH penutupan pekan sebelumnya menuju tanggal pekan ini (${targetIso}). Seluruh transaksi di atas penutupan pekan sebelumnya yang sudah masuk ke pekan lalu WAJIB DIABAIKAN.
      * Ambil saldo akhir kas pekan ini sebagai "finalBalance".
 
