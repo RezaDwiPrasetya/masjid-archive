@@ -15,8 +15,8 @@ import {
 
 type ExtractionStatus = "not_extracted" | "processing" | "done" | "failed";
 
-// Model utama yang dipakai sistem — harus sinkron dengan GEMINI_MODEL di lib/gemini.ts
-const PRIMARY_MODEL = "gemini-3.6-flash";
+// Model utama yang dipakai sistem — sinkron dengan GEMINI_MODEL di lib/gemini.ts
+const PRIMARY_MODEL = "gemini-3-flash-preview";
 
 interface ExtractButtonProps {
   attachmentId: string;
@@ -127,6 +127,7 @@ export function ExtractButton({
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
           <span
+            title={extractionModel ? `Model AI: ${extractionModel}` : undefined}
             className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs ${badge.className}`}
           >
             {badge.icon}
@@ -141,10 +142,10 @@ export function ExtractButton({
             extractionModel &&
             extractionModel !== PRIMARY_MODEL && (
               <span
-                title={`Model yang dipakai: ${extractionModel} (model cadangan)`}
+                title={`Model utama sibuk. Dialihkan ke: ${extractionModel}`}
                 className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold bg-amber-500/15 text-amber-800 border border-amber-300"
               >
-                <span aria-hidden="true">&#9888;</span> Model Cadangan
+                <span aria-hidden="true">&#9888;</span> Model Cadangan ({extractionModel})
               </span>
             )}
         </div>
