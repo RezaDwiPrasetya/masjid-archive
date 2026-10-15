@@ -97,12 +97,86 @@ export type ExtractionResult = {
 };
 
 /**
+ * Format tanggal dalam bahasa Indonesia untuk instruksi prompt Vision-LLM
+ */
+export function formatIndonesianDate(d: Date): string {
+  const months = [
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+  ];
+  const day = d.getUTCDate();
+  const month = months[d.getUTCMonth()];
+  const year = d.getUTCFullYear();
+  return `${day} ${month} ${year}`;
+}
+
+/**
+ * Menyusun prompt ekstraksi cerdas dengan menginjeksikan batasan periode pekan laporan (F-031)
+ */
+export function buildExtractionPrompt(targetReportDate?: string | Date | null): string {
+  if (!targetReportDate) {
+    return EXTRACTION_PROMPT;
+  }
+
+  let dateObj: Date;
+  if (typeof targetReportDate === "string") {
+    const parts = targetReportDate.split("-").map((p) => parseInt(p, 10));
+    if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
+      dateObj = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+    } else {
+      dateObj = new Date(targetReportDate);
+    }
+  } else {
+    dateObj = new Date(targetReportDate);
+  }
+
+  if (isNaN(dateObj.getTime())) {
+    return EXTRACTION_PROMPT;
+  }
+
+  const targetIso = dateObj.toISOString().split("T")[0];
+  const targetIndo = formatIndonesianDate(dateObj);
+
+  // Hitung Jumat sepekan sebelumnya (7 hari sebelum tanggal laporan)
+  const prevDateObj = new Date(dateObj.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const prevIso = prevDateObj.toISOString().split("T")[0];
+  const prevIndo = formatIndonesianDate(prevDateObj);
+
+  const contextInstruction = `
+---
+KONTEKS KHUSUS PERIODE LAPORAN KAS (CONTEXT-AWARE BOUNDARY):
+Dokumen ini sedang diproses untuk LAPORAN KAS TANGGAL: ${targetIso} (${targetIndo}, biasanya dibacakan hari Jumat).
+Pekan laporan ini mencakup mutasi kas sejak penutupan pekan sebelumnya (sekitar ${prevIso} / ${prevIndo}) hingga tanggal laporan target ini (${targetIso} / ${targetIndo}).
+
+ATURAN PEMBATASAN PEKAN (MULTI-WEEK SHEET BOUNDARY RULES):
+Kadang kala dalam satu halaman fisik buku kas atau lembaran kertas, pengurus/bendahara menuliskan DUA PEKAN BERBEDA sekaligus pada halaman yang sama (karena menyambung di sisa baris kosong di bagian bawah). Terapkan aturan berikut:
+
+1. ATURAN SALDO PENUTUP (CLOSING BALANCE BOUNDARY):
+   - Jika dokumen ini memuat garis atau baris penutupan saldo untuk tanggal target (${targetIso} atau ${targetIndo}), misalnya tulisan "TOTAL KAS MESJID TGL ${targetIso}", "SALDO AKHIR TGL ${targetIso}", atau subtotal penutup pekan ini, maka nominal tersebut adalah "finalBalance" untuk laporan ini.
+   - Segala catatan mutasi kas yang ditulis SECARA FISIK DI BAWAH garis saldo penutup tanggal ${targetIso} tersebut adalah milik pekan berikutnya dan WAJIB DIABAIKAN (JANGAN dimasukkan ke array transactions).
+   - Segala transaksi yang secara eksplisit bertanggal SETELAH tanggal ${targetIso} WAJIB DIABAIKAN untuk laporan ini.
+
+2. KASUS PEKAN LANJUTAN DI BAWAH (Jika tanggal target laporan ini adalah pekan lanjutan yang ditulis di bagian bawah):
+   - Jika dokumen memuat penutupan saldo pekan sebelumnya di bagian atas/tengah (misal penutupan tanggal ${prevIso} atau ${prevIndo}), dan transaksi untuk pekan ini (${targetIso}) ditulis menyambung di bagian bawahnya:
+     * Ambil saldo akhir penutup pekan sebelumnya tersebut sebagai "initialBalance" untuk laporan pekan ini.
+     * HANYA ekstrak mutasi-mutasi yang ditulis SETELAH penutupan pekan sebelumnya menuju tanggal pekan ini (${targetIso}). Seluruh transaksi di atas penutupan pekan sebelumnya yang sudah masuk ke pekan lalu WAJIB DIABAIKAN.
+     * Ambil saldo akhir kas pekan ini sebagai "finalBalance".
+
+3. DOKUMEN TUNGGAL NORMAL:
+   - Jika dokumen hanya memuat catatan untuk satu pekan kas normal, ekstrak seluruh rincian transaksi seperti biasa.
+`.trim();
+
+  return `${EXTRACTION_PROMPT}\n\n${contextInstruction}`;
+}
+
+/**
  * Ambil file gambar atau dokumen PDF dari URL publik Supabase dan kirim ke Gemini
  * untuk diekstrak menjadi daftar transaksi terstruktur beserta saldo awal & akhir buku.
  */
 export async function extractTransactionsFromFile(
   fileUrl: string,
-  fileTypeHint?: string
+  fileTypeHint?: string,
+  targetReportDate?: string | Date | null
 ): Promise<ExtractionResult> {
   // Fetch file dari Supabase Storage sebagai binary
   const fileResponse = await fetch(fileUrl);
@@ -145,6 +219,9 @@ export async function extractTransactionsFromFile(
     resolvedMimeType = rawMime;
   }
 
+  // Siapkan prompt context-aware (F-031)
+  const extractionPromptToUse = buildExtractionPrompt(targetReportDate);
+
   // Daftar model kandidat berurutan: jika model utama terkena antrean/lonjakan (503/timeout),
   // sistem langsung beralih ke model cadangan tanpa membiarkan request menggantung.
   const candidateModels = Array.from(new Set([MODEL_NAME, "gemini-3.5-flash"]));
@@ -168,7 +245,7 @@ export async function extractTransactionsFromFile(
     try {
       const result = await model.generateContent(
         [
-          EXTRACTION_PROMPT,
+          extractionPromptToUse,
           {
             inlineData: {
               mimeType: resolvedMimeType,

@@ -26,7 +26,16 @@ export async function POST(
   const { id } = await params;
 
   // 2. Ambil attachment dan validasi
-  const attachment = await prisma.attachment.findUnique({ where: { id } });
+  const attachment = await prisma.attachment.findUnique({
+    where: { id },
+    include: {
+      report: {
+        select: {
+          reportDate: true,
+        },
+      },
+    },
+  });
 
   if (!attachment) {
     return NextResponse.json(
@@ -78,7 +87,11 @@ export async function POST(
     const { transactions, initialBalance, finalBalance, rawResponse, modelName } =
       attachment.fileType === "excel"
         ? await parseTransactionsFromExcel(attachment.fileUrl)
-        : await extractTransactionsFromFile(attachment.fileUrl, attachment.fileType);
+        : await extractTransactionsFromFile(
+            attachment.fileUrl,
+            attachment.fileType,
+            attachment.report?.reportDate
+          );
 
     // 5. Simpan hasil secara atomik dalam satu transaksi DB:
     //    - Hapus Transaction lama dari attachment ini (jika replaceVerified = true, hapus semua termasuk verified; jika false, hanya hapus unverified)
