@@ -66,6 +66,8 @@ export function ExtractButton({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const [technicalError, setTechnicalError] = useState<string | null>(null);
+  const [showTechnicalError, setShowTechnicalError] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
   const currentStatus = loading ? "processing" : extractionStatus;
@@ -79,6 +81,8 @@ export function ExtractButton({
     setConfirmDialogOpen(false);
     setLoading(true);
     setLocalError(null);
+    setTechnicalError(null);
+    setShowTechnicalError(false);
 
     try {
       const res = await fetch(`/api/attachments/${attachmentId}/extract`, {
@@ -91,6 +95,9 @@ export function ExtractButton({
 
       if (!res.ok) {
         setLocalError(data.error ?? "Gagal memulai ekstraksi. Silakan coba lagi.");
+        if (data.technicalDetails) {
+          setTechnicalError(data.technicalDetails);
+        }
         return;
       }
 
@@ -99,6 +106,9 @@ export function ExtractButton({
           data.data?.extractionError ??
           "Ekstraksi gagal. Pastikan foto cukup jelas dan coba lagi."
         );
+        if (data.data?.technicalDetails) {
+          setTechnicalError(data.data.technicalDetails);
+        }
         return;
       }
 
@@ -195,10 +205,42 @@ export function ExtractButton({
 
       {/* Pesan error */}
       {errorMessage && (
-        <p className="flex items-start gap-1.5 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
-          <AlertCircle size={14} className="mt-0.5 shrink-0" />
-          <span>{errorMessage}</span>
-        </p>
+        <div className="flex flex-col gap-1.5 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+          <div className="flex items-start gap-1.5">
+            <AlertCircle size={14} className="mt-0.5 shrink-0" />
+            <span className="font-medium">
+              {errorMessage.includes("[GoogleGenerativeAI") ||
+              errorMessage.includes("Error:") ||
+              errorMessage.includes("fetch failed")
+                ? "Ekstraksi gagal. Pastikan foto cukup jelas dan coba lagi."
+                : errorMessage}
+            </span>
+          </div>
+
+          {/* Toggle Detail Masalah Teknis untuk Admin */}
+          {(technicalError ||
+            (extractionError &&
+              (extractionError.includes("[GoogleGenerativeAI") ||
+                extractionError.includes("Error") ||
+                extractionError.includes("fetch failed")))) && (
+            <div className="mt-1 pt-1.5 border-t border-destructive/20 text-[11px]">
+              <button
+                type="button"
+                onClick={() => setShowTechnicalError(!showTechnicalError)}
+                className="underline hover:text-destructive/80 font-mono text-[11px] cursor-pointer text-left"
+              >
+                {showTechnicalError
+                  ? "▲ Sembunyikan detail masalah teknis"
+                  : "▼ Lihat detail masalah teknis (untuk admin)"}
+              </button>
+              {showTechnicalError && (
+                <pre className="mt-1.5 p-2 rounded bg-black/10 text-[10px] font-mono break-all whitespace-pre-wrap max-h-36 overflow-y-auto">
+                  {technicalError ?? extractionError}
+                </pre>
+              )}
+            </div>
+          )}
+        </div>
       )}
 
       {/* Dialog Konfirmasi Ekstrak Ulang saat sudah ada transaksi terverifikasi */}

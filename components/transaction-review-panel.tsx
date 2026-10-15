@@ -1364,6 +1364,38 @@ export function TransactionReviewPanel({
   // Pool transaksi terverifikasi untuk deteksi duplikat (lintas attachment jika ada, atau dalam panel ini)
   const verifiedPool = allVerifiedTransactions ?? verified;
 
+  // Helper normalisasi teks untuk membandingkan keterangan & donatur
+  function cleanComparisonText(str: string | null | undefined): string {
+    if (!str) return "";
+    return str
+      .toLowerCase()
+      .replace(/tgl\s*[\d.\-/]+/gi, "")
+      .replace(/[^a-z0-9\s]/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function isTextLikelyDuplicate(a: string | null | undefined, b: string | null | undefined): boolean {
+    const normA = cleanComparisonText(a);
+    const normB = cleanComparisonText(b);
+    if (!normA || !normB) return false;
+    if (normA === normB) return true;
+    if (normA.includes(normB) || normB.includes(normA)) return true;
+
+    // Hitung kemiripan kata inti (abaikan kata umum: "infak", "infaq", "donasi", "dari", "bayar", "tgl", "kas", dll)
+    const stopWords = new Set([
+      "infak", "infaq", "donasi", "dari", "bayar", "tgl", "kas", "mesjid", "masjid", "dan", "untuk"
+    ]);
+    const wordsA = normA.split(" ").filter((w) => w.length > 2 && !stopWords.has(w));
+    const wordsB = normB.split(" ").filter((w) => w.length > 2 && !stopWords.has(w));
+
+    if (wordsA.length === 0 || wordsB.length === 0) return false;
+
+    // Jika lebih dari 50% kata inti sama, anggap mirip
+    const common = wordsA.filter((w) => wordsB.includes(w));
+    return common.length >= Math.min(wordsA.length, wordsB.length) * 0.5;
+  }
+
   function getDuplicateWarning(tx: Transaction) {
     const txAmount =
       typeof tx.amount === "string" ? parseFloat(tx.amount) : tx.amount;
@@ -1374,12 +1406,33 @@ export function TransactionReviewPanel({
       const vAmount =
         typeof v.amount === "string" ? parseFloat(v.amount) : v.amount;
       const vDate = v.transactionDate ? v.transactionDate.slice(0, 10) : null;
-      return (
+
+      // 1. Wajib tipe, nominal, dan tanggal sama persis
+      const isBaseMatch =
         v.isVerified &&
         tx.type === v.type &&
         txAmount === vAmount &&
-        txDate === vDate
-      );
+        txDate === vDate;
+
+      if (!isBaseMatch) return false;
+
+      // 2. Cek apakah donatur atau keterangan memang mirip / mengindikasikan transaksi yang sama:
+      const txDonor = tx.donorNameRaw ?? tx.donor?.name ?? null;
+      const vDonor = v.donorNameRaw ?? v.donor?.name ?? null;
+
+      // Kasus A: Jika kedua transaksi memiliki nama donatur yang tercatat:
+      // Jika donatur jelas berbeda (misal: "Ibu Ibu Majelis Taklim" vs "Hamba Alloh"), BUKAN duplikat!
+      if (txDonor && vDonor) {
+        return isTextLikelyDuplicate(txDonor, vDonor);
+      }
+
+      // Kasus B: Bandingkan deskripsi transaksi
+      if (tx.description && v.description) {
+        return isTextLikelyDuplicate(tx.description, v.description);
+      }
+
+      // Kasus C: Jika tidak ada deskripsi atau donatur untuk dibandingkan pada keduanya
+      return !tx.description && !v.description;
     });
 
     if (match) {

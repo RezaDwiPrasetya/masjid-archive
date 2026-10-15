@@ -7,6 +7,9 @@ import { extractTransactionsFromFile } from "@/lib/extract-transactions";
 import { parseTransactionsFromExcel } from "@/lib/parse-excel-transactions";
 import { isStaff } from "@/lib/auth-guard";
 
+// Beri batas waktu hingga 60 detik untuk Vercel Serverless Function (default Vercel hanya 10 detik)
+export const maxDuration = 60;
+
 export async function POST(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -184,12 +187,12 @@ export async function POST(
 
     console.error("[Extract] Error:", errorMessage);
 
-    // Update attachment ke status "failed"
+    // Simpan pesan error teknis asli ke database agar mudah diaudit/dianalisis oleh admin
     await prisma.attachment.update({
       where: { id },
       data: {
         extractionStatus: "failed",
-        extractionError: friendlyError,
+        extractionError: errorMessage,
         extractedAt: new Date(),
       },
     });
@@ -197,18 +200,18 @@ export async function POST(
     // Koneksi Gemini sama sekali gagal → 502
     if (isNetworkError) {
       return NextResponse.json(
-        { error: friendlyError },
+        { error: friendlyError, technicalDetails: errorMessage },
         { status: 502 }
       );
     }
 
-    // Gagal parsing/isi foto → tetap 200 dengan extractionStatus: "failed"
-    // karena request kita berhasil diproses, hanya hasilnya tidak memuaskan
+    // Gagal parsing/isi foto/timeout → tetap 200 dengan extractionStatus: "failed"
     return NextResponse.json({
       data: {
         attachmentId: id,
         extractionStatus: "failed",
         extractionError: friendlyError,
+        technicalDetails: errorMessage,
       },
     });
   }
