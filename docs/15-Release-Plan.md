@@ -93,6 +93,13 @@
 - [x] Penyelarasan penanganan MIME `image/webp` pada ekstraksi Vision-LLM (`lib/extract-transactions.ts`)
 - [x] Pengujian fungsionalitas kompresi dan integrasi alur unggah berkas (`scripts/test-image-compression.ts`)
 
+### Milestone 14 — Context-Aware Extraction & Multi-Week Sheet Boundary (V10.8, Issue #076 / F-031)
+- [x] Injeksi parameter `targetReportDate` ke pipeline Vision-LLM pada `POST /api/attachments/:id/extract`
+- [x] Penyusunan prompt dinamis berbasis periode pekan berjalan (rentang Jumat target & Jumat sepekan sebelumnya)
+- [x] Deteksi batas saldo penutup (*closing balance boundary*) untuk mencegah percampuran mutasi saat satu lembar memuat dua pekan berbeda
+- [x] Preservasi backward compatibility untuk dokumen satu pekan tunggal dan berkas non-gambar (Excel)
+- [x] Test suite otomatisasi pengujian prompt boundary dan integrasi handler ekstraksi (`scripts/test-context-aware-extraction.ts`)
+
 ## Release Criteria
 
 - [x] Alur inti (unggah, arsip, cari, detail, ekstraksi, verifikasi) berjalan tanpa error
@@ -102,10 +109,19 @@
 
 ## Version
 
-Current: `0.10.7` (Fase V10.7: Kompresi Gambar Otomatis Client-Side Sebelum Unggah Laporan Kas — Issue #075 / F-030)
+Current: `0.10.8` (Fase V10.8: Ekstraksi Vision-LLM Context-Aware Berbasis Periode Pekan Laporan — Issue #076 / F-031)
 Next: `1.0.0`
 
 ## Changelog
+
+### 0.10.8 (2026-10-15) — Fase V10.8: Ekstraksi Vision-LLM Context-Aware Berbasis Periode Pekan Laporan (Issue #076 / F-031)
+- **Ekstraksi Vision-LLM Context-Aware (`lib/extract-transactions.ts` & `app/api/attachments/:id/extract/route.ts`)**:
+  - Endpoint ekstraksi kini meneruskan `report.reportDate` ke `extractTransactionsFromFile`.
+  - Prompt Gemini Vision-LLM dilengkapi instruksi batas periode pekan: membedakan transaksi milik pekan berjalan dengan catatan transaksi pekan lain yang tertulis pada halaman fisik yang sama (halaman bersambung).
+  - Aturan *Closing Balance Boundary*: AI secara cerdas mengenali garis saldo total penutup tanggal target (misal `TOTAL KAS MESJID TGL 25-7-2025 Rp 850.000`) dan otomatis mengabaikan mutasi yang ditulis di bawah garis penutup tersebut saat mengekstrak laporan pekan berjalan.
+  - Untuk laporan pekan lanjutan (misal 1 Agustus 2025) pada berkas yang sama, AI menggunakan saldo penutup pekan lalu sebagai saldo awal dan hanya mengekstrak mutasi lanjutan.
+- **Otomatisasi Pengujian Fungsional (`scripts/test-context-aware-extraction.ts`)**:
+  - Test suite komprehensif menguji skenario injeksi tanggal laporan, perhitungan boundary mingguan, format bahasa Indonesia, dan ketahanan backward-compatible.
 
 ### 0.10.7 (2026-10-15) — Fase V10.7: Kompresi Gambar Otomatis Client-Side Sebelum Unggah Laporan Kas (Issue #075 / F-030)
 - **Kompresi Gambar Otomatis Client-Side (`lib/image-compression.ts`)**:

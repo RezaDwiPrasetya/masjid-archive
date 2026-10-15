@@ -342,6 +342,11 @@ Shared logic di `lib/donor-matching.ts`, `lib/donor-service.ts`, dan `lib/expens
    - Integrasi langsung pada form unggah laporan (`app/unggah/page.tsx`) dengan badge perbandingan ukuran transparan ("3.5 MB → 310 KB (Hemat 91%)") dan tombol tambah lampiran (`components/add-attachment-button.tsx`).
    - Dukungan eksplisit MIME `image/webp` pada ekstraksi Vision-LLM (`lib/extract-transactions.ts`).
    - Otomatisasi pengujian komprehensif `scripts/test-image-compression.ts`.
+10. **F-031: Ekstraksi Vision-LLM Context-Aware Berbasis Periode Pekan Laporan (Issue #076 — Selesai Penuh)**:
+    - Injeksi parameter `targetReportDate` ke fungsi `extractTransactionsFromFile` via `POST /api/attachments/:id/extract`.
+    - Prompt dinamis yang menyertakan rentang periode pekan berjalan (dari Jumat sepekan sebelumnya hingga Jumat target laporan).
+    - Logika pembatas garis saldo penutup (*Closing Balance Boundary*): secara cerdas mendeteksi baris saldo penutup tanggal target (misal `TOTAL KAS MESJID TGL 25-7-2025 Rp 850.000`) dan otomatis memisahkan catatan transaksi lanjutan di bawahnya yang merupakan milik pekan berikutnya (seperti 1 Agustus 2025).
+    - Sepenuhnya *backward-compatible* dengan dokumen satu pekan biasa dan berkas non-gambar.
 
 ---
 

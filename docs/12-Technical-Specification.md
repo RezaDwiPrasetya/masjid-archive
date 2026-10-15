@@ -298,9 +298,9 @@ const schema = {
 
 **Logika Server-Side:**
 1. Validasi sesi — 401 jika tidak ada.
-2. Ambil `Attachment` berdasarkan `:id`; tolak dengan `400` jika `fileType !== "image"` atau status sedang `processing`.
+2. Ambil `Attachment` beserta relasi laporan induknya (`include: { report: { select: { reportDate: true } } }`) berdasarkan `:id`; tolak dengan `400` jika `fileType` tidak didukung atau status sedang `processing`.
 3. Update `extractionStatus` → `processing`.
-4. Ambil file gambar dari `fileUrl` (Supabase Storage), kirim sebagai inline data base64 ke Gemini API dengan timeout 25s dan auto-fallback ke `gemini-3.5-flash`.
+4. Ambil file gambar dari `fileUrl` (Supabase Storage), teruskan `attachment.report.reportDate` ke `extractTransactionsFromFile` sebagai jangkar batas waktu mingguan (*context-aware prompt*), kirim sebagai inline data base64 ke Gemini API dengan timeout 25s dan auto-fallback ke `gemini-3.5-flash`.
 5. **Jika berhasil:**
    - Parse response JSON (`transactions[]`, `initialBalance`, `finalBalance`).
    - `prisma.$transaction`:

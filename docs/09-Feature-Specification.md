@@ -682,5 +682,32 @@
 - [x] Gemini Vision-LLM dapat mengekstrak transaksi kas dari berkas WebP hasil kompresi dengan akurasi setara berkas asli.
 - [x] Test suite fungsional otomatisasi lulus 100%.
 
+---
+
+### F-031 — Ekstraksi Vision-LLM Context-Aware Berbasis Periode Pekan Laporan (Issue #076 / F-031)
+
+**Objective:** Meningkatkan kecerdasan ekstraksi AI Vision-LLM (Google Gemini) agar secara kontekstual mengenali batasan periode pekan laporan (`reportDate`), sehingga mampu memisahkan dan memilah transaksi kas secara otomatis pada skenario dokumen fisik unik seperti satu halaman buku kas yang memuat dua pekan berbeda (halaman bersambung), tanpa mencampurkan mutasi pekan lain atau merusak saldo pembukuan.
+**User:** Bendahara DKM & Administrator yang memicu ekstraksi berkas laporan.
+**Process:**
+- **Injeksi Konteks Tanggal Laporan (`targetReportDate`)**:
+  - Endpoint `POST /api/attachments/:id/extract` meneruskan tanggal laporan asal (`report.reportDate`) ke fungsi ekstraksi `extractTransactionsFromFile`.
+  - Fungsi menyusun prompt dinamis yang mengidentifikasi:
+    - Tanggal target laporan (misal: "Jumat, 25 Juli 2025").
+    - Tanggal Jumat sepekan sebelumnya sebagai batas awal mutasi (misal: "18 Juli 2025").
+- **Aturan Pembatas Saldo Penutup (*Closing Balance Boundary*)**:
+  - Model AI diinstruksikan untuk mengenali garis/baris total saldo penutup untuk tanggal target (misal: `TOTAL KAS MESJID TGL 25-7-2025 Rp 850.000`).
+  - Segala catatan mutasi yang ditulis secara fisik di bawah garis penutup tersebut (seperti mutasi pekan berikutnya atau catatan setelah tanggal target) secara otomatis diabaikan pada laporan pekan berjalan.
+  - Sebaliknya, jika dokumen yang sama diekstrak pada laporan pekan lanjutan (misal 1 Agustus 2025), AI menggunakan saldo penutup pekan sebelumnya sebagai saldo awal (`initialBalance`) dan hanya mengekstrak mutasi lanjutan yang relevan menuju penutupan pekan lanjutan.
+- **Kompatibilitas Penuh (*Backward Compatibility*)**:
+  - Pada laporan kas standar (satu pekan per dokumen), kehadiran `targetReportDate` memperkuat akurasi inferensi tanggal transaksi dan mencegah salah baca tahun/bulan.
+  - Tetap berfungsi secara aman jika `targetReportDate` tidak didefinisikan (opsional).
+**Acceptance Criteria:**
+- [x] Ekstraksi pada dokumen multi-pekan membatasi transaksi hanya pada rentang pekan target.
+- [x] Baris mutasi di bawah garis saldo penutup diabaikan saat mengekstrak pekan sebelumnya.
+- [x] Saldo awal dan saldo akhir diekstrak sesuai dengan batas penutupan pekan yang bersangkutan.
+- [x] Dokumen laporan tunggal tetap terekstraksi normal tanpa regresi.
+- [x] Seluruh suite pengujian fungsional otomatisasi lulus 100%.
+
+
 
 
