@@ -325,8 +325,8 @@ Halaman untuk mengunggah dokumen kas mingguan baru ke sistem arsip.
 - **Cara 2**: Seret (*drag and drop*) file langsung ke area tersebut.
 - Anda dapat memilih **beberapa file sekaligus** dalam sekali unggah (kombinasi foto, PDF, dan Excel diperbolehkan).
 
-Setelah file dipilih, daftar file terpilih akan muncul di bawah drop zone beserta nama dan ukuran masing-masing file.
-
+Setelah file dipilih, daftar file terpilih akan muncul di bawah drop zone beserta nama dan ukuran masing-masing file:
+- **Kompresi Otomatis & Hemat Kuota (Foto HP)**: Khusus file foto jepretan kamera (`.jpg`, `.jpeg`, `.png`), sistem peramban secara otomatis mengompresi dan mengonversi foto ke format **WebP** beresolusi tajam (maks. 1920px). Ukuran foto yang tadinya 3–8 MB akan menyusut menjadi **200–400 KB** (hemat kuota data hingga 90%). Anda dapat melihat badge perbandingan ukuran langsung pada kartu berkas (contoh: `3.6 MB → 320 KB (Hemat 91%)`).
 - Untuk **menghapus** file yang tidak jadi diunggah: klik ikon **✕** di sebelah kanan nama file.
 - Untuk **menambah** file lagi: klik tautan **"+ Tambah berkas lain"** di bawah daftar.
 

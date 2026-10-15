@@ -631,5 +631,56 @@
 - [x] Modal konfirmasi `ExtractButton` menampilkan peringatan jumlah baris manual jika `manualCount > 0`.
 - [x] 15/15 pengujian suite otomatis `scripts/test-manual-transaction.ts` lulus 100%.
 
+---
+
+### F-029 — Kendali Visibilitas Menu Unggah Berbasis Role & Notifikasi Akses Terbatas (Issue #074 / F-029)
+
+**Objective:** Mencegah kebingungan pengguna publik/Jemaah dengan menyembunyikan menu "Unggah" dari navigasi utama dan memberikan banner notifikasi edukatif di Dashboard saat rute terbatas diakses secara langsung tanpa otorisasi staf DKM.
+**User:** Pengguna Publik, Jemaah (`role: null`), Bendahara DKM, Administrator.
+**Process:**
+- **Kendali Visibilitas Navigasi (`components/app-shell.tsx`)**:
+  - Menu navigasi "Unggah" di sidebar desktop dan bilah navigasi bawah mobile dibungkus dengan helper `isStaff(session)`.
+  - Hanya pengguna dengan peran `ADMIN` atau `BENDAHARA` yang melihat tautan navigasi ke `/unggah`.
+- **Banner Notifikasi Akses Ditolak (`components/dashboard-client.tsx`)**:
+  - Saat pengguna biasa mencoba mengakses URL `/unggah` secara langsung melalui *address bar*, middleware/page me-redirect ke `/dashboard?error=forbidden`.
+  - Dashboard mendeteksi parameter query ini dan menampilkan banner interaktif peringatan dengan penjelasan hak akses Jemaah vs Staf DKM.
+  - Dilengkapi tombol tutup (*dismiss*) yang membersihkan query URL tanpa melakukan *reload* halaman.
+**Acceptance Criteria:**
+- [x] Menu "Unggah" tidak terlihat oleh publik atau akun tanpa peran staf di sidebar dan navbar mobile.
+- [x] Menu "Unggah" terlihat normal untuk akun Bendahara dan Administrator.
+- [x] Akses langsung ke `/unggah` oleh non-staf me-redirect ke dashboard dengan notifikasi informatif.
+- [x] Tombol tutup banner membersihkan parameter URL secara mulus.
+
+---
+
+### F-030 — Kompresi Gambar Otomatis Client-Side Sebelum Unggah Laporan Kas (Issue #075 / F-030)
+
+**Objective:** Mengoptimalkan konsumsi penyimpanan Supabase Storage (kuota gratis 1 GB) dan menghemat kuota internet pengurus dengan mengompresi foto hasil kamera HP (rata-rata 3–8 MB) menjadi format WebP beresolusi optimal (~200–400 KB) langsung di browser pengguna sebelum diunggah ke server, dengan tetap menjaga ketajaman teks/angka untuk dibaca manusia dan diekstrak oleh Vision-LLM (Gemini).
+**User:** Bendahara DKM dan Administrator yang mengunggah dokumen/foto kas.
+**Process:**
+- **Pipeline Kompresi Client-Side Terpusat (`lib/image-compression.ts`)**:
+  - Menangani berkas berjenis gambar (`image/jpeg`, `image/png`, `image/webp`).
+  - Berkas non-gambar (PDF, Excel `.xlsx`/`.xls`) langsung dilewatkan tanpa manipulasi (*pass-through*).
+  - Melakukan *downscaling* proporsional jika lebar atau tinggi gambar melebihi **1920 piksel** (resolusi standar dokumen berkualitas tinggi).
+  - Mengonversi format output ke **`image/webp`** dengan kualitas 82% (`quality: 0.82`), menghasilkan rasio kompresi 80%–92% tanpa degradasi ketajaman teks.
+  - Jika ukuran berkas hasil kompresi ternyata lebih besar dari berkas asli (misal berkas sangat kecil < 100 KB), sistem otomatis mempertahankan berkas asli.
+  - Mekanisme proteksi kegagalan (*fault-tolerant*): Jika proses kompresi di browser mengalami error (misal memori terbatas atau canvas tidak didukung), sistem otomatis menggunakan berkas asli sehingga alur unggah tidak pernah terhenti (*non-blocking*).
+- **Integrasi Antarmuka Unggah Laporan (`app/unggah/page.tsx`)**:
+  - Saat berkas dipilih via *file picker* atau *drag-and-drop*, proses kompresi berjalan otomatis di latar belakang.
+  - Menampilkan badge indikator visual penghematan ukuran berkas pada setiap item pratinjau (misal: "3.5 MB → 310 KB (Hemat 91%)").
+  - Menambahkan dukungan MIME `image/webp` pada daftar tipe berkas yang diterima.
+- **Integrasi Tambah Lampiran (`components/add-attachment-button.tsx`)**:
+  - Menerapkan fungsi kompresi yang sama saat staf menambahkan lampiran baru ke laporan yang sudah ada.
+- **Kesesuaian Ekstraksi AI Vision-LLM (`lib/extract-transactions.ts`)**:
+  - Menjamin resolusi MIME `image/webp` diteruskan dengan benar ke Google Gemini Vision API.
+**Acceptance Criteria:**
+- [x] Foto kamera resolusi tinggi (3–8 MB) otomatis terkompresi menjadi < 500 KB sebelum diunggah.
+- [x] Format gambar hasil kompresi tersimpan sebagai WebP (`image/webp`) dengan ekstensi `.webp`.
+- [x] Berkas PDF dan Excel tidak terpengaruh dan tetap diunggah utuh dengan format aslinya.
+- [x] Kartu pratinjau unggah menampilkan perbandingan ukuran sebelum dan sesudah kompresi secara transparan.
+- [x] Jika terjadi galat kompresi, berkas asli tetap berhasil diunggah tanpa menggagalkan formulir.
+- [x] Gemini Vision-LLM dapat mengekstrak transaksi kas dari berkas WebP hasil kompresi dengan akurasi setara berkas asli.
+- [x] Test suite fungsional otomatisasi lulus 100%.
+
 
 

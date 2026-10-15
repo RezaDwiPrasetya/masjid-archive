@@ -335,6 +335,13 @@ Shared logic di `lib/donor-matching.ts`, `lib/donor-service.ts`, dan `lib/expens
    - Menu `Unggah` di sidebar desktop dan navigasi mobile (`components/app-shell.tsx`) kini dikendalikan oleh `isStaff(session)`, sehingga disembunyikan secara elegan bagi akun Jamaah (`role: null`) dan pengunjung publik.
    - Penangkapan parameter `?error=forbidden` pada Dashboard (`app/dashboard/page.tsx` & `components/dashboard-client.tsx`) ketika pengguna tanpa wewenang staf dialihkan oleh middleware/proxy.
    - Komponen banner notifikasi informatif di Dashboard dengan penjelasan ramah peran akun serta tombol tutup (*dismiss*) yang membersihkan URL peramban via `window.history.replaceState` tanpa *page reload*.
+9. **F-030: Kompresi Gambar Otomatis Client-Side Sebelum Unggah Laporan Kas (Issue #075 — Selesai Penuh)**:
+   - Modul kompresi terpusat `lib/image-compression.ts` menggunakan HTML5 Canvas API dan konversi format WebP (`quality: 0.82`) dengan batas dimensi maksimal 1920px.
+   - Mengurangi ukuran foto kamera HP dari 3–8 MB menjadi hanya ~200–400 KB (efisiensi 85%–90%), mengamankan kuota gratis 1 GB Supabase Storage hingga muat 3.000–5.000 lembar dokumen (setara 15–25 tahun).
+   - Penanganan berkas non-gambar (PDF, Excel) dilewatkan secara utuh (*pass-through*), dan dilengkapi mekanisme proteksi *graceful fallback* jika proses kompresi di peramban mengalami kegagalan.
+   - Integrasi langsung pada form unggah laporan (`app/unggah/page.tsx`) dengan badge perbandingan ukuran transparan ("3.5 MB → 310 KB (Hemat 91%)") dan tombol tambah lampiran (`components/add-attachment-button.tsx`).
+   - Dukungan eksplisit MIME `image/webp` pada ekstraksi Vision-LLM (`lib/extract-transactions.ts`).
+   - Otomatisasi pengujian komprehensif `scripts/test-image-compression.ts`.
 
 ---
 

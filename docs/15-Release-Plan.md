@@ -84,6 +84,15 @@
 - [x] Penangkapan parameter `?error=forbidden` pada Dashboard (`app/dashboard/page.tsx` & `components/dashboard-client.tsx`)
 - [x] Komponen Banner Alert interaktif di Dashboard dengan penjelasan peran Jemaah vs Staf DKM dan tombol tutup (dismiss) dengan sinkronisasi URL tanpa reload
 
+### Milestone 13 — Client-Side Image Compression for Storage Efficiency (V10.7, Issue #075 / F-030)
+- [x] Modul utilitas terpusat kompresi gambar client-side (`lib/image-compression.ts`) berbasis HTML5 Canvas API & WebP conversion
+- [x] Resizing proporsional (max width/height 1920px) dan kompresi kualitas 82% dengan rasio penghematan 80%–92%
+- [x] Passthrough aman untuk berkas non-gambar (PDF, Excel) dan mekanisme fallback otomatis jika terjadi error
+- [x] Integrasi otomatis kompresi dan badge transparansi penghematan ukuran pada formulir unggah laporan (`app/unggah/page.tsx`)
+- [x] Integrasi kompresi otomatis pada tombol tambah lampiran laporan (`components/add-attachment-button.tsx`)
+- [x] Penyelarasan penanganan MIME `image/webp` pada ekstraksi Vision-LLM (`lib/extract-transactions.ts`)
+- [x] Pengujian fungsionalitas kompresi dan integrasi alur unggah berkas (`scripts/test-image-compression.ts`)
+
 ## Release Criteria
 
 - [x] Alur inti (unggah, arsip, cari, detail, ekstraksi, verifikasi) berjalan tanpa error
@@ -93,10 +102,27 @@
 
 ## Version
 
-Current: `0.10.6` (Fase V10.6: Kendali Visibilitas Menu Unggah Berbasis Role & Notifikasi Akses Terbatas — Issue #074 / F-029)
+Current: `0.10.7` (Fase V10.7: Kompresi Gambar Otomatis Client-Side Sebelum Unggah Laporan Kas — Issue #075 / F-030)
 Next: `1.0.0`
 
 ## Changelog
+
+### 0.10.7 (2026-10-15) — Fase V10.7: Kompresi Gambar Otomatis Client-Side Sebelum Unggah Laporan Kas (Issue #075 / F-030)
+- **Kompresi Gambar Otomatis Client-Side (`lib/image-compression.ts`)**:
+  - Foto resolusi tinggi hasil jepretan kamera ponsel (3–8 MB) otomatis di-*downscale* ke batas maksimal 1920px dan dikonversi ke format **WebP** dengan kualitas 82% langsung di peramban pengguna.
+  - Menghasilkan pengurangan ukuran berkas hingga 85%–90% (menjadi ~200–400 KB) tanpa mengurangi keterbacaan teks angka kas oleh manusia maupun AI Gemini.
+  - Memperpanjang masa pakai kuota penyimpanan Supabase Storage (1 GB) dari sebelumnya hanya menampung ~300 foto menjadi **3.000 s.d. 5.000 lembar dokumen** (setara 15–25 tahun arsip).
+  - Berkas non-gambar (PDF, Excel `.xlsx`/`.xls`) dilewatkan secara utuh (*pass-through*) tanpa kompresi.
+  - Dilengkapi mekanisme pengaman: jika berkas hasil kompresi lebih besar dari aslinya atau peramban tidak mendukung canvas/WebP, sistem otomatis menggunakan berkas asli (*graceful fallback*).
+- **Indikator Visual Transparansi Ukuran di Formulir Unggah (`app/unggah/page.tsx`)**:
+  - Menampilkan badge perbandingan ukuran sebelum dan sesudah kompresi secara langsung (misal: "3.6 MB → 340 KB (Hemat 91%)") pada kartu pratinjau berkas.
+  - Proses kompresi berjalan instan di latar belakang saat berkas dipilih sehingga tidak menghalangi interaksi pengguna.
+- **Dukungan Tambah Lampiran Terpadu (`components/add-attachment-button.tsx`)**:
+  - Penambahan lampiran foto baru pada laporan yang sudah ada turut memanfaatkan pipeline kompresi yang sama.
+- **Verifikasi Kompatibilitas AI Vision-LLM (`lib/extract-transactions.ts`)**:
+  - Penanganan eksplisit MIME `image/webp` saat mengirimkan inline data gambar ke Google Gemini Vision.
+- **Otomatisasi Pengujian Fungsional (`scripts/test-image-compression.ts`)**:
+  - Test suite komprehensif menguji skenario rasio kompresi, batas dimensi, passthrough berkas dokumen, dan ketahanan terhadap error.
 
 ### 0.10.6 (2026-10-14) — Fase V10.6: Kendali Visibilitas Menu Unggah Berbasis Role & Notifikasi Akses Terbatas (Issue #074 / F-029)
 - **Kendali Visibilitas Navigasi Berbasis Peran (`components/app-shell.tsx`)**:

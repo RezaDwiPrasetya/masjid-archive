@@ -223,7 +223,19 @@ export const ALLOWED_FILE_TYPES: Record<string, { ext: string[]; category: "imag
 
 ### Library Frontend
 
-Native file input + FormData sudah cukup untuk form upload. Komponen antarmuka `app/unggah/page.tsx` menyediakan drag-and-drop file multi-format dengan pratinjau daftar berkas sebelum dikirim ke server.
+Native file input + FormData digunakan untuk alur unggah berkas multi-format. Komponen antarmuka `app/unggah/page.tsx` menyediakan drag-and-drop file multi-format dengan pratinjau daftar berkas sebelum dikirim ke server.
+
+### Pipeline Kompresi Gambar Otomatis Client-Side (`lib/image-compression.ts`) — Issue #075 / F-030
+
+Untuk menghemat kuota gratis Supabase Storage (1 GB) dan mengoptimalkan kecepatan unggah bendahara via koneksi seluler, sistem mengimplementasikan kompresi gambar otomatis langsung di peramban pengguna sebelum data dikirim ke endpoint `/api/reports` atau `/api/reports/:id/attachments`:
+
+1. **Target Tipe Berkas**: Hanya memproses berkas gambar raster (`image/jpeg`, `image/png`, `image/webp`). Dokumen non-gambar (PDF dan Excel) secara otomatis dilewatkan utuh (*pass-through*).
+2. **Dimensi Maksimal**: Gambar di-*downscale* proporsional jika lebar atau tinggi melebihi **1920 piksel** dengan mempertahankan rasio aspek (*aspect ratio*). Resolusi ini menjamin tulisan angka dan tabel kas tetap sangat tajam bagi pembacaan mata manusia maupun deteksi OCR Gemini Vision-LLM.
+3. **Format & Kualitas Output**: Menggunakan **`image/webp`** pada kualitas 82% (`quality: 0.82`). Ini memangkas rata-rata ukuran foto jepretan kamera dari 3–8 MB menjadi 200–400 KB (penurunan ukuran 85%–90%).
+4. **Ekstensi & Penamaan**: Nama berkas gambar hasil kompresi disesuaikan ekstensinya menjadi `.webp` (misal: `laporan_kas.jpg` menjadi `laporan_kas.webp`).
+5. **Proteksi Ukuran & Keselamatan Data**:
+   - Jika berkas hasil kompresi ternyata berukuran lebih besar daripada berkas input aslinya (misal gambar kecil yang sudah terkompresi sebelumnya), sistem otomatis mempertahankan berkas asli.
+   - Menggunakan blok `try-catch` independen per berkas: jika terjadi error peramban (misal keterbatasan memori perangkat atau Canvas tidak didukung), sistem secara otomatis mengembalikan berkas asli (*graceful fallback*) sehingga proses unggah pengguna tidak pernah terblokir.
 
 ## V4 — Spesifikasi Teknis: Ekstraksi Data (Vision-LLM)
 
