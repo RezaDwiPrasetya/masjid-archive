@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Calendar, CalendarDays, RotateCcw, Filter, Sparkles, ChevronDown } from "lucide-react";
+import { Calendar, CalendarDays, RotateCcw, Filter, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MONTH_NAMES } from "@/lib/period-filter";
 
@@ -29,7 +29,6 @@ export function PeriodFilterBar({
   // Deteksi status preset aktif
   const isAllTime = selectedYear === null && selectedMonth === null;
   const isThisYear = selectedYear === currentYear && selectedMonth === null;
-  const isThisMonth = selectedYear === currentYear && selectedMonth === currentMonth;
 
   // Preset handlers
   const handleSelectAllTime = () => {
@@ -38,10 +37,6 @@ export function PeriodFilterBar({
 
   const handleSelectThisYear = () => {
     onChange(currentYear, null);
-  };
-
-  const handleSelectThisMonth = () => {
-    onChange(currentYear, currentMonth);
   };
 
   const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -122,7 +117,7 @@ export function PeriodFilterBar({
       {/* Kontrol Filter: Preset Buttons & Select Dropdowns */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-t border-outline-variant/60">
         {/* Preset Chips */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 text-xs">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap text-xs">
           <button
             type="button"
             onClick={handleSelectAllTime}
@@ -148,20 +143,6 @@ export function PeriodFilterBar({
           >
             <Calendar className="h-3 w-3 opacity-75" />
             <span>Tahun Ini ({currentYear})</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleSelectThisMonth}
-            disabled={isLoading}
-            className={`px-3 py-1.5 rounded-xl font-medium transition-all duration-150 shrink-0 flex items-center gap-1.5 ${
-              isThisMonth
-                ? "bg-primary text-on-primary font-semibold shadow-xs"
-                : "bg-surface border border-outline-variant text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
-            }`}
-          >
-            <Sparkles className="h-3 w-3 opacity-75" />
-            <span>Bulan Ini ({MONTH_NAMES[currentMonth - 1]})</span>
           </button>
         </div>
 
