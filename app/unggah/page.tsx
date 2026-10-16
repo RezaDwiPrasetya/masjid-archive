@@ -42,10 +42,10 @@ type ValidationError = {
 };
 
 const ALLOWED_TYPES: Record<string, { label: string; maxBytes: number }> = {
-  "image/jpeg":  { label: "Gambar JPEG", maxBytes: 10 * 1024 * 1024 },
-  "image/png":   { label: "Gambar PNG",  maxBytes: 10 * 1024 * 1024 },
-  "image/webp":  { label: "Gambar WebP", maxBytes: 10 * 1024 * 1024 },
-  "application/pdf": { label: "PDF",     maxBytes: 10 * 1024 * 1024 },
+  "image/jpeg": { label: "Gambar JPEG", maxBytes: 10 * 1024 * 1024 },
+  "image/png": { label: "Gambar PNG", maxBytes: 10 * 1024 * 1024 },
+  "image/webp": { label: "Gambar WebP", maxBytes: 10 * 1024 * 1024 },
+  "application/pdf": { label: "PDF", maxBytes: 10 * 1024 * 1024 },
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
     label: "Excel (.xlsx)", maxBytes: 10 * 1024 * 1024,
   },
@@ -102,7 +102,7 @@ export default function UnggahLaporanPage() {
   // Hanya BENDAHARA dan ADMIN yang bisa akses
   const allowedRoles = ["ADMIN", "BENDAHARA"];
   const userRole = session?.user?.role;
-  
+
   if (!userRole || !allowedRoles.includes(userRole)) {
     return (
       <AppShell active="/unggah">
@@ -262,194 +262,193 @@ export default function UnggahLaporanPage() {
           </div>
         )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
 
-        {/* ── #028: Drop zone multi-file ── */}
-        <label
-          htmlFor="file-input"
-          className="relative flex min-h-52 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant bg-surface-container/70 p-8 shadow-xs text-center transition-colors hover:border-primary/80 hover:bg-surface-container"
-        >
-          <input
-            id="file-input"
-            ref={inputRef}
-            type="file"
-            multiple
-            accept=".jpg,.jpeg,.png,.webp,.pdf,.xlsx,.xls"
-            className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
-            onChange={handleFileChange}
-            disabled={compressing || loading}
-          />
-          <div className="pointer-events-none flex flex-col items-center gap-3">
-            {compressing ? (
-              <>
-                <div className="rounded-full bg-primary/10 p-4 text-primary animate-pulse">
-                  <Loader2 size={32} className="animate-spin" />
-                </div>
-                <div>
-                  <p className="font-semibold text-base text-on-surface">
-                    {compressingText || "Mengoptimalkan dan mengompresi foto..."}
-                  </p>
-                  <p className="mt-1 text-sm text-on-surface-variant">
-                    Mengonversi ke WebP beresolusi tajam & menghemat kuota penyimpanan
-                  </p>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="rounded-full bg-primary/10 p-4 text-primary">
-                  <UploadCloud size={32} />
-                </div>
-                <div>
-                  <p className="font-semibold text-base text-on-surface">
-                    Ketuk atau seret file laporan ke sini
-                  </p>
-                  <p className="mt-1 text-sm text-on-surface-variant">
-                    Gambar (dioptimasi otomatis ke WebP) · PDF (maks 10 MB) · Excel (maks 10 MB)
-                  </p>
-                  <p className="mt-1 text-xs text-on-surface-variant/80">
-                    Format: .jpg · .png · .webp · .pdf · .xlsx · .xls
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
-        </label>
-
-        {/* ── #031: Error validasi tipe/ukuran ── */}
-        {validationErrors.length > 0 && (
-          <div className="space-y-2 rounded-2xl border border-destructive/30 bg-destructive/10 p-4">
-            <div className="flex items-center gap-2 text-destructive">
-              <AlertTriangle size={18} />
-              <p className="text-sm font-semibold">
-                {validationErrors.length} file ditolak:
-              </p>
-            </div>
-            <ul className="ml-6 list-disc space-y-1">
-              {validationErrors.map((err, i) => (
-                <li key={i} className="text-sm text-destructive">
-                  <span className="font-medium">{err.fileName}</span> — {err.reason}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* ── #029 & #030: Daftar file terpilih ── */}
-        {files.length > 0 && (
-          <div className="rounded-2xl border border-outline-variant bg-surface-container shadow-xs overflow-hidden">
-            <div className="border-b border-outline-variant px-5 py-3.5 bg-surface-container-high/60">
-              <p className="text-sm font-semibold text-on-surface">
-                File Terpilih ({files.length})
-              </p>
-            </div>
-            <ul className="divide-y divide-outline-variant">
-              {files.map((entry) => (
-                <li
-                  key={entry.id}
-                  className="flex items-center gap-3 px-5 py-3.5 hover:bg-surface-container-high/40 transition-colors"
-                >
-                  <FileIcon mime={entry.file.type} />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-on-surface">
-                      {entry.file.name}
+          {/* ── #028: Drop zone multi-file ── */}
+          <label
+            htmlFor="file-input"
+            className="relative flex min-h-52 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant bg-surface-container/70 p-8 shadow-xs text-center transition-colors hover:border-primary/80 hover:bg-surface-container"
+          >
+            <input
+              id="file-input"
+              ref={inputRef}
+              type="file"
+              multiple
+              accept=".jpg,.jpeg,.png,.webp,.pdf,.xlsx,.xls"
+              className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
+              onChange={handleFileChange}
+              disabled={compressing || loading}
+            />
+            <div className="pointer-events-none flex flex-col items-center gap-3">
+              {compressing ? (
+                <>
+                  <div className="rounded-full bg-primary/10 p-4 text-primary animate-pulse">
+                    <Loader2 size={32} className="animate-spin" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-base text-on-surface">
+                      {compressingText || "Mengoptimalkan dan mengompresi foto..."}
                     </p>
-                    {entry.isCompressed ? (
-                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <span className="text-xs text-on-surface-variant line-through">
-                          {formatBytes(entry.originalSize)}
-                        </span>
-                        <span className="text-xs font-semibold text-primary">
-                          → {formatBytes(entry.compressedSize)}
-                        </span>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
+                    <p className="mt-1 text-sm text-on-surface-variant">
+                      Mengonversi ke WebP beresolusi tajam & menghemat kuota penyimpanan
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="rounded-full bg-primary/10 p-4 text-primary">
+                    <UploadCloud size={32} />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-base text-on-surface">
+                      Ketuk atau seret file laporan ke sini
+                    </p>
+                    <p className="mt-1 text-sm text-on-surface-variant">
+                      Gambar (dioptimasi otomatis ke WebP) · PDF (maks 10 MB) · Excel (maks 10 MB)
+                    </p>
+                    <p className="mt-1 text-xs text-on-surface-variant/80">
+                      Format: .jpg · .png · .webp · .pdf · .xlsx · .xls
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+          </label>
+
+          {/* ── #031: Error validasi tipe/ukuran ── */}
+          {validationErrors.length > 0 && (
+            <div className="space-y-2 rounded-2xl border border-destructive/30 bg-destructive/10 p-4">
+              <div className="flex items-center gap-2 text-destructive">
+                <AlertTriangle size={18} />
+                <p className="text-sm font-semibold">
+                  {validationErrors.length} file ditolak:
+                </p>
+              </div>
+              <ul className="ml-6 list-disc space-y-1">
+                {validationErrors.map((err, i) => (
+                  <li key={i} className="text-sm text-destructive">
+                    <span className="font-medium">{err.fileName}</span> — {err.reason}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* ── #029 & #030: Daftar file terpilih ── */}
+          {files.length > 0 && (
+            <div className="rounded-2xl border border-outline-variant bg-surface-container shadow-xs overflow-hidden">
+              <div className="border-b border-outline-variant px-5 py-3.5 bg-surface-container-high/60">
+                <p className="text-sm font-semibold text-on-surface">
+                  File Terpilih ({files.length})
+                </p>
+              </div>
+              <ul className="divide-y divide-outline-variant">
+                {files.map((entry) => (
+                  <li
+                    key={entry.id}
+                    className="flex items-center gap-3 px-5 py-3.5 hover:bg-surface-container-high/40 transition-colors"
+                  >
+                    <FileIcon mime={entry.file.type} />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-on-surface">
+                        {entry.file.name}
+                      </p>
+                      {entry.isCompressed ? (
+                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                          <span className="text-xs text-on-surface-variant line-through">
+                            {formatBytes(entry.originalSize)}
+                          </span>
+                          <span className="text-xs font-semibold text-primary">
+                            → {formatBytes(entry.compressedSize)}
+                          </span>
+                          {/* // <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
                           <Sparkles className="size-3" />
                           Hemat {entry.savingsPercent}%
-                        </span>
-                      </div>
-                    ) : (
-                      <p className="text-xs text-on-surface-variant mt-0.5">
-                        {formatBytes(entry.file.size)}
-                      </p>
-                    )}
-                  </div>
-                  {/* #030: Tombol hapus individual */}
-                  <button
-                    type="button"
-                    onClick={() => removeFile(entry.id)}
-                    disabled={compressing || loading}
-                    className="shrink-0 rounded-lg p-1.5 text-on-surface-variant transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
-                    aria-label={`Hapus ${entry.file.name}`}
-                  >
-                    <X size={16} />
-                  </button>
-                </li>
-              ))}
-            </ul>
-            {/* Tombol tambah lebih banyak file */}
-            <div className="border-t border-outline-variant px-5 py-3 bg-surface-container/70">
+                        </span> */}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-on-surface-variant mt-0.5">
+                          {formatBytes(entry.file.size)}
+                        </p>
+                      )}
+                    </div>
+                    {/* #030: Tombol hapus individual */}
+                    <button
+                      type="button"
+                      onClick={() => removeFile(entry.id)}
+                      disabled={compressing || loading}
+                      className="shrink-0 rounded-lg p-1.5 text-on-surface-variant transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+                      aria-label={`Hapus ${entry.file.name}`}
+                    >
+                      <X size={16} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              {/* Tombol tambah lebih banyak file */}
+              <div className="border-t border-outline-variant px-5 py-3 bg-surface-container/70">
+                <label
+                  htmlFor="file-input"
+                  className={`text-xs font-semibold text-primary inline-flex items-center gap-1 ${compressing || loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:underline"
+                    }`}
+                >
+                  + Tambah berkas lain
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* Error submit */}
+          {submitError && (
+            <div className="flex items-center gap-3 rounded-2xl border border-destructive/30 bg-destructive/10 p-4">
+              <AlertTriangle className="shrink-0 text-destructive" size={20} />
+              <p className="text-sm font-medium text-destructive">{submitError}</p>
+            </div>
+          )}
+
+          {/* Detail laporan */}
+          <div className="space-y-3 rounded-2xl border border-outline-variant bg-surface-container/70 p-6 shadow-xs">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-on-surface-variant">
+              Detail Laporan
+            </h3>
+
+            <div>
               <label
-                htmlFor="file-input"
-                className={`text-xs font-semibold text-primary inline-flex items-center gap-1 ${
-                  compressing || loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:underline"
-                }`}
+                htmlFor="report-date"
+                className="mb-1.5 block text-sm font-medium text-on-surface"
               >
-                + Tambah berkas lain
+                Tanggal Laporan
               </label>
+              <Input
+                id="report-date"
+                type="date"
+                value={reportDate}
+                onChange={(e) => setReportDate(e.target.value)}
+                required
+                className="bg-surface border-outline-variant max-w-sm"
+              />
+              <p className="mt-1.5 text-xs text-on-surface-variant">
+                Pilih tanggal laporan ini dibacakan di hadapan jamaah (biasanya hari Jumat)
+              </p>
             </div>
           </div>
-        )}
 
-        {/* Error submit */}
-        {submitError && (
-          <div className="flex items-center gap-3 rounded-2xl border border-destructive/30 bg-destructive/10 p-4">
-            <AlertTriangle className="shrink-0 text-destructive" size={20} />
-            <p className="text-sm font-medium text-destructive">{submitError}</p>
-          </div>
-        )}
-
-        {/* Detail laporan */}
-        <div className="space-y-3 rounded-2xl border border-outline-variant bg-surface-container/70 p-6 shadow-xs">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-on-surface-variant">
-            Detail Laporan
-          </h3>
-
-          <div>
-            <label
-              htmlFor="report-date"
-              className="mb-1.5 block text-sm font-medium text-on-surface"
-            >
-              Tanggal Laporan
-            </label>
-            <Input
-              id="report-date"
-              type="date"
-              value={reportDate}
-              onChange={(e) => setReportDate(e.target.value)}
-              required
-              className="bg-surface border-outline-variant max-w-sm"
-            />
-            <p className="mt-1.5 text-xs text-on-surface-variant">
-              Pilih tanggal laporan ini dibacakan di hadapan jamaah (biasanya hari Jumat)
-            </p>
-          </div>
-        </div>
-
-        <Button
-          type="submit"
-          size="lg"
-          className="w-full h-11 text-base font-semibold gap-2"
-          disabled={loading || compressing || files.length === 0}
-        >
-          <CloudUpload size={20} />
-          {loading
-            ? "Mengunggah..."
-            : compressing
-            ? "Mengoptimalkan foto..."
-            : files.length === 0
-            ? "Pilih file terlebih dahulu"
-            : `Simpan ke Arsip (${files.length} file)`}
-        </Button>
-      </form>
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full h-11 text-base font-semibold gap-2"
+            disabled={loading || compressing || files.length === 0}
+          >
+            <CloudUpload size={20} />
+            {loading
+              ? "Mengunggah..."
+              : compressing
+                ? "Mengoptimalkan foto..."
+                : files.length === 0
+                  ? "Pilih file terlebih dahulu"
+                  : `Simpan ke Arsip (${files.length} file)`}
+          </Button>
+        </form>
       </PageShell>
     </AppShell>
   );
