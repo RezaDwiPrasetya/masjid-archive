@@ -465,7 +465,7 @@ export function DashboardClient({
         <span>Saldo Kas Terkini • Buku Kas Terverifikasi</span>
       </div>
 
-      <div className="mt-3 text-4xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary">
+      <div className="mt-3 text-3xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary">
         {initialFinalBalance !== null
           ? formatRupiah(animatedBalance)
           : "Belum Ada"}

@@ -210,8 +210,8 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
       <div className="space-y-8">
         {/* Page Title Header */}
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-on-surface">Daftar Donatur</h1>
-          <p className="text-sm text-on-surface-variant">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-on-surface">Daftar Donatur</h1>
+          <p className="text-xs sm:text-sm text-on-surface-variant">
             Transparansi catatan infaq dan kontribusi para donatur terverifikasi kas masjid.
           </p>
         </div>
@@ -501,8 +501,8 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
                   </div>
 
                   {/* Nominal Uang di Sisi Kanan (Tabular Nums) + Chevron */}
-                  <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-base sm:text-lg font-bold text-on-surface tabular-nums group-hover:text-primary transition-colors">
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                    <span className="text-sm sm:text-lg font-bold text-on-surface tabular-nums group-hover:text-primary transition-colors">
                       {formatRupiah(donor.totalContribution)}
                     </span>
                     <ChevronRight className="h-4 w-4 text-on-surface-variant/60 group-hover:text-primary group-hover:translate-x-1 transition-transform duration-150" />

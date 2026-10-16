@@ -394,8 +394,8 @@ function TransactionRow({
       }`}
     >
       {/* Status pill */}
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-start justify-between gap-2 mb-2 flex-wrap sm:flex-nowrap">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
           {/* Tipe badge */}
           <span
             className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
@@ -421,7 +421,8 @@ function TransactionRow({
           ) : (
             <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium border bg-amber-500/15 border-amber-300 text-amber-800">
               <ClipboardCheck size={11} />
-              Belum Diverifikasi
+              <span className="hidden sm:inline">Belum Diverifikasi</span>
+              <span className="sm:hidden">Draf</span>
             </span>
           )}
 
@@ -436,24 +437,24 @@ function TransactionRow({
 
         {/* Actions — hanya tampil jika ada sesi & belum verified */}
         {hasSession && !tx.isVerified && (
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1 shrink-0 ml-auto sm:ml-0">
             <button
-              className="rounded-lg p-1.5 text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-colors"
+              className="rounded-lg p-2 min-h-[36px] min-w-[36px] flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-colors"
               title="Edit transaksi"
               onClick={() => setIsEditing(true)}
             >
-              <Pencil size={14} />
+              <Pencil size={15} />
             </button>
             <button
-              className="rounded-lg p-1.5 text-on-surface-variant hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50"
+              className="rounded-lg p-2 min-h-[36px] min-w-[36px] flex items-center justify-center text-on-surface-variant hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50"
               title="Hapus transaksi"
               onClick={() => setDeleteOpen(true)}
               disabled={deleteLoading}
             >
               {deleteLoading ? (
-                <Loader2 size={14} className="animate-spin" />
+                <Loader2 size={15} className="animate-spin" />
               ) : (
-                <Trash2 size={14} />
+                <Trash2 size={15} />
               )}
             </button>
           </div>
@@ -461,7 +462,7 @@ function TransactionRow({
 
         {/* Actions — khusus transaksi terverifikasi: Batalkan Verifikasi */}
         {hasSession && tx.isVerified && onUnverify && (
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0 ml-auto sm:ml-0">
             <Button
               variant="outline"
               size="sm"
@@ -475,7 +476,8 @@ function TransactionRow({
               ) : (
                 <RotateCcw size={12} />
               )}
-              <span>Batalkan Verifikasi</span>
+              <span className="hidden sm:inline">Batalkan Verifikasi</span>
+              <span className="sm:hidden">Batal Verifikasi</span>
             </Button>
           </div>
         )}

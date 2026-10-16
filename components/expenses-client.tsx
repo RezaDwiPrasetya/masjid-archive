@@ -207,10 +207,10 @@ export function ExpensesClient({
       <div className="space-y-8">
         {/* Page Title Header */}
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-on-surface">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-on-surface">
             Rekap & Transparansi Pengeluaran
           </h1>
-          <p className="text-sm text-on-surface-variant">
+          <p className="text-xs sm:text-sm text-on-surface-variant">
             Transparansi pembukuan alokasi dana kas masjid per kategori pengeluaran yang telah diverifikasi.
           </p>
         </div>
@@ -362,7 +362,7 @@ export function ExpensesClient({
             )}
 
             {/* Kartu Grid Interaktif Kategori */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
               {currentBreakdown.map((item) => {
                 const isSelected =
                   (selectedCategory === "__null__" && item.category === null) ||
@@ -385,7 +385,7 @@ export function ExpensesClient({
                         setSelectedCategory(item.category === null ? "__null__" : item.category);
                       }
                     }}
-                    className={`text-left rounded-xl p-3.5 border transition-all duration-150 flex flex-col justify-between gap-2 ${
+                    className={`text-left rounded-xl p-3 sm:p-3.5 border transition-all duration-150 flex flex-col justify-between gap-2 ${
                       isSelected
                         ? "ring-2 ring-primary border-primary bg-primary/5 shadow-xs"
                         : "border-outline-variant bg-surface hover:bg-surface-container hover:border-outline-variant/80"
@@ -393,18 +393,18 @@ export function ExpensesClient({
                   >
                     <div className="flex items-center justify-between gap-1 w-full">
                       <span
-                        className={`inline-flex items-center gap-1 text-[11px] font-semibold rounded-md px-2 py-0.5 border ${color.bg} ${color.border} ${color.text}`}
+                        className={`inline-flex items-center gap-1 text-[11px] font-semibold rounded-md px-1.5 sm:px-2 py-0.5 border ${color.bg} ${color.border} ${color.text} max-w-[95px] sm:max-w-none`}
                       >
-                        <Tag size={10} />
-                        {item.label}
+                        <Tag size={10} className="shrink-0" />
+                        <span className="truncate">{item.label}</span>
                       </span>
-                      <span className="text-[11px] font-bold text-on-surface-variant tabular-nums">
+                      <span className="text-[11px] font-bold text-on-surface-variant tabular-nums shrink-0">
                         {pct.toFixed(1)}%
                       </span>
                     </div>
 
                     <div>
-                      <div className="text-sm font-bold text-on-surface tabular-nums">
+                      <div className="text-sm font-bold text-on-surface tabular-nums truncate">
                         {formatRupiah(item.totalAmount)}
                       </div>
                       <div className="text-[11px] text-on-surface-variant mt-0.5">

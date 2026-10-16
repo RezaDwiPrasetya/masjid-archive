@@ -157,34 +157,34 @@ export default async function DetailLaporanPage({
           </div>
 
           {/* Page Heading */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-outline-variant pb-5">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 border-b border-outline-variant pb-5">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-on-surface font-sans">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-on-surface font-sans">
                 Detail Laporan
               </h1>
-              <p className="text-sm text-on-surface-variant mt-1">
+              <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
                 Laporan Keuangan Kas • {new Date(report.reportDate).toLocaleDateString("id-ID", {
                   dateStyle: "full",
                 })}
               </p>
             </div>
             {/* Tombol Ekspor & Cetak Rekapitulasi Kas (Selaras Dashboard) */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <Link href={`/laporan/${report.id}/cetak`}>
+            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
+              <Link href={`/laporan/${report.id}/cetak`} className="flex-1 sm:flex-initial">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="gap-1.5 text-xs font-semibold border-outline-variant hover:bg-surface-container-high transition-colors"
+                  className="w-full sm:w-auto gap-1.5 text-xs font-semibold border-outline-variant hover:bg-surface-container-high transition-colors"
                   title="Buka pratinjau cetak A4 berkop resmi DKM (dapat dicetak langsung atau disimpan sebagai PDF)"
                 >
                   <Printer size={14} className="text-primary" /> Cetak Laporan
                 </Button>
               </Link>
-              <a href={`/api/reports/${report.id}/export/excel`} download>
+              <a href={`/api/reports/${report.id}/export/excel`} download className="flex-1 sm:flex-initial">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="gap-1.5 text-xs font-semibold border-outline-variant hover:bg-surface-container-high text-primary transition-colors"
+                  className="w-full sm:w-auto gap-1.5 text-xs font-semibold border-outline-variant hover:bg-surface-container-high text-primary transition-colors"
                   title="Unduh rekapitulasi data laporan dalam format spreadsheet Excel (.xlsx)"
                 >
                   <FileSpreadsheet size={14} /> Unduh Excel

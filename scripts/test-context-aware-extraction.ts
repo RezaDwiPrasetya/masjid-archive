@@ -94,8 +94,8 @@ async function runAllTests() {
 
     assert(
       "Prompt memuat instruksi CLOSING BALANCE BOUNDARY untuk memotong mutasi di bawah saldo penutup",
-      prompt25Juli.includes("ATURAN SALDO PENUTUP (CLOSING BALANCE BOUNDARY)") &&
-        prompt25Juli.includes("DI BAWAH garis saldo penutup tanggal 2025-07-25")
+      prompt25Juli.includes("ATURAN PENUTUPAN SALDO & TRANSAKSI SUSULAN (CLOSING BALANCE & LATE ENTRIES)") &&
+        prompt25Juli.includes("TOTAL KAS MESJID TGL 2025-07-25")
     );
 
     assert(
