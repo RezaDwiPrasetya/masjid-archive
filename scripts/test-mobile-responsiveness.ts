@@ -37,24 +37,40 @@ function runSuite() {
     pageShellContent.includes("py-5 sm:py-7 md:py-10")
   );
 
-  console.log("\n=== TEST SUITE 2: Verifikasi Ergonomi Navigasi Mobile Bottom Bar (AppShell) ===");
+  console.log("\n=== TEST SUITE 2: Verifikasi Ergonomi & Simetri Navigasi Mobile Bottom Bar (AppShell) ===");
   const appShellContent = fs.readFileSync(
     path.join(__dirname, "../components/app-shell.tsx"),
     "utf-8"
   );
   assert(
-    "AppShell mendukung scroll horizontal halus tanpa scrollbar saat item navigasi > 5",
-    appShellContent.includes("navItems.length > 5") &&
-      appShellContent.includes("overflow-x-auto") &&
-      appShellContent.includes("[scrollbar-width:none]")
+    "AppShell membentang w-full dan simetris (justify-around) di mobile",
+    appShellContent.includes("justify-around") && appShellContent.includes("w-full")
   );
   assert(
-    "Setiap item navigasi bawah memiliki lebar minimum touch target aman di ponsel (min-w-[58px])",
-    appShellContent.includes("min-w-[58px]")
+    "Setiap item navigasi bawah membagi ruang secara rata dan simetris (flex-1 min-w-0)",
+    appShellContent.includes("flex flex-1 min-w-0 flex-col items-center justify-center")
   );
   assert(
-    "Label teks navigasi bawah memiliki batas truncate aman di layar kecil",
-    appShellContent.includes("truncate max-w-[64px]")
+    "Label teks navigasi bawah memiliki truncate aman dan padding simetris di ponsel",
+    appShellContent.includes("truncate w-full")
+  );
+
+  console.log("\n=== TEST SUITE 2B: Verifikasi Preset PeriodFilterBar Ringkas & Lega ===");
+  const periodFilterContent = fs.readFileSync(
+    path.join(__dirname, "../components/period-filter-bar.tsx"),
+    "utf-8"
+  );
+  assert(
+    "PeriodFilterBar memuat preset 'Semua Waktu'",
+    periodFilterContent.includes("Semua Waktu")
+  );
+  assert(
+    "PeriodFilterBar memuat preset 'Tahun Ini'",
+    periodFilterContent.includes("Tahun Ini")
+  );
+  assert(
+    "Preset 'Bulan Ini' telah dihilangkan agar kartu lega dan tidak perlu di-scroll horizontal",
+    !periodFilterContent.includes("Bulan Ini (")
   );
 
   console.log("\n=== TEST SUITE 3: Verifikasi Responsivitas Baris Transaksi (TransactionRow) ===");

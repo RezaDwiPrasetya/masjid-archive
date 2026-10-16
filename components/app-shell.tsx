@@ -146,11 +146,7 @@ export function AppShell({
       {/* Mobile Bottom Navigation Bar */}
       <nav
         aria-label="Navigasi Bawah Mobile"
-        className={`fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center border-t border-outline-variant bg-surface-container/95 backdrop-blur-md px-1 sm:px-2 pb-[env(safe-area-inset-bottom)] lg:hidden ${
-          navItems.length > 5
-            ? "overflow-x-auto justify-start sm:justify-around [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-            : "justify-around"
-        }`}
+        className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-around border-t border-outline-variant bg-surface-container/95 backdrop-blur-md px-1 sm:px-2 pb-[env(safe-area-inset-bottom)] lg:hidden w-full"
       >
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -159,20 +155,20 @@ export function AppShell({
             <Link
               key={item.href}
               href={item.href}
-              className={`flex min-w-[58px] sm:min-w-0 sm:flex-1 shrink-0 sm:shrink flex-col items-center justify-center gap-0.5 py-1 px-1 min-h-[44px] transition-colors ${
+              className={`flex flex-1 min-w-0 flex-col items-center justify-center gap-0.5 py-1 px-0.5 sm:px-1 min-h-[44px] transition-colors ${
                 isActive
                   ? "font-semibold text-primary"
                   : "font-medium text-on-surface-variant hover:text-on-surface"
               }`}
             >
               <div
-                className={`flex items-center justify-center rounded-xl px-2.5 py-1 transition-all ${
+                className={`flex items-center justify-center rounded-xl px-2 sm:px-2.5 py-1 transition-all ${
                   isActive ? "bg-primary/10 text-primary" : "text-on-surface-variant"
                 }`}
               >
                 <Icon size={19} className="shrink-0" />
               </div>
-              <span className="truncate max-w-[64px] sm:max-w-none text-[10px] sm:text-[11px] leading-tight text-center tracking-tight">
+              <span className="truncate w-full text-[10px] sm:text-[11px] leading-tight text-center tracking-tight px-0.5">
                 {item.label}
               </span>
             </Link>
