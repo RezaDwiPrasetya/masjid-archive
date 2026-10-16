@@ -42,7 +42,7 @@ Pencatatan keuangan mingguan DKM Masjid Al-Luqman sebelumnya bertumpu pada lemba
 - **Transparansi Ukuran Berkas**: Pratinjau unggahan menampilkan badge penghematan ukuran secara nyata (contoh: *"3.6 MB → 340 KB (Hemat 91%)"*). Berkas PDF dan Excel dilewatkan secara utuh (*pass-through*).
 
 ### 3. 🧠 Ekstraksi Multimodal AI Vision-LLM Context-Aware (F-031 / V10.8)
-- **Google Gemini Multimodal Vision**: Menggunakan model utama `gemini-3.6-flash` dengan mekanisme *auto-fallback* cadangan ke `gemini-3.5-flash` saat batas kuota/latensi tercapai.
+- **Google Gemini Multimodal Vision**: Menggunakan model utama `gemini-3-flash-preview` dengan mekanisme kaskade *auto-fallback* cadangan (`gemini-3.1-flash-lite`, `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.5-flash`) saat batas kuota atau latensi antrean tercapai.
 - **Instruksi Kontekstual Berbasis Periode Pekan (*Context-Aware Prompt*)**: Menginjeksikan tanggal laporan target (`targetReportDate`) ke dalam prompt analisis guna mengunci batas mutasi mingguan.
 - **Deteksi Batas Saldo Penutup (*Closing Balance Boundary*)**: AI secara cerdas mengenali garis penutup saldo (misal: `TOTAL KAS MESJID TGL 25-7-2025 Rp 850.000`) dan otomatis memisahkan catatan transaksi lanjutan di bawahnya yang merupakan milik pekan berikutnya (halaman fisik bersambung).
 - **Parsing Spreadsheet Deterministik**: Berkas Excel (`.xlsx`, `.xls`) diproses langsung via parser tabular server-side tanpa konsumsi token OCR.
@@ -85,7 +85,7 @@ Pencatatan keuangan mingguan DKM Masjid Al-Luqman sebelumnya bertumpu pada lemba
 | **Basis Data** | PostgreSQL (Vercel Postgres) | Penyimpanan data relasional transaksi, donatur, laporan, dan otorisasi |
 | **Object-Relational Mapping** | Prisma ORM 5.22.0 | Akses basis data aman (*locked* pada versi 5.22.0 untuk stabilitas schema) |
 | **Penyimpanan Berkas** | Supabase Storage | Bucket terisolasi `report-photos` untuk pindaian dokumen dan foto kas |
-| **Kecerdasan Buatan (AI)** | Google Gemini Vision API | `@google/generative-ai` multimodal Vision-LLM (Model utama: `gemini-3.6-flash`) |
+| **Kecerdasan Buatan (AI)** | Google Gemini Vision API | `@google/generative-ai` multimodal Vision-LLM (Model utama: `gemini-3-flash-preview`) |
 | **Autentikasi & Sesi** | NextAuth.js (Auth.js) | Google OAuth 2.0 SSO dengan token JWT dan sinkronisasi role dinamis |
 | **Grafik Keuangan** | Recharts via shadcn/ui Charts | Visualisasi tren arus kas mingguan, bulanan, dan semester |
 | **Generator Dokumen** | `pdf-lib` & `xlsx` | Pembangkitan berkas PDF A4 mading multi-halaman dan spreadsheet Excel |
