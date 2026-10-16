@@ -138,8 +138,8 @@ Unit dasar: 8px.
 
 ### 2. Standar Navigasi Bawah (Mobile Bottom Bar)
 - **Touch Target**: Setiap item navigasi harus memiliki tap area minimal 44×44px (standar aksesibilitas WCAG).
-- **Densitas Item (5–6 Menu)**:
-  - Pada layar HP sempit (≤ 380px), padding horizontal antar-item diatur secara presisi (`px-1` atau `px-1.5`), font label 10px demi mencegah teks terpotong (*truncate* berantakan).
+- **Densitas Item (Hingga 7 Menu untuk Role Admin/Staf)**:
+  - Pada layar HP sempit (≤ 380px), kontainer navigasi bawah mendukung tata letak adaptif atau horizontal scroll yang halus (`overflow-x-auto scrollbar-none`) dengan padding `px-2`, font label 10–11px demi mencegah teks terpotong (*truncate* berantakan) atau bertumpuk.
   - Indikator aktif berupa pill halus (`bg-primary/10 text-primary`) dengan ikon ukuran 18–20px.
   - Safe-area inset untuk navigasi gesture modern (`env(safe-area-inset-bottom)`).
 
@@ -151,9 +151,11 @@ Unit dasar: 8px.
   - Sumbu X tanggal mingguan diatur intervalnya secara dinamis agar tidak berdempetan.
 
 ### 4. Kartu & Komponen Informasi di Mobile
+- **PageShell Padding Adaptif**: Padding horizontal utama di mobile diseragamkan ke `px-4` (16px standar UI margin) dan naik bertahap menjadi `px-6 md:px-8 lg:px-10` di tablet/desktop. Padding vertikal `py-5 sm:py-7 md:py-10`.
 - **Hierarki Vertikal**: Komponen KPI yang bersebelahan di desktop (seperti Donatur Terdata & Infaq Anonim) otomatis tersusun rapi secara vertikal (*single column*) dengan gap 12px-16px.
+- **Detail Laporan Ringkasan Saldo**: 4 kartu saldo disusun dalam 2 kolom (`grid-cols-2 sm:grid-cols-4`) agar nilai mata uang tetap utuh tanpa terpotong.
 - **Dialog & Modal**: Di mobile, dialog harus memiliki batas padding aman (maksimal `w-[92vw]` atau `w-[95vw]`), tombol aksi utama di bagian bawah mudah dijangkau satu jempol.
-- **Tabel Kas & Transaksi**: Harus memiliki pembungkus `overflow-x-auto` dengan indikator scroll halus atau beralih ke format kartu ringkas (card-view) untuk mencegah overflow horizontal pada viewport HP.
+- **Tabel Kas & Transaksi**: Pada review panel ekstraksi, baris transaksi (`TransactionRow`) menata badge status (*Verified*, *Manual*, kategori) dan tombol aksi secara terstruktur agar tidak saling menimpa atau meluap secara horizontal di viewport ponsel.
 
 ## States
 

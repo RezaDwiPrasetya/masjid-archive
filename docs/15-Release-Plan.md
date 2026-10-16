@@ -100,6 +100,14 @@
 - [x] Preservasi backward compatibility untuk dokumen satu pekan tunggal dan berkas non-gambar (Excel)
 - [x] Test suite otomatisasi pengujian prompt boundary dan integrasi handler ekstraksi (`scripts/test-context-aware-extraction.ts`)
 
+### Milestone 15 — Mobile Responsiveness & Touch Ergonomics Alignment (V10.9, Issue #75 / F-032)
+- [x] Refaktor padding adaptif shell konten utama (`components/page-shell.tsx`)
+- [x] Optimalisasi navigasi mobile bar bawah untuk staf & jamaah (`components/app-shell.tsx`)
+- [x] Penataan baris review ekstraksi transaksi & touch targets dialog (`components/transaction-review-panel.tsx`)
+- [x] Penyesuaian grid ringkasan 4 saldo detail laporan kas (`app/laporan/[id]/page.tsx`)
+- [x] Harmonisasi kartu pengeluaran, donatur, dan layout dashboard di perangkat layar sentuh
+- [x] Verifikasi regresi nol pada resolusi desktop dan lulus build/linting 100%
+
 ## Release Criteria
 
 - [x] Alur inti (unggah, arsip, cari, detail, ekstraksi, verifikasi) berjalan tanpa error
@@ -109,10 +117,27 @@
 
 ## Version
 
-Current: `0.10.8` (Fase V10.8: Ekstraksi Vision-LLM Context-Aware Berbasis Periode Pekan Laporan — Issue #076 / F-031)
+Current: `0.10.9` (Fase V10.9: Penyelarasan Responsivitas Tampilan Mobile & Ergonomi Layar Sentuh Multi-Perangkat — Issue #75 / F-032)
 Next: `1.0.0`
 
 ## Changelog
+
+### 0.10.9 (2026-10-16) — Fase V10.9: Penyelarasan Responsivitas Tampilan Mobile & Ergonomi Layar Sentuh Multi-Perangkat (Issue #75 / F-032)
+- **Harmonisasi Layout Shell Adaptif (`components/page-shell.tsx`)**:
+  - Penyesuaian padding horizontal container dari statis `px-6` menjadi responsif `px-4 sm:px-6 md:px-8 lg:px-10` dan padding vertikal `py-5 sm:py-7 md:py-10`.
+  - Memberikan batas margin layar 16px (standar UI/UX mobile) sehingga konten tidak terasa sesak, terpotong, atau menempel pada tepi layar pada smartphone.
+- **Ergonomi Navigasi Ponsel (`components/app-shell.tsx`)**:
+  - Penyelarasan bottom bar mobile agar mendukung hingga 7 item menu staf (Admin/Bendahara) dengan kontainer scroll horizontal halus (*smooth touch scrollbar-hide*) atau pengaturan flex dinamis, touch target ergonomis min 44×44px, dan teks label yang tidak bertumpuk atau terpotong.
+- **Adaptabilitas Panel Tinjau Transaksi (`components/transaction-review-panel.tsx`)**:
+  - Penataan ulang baris transaksi (`TransactionRow`) pada layar sempit: badge status (*Verified*, *Manual*, kategori) dan tombol aksi (Edit, Hapus) terstruktur rapi tanpa terjadi overflow horizontal atau teks tumpang tindih.
+  - Dialog modal tambah/edit transaksi yang fleksibel di layar kecil dengan input touch-friendly.
+- **Optimalisasi Detail Laporan Kas (`app/laporan/[id]/page.tsx`)**:
+  - Penataan ulang kartu ringkasan 4 saldo (Saldo Awal, Pemasukan, Pengeluaran, Saldo Akhir) menjadi grid 2 kolom di layar mobile (`grid-cols-2 sm:grid-cols-4`) agar nilai nominal angka tetap terbaca utuh tanpa clipping.
+  - Toolbar aksi cetak & unduh Excel yang adaptif dan rapi (`flex-wrap`).
+- **Optimalisasi Grid Kategori Pengeluaran & Donatur (`components/expenses-client.tsx`, `components/donors-client.tsx`)**:
+  - Pengelompokan kartu kategori pengeluaran dan baris daftar donatur yang proporsional di mobile dengan pemisah tipis dan angka nominal tabular terisolasi rapi.
+- **Adaptabilitas Hero Band & Indikator Dashboard (`components/dashboard-client.tsx`)**:
+  - Hero band saldo kas dan 3 metrik sekunder tertata harmonis tanpa saling bertabrakan pada resolusi 360px–414px.
 
 ### 0.10.8 (2026-10-15) — Fase V10.8: Ekstraksi Vision-LLM Context-Aware Berbasis Periode Pekan Laporan (Issue #076 / F-031)
 - **Ekstraksi Vision-LLM Context-Aware (`lib/extract-transactions.ts` & `app/api/attachments/:id/extract/route.ts`)**:

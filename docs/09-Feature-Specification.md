@@ -708,6 +708,36 @@
 - [x] Dokumen laporan tunggal tetap terekstraksi normal tanpa regresi.
 - [x] Seluruh suite pengujian fungsional otomatisasi lulus 100%.
 
+---
+
+### F-032 — Penyelarasan Responsivitas Tampilan Mobile & Ergonomi Layar Sentuh Multi-Perangkat (Issue #75 / F-032)
+
+**Objective:** Mengoptimalkan seluruh halaman dan antarmuka aplikasi Masjid Archive agar sepenuhnya responsif, nyaman, dan ergonomis saat diakses dari perangkat mobile (layar ponsel pintar 360px–430px) tanpa sedikitpun mengorbankan kerapian dan proporsi visual pada tampilan layar desktop yang telah disepakati.
+**User:** Seluruh pengguna (Jamaah/Publik, Bendahara, dan Administrator DKM Al-Luqman) yang mengakses aplikasi melalui smartphone.
+**Process:**
+- **Harmonisasi Layout Shell (`components/page-shell.tsx`)**:
+  - Menyesuaikan padding horizontal container dari statis `px-6` menjadi responsif `px-4 sm:px-6 md:px-8 lg:px-10` dan padding vertikal menjadi `py-5 sm:py-7 md:py-10`.
+  - Memberikan batas margin layar 16px (standar UI/UX mobile) sehingga konten tidak terasa sesak, terpotong, atau menempel pada tepi layar.
+- **Ergonomi Navigasi Ponsel (`components/app-shell.tsx`)**:
+  - Penyelarasan bottom bar mobile agar mendukung hingga 7 item menu staf (Admin/Bendahara) dengan kontainer scroll horizontal halus (*smooth touch scrollbar-hide*) atau pengaturan flex dinamis, touch target ergonomis min 44×44px, dan teks label yang tidak bertumpuk atau terpotong.
+- **Adaptabilitas Panel Tinjau Transaksi (`components/transaction-review-panel.tsx`)**:
+  - Penataan ulang baris transaksi (`TransactionRow`) pada layar sempit: badge status (*Verified*, *Manual*, kategori) dan tombol aksi (Edit, Hapus) terstruktur rapi tanpa terjadi overflow horizontal atau teks tumpang tindih.
+  - Dialog modal tambah/edit transaksi yang fleksibel di layar kecil dengan input touch-friendly.
+- **Optimalisasi Detail Laporan Kas (`app/laporan/[id]/page.tsx`)**:
+  - Penataan ulang kartu ringkasan 4 saldo (Saldo Awal, Pemasukan, Pengeluaran, Saldo Akhir) menjadi grid 2 kolom di layar mobile (`grid-cols-2 sm:grid-cols-4`) agar nilai nominal angka tetap terbaca utuh tanpa clipping.
+  - Toolbar aksi cetak & unduh Excel yang adaptif dan rapi (`flex-wrap`).
+- **Optimalisasi Grid Kategori Pengeluaran & Donatur (`components/expenses-client.tsx`, `components/donors-client.tsx`)**:
+  - Pengelompokan kartu kategori pengeluaran dan baris daftar donatur yang proporsional di mobile dengan pemisah tipis dan angka nominal tabular terisolasi rapi.
+- **Adaptabilitas Hero Band & Indikator Dashboard (`components/dashboard-client.tsx`)**:
+  - Hero band saldo kas dan 3 metrik sekunder tertata harmonis tanpa saling bertabrakan pada resolusi 360px–414px.
+**Acceptance Criteria:**
+- [x] Kontainer konten utama di semua halaman memiliki margin aman 16px (`px-4`) pada mobile dan kembali proporsional (`px-6` s.d. `px-10`) di tablet/desktop.
+- [x] Navigasi bottom bar mobile menampilkan seluruh item menu secara rapi tanpa teks bertumpuk atau ikon berhimpitan.
+- [x] Baris daftar transaksi review ekstraksi tidak mengalami horizontal scroll liar atau teks badge yang menimpa tombol aksi.
+- [x] Kartu ringkasan saldo pada detail laporan tertata dalam 2 kolom pada mobile dan tidak terpotong.
+- [x] Tampilan desktop tidak mengalami regresi visual atau perubahan tata letak yang merusak estetika sebelumnya.
+- [x] Seluruh alur fungsi dan test suite otomatis lulus 100%.
+
 
 
 
