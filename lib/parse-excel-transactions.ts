@@ -315,10 +315,10 @@ export function tryDeterministicParse(rows: unknown[][]): {
         balanceCol !== -1 && parseCleanNumber(row[balanceCol]) > 0
           ? parseCleanNumber(row[balanceCol])
           : incomeCol !== -1 && parseCleanNumber(row[incomeCol]) > 0
-          ? parseCleanNumber(row[incomeCol])
-          : amountCol !== -1 && parseCleanNumber(row[amountCol]) > 0
-          ? parseCleanNumber(row[amountCol])
-          : 0;
+            ? parseCleanNumber(row[incomeCol])
+            : amountCol !== -1 && parseCleanNumber(row[amountCol]) > 0
+              ? parseCleanNumber(row[amountCol])
+              : 0;
 
       if (candidateBal > 0 && initialBalance === null) {
         initialBalance = candidateBal;
@@ -506,7 +506,7 @@ export async function parseTransactionsFromExcel(fileUrl: string): Promise<Extra
       initialBalance: deterministicResult.initialBalance,
       finalBalance: deterministicResult.finalBalance,
       rawResponse: { method: "direct_deterministic_parser", sheet: firstSheetName, rowsCount: rows.length },
-      modelName: "Direct Excel Parser (100% Akurasi)",
+      modelName: "",
     };
   }
 
