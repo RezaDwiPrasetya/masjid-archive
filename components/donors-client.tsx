@@ -478,8 +478,8 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
                       {/* Badge Nomor Urut */}
                       <div
                         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold transition-transform group-hover:scale-105 ${isRankOne
-                            ? "border border-amber-500/40 text-amber-800 dark:text-amber-200 bg-amber-500/15"
-                            : "border border-outline-variant text-on-surface-variant bg-surface"
+                          ? "border border-amber-500/40 text-amber-800 dark:text-amber-200 bg-amber-500/15"
+                          : "border border-outline-variant text-on-surface-variant bg-surface"
                           }`}
                       >
                         #{rank}
@@ -493,7 +493,7 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
                         <div className="text-xs text-on-surface-variant mt-1 flex items-center gap-2">
                           <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2 py-0.5 border border-outline-variant text-[11px] font-medium">
                             <UserCheck className="h-3 w-3 text-primary" />
-                            {donor.donationCount} kali infaq terverifikasi
+                            {donor.donationCount} infaq terverifikasi
                           </span>
                         </div>
                       </div>
