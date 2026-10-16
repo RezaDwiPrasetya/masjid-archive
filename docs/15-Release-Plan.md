@@ -100,7 +100,7 @@
 - [x] Preservasi backward compatibility untuk dokumen satu pekan tunggal dan berkas non-gambar (Excel)
 - [x] Test suite otomatisasi pengujian prompt boundary dan integrasi handler ekstraksi (`scripts/test-context-aware-extraction.ts`)
 
-### Milestone 15 — Mobile Responsiveness & Touch Ergonomics Alignment (V10.9, Issue #077 / F-032)
+### Milestone 15 — Mobile Responsiveness & Touch Ergonomics Alignment (V10.9, Issue #75 / F-032)
 - [x] Refaktor padding adaptif shell konten utama (`components/page-shell.tsx`)
 - [x] Optimalisasi navigasi mobile bar bawah untuk staf & jamaah (`components/app-shell.tsx`)
 - [x] Penataan baris review ekstraksi transaksi & touch targets dialog (`components/transaction-review-panel.tsx`)
@@ -117,12 +117,12 @@
 
 ## Version
 
-Current: `0.10.9` (Fase V10.9: Penyelarasan Responsivitas Tampilan Mobile & Ergonomi Layar Sentuh Multi-Perangkat — Issue #077 / F-032)
+Current: `0.10.9` (Fase V10.9: Penyelarasan Responsivitas Tampilan Mobile & Ergonomi Layar Sentuh Multi-Perangkat — Issue #75 / F-032)
 Next: `1.0.0`
 
 ## Changelog
 
-### 0.10.9 (2026-10-16) — Fase V10.9: Penyelarasan Responsivitas Tampilan Mobile & Ergonomi Layar Sentuh Multi-Perangkat (Issue #077 / F-032)
+### 0.10.9 (2026-10-16) — Fase V10.9: Penyelarasan Responsivitas Tampilan Mobile & Ergonomi Layar Sentuh Multi-Perangkat (Issue #75 / F-032)
 - **Harmonisasi Layout Shell Adaptif (`components/page-shell.tsx`)**:
   - Penyesuaian padding horizontal container dari statis `px-6` menjadi responsif `px-4 sm:px-6 md:px-8 lg:px-10` dan padding vertikal `py-5 sm:py-7 md:py-10`.
   - Memberikan batas margin layar 16px (standar UI/UX mobile) sehingga konten tidak terasa sesak, terpotong, atau menempel pada tepi layar pada smartphone.

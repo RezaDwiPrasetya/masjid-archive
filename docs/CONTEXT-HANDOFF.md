@@ -347,7 +347,7 @@ Shared logic di `lib/donor-matching.ts`, `lib/donor-service.ts`, dan `lib/expens
     - Prompt dinamis yang menyertakan rentang periode pekan berjalan (dari Jumat sepekan sebelumnya hingga Jumat target laporan).
     - Logika pembatas garis saldo penutup (*Closing Balance Boundary*): secara cerdas mendeteksi baris saldo penutup tanggal target (misal `TOTAL KAS MESJID TGL 25-7-2025 Rp 850.000`) dan otomatis memisahkan catatan transaksi lanjutan di bawahnya yang merupakan milik pekan berikutnya (seperti 1 Agustus 2025).
     - Sepenuhnya *backward-compatible* dengan dokumen satu pekan biasa dan berkas non-gambar.
-11. **F-032: Penyelarasan Responsivitas Tampilan Mobile & Ergonomi Layar Sentuh Multi-Perangkat (Issue #077 — Selesai Penuh)**:
+11. **F-032: Penyelarasan Responsivitas Tampilan Mobile & Ergonomi Layar Sentuh Multi-Perangkat (Issue #75 — Selesai Penuh)**:
     - Penyesuaian padding adaptif global `PageShell` (`px-4 sm:px-6 md:px-8 lg:px-10`, `py-5 sm:py-7 md:py-10`), memberikan margin tepi aman 16px di layar ponsel tanpa mengurangi kelegaan desktop.
     - Penyelarasan bottom bar navigasi mobile `AppShell` untuk menangani hingga 7 menu staf secara ergonomis tanpa clipping/clutter.
     - Reorganisasi baris tabel ekstraksi transaksi `TransactionRow` agar badge status dan tombol aksi tersusun rapi tanpa overlap di resolusi 360px–414px.

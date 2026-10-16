@@ -710,7 +710,7 @@
 
 ---
 
-### F-032 — Penyelarasan Responsivitas Tampilan Mobile & Ergonomi Layar Sentuh Multi-Perangkat (Issue #077 / F-032)
+### F-032 — Penyelarasan Responsivitas Tampilan Mobile & Ergonomi Layar Sentuh Multi-Perangkat (Issue #75 / F-032)
 
 **Objective:** Mengoptimalkan seluruh halaman dan antarmuka aplikasi Masjid Archive agar sepenuhnya responsif, nyaman, dan ergonomis saat diakses dari perangkat mobile (layar ponsel pintar 360px–430px) tanpa sedikitpun mengorbankan kerapian dan proporsi visual pada tampilan layar desktop yang telah disepakati.
 **User:** Seluruh pengguna (Jamaah/Publik, Bendahara, dan Administrator DKM Al-Luqman) yang mengakses aplikasi melalui smartphone.
