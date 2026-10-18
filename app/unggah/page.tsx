@@ -361,10 +361,10 @@ export default function UnggahLaporanPage() {
                           <span className="text-xs font-semibold text-primary">
                             → {formatBytes(entry.compressedSize)}
                           </span>
-                          {/* // <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
-                          <Sparkles className="size-3" />
-                          Hemat {entry.savingsPercent}%
-                        </span> */}
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
+                            <Sparkles className="size-3" />
+                            Hemat {entry.savingsPercent}%
+                          </span>
                         </div>
                       ) : (
                         <p className="text-xs text-on-surface-variant mt-0.5">
