@@ -1,20 +1,40 @@
 "use client";
 
-import { signIn } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
+import { signIn, useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, Suspense } from "react";
 import { AppShell } from "@/components/app-shell";
 import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { LogIn, ShieldAlert } from "lucide-react";
-import { Suspense } from "react";
+import { isStaff } from "@/lib/auth-guard";
 
 function LoginContent() {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const callbackUrl = searchParams.get("callbackUrl");
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  // Jika sudah terautentikasi, otomatis alihkan ke tujuan atau /unggah untuk staf
+  useEffect(() => {
+    if (status === "authenticated" && session) {
+      if (callbackUrl && callbackUrl !== "/" && !callbackUrl.includes("/login")) {
+        router.replace(callbackUrl);
+      } else if (isStaff(session)) {
+        router.replace("/unggah");
+      } else {
+        router.replace("/");
+      }
+    }
+  }, [status, session, callbackUrl, router]);
+
+  const targetCallback = callbackUrl && callbackUrl !== "/"
+    ? `/auth/post-login?callbackUrl=${encodeURIComponent(callbackUrl)}`
+    : "/auth/post-login";
 
   let activePath: "/" | "/unggah" | "/cari" = "/";
-  if (callbackUrl.includes("/unggah")) activePath = "/unggah";
-  else if (callbackUrl.includes("/cari")) activePath = "/cari";
+  if (callbackUrl?.includes("/unggah")) activePath = "/unggah";
+  else if (callbackUrl?.includes("/cari")) activePath = "/cari";
 
   return (
     <AppShell active={activePath}>
@@ -35,7 +55,7 @@ function LoginContent() {
             <Button 
               size="lg" 
               className="w-full rounded-xl"
-              onClick={() => signIn("google", { callbackUrl })}
+              onClick={() => signIn("google", { callbackUrl: targetCallback })}
             >
               <LogIn className="mr-2 h-5 w-5" />
               Masuk dengan Google

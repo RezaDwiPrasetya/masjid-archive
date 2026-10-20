@@ -88,13 +88,14 @@ Login diperlukan untuk mengakses fitur operasional (unggah, ekstraksi, verifikas
 
 ### Setelah Login Berhasil
 
-- Nama dan foto profil Google Anda akan ditampilkan di sidebar.
-- Menu **Unggah** akan dapat diakses (jika role Anda adalah Bendahara atau Admin).
-- Menu **Pengguna** akan muncul di navigasi (jika role Anda adalah Admin).
+- Nama dan foto profil Google Anda akan ditampilkan di header.
+- **Smart Redirect Otomatis**: Jika Anda adalah Bendahara atau Admin, sistem secara otomatis mengarahkan Anda langsung ke halaman **Unggah** (`/unggah`) sebagai alur kerja operasional utama.
+- Menu **Unggah** diposisikan di urutan teratas (#1) pada sidebar dan navigasi mobile.
+- Menu **Pengguna** akan muncul di navigasi bawah (khusus role Admin).
 
 ### Cara Logout
 
-Klik nama/foto profil Anda di sidebar, kemudian pilih **"Keluar"**.
+Klik nama/foto profil Anda di header, kemudian pilih **"Keluar"**.
 
 > **Penting**: Jika setelah login Anda melihat pesan *"Akses Ditolak"* saat membuka menu Unggah, berarti role akun Anda belum disetel. Hubungi Administrator untuk mendapatkan akses Bendahara.
 
@@ -106,18 +107,19 @@ Sistem dapat diakses melalui navigasi di sidebar (desktop) atau bilah navigasi b
 
 ### Menu Navigasi
 
-| Menu | Ikon | Halaman | Tersedia untuk |
+| Menu | Ikon | Halaman | Posisi & Ketersediaan |
 |---|---|---|---|
-| **Laporan** | 📁 | `/` — Arsip laporan mingguan | Semua |
+| **Unggah** | ➕ | `/unggah` — Unggah laporan baru | **Urutan #1 (Khusus Bendahara & Admin)** |
+| **Laporan** | 📁 | `/` — Arsip laporan mingguan | Semua (Urutan #1 untuk Jamaah/Publik) |
 | **Dashboard** | 📊 | `/dashboard` — Grafik tren kas | Semua |
-| **Pengeluaran** | 🧾 | `/pengeluaran` — Rekap pengeluaran per kategori | Semua |
 | **Donatur** | 🤝 | `/donatur` — Daftar donatur & infaq anonim | Semua |
+| **Pengeluaran** | 🧾 | `/pengeluaran` — Rekap pengeluaran per kategori | Semua |
 | **Cari** | 🔍 | `/cari` — Pencarian arsip | Semua |
-| **Unggah** | ➕ | `/unggah` — Unggah laporan baru | Bendahara & Admin |
 | **Pengguna** | 👥 | `/pengguna` — Manajemen akun | Admin saja |
 
-> **Catatan Kendali Akses Cerdas (Role-Based Visibility)**:  
-> Untuk menjaga kenyamanan jemaah, menu **Unggah** dan **Pengguna** disembunyikan secara otomatis dari bilah navigasi jika akun Anda belum masuk (*guest*) atau memiliki peran **Jemaah**. Jika pengguna tanpa wewenang staf mencoba membuka alamat `/unggah` secara langsung melalui peramban, sistem akan mengalihkan kembali ke Dashboard disertai kotak pemberitahuan (*Banner Alert*) berwarna kuning yang menjelaskan bahwa halaman tersebut khusus bagi pengurus DKM.
+> **Catatan Kendali Akses Cerdas & Prioritas Alur Kerja**:  
+> - **Bagi Staf DKM (Bendahara & Admin)**: Berdasarkan masukan operasional, menu **Unggah** ditempatkan di posisi paling atas di sidebar dan bilah bawah mobile dengan tampilan rapi seragam. Begitu login berhasil, sistem secara otomatis mengarahkan staf langsung ke halaman Unggah untuk mempercepat input pembukuan kas.
+> - **Bagi Jamaah & Pengunjung Publik**: Menu **Unggah** dan **Pengguna** disembunyikan secara otomatis dari navigasi. Jamaah mendarat di halaman arsip **Laporan** (`/`) untuk kemudahan melihat transparansi kas. Jika pengguna tanpa wewenang staf mencoba membuka alamat `/unggah` secara langsung melalui URL browser, sistem akan mengalihkan kembali ke Dashboard disertai kotak pemberitahuan (*Banner Alert*) ramah pengguna.
 
 ---
 

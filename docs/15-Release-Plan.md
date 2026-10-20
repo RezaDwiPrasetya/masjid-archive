@@ -81,6 +81,8 @@
 
 ### Milestone 12 — Role-Based Upload Navigation & Access Denial Alert (V10.6, Issue #074 / F-029)
 - [x] Kondisional menu navigasi "Unggah" di sidebar desktop dan bilah navigasi mobile (`components/app-shell.tsx`) khusus staf DKM (`isStaff(session)`)
+- [x] Reposisi menu "Unggah" ke urutan teratas (#1) bagi staf dengan tampilan rapi seragam standar
+- [x] Smart Redirect pasca-login (`app/auth/post-login/route.ts`) yang otomatis mengarahkan Bendahara & Admin langsung ke `/unggah`
 - [x] Penangkapan parameter `?error=forbidden` pada Dashboard (`app/dashboard/page.tsx` & `components/dashboard-client.tsx`)
 - [x] Komponen Banner Alert interaktif di Dashboard dengan penjelasan peran Jemaah vs Staf DKM dan tombol tutup (dismiss) dengan sinkronisasi URL tanpa reload
 

@@ -1,4 +1,4 @@
-import { isAdmin, isStaff } from "../lib/auth-guard";
+import { isAdmin, isStaff, canDeleteReport } from "../lib/auth-guard";
 import type { Session } from "next-auth";
 
 // Definisi mock session untuk pengujian
@@ -80,6 +80,53 @@ assert("Bendahara (' bendahara '): isAdmin is false", isAdmin(sessionBendaharaLo
 // Test Admin
 assert("Admin: isAdmin is true", isAdmin(sessionAdmin) === true);
 assert("Admin: isStaff is true", isStaff(sessionAdmin) === true);
+
+console.log("\n=================================================================");
+console.log("TEST SUITE 1B: Helper canDeleteReport (Opsi B)");
+console.log("=================================================================");
+
+// Admin can delete any report
+assert(
+  "Admin: can delete draft report (0 verified txs)",
+  canDeleteReport({ session: sessionAdmin, reportUploadedById: "bendahara-user-1", verifiedTransactionsCount: 0 }) === true
+);
+assert(
+  "Admin: can delete report with verified txs",
+  canDeleteReport({ session: sessionAdmin, reportUploadedById: "bendahara-user-1", verifiedTransactionsCount: 3 }) === true
+);
+assert(
+  "Admin: can delete own report",
+  canDeleteReport({ session: sessionAdmin, reportUploadedById: "admin-user-1", verifiedTransactionsCount: 0 }) === true
+);
+
+// Bendahara
+assert(
+  "Bendahara: can delete draft report (0 verified txs)",
+  canDeleteReport({ session: sessionBendahara, reportUploadedById: "bendahara-user-1", verifiedTransactionsCount: 0 }) === true
+);
+assert(
+  "Bendahara: can delete draft report created by others (0 verified txs)",
+  canDeleteReport({ session: sessionBendahara, reportUploadedById: "bendahara-user-2", verifiedTransactionsCount: 0 }) === true
+);
+assert(
+  "Bendahara: CANNOT delete report with verified txs (>0)",
+  canDeleteReport({ session: sessionBendahara, reportUploadedById: "bendahara-user-1", verifiedTransactionsCount: 1 }) === false
+);
+assert(
+  "Bendahara: CANNOT delete report with verified txs created by others (>0)",
+  canDeleteReport({ session: sessionBendahara, reportUploadedById: "bendahara-user-2", verifiedTransactionsCount: 2 }) === false
+);
+
+// Guest / Anon
+assert(
+  "Guest: CANNOT delete draft report",
+  canDeleteReport({ session: sessionGuest, reportUploadedById: "guest-user-1", verifiedTransactionsCount: 0 }) === false
+);
+assert(
+  "Anon: CANNOT delete draft report",
+  canDeleteReport({ session: sessionAnon, reportUploadedById: "bendahara-user-1", verifiedTransactionsCount: 0 }) === false
+);
+
 
 console.log("\n=================================================================");
 console.log("TEST SUITE 2: Simulasi Guard Akses Endpoint Finansial");

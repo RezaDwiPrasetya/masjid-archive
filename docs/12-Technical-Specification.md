@@ -551,11 +551,15 @@ Modul terpusat untuk standardisasi parsing dan pembentukan query filter waktu di
 - **Desktop Sidebar**:
   - Lebar tetap `260px` (`w-[260px]`), posisi fixed di sisi kiri dengan background `surface-container` dan pembatas `border-r border-outline-variant`.
   - Brand header dengan logo masjid, judul "Masjid Archive", dan subjudul "Sistem Kas & Arsip".
-  - Navigasi link berikon Lucide (`Laporan`, `Dashboard`, `Donatur`, `Pengeluaran`, `Cari`, `Unggah`, dan dinamis `Pengguna` khusus role `ADMIN`).
+  - Navigasi link berikon Lucide berbasis peran (*Role-Adaptive & Task-Centered*):
+    - Bagi Staf DKM (`ADMIN` & `BENDAHARA`): Rute operasional utama `Unggah` diposisikan di urutan teratas (#1) dengan styling standar seragam, diikuti `Laporan`, `Dashboard`, `Donatur`, `Pengeluaran`, `Cari`, serta `Pengguna` (khusus `ADMIN`).
+    - Bagi Jamaah / Publik: Menu `Unggah` dan `Pengguna` disembunyikan. Navigasi dimulai dari `Laporan` (arsip publik).
   - Kartu transparansi di bagian bawah sidebar.
 - **Mobile Navigation**:
-  - Bilah navigasi bawah (*bottom bar*) responsif dengan tap target WCAG (≥ 44px) dan padding safe area.
+  - Bilah navigasi bawah (*bottom bar*) responsif dengan tap target WCAG (≥ 44px), scrollbar-safe (`overflow-x-auto scrollbar-none`), dan padding safe area. Menu Unggah menjadi tab pertama bagi staf.
   - Header konteks ringkas dengan logo dan tombol autentikasi Google.
+- **Smart Redirect Pasca-Login (`GET /auth/post-login`)**:
+  - Endpoint perantara evaluasi sesi dan peran pasca-login. Akun staf otomatis dialihkan ke `/unggah`, sedangkan akun publik/jamaah diarahkan ke beranda `/`. Tujuan eksplisit pada query `callbackUrl` tetap diprioritaskan.
 
 ### 2. Standarisasi Ikon Brand & Favicon Resmi
 - Seluruh aset identitas brand diselaraskan menggunakan vektor resmi kubah masjid hijau dan aksen emas:

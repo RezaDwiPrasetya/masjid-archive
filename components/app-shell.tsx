@@ -38,18 +38,21 @@ export function AppShell({
 }) {
   const { data: session } = useSession();
 
-  const navItems = [
+  const navItems = [];
+
+  // Rute operasional /unggah diposisikan di urutan teratas bagi Staf (Bendahara & Admin)
+  if (isStaff(session)) {
+    navItems.push({ href: "/unggah", label: "Unggah", icon: ImagePlus });
+  }
+
+  // Rute arsip, analitik, dan transparansi publik
+  navItems.push(
     { href: "/", label: "Laporan", icon: Archive },
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/donatur", label: "Donatur", icon: HeartHandshake },
     { href: "/pengeluaran", label: "Pengeluaran", icon: Receipt },
     { href: "/cari", label: "Cari", icon: Search },
-  ];
-
-  // Rute operasional /unggah khusus staf pengurus DKM (Bendahara atau Admin)
-  if (isStaff(session)) {
-    navItems.push({ href: "/unggah", label: "Unggah", icon: ImagePlus });
-  }
+  );
 
   // Rute administratif /pengguna khusus Administrator sistem (ADMIN)
   if (isAdmin(session)) {
@@ -146,7 +149,7 @@ export function AppShell({
       {/* Mobile Bottom Navigation Bar */}
       <nav
         aria-label="Navigasi Bawah Mobile"
-        className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-around border-t border-outline-variant bg-surface-container/95 backdrop-blur-md px-1 sm:px-2 pb-[env(safe-area-inset-bottom)] lg:hidden w-full"
+        className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-around border-t border-outline-variant bg-surface-container/95 backdrop-blur-md px-1 sm:px-2 pb-[env(safe-area-inset-bottom)] lg:hidden w-full overflow-x-auto scrollbar-none"
       >
         {navItems.map((item) => {
           const Icon = item.icon;

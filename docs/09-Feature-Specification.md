@@ -638,16 +638,21 @@
 **Objective:** Mencegah kebingungan pengguna publik/Jemaah dengan menyembunyikan menu "Unggah" dari navigasi utama dan memberikan banner notifikasi edukatif di Dashboard saat rute terbatas diakses secara langsung tanpa otorisasi staf DKM.
 **User:** Pengguna Publik, Jemaah (`role: null`), Bendahara DKM, Administrator.
 **Process:**
-- **Kendali Visibilitas Navigasi (`components/app-shell.tsx`)**:
+- **Kendali Visibilitas & Prioritas Navigasi (`components/app-shell.tsx`)**:
   - Menu navigasi "Unggah" di sidebar desktop dan bilah navigasi bawah mobile dibungkus dengan helper `isStaff(session)`.
   - Hanya pengguna dengan peran `ADMIN` atau `BENDAHARA` yang melihat tautan navigasi ke `/unggah`.
+  - Bagi staf (`ADMIN`/`BENDAHARA`), menu "Unggah" diposisikan di urutan teratas (#1) sebelum Laporan/Dashboard dengan tampilan standar seragam, mencerminkan fungsi operasional inti sistem.
+- **Smart Redirect Pasca-Login (`app/auth/post-login/route.ts` & `app/login/page.tsx`)**:
+  - Saat staf masuk melalui tombol login Google atau membuka halaman login, sistem secara cerdas mengarahkan mereka langsung ke halaman kerja `/unggah`.
+  - Akun Jamaah/publik tetap diarahkan ke beranda arsip (`/`).
 - **Banner Notifikasi Akses Ditolak (`components/dashboard-client.tsx`)**:
   - Saat pengguna biasa mencoba mengakses URL `/unggah` secara langsung melalui *address bar*, middleware/page me-redirect ke `/dashboard?error=forbidden`.
   - Dashboard mendeteksi parameter query ini dan menampilkan banner interaktif peringatan dengan penjelasan hak akses Jemaah vs Staf DKM.
   - Dilengkapi tombol tutup (*dismiss*) yang membersihkan query URL tanpa melakukan *reload* halaman.
 **Acceptance Criteria:**
 - [x] Menu "Unggah" tidak terlihat oleh publik atau akun tanpa peran staf di sidebar dan navbar mobile.
-- [x] Menu "Unggah" terlihat normal untuk akun Bendahara dan Administrator.
+- [x] Menu "Unggah" terlihat di urutan teratas (#1) untuk akun Bendahara dan Administrator.
+- [x] Staf yang berhasil login secara otomatis diarahkan (*smart redirect*) ke halaman `/unggah`.
 - [x] Akses langsung ke `/unggah` oleh non-staf me-redirect ke dashboard dengan notifikasi informatif.
 - [x] Tombol tutup banner membersihkan parameter URL secara mulus.
 

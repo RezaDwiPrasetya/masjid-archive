@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { isStaff, isAdmin } from "@/lib/auth-guard";
+import { isStaff, isAdmin, canDeleteReport } from "@/lib/auth-guard";
 import {
   ArrowLeft,
   Download,
@@ -70,6 +70,7 @@ export default async function DetailLaporanPage({
       uploadedAt: true,
       initialBalance: true,
       finalBalance: true,
+      uploadedById: true,
       uploadedBy: {
         select: {
           name: true,
@@ -141,6 +142,12 @@ export default async function DetailLaporanPage({
       donorId: t.donorId,
       donor: t.donor ? { id: t.donor.id, name: t.donor.name } : null,
     }));
+
+  const canDelete = canDeleteReport({
+    session,
+    reportUploadedById: report.uploadedById,
+    verifiedTransactionsCount: allVerifiedInReport.length,
+  });
 
   return (
     <AppShell active="/">
@@ -754,7 +761,7 @@ export default async function DetailLaporanPage({
               );
             })()}
 
-            {admin && (
+            {canDelete && (
               <div className="pt-4 border-t border-outline-variant">
                 <DeleteReportButton reportId={report.id} />
               </div>

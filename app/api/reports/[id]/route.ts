@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { supabase } from "@/lib/supabase";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { isAdmin, isStaff } from "@/lib/auth-guard";
+import { isAdmin, isStaff, canDeleteReport } from "@/lib/auth-guard";
 
 export async function GET(
   _request: NextRequest,
@@ -65,19 +65,14 @@ export async function DELETE(
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  if (!isAdmin(session)) {
-    return NextResponse.json(
-      { error: "Forbidden: Hanya Administrator yang dapat menghapus laporan kas" },
-      { status: 403 }
-    );
-  }
 
   const { id } = await params;
 
-  // Cari laporan beserta semua attachment-nya
+  // Cari laporan beserta semua attachment-nya dan uploader
   const report = await prisma.report.findUnique({
     where: { id },
     select: {
+      uploadedById: true,
       attachments: {
         select: { fileUrl: true },
       },
@@ -88,10 +83,6 @@ export async function DELETE(
     return NextResponse.json({ error: "Laporan tidak ditemukan" }, { status: 404 });
   }
 
-  // Cek apakah ada query param ?force=true
-  const { searchParams } = new URL(request.url);
-  const force = searchParams.get("force") === "true";
-
   // Cek apakah ada transaksi yang sudah diverifikasi pada laporan ini
   const verifiedTransactionsCount = await prisma.transaction.count({
     where: {
@@ -99,6 +90,32 @@ export async function DELETE(
       isVerified: true,
     },
   });
+
+  // Validasi wewenang penghapusan:
+  // 1. Admin memiliki wewenang penuh atas semua laporan.
+  // 2. Bendahara pengunggah (uploader) dapat menghapus laporan buatannya sendiri SELAMA masih draf (0 transaksi terverifikasi).
+  const isAllowed = canDeleteReport({
+    session,
+    reportUploadedById: report.uploadedById,
+    verifiedTransactionsCount,
+  });
+
+  if (!isAllowed) {
+    if (!isAdmin(session) && verifiedTransactionsCount > 0) {
+      return NextResponse.json(
+        { error: "Forbidden: Hanya Administrator yang dapat menghapus laporan yang memiliki transaksi terverifikasi" },
+        { status: 403 }
+      );
+    }
+    return NextResponse.json(
+      { error: "Forbidden: Hanya Administrator atau Bendahara yang dapat menghapus laporan draf ini" },
+      { status: 403 }
+    );
+  }
+
+  // Cek apakah ada query param ?force=true
+  const { searchParams } = new URL(request.url);
+  const force = searchParams.get("force") === "true";
 
   if (verifiedTransactionsCount > 0 && !force) {
     return NextResponse.json(

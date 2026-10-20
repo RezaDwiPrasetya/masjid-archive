@@ -44,7 +44,7 @@ export function AuthButton() {
       <Button
         variant="outline"
         size="sm"
-        onClick={() => signIn("google")}
+        onClick={() => signIn("google", { callbackUrl: "/auth/post-login" })}
         className="gap-2 rounded-lg border-outline-variant bg-surface-container hover:bg-surface-container-high hover:border-primary/40 text-on-surface font-medium transition-all shadow-xs"
       >
         <GoogleIcon className="h-4 w-4 shrink-0" />
