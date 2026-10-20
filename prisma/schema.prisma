@@ -23,6 +23,7 @@ model User {
   reports              Report[]
   verifiedTransactions Transaction[] @relation("VerifiedBy")
   createdTransactions  Transaction[] @relation("CreatedBy")
+  createdTransfers     TreasuryTransfer[] @relation("CreatedTransfers")
 }
 
 model Report {
@@ -85,6 +86,21 @@ model Transaction {
   isManual        Boolean    @default(false)
   createdById     String?    // ID User yang menambahkan baris manual; null untuk hasil ekstraksi AI
   createdBy       User?      @relation("CreatedBy", fields: [createdById], references: [id])
+  // F-033: Kanal kas transaksi — "TUNAI" (kas fisik/tromol/brankas) vs "BANK" (rekening bank/QRIS)
+  paymentMethod   String     @default("TUNAI")
+}
+
+// F-033: Mutasi internal perbendaharaan (mis. setor tunai ke bank atau tarik tunai dari bank)
+model TreasuryTransfer {
+  id           String   @id @default(cuid())
+  fromAccount  String   // "TUNAI" | "BANK"
+  toAccount    String   // "TUNAI" | "BANK"
+  amount       Decimal  @db.Decimal(15, 2)
+  transferDate DateTime @default(now())
+  description  String?  // mis. "Setor kas Jum'at ke rekening BSI" atau "Tarik tunai untuk kas kecil"
+  createdAt    DateTime @default(now())
+  createdById  String
+  createdBy    User     @relation("CreatedTransfers", fields: [createdById], references: [id])
 }
 
 // V5: Entity donatur lintas periode — satu donatur bisa muncul di banyak laporan/minggu

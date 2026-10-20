@@ -119,10 +119,34 @@
 
 ## Version
 
-Current: `0.10.9` (Fase V10.9: Penyelarasan Responsivitas Tampilan Mobile & Ergonomi Layar Sentuh Multi-Perangkat — Issue #75 / F-032)
+Current: `0.11.0` (Fase V11: Pemantauan Posisi Kas Fisik vs Kas Bank / Digital & Mutasi Internal — Issue #078 / F-033)
 Next: `1.0.0`
 
 ## Changelog
+
+### 0.11.0 (2026-10-20) — Fase V11: Pemantauan Posisi Kas Fisik vs Kas Bank / Digital & Mutasi Internal (Issue #078 / F-033)
+- **Model Database & Skema Prisma (`prisma/schema.prisma`)**:
+  - Penambahan kolom `paymentMethod` ("TUNAI" | "BANK", default "TUNAI") pada model `Transaction` secara aditif.
+  - Penambahan model baru `TreasuryTransfer` untuk mencatat mutasi internal kas masjid (Setor Tunai ke Bank vs Tarik Tunai dari Bank) beserta jejak audit staf `createdById`.
+  - Eksekusi migrasi database Prisma `20261020100000_add_treasury_cash_bank`.
+- **Backend API Perbendaharaan (`app/api/treasury/`)**:
+  - `GET /api/treasury`: Menyajikan data saldo real-time (Total Kas, Kas Fisik, Kas Bank), rasio likuiditas persentase, alokasi pos belanja per kanal kas, serta riwayat transaksi & mutasi.
+  - `POST /api/treasury/transfers`: Pencatatan mutasi internal kas antar-kanal (khusus staf DKM `ADMIN` & `BENDAHARA`).
+  - `DELETE /api/treasury/transfers/:id`: Pembatalan/penghapusan catatan mutasi internal (khusus staf DKM).
+  - `PATCH /api/transactions/:id/payment-method`: Pengubahan kanal kas transaksi (TUNAI ↔ BANK) oleh staf DKM.
+- **Halaman Khusus Pemantauan Kas (`/keuangan`)**:
+  - Rute publik `/keuangan` (`app/keuangan/page.tsx` & `components/treasury-client.tsx`) dengan SSR initial data.
+  - Tiga kartu saldo utama: Total Kas Keseluruhan (dengan dual progress bar proporsi), Kas Fisik (Tunai / Brankas), dan Kas Bank / Digital (QRIS).
+  - Tiga tab analitik: Alokasi Pengeluaran per Kanal, Riwayat Mutasi Internal Kas, dan Daftar Transaksi per Kanal.
+  - Modal dialog interaktif bagi staf DKM untuk mencatat setor tunai ke bank atau tarik tunai operasional.
+- **Pembaruan Panel Review Transaksi (`components/transaction-review-panel.tsx`)**:
+  - Indikator badge visual kanal kas (`Banknote` untuk Kas Tunai, `Building2` untuk Bank/QRIS).
+  - Tombol mikro cepat `Ubah` bagi staf login untuk membalik kanal kas transaksi secara instan.
+  - Pilihan kanal kas saat mengedit transaksi dan saat menambah baris transaksi manual.
+- **Integrasi Navigasi & AppShell (`components/app-shell.tsx`)**:
+  - Penambahan menu navigasi "Keuangan" berikon `Wallet` di sidebar desktop dan navigasi mobile.
+- **Otomatisasi Pengujian Presisi (`scripts/test-treasury-cash-bank.ts`)**:
+  - Test suite komprehensif menguji RBAC staf, formulasi matematika likuiditas, validasi input transfer internal, dan integrasi skema database (25/25 lulus 100%).
 
 ### 0.10.9 (2026-10-16) — Fase V10.9: Penyelarasan Responsivitas Tampilan Mobile & Ergonomi Layar Sentuh Multi-Perangkat (Issue #75 / F-032)
 - **Harmonisasi Layout Shell Adaptif (`components/page-shell.tsx`)**:

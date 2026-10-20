@@ -912,11 +912,181 @@ Mengubah kategori fungsional pada transaksi pengeluaran yang **sudah berstatus t
 }
 ```
 
+---
+
+## Pemantauan Posisi Kas & Perbendaharaan (Issue #078 / F-033)
+
+### `GET /api/treasury`
+
+Menyajikan ringkasan likuiditas kas masjid real-time: membandingkan posisi kas fisik (tunai/tromol/brankas) dengan kas perbankan/digital (rekening bank & QRIS), persentase rasio likuiditas, mutasi kas internal, alokasi pos pengeluaran per kanal, serta riwayat transaksi kas terkini. **Akses Publik.**
+
+**Query Params (opsional):**
+- `year` (number, mis. `2026`)
+- `month` (number 1–12, mis. `10`)
+
+**Response 200**
+
+```json
+{
+  "summary": {
+    "totalBalance": 15450000,
+    "cash": {
+      "balance": 6200000,
+      "baselineBalance": 600000,
+      "income": 12500000,
+      "expense": 4300000,
+      "transfersIn": 1000000,
+      "transfersOut": 3000000
+    },
+    "bank": {
+      "balance": 9250000,
+      "income": 8000000,
+      "expense": 1750000,
+      "transfersIn": 3000000,
+      "transfersOut": 1000000
+    }
+  },
+  "breakdowns": {
+    "cashExpensesByCategory": {
+      "operasional": 2100000,
+      "konsumsi": 1200000,
+      "honor": 1000000
+    },
+    "bankExpensesByCategory": {
+      "pembangunan": 1500000,
+      "administrasi": 250000
+    }
+  },
+  "recentTransfers": [
+    {
+      "id": "tr_1",
+      "fromAccount": "TUNAI",
+      "toAccount": "BANK",
+      "amount": 2000000,
+      "transferDate": "2026-10-18T10:00:00.000Z",
+      "description": "Setor uang kas tromol Jum'at ke rekening BSI",
+      "createdBy": { "id": "usr_1", "name": "Ahmad Bendahara", "role": "BENDAHARA" }
+    }
+  ],
+  "recentTransactions": [
+    {
+      "id": "tx_1",
+      "type": "pemasukan",
+      "amount": 500000,
+      "description": "Infak via QRIS",
+      "transactionDate": "2026-10-17T04:00:00.000Z",
+      "category": null,
+      "paymentMethod": "BANK",
+      "donorName": "Hamba Allah",
+      "reportId": "rep_1"
+    }
+  ]
+}
+```
+
+---
+
+### `POST /api/treasury/transfers`
+
+Mencatat mutasi internal kas antar-rekening/brankas (misal: menyetorkan uang tunai kotak amal ke rekening bank, atau menarik uang tunai dari rekening bank untuk kas kecil harian). Mutasi internal menggeser saldo likuiditas masing-masing kanal tanpa mengubah total kekayaan kas masjid. **Khusus Staf DKM (`ADMIN` atau `BENDAHARA`).**
+
+**Body**
+
+```json
+{
+  "fromAccount": "TUNAI",
+  "toAccount": "BANK",
+  "amount": 2500000,
+  "transferDate": "2026-10-20T09:00:00.000Z",
+  "description": "Setor kas Jum'at ke rekening BSI Masjid"
+}
+```
+
+**Validasi Server-Side:**
+- `fromAccount`: Wajib `"TUNAI"` atau `"BANK"`.
+- `toAccount`: Wajib `"TUNAI"` atau `"BANK"`.
+- `fromAccount` dan `toAccount` tidak boleh sama.
+- `amount`: Wajib angka positif berhingga > 0.
+- `description`: String keterangan opsional (maks 500 karakter).
+
+**Response 201 Created**
+
+```json
+{
+  "success": true,
+  "message": "Mutasi kas internal dari TUNAI ke BANK senilai Rp 2.500.000 berhasil dicatat.",
+  "data": {
+    "id": "tr_cuid_123",
+    "fromAccount": "TUNAI",
+    "toAccount": "BANK",
+    "amount": 2500000,
+    "transferDate": "2026-10-20T09:00:00.000Z",
+    "description": "Setor kas Jum'at ke rekening BSI Masjid",
+    "createdAt": "2026-10-20T09:00:00.000Z",
+    "createdBy": { "id": "usr_1", "name": "Ahmad", "role": "BENDAHARA" }
+  }
+}
+```
+
 **Response Error:**
-- `401 Unauthorized`: Belum login ke sistem
-- `403 Forbidden`: Akun bukan staf pengurus DKM (`role: null`)
-- `400 Bad Request`: Transaksi bukan tipe `pengeluaran` atau nilai enum kategori tidak valid
-- `404 Not Found`: ID transaksi tidak ditemukan
+- `400 Bad Request`: Format JSON tidak valid, akun asal/tujuan tidak valid, atau nominal <= 0.
+- `401 Unauthorized`: Belum login.
+- `403 Forbidden`: Akun bukan staf DKM (`role: null`).
+
+---
+
+### `DELETE /api/treasury/transfers/:id`
+
+Membatalkan atau menghapus catatan mutasi kas internal jika terjadi kekeliruan input. **Khusus Staf DKM (`ADMIN` atau `BENDAHARA`).**
+
+**Response 200**
+
+```json
+{
+  "success": true,
+  "message": "Catatan mutasi internal kas berhasil dihapus."
+}
+```
+
+**Response Error:**
+- `401 Unauthorized`: Belum login.
+- `403 Forbidden`: Akun bukan staf DKM (`role: null`).
+- `404 Not Found`: Catatan mutasi tidak ditemukan.
+
+---
+
+### `PATCH /api/transactions/:id/payment-method`
+
+Mengubah kanal kas pada baris transaksi tertentu (berlaku untuk baris draf maupun yang sudah terverifikasi, memungkinkan bendahara menyesuaikan kanal kas kapan saja jika bukti mutasi kas baru diketahui). **Khusus Staf DKM (`ADMIN` atau `BENDAHARA`).**
+
+**Body**
+
+```json
+{
+  "paymentMethod": "BANK"
+}
+```
+
+**Validasi Server-Side:**
+- `paymentMethod`: Wajib `"TUNAI"` (kas fisik/tromol/brankas) atau `"BANK"` (rekening resmi/QRIS infak).
+
+**Response 200**
+
+```json
+{
+  "success": true,
+  "message": "Kanal kas berhasil diubah ke Rekening Bank / QRIS.",
+  "transaction": {
+    "id": "txn_1",
+    "paymentMethod": "BANK",
+    "type": "pemasukan",
+    "amount": "500000",
+    "description": "Infak Jamaah",
+    "transactionDate": "2026-10-18T00:00:00.000Z",
+    "isVerified": true
+  }
+}
+```
 
 ---
 
@@ -1008,6 +1178,11 @@ Tabel berikut merangkum seluruh endpoint backend di `app/api/` beserta batasan o
 | `POST` | `/api/transactions/:id/unverify` | Batalkan verifikasi transaksi kas | **Staf** (`ADMIN`/`BENDAHARA`) | `401` | `403` |
 | `PATCH` | `/api/transactions/:id/donor` | Edit nama donatur transaksi terverifikasi | **Staf** (`ADMIN`/`BENDAHARA`) | `401` | `403` |
 | `PATCH` | `/api/transactions/:id/category` | Klasifikasi kategori pengeluaran kas | **Staf** (`ADMIN`/`BENDAHARA`) | `401` | `403` |
+| `PATCH` | `/api/transactions/:id/payment-method` | Ubah kanal kas transaksi (TUNAI vs BANK) | **Staf** (`ADMIN`/`BENDAHARA`) | `401` | `403` |
+| **Posisi Kas & Perbendaharaan (F-033)** | | | | | |
+| `GET` | `/api/treasury` | Posisi kas fisik vs kas bank & rasio likuiditas | Publik | `200` | `200` |
+| `POST` | `/api/treasury/transfers` | Catat mutasi kas internal (Setor/Tarik Tunai) | **Staf** (`ADMIN`/`BENDAHARA`) | `401` | `403` |
+| `DELETE` | `/api/treasury/transfers/:id` | Batalkan catatan mutasi kas internal | **Staf** (`ADMIN`/`BENDAHARA`) | `401` | `403` |
 | **Financial Intelligence & Ekspor** | | | | | |
 | `GET` | `/api/dashboard/trend` | Data grafik tren kas mingguan Jumat / bulanan | Publik | `200` | `200` |
 | `GET` | `/api/donors` | Daftar donatur agregat & anonim (filter tahun/bulan) | Publik | `200` | `200` |

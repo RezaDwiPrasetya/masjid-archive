@@ -157,10 +157,27 @@ Unit dasar: 8px.
 - **Dialog & Modal**: Di mobile, dialog harus memiliki batas padding aman (maksimal `w-[92vw]` atau `w-[95vw]`), tombol aksi utama di bagian bawah mudah dijangkau satu jempol.
 - **Tabel Kas & Transaksi**: Pada review panel ekstraksi, baris transaksi (`TransactionRow`) menata badge status (*Verified*, *Manual*, kategori) dan tombol aksi secara terstruktur agar tidak saling menimpa atau meluap secara horizontal di viewport ponsel.
 
+## Komponen Posisi Kas & Perbendaharaan (F-033 — Issue #078)
+
+- **Kartu Posisi Kas Tripartit (Grid 3 Kolom)**:
+  - **Total Kas**: Latar `surface-container`, border `outline-variant/80`, ikon `ShieldCheck`, rasio likuiditas progress bar dwi-warna (hijau tunai + biru perbankan).
+  - **Kas Fisik (Tunai / Brankas)**: Latar `emerald-50/40`, border `emerald-200/80`, angka `emerald-950`, ikon `Banknote`. Menampilkan saldo siap pakai serta akumulasi pemasukan dan pengeluaran fisik.
+  - **Kas Bank / Digital (QRIS)**: Latar `blue-50/40`, border `blue-200/80`, angka `blue-950`, ikon `Building2`. Menampilkan saldo rekening dan akumulasi transaksi digital.
+- **Badge Kanal Kas (Payment Method)**:
+  - **Kas Tunai**: Badge pill dengan ikon `Banknote` ukuran 11px, teks `emerald-800`, latar `bg-emerald-500/10`, border `border-emerald-300/80`.
+  - **Bank / QRIS**: Badge pill dengan ikon `Building2` ukuran 11px, teks `sky-800`, latar `bg-sky-500/15`, border `border-sky-300`.
+  - **Quick Toggle Button**: Tombol mikro interaktif `Ubah` dengan ikon `ArrowRightLeft` (10px) bagi staf DKM untuk membalik status kanal kas secara instan tanpa perlu membuka dialog edit penuh.
+- **Modal Pencatatan Mutasi Internal**:
+  - Tombol aksi primer `Catat Mutasi Kas Internal` (ikon `ArrowRightLeft`).
+  - Kartu pemilih arah interaktif:
+    - `Setor ke Bank (Tunai ➡️ Bank)` dengan ikon `ArrowUpRight` (biru).
+    - `Tarik Tunai (Bank ➡️ Tunai)` dengan ikon `ArrowDownLeft` (hijau).
+
 ## States
 
 - Default, Hover, Focus, Loading, Empty, Error, Success — semua tetap berlaku
 - **List Row hover (baru)**: latar berubah jadi `surface-container` (bukan shadow naik seperti kartu) — memberi kesan "baris disorot", bukan "kartu terangkat"
 
 > **Catatan implementasi:** ikon di guideline ini merujuk Material Symbols (wireframe awal), implementasi aktual memakai **Lucide Icons** — lihat [12. Technical Specification](./12-Technical-Specification.md).
+
 

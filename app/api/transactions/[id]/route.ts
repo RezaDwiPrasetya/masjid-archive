@@ -49,6 +49,7 @@ export async function PATCH(
     transactionDate?: string | null;
     donorNameRaw?: string | null;
     category?: string | null;
+    paymentMethod?: string | null;
   };
 
   // Validasi amount: harus number finite dan > 0
@@ -98,6 +99,24 @@ export async function PATCH(
     }
   }
 
+  // Validasi paymentMethod jika disediakan
+  let validatedPaymentMethod: string | undefined = undefined;
+  if (body.paymentMethod !== undefined) {
+    if (body.paymentMethod === null) {
+      validatedPaymentMethod = "TUNAI";
+    } else {
+      const trimmed = body.paymentMethod.trim().toUpperCase();
+      if (trimmed === "TUNAI" || trimmed === "BANK") {
+        validatedPaymentMethod = trimmed;
+      } else {
+        return NextResponse.json(
+          { error: "Kanal kas tidak valid. Gunakan 'TUNAI' atau 'BANK'." },
+          { status: 400 }
+        );
+      }
+    }
+  }
+
   // Hanya izinkan field yang ada di spec — tidak ada mass-assignment
   const updated = await prisma.transaction.update({
     where: { id },
@@ -116,6 +135,9 @@ export async function PATCH(
       ...(validatedCategory !== undefined && {
         category: validatedCategory,
       }),
+      ...(validatedPaymentMethod !== undefined && {
+        paymentMethod: validatedPaymentMethod,
+      }),
     },
   });
 
@@ -128,6 +150,7 @@ export async function PATCH(
       transactionDate: updated.transactionDate,
       donorNameRaw: updated.donorNameRaw,
       category: updated.category,
+      paymentMethod: updated.paymentMethod,
     },
   });
 }

@@ -670,4 +670,68 @@ Pada `POST /api/attachments/:id/extract`:
   - Dialog konfirmasi ekstrak ulang mendeteksi keberadaan baris manual (`manualCount = transactions.filter(t => t.isManual).length`).
   - Jika ada baris manual, modal menampilkan alert peringatan khusus yang menginformasikan bahwa baris manual akan tetap dipertahankan kecuali opsi pembersihan total dipilih.
 
+---
+
+## Spesifikasi Teknis — Fase V10.8: Pemantauan Posisi Kas & Perbendaharaan (Issue #078 / F-033)
+
+### 1. Arsitektur Pemisahan Kas Fisik vs Kas Bank / Digital
+Sistem kas masjid Al-Luqman secara riil memiliki dua kanal penyimpanan likuiditas:
+1. **Kas Fisik (`TUNAI`)**: Uang kontan yang disimpan dalam tromol Jum'at, kotak infak, atau brankas masjid untuk pengeluaran operasional kecil dan honor langsung.
+2. **Kas Perbankan / Digital (`BANK`)**: Saldo yang mengendap pada rekening giro/tabungan resmi BSI (Bank Syariah Indonesia) masjid dan dompet penerimaan QRIS infak digital.
+
+### 2. Formulasi Matematis Rekonsiliasi Saldo Kas
+Untuk menjaga integritas dan konservasi nilai kekayaan kas masjid:
+```
+```
+Saldo Kas Fisik = Saldo Awal Kas Fisik (Baseline) + (Total Pemasukan Tunai - Total Pengeluaran Tunai) + (Tarik Tunai dari Bank - Setor Tunai ke Bank)
+Saldo Kas Bank  = (Total Pemasukan Bank - Total Pengeluaran Bank) + (Setor Tunai ke Bank - Tarik Tunai dari Bank)
+Total Kas       = Saldo Kas Fisik + Saldo Kas Bank
+                = Saldo Awal Kas Fisik + (Total Pemasukan Tunai + Bank) - (Total Pengeluaran Tunai + Bank)
+```
+*Catatan Penting*:
+1. **Rekonsiliasi Saldo Awal Kas Fisik (`getTreasuryBaselineCashBalance()`)**: Saldo awal buku kas fisik diselaraskan secara otomatis dengan laporan mingguan terverifikasi terakhir pada Dashboard (`latestReport.finalBalance - netCashTxUpToLatest`), sehingga saldo fisik di `/keuangan` 100% konsisten dengan angka riil buku kas fisik terakhir.
+2. **Konservasi Mutasi Internal**: Mutasi internal (Setor Tunai / Tarik Tunai) saling menghilangkan dalam penjumlahan Total Kas, sehingga perpindahan antar-rekening internal tidak pernah mengubah total kekayaan kas masjid.
+
+### 3. Skema Database Tambahan (`prisma/schema.prisma`)
+```prisma
+model Transaction {
+  // ...kolom yang sudah ada...
+  paymentMethod String @default("TUNAI") // "TUNAI" (kas fisik) | "BANK" (rekening bank/QRIS)
+}
+
+model TreasuryTransfer {
+  id           String   @id @default(cuid())
+  fromAccount  String   // "TUNAI" | "BANK"
+  toAccount    String   // "TUNAI" | "BANK"
+  amount       Decimal  @db.Decimal(15, 2)
+  transferDate DateTime @default(now())
+  description  String?  // mis. "Setor kas Jum'at ke rekening BSI"
+  createdAt    DateTime @default(now())
+  createdById  String
+  createdBy    User     @relation("CreatedTransfers", fields: [createdById], references: [id])
+}
+```
+
+### 4. Spesifikasi Endpoint Perbendaharaan
+1. **`GET /api/treasury` (Publik)**:
+   - Menghitung agregasi saldo Kas Fisik, Kas Bank, Total Kas, dan rasio likuiditas.
+   - Mengelompokkan alokasi belanja kategori pengeluaran (`cashExpensesByCategory` dan `bankExpensesByCategory`).
+   - Menyajikan 10 riwayat mutasi internal kas terkini dan 20 transaksi terverifikasi terakhir (dengan filter tahun/bulan jika disertakan).
+2. **`POST /api/treasury/transfers` (Khusus Staf `ADMIN`/`BENDAHARA`)**:
+   - Menerima payload `{ fromAccount, toAccount, amount, transferDate, description }`.
+   - Validasi: `fromAccount` dan `toAccount` wajib `"TUNAI"` atau `"BANK"` dan tidak boleh sama. Nominal wajib finite number > 0.
+3. **`DELETE /api/treasury/transfers/:id` (Khusus Staf `ADMIN`/`BENDAHARA`)**:
+   - Menghapus rekaman mutasi internal jika terjadi kesalahan pencatatan oleh bendahara.
+4. **`PATCH /api/transactions/:id/payment-method` (Khusus Staf `ADMIN`/`BENDAHARA`)**:
+   - Mengubah kanal kas transaksi individu antara `"TUNAI"` dan `"BANK"` sewaktu-waktu.
+
+### 5. Komponen Antarmuka Pengguna (UI)
+- **Halaman `/keuangan` (`app/keuangan/page.tsx` & `components/treasury-client.tsx`)**:
+  - Halaman SSR terpadu yang menyajikan 3 kartu metrik saldo kas, rasio progress bar likuiditas, 3 tab analitik (Alokasi Belanja, Mutasi Internal, Riwayat Transaksi per Kanal), serta modal interaktif pencatatan mutasi internal kas.
+- **Panel Tinjau Transaksi (`components/transaction-review-panel.tsx`)**:
+  - Badge visual kanal kas (`Banknote` untuk Kas Tunai, `Building2` untuk Bank/QRIS).
+  - Tombol mikro `Ubah` (ikon `ArrowRightLeft`) untuk staf login guna membalik status kanal kas secara instan.
+  - Dropdown pemilihan kanal kas pada dialog edit transaksi dan dialog penambahan baris transaksi manual.
+
+
 

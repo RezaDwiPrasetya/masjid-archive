@@ -233,13 +233,8 @@ export function DashboardClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const isForbidden = authError === "forbidden" || searchParams?.get("error") === "forbidden";
-  const [showForbiddenAlert, setShowForbiddenAlert] = React.useState(isForbidden);
-
-  React.useEffect(() => {
-    if (isForbidden) {
-      setShowForbiddenAlert(true);
-    }
-  }, [isForbidden]);
+  const [forbiddenDismissed, setForbiddenDismissed] = React.useState(false);
+  const showForbiddenAlert = isForbidden && !forbiddenDismissed;
 
   const [granularity, setGranularity] = React.useState<"weekly" | "monthly">("weekly");
   const animatedBalance = useCountUp(initialFinalBalance ?? 0, 600);
@@ -518,7 +513,7 @@ export function DashboardClient({
             <button
               type="button"
               onClick={() => {
-                setShowForbiddenAlert(false);
+                setForbiddenDismissed(true);
                 if (typeof window !== "undefined" && window.history.replaceState) {
                   const url = new URL(window.location.href);
                   url.searchParams.delete("error");

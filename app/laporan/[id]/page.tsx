@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { isStaff, isAdmin, canDeleteReport } from "@/lib/auth-guard";
+import { isStaff, canDeleteReport } from "@/lib/auth-guard";
 import {
   ArrowLeft,
   Download,
@@ -57,7 +57,6 @@ export default async function DetailLaporanPage({
   const { id } = await params;
   const session = await getServerSession(authOptions);
   const staff = isStaff(session);
-  const admin = isAdmin(session);
 
   const report = await prisma.report.findUnique({
     where: { id },
@@ -104,6 +103,7 @@ export default async function DetailLaporanPage({
               verifiedAt: true,
               category: true,
               isManual: true,
+              paymentMethod: true,
               verifiedBy: {
                 select: { id: true, name: true },
               },

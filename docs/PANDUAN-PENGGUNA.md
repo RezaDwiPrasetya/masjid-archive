@@ -15,15 +15,16 @@
 4. [Navigasi Utama](#4-navigasi-utama)
 5. [Arsip Laporan](#5-arsip-laporan--halaman-utama)
 6. [Dashboard Keuangan](#6-dashboard-keuangan)
-7. [Halaman Pengeluaran](#7-halaman-pengeluaran--rekapitulasi-per-kategori)
-8. [Halaman Donatur](#8-halaman-donatur)
-9. [Pencarian Arsip](#9-pencarian-arsip)
-10. [Mengunggah Laporan Baru](#10-mengunggah-laporan-baru)
-11. [Detail Laporan & Ekstraksi AI](#11-detail-laporan--ekstraksi-ai)
-12. [Verifikasi & Rekonsiliasi Transaksi](#12-verifikasi--rekonsiliasi-transaksi)
-13. [Cetak & Ekspor Rekapitulasi Kas](#13-cetak--ekspor-rekapitulasi-kas)
-14. [Manajemen Pengguna](#14-manajemen-pengguna)
-15. [Pertanyaan Umum (FAQ)](#15-pertanyaan-umum-faq)
+7. [Posisi Kas & Perbendaharaan](#7-posisi-kas--perbendaharaan--halaman-keuangan)
+8. [Halaman Pengeluaran](#8-halaman-pengeluaran--rekapitulasi-per-kategori)
+9. [Halaman Donatur](#9-halaman-donatur)
+10. [Pencarian Arsip](#10-pencarian-arsip)
+11. [Mengunggah Laporan Baru](#11-mengunggah-laporan-baru)
+12. [Detail Laporan & Ekstraksi AI](#12-detail-laporan--ekstraksi-ai)
+13. [Verifikasi & Rekonsiliasi Transaksi](#13-verifikasi--rekonsiliasi-transaksi)
+14. [Cetak & Ekspor Rekapitulasi Kas](#14-cetak--ekspor-rekapitulasi-kas)
+15. [Manajemen Pengguna](#15-manajemen-pengguna)
+16. [Pertanyaan Umum (FAQ)](#16-pertanyaan-umum-faq)
 
 ---
 
@@ -39,6 +40,7 @@ Sistem ini menggantikan ketergantungan pada buku kas fisik yang rentan hilang at
 |---|---|
 | Melihat arsip laporan keuangan mingguan | Semua orang (tanpa login) |
 | Melihat dashboard tren kas & grafik | Semua orang (tanpa login) |
+| Melihat posisi kas fisik (brankas) vs kas bank & QRIS | Semua orang (tanpa login) |
 | Melihat rekapitulasi & transparansi pengeluaran per kategori | Semua orang (tanpa login) |
 | Melihat daftar donatur & infaq anonim | Semua orang (tanpa login) |
 | Mencari arsip laporan berdasarkan periode | Semua orang (tanpa login) |
@@ -46,6 +48,8 @@ Sistem ini menggantikan ketergantungan pada buku kas fisik yang rentan hilang at
 | Mengekstrak data dari foto/PDF/Excel via AI | Bendahara & Administrator |
 | Memverifikasi & merekonsiliasi transaksi | Bendahara & Administrator |
 | Mengklasifikasi & mengedit kategori pengeluaran | Bendahara & Administrator |
+| Mencatat mutasi kas internal (Setor / Tarik Tunai) | Bendahara & Administrator |
+| Mengubah kanal kas transaksi (Tunai ↔ Bank/QRIS) | Bendahara & Administrator |
 | Mencetak & mengunduh rekap kas (PDF & Excel) | Semua orang (tanpa login) |
 | Menghapus laporan kas utama | Administrator saja |
 | Mengelola akun dan hak akses pengguna | Administrator saja |
@@ -112,6 +116,7 @@ Sistem dapat diakses melalui navigasi di sidebar (desktop) atau bilah navigasi b
 | **Unggah** | ➕ | `/unggah` — Unggah laporan baru | **Urutan #1 (Khusus Bendahara & Admin)** |
 | **Laporan** | 📁 | `/` — Arsip laporan mingguan | Semua (Urutan #1 untuk Jamaah/Publik) |
 | **Dashboard** | 📊 | `/dashboard` — Grafik tren kas | Semua |
+| **Keuangan** | 👛 | `/keuangan` — Posisi Kas Fisik vs Bank & Mutasi | Semua |
 | **Donatur** | 🤝 | `/donatur` — Daftar donatur & infaq anonim | Semua |
 | **Pengeluaran** | 🧾 | `/pengeluaran` — Rekap pengeluaran per kategori | Semua |
 | **Cari** | 🔍 | `/cari` — Pencarian arsip | Semua |
@@ -186,7 +191,52 @@ Grafik batang interaktif membandingkan **Pemasukan** (hijau) dan **Pengeluaran**
 
 ---
 
-## 7. Halaman Pengeluaran — Rekapitulasi Per Kategori
+## 7. Posisi Kas & Perbendaharaan — Halaman Keuangan
+
+**Alamat**: `/keuangan`
+
+Halaman ini dirancang untuk menjawab kebutuhan transparansi dan manajemen perbendaharaan riil masjid: membedakan antara **Uang Kas Fisik** (uang tunai di tromol Jum'at, kotak amal, atau brankas masjid) dengan **Uang Kas Perbankan / Digital** (saldo rekening bank resmi BSI & penerimaan QRIS), serta melacak arus perpindahan uang kas secara akuntabel.
+
+### 1. Tiga Kartu Saldo Utama
+
+1. **Total Kas Keseluruhan**:
+   - Menampilkan total akumulasi kekayaan kas masjid (Kas Tunai + Kas Bank).
+   - Dilengkapi bilah rasio likuiditas (*liquidity progress bar*) yang memperlihatkan proporsi perbandingan kas tunai (hijau) vs kas bank (biru).
+2. **Kas Fisik (Tunai / Brankas)**:
+   - Saldo uang tunai fisik yang saat ini siap dipakai untuk belanja operasional harian.
+   - Menampilkan total pemasukan tunai dan total pengeluaran tunai.
+3. **Kas Bank / Digital (QRIS)**:
+   - Saldo yang mengendap aman di rekening bank resmi masjid dan dompet digital infaq QRIS.
+   - Menampilkan total penerimaan transfer/QRIS dan pengeluaran yang dibayar lewat transfer bank.
+
+### 2. Tiga Tab Analisis Keuangan
+
+- **Tab 1: Alokasi Pengeluaran (Tunai vs Bank)**:
+  - Memetakan 7 kategori pengeluaran kas masjid berdasarkan sumber pembayarannya.
+  - Memudahkan pengurus mengevaluasi pos mana saja yang dibayar tunai (misal: honor penceramah, belanja konsumsi pasar) dan pos mana yang dibayar via transfer bank (misal: bahan material pembangunan, tagihan listrik PLN).
+- **Tab 2: Mutasi Internal**:
+  - Menampilkan riwayat perpindahan uang antara brankas fisik dan rekening bank.
+  - Mencatat nominal, tanggal, keterangan, dan nama staf DKM yang melakukan mutasi.
+- **Tab 3: Daftar Transaksi per Kanal**:
+  - Menampilkan seluruh transaksi kas terverifikasi beserta badge visual identitas kanal kas (`Kas Tunai` atau `Bank / QRIS`).
+
+### 3. Cara Mencatat Mutasi Kas Internal (Khusus Staf DKM)
+
+Ketika bendahara menyetorkan uang tunai kotak amal ke rekening bank, atau menarik uang dari rekening untuk kas kecil di masjid:
+
+1. Masuk ke halaman **Keuangan** (`/keuangan`).
+2. Klik tombol **"Catat Mutasi Kas Internal"** di pojok kanan atas.
+3. Pilih arah mutasi:
+   - **Setor ke Bank (Tunai ➡️ Bank)**: Jika menyetorkan uang kas fisik ke rekening bank masjid.
+   - **Tarik Tunai (Bank ➡️ Tunai)**: Jika mencairkan saldo bank untuk mengisi brankas tunai.
+4. Masukkan nominal pemindahan (misal: `2000000`).
+5. Pilih tanggal mutasi dan tuliskan keterangan (misal: *"Setor kas Jum'at pekan ke-3 ke rekening BSI"*).
+6. Klik **"Simpan Mutasi Kas"**.
+7. Saldo Kas Fisik dan Kas Bank akan langsung disesuaikan secara otomatis, sementara Total Kas Masjid tetap konsisten.
+
+---
+
+## 8. Halaman Pengeluaran — Rekapitulasi Per Kategori
 
 **Alamat**: `/pengeluaran`
 
@@ -521,6 +571,19 @@ Jika di kemudian hari bendahara menyadari ada pengeluaran terverifikasi yang sal
 4. Pilih kategori baru dari menu dropdown yang muncul.
 5. Klik tombol **Simpan (✓)** untuk menyimpan perubahan (atau klik **Batal ✕** untuk membatalkan).
 6. Sistem akan langsung menyimpan perubahan kategori ke server secara otomatis tanpa mengubah status verifikasi dan tanpa mengganggu saldo kas.
+
+#### Menentukan dan Mengubah Kanal Kas Transaksi (Kas Tunai vs Bank / QRIS)
+
+Setiap transaksi kas masjid dicatat berdasarkan kanal penyimpanannya:
+- **Kas Tunai** (badge hijau dengan ikon uang kertas `Banknote`): Untuk uang fisik di tromol Jum'at, kotak amal keliling, atau kas kecil brankas.
+- **Bank / QRIS** (badge biru dengan ikon gedung bank `Building2`): Untuk infak non-tunai via kode QRIS masjid, transfer antar-rekening jemaah, atau pembayaran belanja via transfer bank.
+
+Cara mengubah kanal kas:
+1. **Tombol Cepat `Ubah`**: Pada kartu transaksi (baik yang belum maupun sudah diverifikasi), staf yang login dapat langsung mengklik tombol **"Ubah"** di samping badge kanal kas untuk beralih antara *Kas Tunai* dan *Bank / QRIS* dalam 1 detik.
+2. **Saat Menambah Transaksi Manual**: Di formulir dialog tambah baris transaksi manual, bendahara dapat memilih opsi kanal kas melalui menu dropdown *Kanal Kas* ("Kas Fisik (Tunai)" atau "Rekening Bank / QRIS").
+3. **Saat Mengedit Transaksi**: Bendahara juga dapat mengubah pilihan kanal kas saat membuka dialog edit transaksi (ikon pensil ✏️).
+
+Perubahan kanal kas ini secara otomatis memperbarui saldo perbendaharaan di halaman **Keuangan** (`/keuangan`) tanpa mengubah total kekayaan kas masjid.
 
 #### Pembatalan Verifikasi
 

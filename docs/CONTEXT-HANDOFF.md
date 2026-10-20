@@ -1,6 +1,6 @@
 # CONTEXT HANDOFF — Proyek "Masjid Archive"
-> **Terakhir diperbarui**: 16 Oktober 2026  
-> **Status**: **V1–V10.9 FEATURE-COMPLETE & TEST-HARDENED (Issue #077 / F-032 Selesai) — Merged to Main & Pushed to Remote**
+> **Terakhir diperbarui**: 20 Oktober 2026  
+> **Status**: **V1–V11 FEATURE-COMPLETE & TEST-HARDENED (Issue #078 / F-033 Selesai) — Siap UAT & Verifikasi**
 
 ---
 
@@ -74,10 +74,26 @@ Aplikasi web arsip & manajemen keuangan digital untuk **DKM Masjid Al-Luqman** (
   - Menghasilkan baris draf (`isVerified: false`, `isManual: true`), mempertahankan prinsip "satu pintu masuk" (bendahara tetap meninjau & mengonfirmasi sebelum masuk kas resmi).
   - Preservasi baris manual pada ekstrak ulang: opsi `Simpan Lama & Tambah Draf` (`replaceVerified: false`) mempertahankan baris manual yang belum diverifikasi (`isVerified: false, isManual: false` dihapus). Opsi `Reset & Ekstrak Ulang` (`replaceVerified: true`) menghapus seluruh baris dengan peringatan dinamis di dialog konfirmasi (`manualCount > 0`).
   - Komponen UI: Tombol `+ Tambah Baris Transaksi` dengan border dashed di `TransactionReviewPanel` (tampil saat ekstraksi selesai, termasuk jika hasil AI 0 baris), form inline dialog lengkap, serta badge visual biru muda `Manual` pada baris transaksi manual.
-- Seluruh commit sudah digabungkan ke `main` dan sinkron dengan remote GitHub `origin/main`.
-- Status kode: `tsc --noEmit` lolos 0 error, `npm run lint` lolos 0 error, production build lolos 100%, 101 suite test otomatis (55 auth guards + 15 QA hardening + 10 file validation + 21 manual transaction F-028) lolos 100%.
-- **Status Pengujian & Kesiapan Operasional**: Diuji secara komprehensif oleh penulis/pengembang (101 automated test passed); demonstrasi dan User Acceptance Testing (UAT) bersama Bendahara DKM Al-Luqman dijadwalkan berikutnya.
-- **Status Migrasi Basis Data**: Bersih dan mutakhir (`npx prisma migrate status` up to date, 6 migrasi resmi tercatat dan tersinkronisasi di tabel `_prisma_migrations`).
+- **F-033 / Issue #078 — Pemantauan Posisi Kas & Perbendaharaan: Kas Fisik vs Kas Bank / Digital, Mutasi Internal & Rekonsiliasi Saldo Awal (Selesai Penuh & Teruji)**:
+  - **Pemisahan Kas Fisik vs Kas Bank / Digital**: Field additive `paymentMethod String @default("TUNAI")` di model `Transaction`. Menandai uang kas fisik di brankas/tromol (`TUNAI`) vs rekening bank BSI & infak QRIS (`BANK`).
+  - **Pencatatan Mutasi Kas Internal (`TreasuryTransfer`)**: Model baru untuk mencatat pergeseran dana internal (Setor Tunai ke Bank vs Tarik Tunai ke Brankas) tanpa mengubah total kekayaan kas masjid (prinsip konservasi saldo).
+  - **Rekonsiliasi Saldo Awal Kas Fisik (`lib/treasury.ts`)**: Fungsi `getTreasuryBaselineCashBalance()` menyelaraskan saldo kas fisik awal dengan laporan mingguan terverifikasi terakhir (`latestReport.finalBalance - netCashTxUpToLatest`). Menjamin saldo Kas Fisik dan Total Kas di `/keuangan` persis sama dengan Saldo Kas Terkini di Dashboard (Rp 1.060.000).
+  - **Backend API Perbendaharaan (`app/api/treasury/`)**:
+    - `GET /api/treasury`: Ringkasan saldo kas real-time, saldo awal baseline kas fisik, rasio likuiditas persentase, alokasi pos belanja per kanal kas, serta riwayat mutasi internal.
+    - `POST /api/treasury/transfers`: Pencatatan mutasi internal kas antar-kanal (khusus staf DKM).
+    - `DELETE /api/treasury/transfers/:id`: Pembatalan catatan mutasi kas internal (khusus staf DKM).
+    - `PATCH /api/transactions/:id/payment-method`: Pengubahan kanal kas transaksi (TUNAI ↔ BANK) oleh staf DKM.
+  - **Halaman Khusus Pemantauan Kas (`/keuangan`)**:
+    - Rute publik `/keuangan` (`app/keuangan/page.tsx` & `components/treasury-client.tsx`) dengan 3 kartu saldo utama (Total Kas, Kas Fisik lengkap dengan rincian saldo awal, Kas Bank), rasio likuiditas progress bar dwi-warna, dan 3 tab analitik (Alokasi Belanja per Kanal, Mutasi Internal, Riwayat Transaksi).
+    - Dialog modal interaktif bagi staf DKM untuk mencatat setor tunai ke bank atau tarik tunai operasional.
+  - **Pembaruan Panel Review Transaksi (`components/transaction-review-panel.tsx`)**:
+    - Badge visual kanal kas (`Banknote` untuk Kas Tunai, `Building2` untuk Bank/QRIS).
+    - Tombol mikro cepat `Ubah` bagi staf login untuk membalik kanal kas transaksi secara instan.
+    - Pilihan kanal kas saat mengedit transaksi dan saat menambah baris transaksi manual.
+  - **Integrasi Navigasi & AppShell (`components/app-shell.tsx`)**: Menu "Keuangan" berikon `Wallet` di sidebar desktop dan navigasi mobile.
+  - **Otomasi Pengujian Presisi (`scripts/test-treasury-cash-bank.ts`)**: 27 uji coba otomatis (RBAC staf, formula matematika likuiditas, validasi input transfer, skema DB, serta rekonsiliasi saldo kas fisik dengan Dashboard) lulus 100% (27/27 passed).
+- Status kode: `tsc --noEmit` lolos 0 error, `npm run lint` lolos 0 error, seluruh suite test otomatis (128 automated test passed: 27 treasury + 12 navigation/redirect + 64 auth guards + 15 QA hardening + 10 file validation).
+- **Status Migrasi Basis Data**: Bersih dan mutakhir (`npx prisma migrate status` up to date, 7 migrasi resmi tercatat dan tersinkronisasi di tabel `_prisma_migrations`).
 
 ---
 

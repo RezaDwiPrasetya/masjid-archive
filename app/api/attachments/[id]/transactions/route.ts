@@ -57,6 +57,7 @@ export async function POST(
     transactionDate?: string;
     donorNameRaw?: string | null;
     category?: string | null;
+    paymentMethod?: string | null;
   };
 
   try {
@@ -165,6 +166,20 @@ export async function POST(
     }
   }
 
+  // paymentMethod: opsional, default "TUNAI"
+  let finalPaymentMethod = "TUNAI";
+  if (body.paymentMethod) {
+    const rawMethod = body.paymentMethod.trim().toUpperCase();
+    if (rawMethod === "BANK" || rawMethod === "TUNAI") {
+      finalPaymentMethod = rawMethod;
+    } else {
+      return NextResponse.json(
+        { error: "Kanal kas tidak valid. Gunakan 'TUNAI' atau 'BANK'." },
+        { status: 400 }
+      );
+    }
+  }
+
   // 4. Simpan transaksi manual
   const transaction = await prisma.transaction.create({
     data: {
@@ -176,6 +191,7 @@ export async function POST(
       transactionDate: parsedDate,
       donorNameRaw: finalDonorNameRaw,
       category: body.type === "pengeluaran" ? validatedCategory : null,
+      paymentMethod: finalPaymentMethod,
       isVerified: false,
       isManual: true,
       createdById: session.user.id,
@@ -194,6 +210,7 @@ export async function POST(
         transactionDate: transaction.transactionDate,
         donorNameRaw: transaction.donorNameRaw,
         category: transaction.category,
+        paymentMethod: transaction.paymentMethod,
         isVerified: transaction.isVerified,
         isManual: transaction.isManual,
         createdById: transaction.createdById,

@@ -22,6 +22,9 @@ import {
   RotateCcw,
   Tag,
   Plus,
+  Banknote,
+  Building2,
+  ArrowRightLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,6 +70,8 @@ interface Transaction {
   category?: string | null;
   // F-025: Penanda baris manual
   isManual?: boolean;
+  // F-033: Kanal kas transaksi
+  paymentMethod?: string;
 }
 
 interface TransactionReviewPanelProps {
@@ -105,6 +110,7 @@ function TransactionRow({
   onEdit,
   onUpdateDonor,
   onUpdateCategory,
+  onUpdatePaymentMethod,
   onUnverify,
   duplicateWarning,
 }: {
@@ -115,6 +121,7 @@ function TransactionRow({
   onEdit: (id: string, data: Partial<Transaction>) => Promise<void>;
   onUpdateDonor: (id: string, donorNameRaw: string | null) => Promise<void>;
   onUpdateCategory: (id: string, category: string | null) => Promise<void>;
+  onUpdatePaymentMethod?: (id: string, paymentMethod: "TUNAI" | "BANK") => Promise<void>;
   onUnverify?: (id: string) => Promise<void>;
   duplicateWarning?: {
     transactionDate: string | null;
@@ -178,6 +185,18 @@ function TransactionRow({
     setIsEditingCategory(false);
   }
 
+  // F-033: State kanal kas (TUNAI vs BANK)
+  const [paymentMethodLoading, setPaymentMethodLoading] = useState(false);
+  const [editPaymentMethod, setEditPaymentMethod] = useState<string>(
+    tx.paymentMethod ?? "TUNAI"
+  );
+  const [prevPaymentMethod, setPrevPaymentMethod] = useState(tx.paymentMethod);
+
+  if (tx.paymentMethod !== prevPaymentMethod) {
+    setPrevPaymentMethod(tx.paymentMethod);
+    setEditPaymentMethod(tx.paymentMethod ?? "TUNAI");
+  }
+
   const isIncome = tx.type === "pemasukan";
 
   async function handleConfirm() {
@@ -238,6 +257,7 @@ function TransactionRow({
           editType === "pemasukan" ? editDonorName.trim() || null : null,
         category:
           editType === "pengeluaran" ? editCategory || null : null,
+        paymentMethod: editPaymentMethod,
       });
       setIsEditing(false);
     } finally {
@@ -352,6 +372,27 @@ function TransactionRow({
               </Select>
             </div>
           )}
+          {/* Kanal Kas (Tunai vs Bank) */}
+          <div className="col-span-2 space-y-1">
+            <label className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+              <Banknote size={12} className="text-muted-foreground" />
+              Kanal Kas
+            </label>
+            <Select
+              value={editPaymentMethod}
+              onValueChange={(v) => {
+                if (v) setEditPaymentMethod(v);
+              }}
+            >
+              <SelectTrigger className="w-full text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="TUNAI">Kas Fisik (Tunai / Tromol / Brankas)</SelectItem>
+                <SelectItem value="BANK">Rekening Bank / QRIS</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -432,6 +473,51 @@ function TransactionRow({
               <Plus size={11} />
               Manual
             </span>
+          )}
+
+          {/* F-033: Badge Kanal Kas (Tunai vs Bank) */}
+          {(() => {
+            const isBank = (tx.paymentMethod ?? "TUNAI").toUpperCase() === "BANK";
+            return (
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium border ${
+                  isBank
+                    ? "bg-sky-500/15 border-sky-300 text-sky-800"
+                    : "bg-emerald-500/10 border-emerald-300/80 text-emerald-800"
+                }`}
+                title={isBank ? "Transaksi melalui Rekening Bank / QRIS" : "Transaksi melalui Kas Fisik (Tunai)"}
+              >
+                {isBank ? <Building2 size={11} /> : <Banknote size={11} />}
+                {isBank ? "Bank / QRIS" : "Kas Tunai"}
+              </span>
+            );
+          })()}
+
+          {/* Quick toggle kanal kas untuk staf */}
+          {hasSession && onUpdatePaymentMethod && (
+            <button
+              type="button"
+              disabled={paymentMethodLoading}
+              onClick={async () => {
+                setPaymentMethodLoading(true);
+                try {
+                  const currentMethod = (tx.paymentMethod ?? "TUNAI").toUpperCase();
+                  const nextMethod = currentMethod === "BANK" ? "TUNAI" : "BANK";
+                  await onUpdatePaymentMethod(tx.id, nextMethod);
+                } finally {
+                  setPaymentMethodLoading(false);
+                }
+              }}
+              className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-surface-container-highest transition-colors disabled:opacity-50"
+              title={`Klik untuk ubah kanal kas ke ${(tx.paymentMethod ?? "TUNAI").toUpperCase() === "BANK" ? "Kas Fisik (Tunai)" : "Rekening Bank / QRIS"}`}
+            >
+              {paymentMethodLoading ? (
+                <Loader2 size={10} className="animate-spin" />
+              ) : (
+                <ArrowRightLeft size={10} />
+              )}
+              <span className="text-[10px]">Ubah</span>
+            </button>
           )}
         </div>
 
@@ -972,6 +1058,7 @@ export function TransactionReviewPanel({
   const [addDate, setAddDate] = useState("");
   const [addDonorName, setAddDonorName] = useState("");
   const [addCategory, setAddCategory] = useState<string | null>(null);
+  const [addPaymentMethod, setAddPaymentMethod] = useState("TUNAI");
 
   // F-025: Handler tambah baris manual
   function resetAddForm() {
@@ -981,6 +1068,7 @@ export function TransactionReviewPanel({
     setAddDate("");
     setAddDonorName("");
     setAddCategory(null);
+    setAddPaymentMethod("TUNAI");
     setAddError(null);
   }
 
@@ -1014,6 +1102,7 @@ export function TransactionReviewPanel({
           transactionDate: addDate,
           donorNameRaw: addType === "pemasukan" ? (addDonorName.trim() || null) : null,
           category: addType === "pengeluaran" ? (addCategory || null) : null,
+          paymentMethod: addPaymentMethod,
         }),
       });
 
@@ -1042,6 +1131,7 @@ export function TransactionReviewPanel({
           verifiedAt: null,
           verifiedBy: null,
           category: newTx.category,
+          paymentMethod: newTx.paymentMethod ?? addPaymentMethod,
           isManual: true,
         },
       ]);
@@ -1210,6 +1300,10 @@ export function TransactionReviewPanel({
                   json.data?.category !== undefined
                     ? json.data?.category
                     : t.category,
+                paymentMethod:
+                  json.data?.paymentMethod !== undefined
+                    ? json.data?.paymentMethod
+                    : t.paymentMethod,
               }
             : t
         )
@@ -1321,6 +1415,31 @@ export function TransactionReviewPanel({
     } catch {
       setGlobalError(
         "Tidak dapat terhubung ke server saat mengupdate kategori."
+      );
+    }
+  }
+
+  // F-033: Update kanal kas transaksi (TUNAI vs BANK)
+  async function handleUpdatePaymentMethod(id: string, paymentMethod: "TUNAI" | "BANK") {
+    setGlobalError(null);
+    try {
+      const res = await fetch(`/api/transactions/${id}/payment-method`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paymentMethod }),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        setGlobalError(json.error ?? "Gagal mengubah kanal kas transaksi.");
+        return;
+      }
+      setTransactions((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, paymentMethod } : t))
+      );
+      router.refresh();
+    } catch {
+      setGlobalError(
+        "Tidak dapat terhubung ke server saat mengubah kanal kas."
       );
     }
   }
@@ -1577,6 +1696,25 @@ export function TransactionReviewPanel({
                   </Select>
                 </div>
               )}
+              {/* Kanal Kas (Tunai vs Bank) */}
+              <div className="col-span-2 space-y-1">
+                <label className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                  <Banknote size={12} className="text-muted-foreground" />
+                  Kanal Kas
+                </label>
+                <Select
+                  value={addPaymentMethod}
+                  onValueChange={(v) => { if (v) setAddPaymentMethod(v); }}
+                >
+                  <SelectTrigger className="w-full text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="TUNAI">Kas Fisik (Tunai / Tromol / Brankas)</SelectItem>
+                    <SelectItem value="BANK">Rekening Bank / QRIS</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
@@ -1709,6 +1847,7 @@ export function TransactionReviewPanel({
                 onEdit={handleEdit}
                 onUpdateDonor={handleUpdateDonor}
                 onUpdateCategory={handleUpdateCategory}
+                onUpdatePaymentMethod={handleUpdatePaymentMethod}
                 onUnverify={handleUnverify}
                 duplicateWarning={getDuplicateWarning(tx)}
               />
@@ -1739,6 +1878,7 @@ export function TransactionReviewPanel({
                 onEdit={handleEdit}
                 onUpdateDonor={handleUpdateDonor}
                 onUpdateCategory={handleUpdateCategory}
+                onUpdatePaymentMethod={handleUpdatePaymentMethod}
                 onUnverify={handleUnverify}
               />
             ))}

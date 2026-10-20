@@ -81,6 +81,7 @@ Hasil ekstraksi dari vision-LLM (gambar) atau parsing (PDF/Excel). Satu `Attachm
 | category | text | Optional (V7) | Kategori pengeluaran — hanya relevan untuk transaksi bertipe `pengeluaran`. Nilai valid: `operasional`, `honor`, `sosial`, `pembangunan`, `konsumsi`, `administrasi`, `lainnya`. Bernilai `null` untuk transaksi `pemasukan` atau pengeluaran yang belum dikategorikan (ditampilkan sebagai "Tidak Dikategorikan") |
 | isManual | boolean, default false | Yes (V10.5) | Penanda baris transaksi yang ditambahkan manual oleh bendahara saat review ekstraksi (bukan hasil ekstraksi otomatis AI/file) (Issue #073 / F-028) |
 | createdById | reference ke User | Optional (V10.5) | ID pengguna (staf DKM) yang membuat baris transaksi manual ini; bernilai `null` untuk baris hasil ekstraksi AI (Issue #073 / F-028) |
+| paymentMethod | string, default "TUNAI" | Yes (V10.8 / F-033) | Kanal kas transaksi: `"TUNAI"` (uang fisik/tromol/brankas) atau `"BANK"` (rekening bank/QRIS infak). Transaksi lama otomatis default `"TUNAI"` (Issue #078 / F-033) |
 
 > **Catatan V4:** dokumen versi sebelumnya menyimpan `rawExtractedText` per baris `Transaction`. Ini dipindahkan ke level `Attachment` (`extractionRawResponse`) karena satu pemanggilan ekstraksi bisa menghasilkan banyak baris `Transaction` sekaligus — menyimpan payload mentah di tiap baris akan redundan. Baris `Transaction` sekarang murni berisi data yang sudah diparsing/terstruktur.
 
@@ -89,6 +90,23 @@ Hasil ekstraksi dari vision-LLM (gambar) atau parsing (PDF/Excel). Satu `Attachm
 > **Catatan V7:** `category` ditambahkan sebagai perluasan **aditif** dari schema V5 — field `String?` nullable baru pada `Transaction`. Seluruh data transaksi lama tetap valid dengan nilai `null`. Kategori hanya diisi oleh bendahara secara manual melalui dropdown di panel review, tidak pernah diisi otomatis oleh proses ekstraksi.
 
 > **Catatan V10.5 (Issue #073 / F-028):** `isManual` dan `createdById` ditambahkan sebagai perluasan **aditif** dari schema V7. Transaksi lama secara otomatis bernilai `isManual = false` dan `createdById = null` tanpa memengaruhi data yang ada. Baris manual tetap berstatus draf (`isVerified = false`) saat dibuat dan wajib diverifikasi oleh bendahara sebelum masuk ke saldo kas resmi.
+
+> **Catatan V10.8 (Issue #078 / F-033):** `paymentMethod` ditambahkan sebagai perluasan **aditif** dari schema V10.5 dengan nilai default `"TUNAI"`. Seluruh transaksi lama secara aman menjadi kas tunai, dan bendahara dapat mengubahnya menjadi `"BANK"` kapan saja melalui panel review.
+
+### TreasuryTransfer (Mutasi Kas Internal) — V10.8 (Issue #078 / F-033)
+
+Entitas untuk mencatat mutasi internal likuiditas perbendaharaan antara kas fisik (brankas/tromol tunai) dengan kas perbankan (rekening bank resmi BSI & QRIS infak). Perpindahan internal ini menggeser saldo likuiditas masing-masing kanal tanpa mengubah total kekayaan kas masjid (prinsip konservasi saldo).
+
+| Field | Type | Required | Catatan |
+|---|---|---|---|
+| id | identifier | Yes | ID unik mutasi (`cuid`) |
+| fromAccount | string | Yes | Akun sumber dana: `"TUNAI"` atau `"BANK"` |
+| toAccount | string | Yes | Akun tujuan dana: `"TUNAI"` atau `"BANK"` (wajib berbeda dari `fromAccount`) |
+| amount | decimal (15, 2) | Yes | Nominal mutasi (angka positif > 0) |
+| transferDate | timestamp | Yes | Tanggal dan waktu mutasi dilakukan (default `now()`) |
+| description | text | Optional | Keterangan/alasan mutasi (mis. "Setor kas Jum'at ke rekening BSI" atau "Tarik tunai operasional") |
+| createdAt | timestamp | Yes | Waktu pencatatan mutasi di sistem |
+| createdById | reference ke User | Yes | Staf DKM (Admin atau Bendahara) yang mencatat mutasi internal ini |
 
 ### Donor (Donatur) — V5
 
@@ -133,6 +151,11 @@ Attachment
 
 Donor
  └── Transaction (satu donatur bisa muncul di banyak transaksi/laporan, LINTAS periode — donorId nullable untuk donasi anonim)
+
+User (Staf DKM)
+ ├── Report (pengunggah berkas laporan)
+ ├── Transaction (verifikator & pembuat baris manual)
+ └── TreasuryTransfer (pencatat mutasi internal kas tunai ↔ bank)
 ```
 
 ## Database Rules
@@ -159,6 +182,7 @@ Struktur ini modular per fase:
 - **V5** menambahkan entity `Donor`, field `donorNameRaw` di `Transaction` (perluasan aditif dari skema ekstraksi V4), dan aturan fuzzy matching + pengecualian donasi anonim.
 - **V7** menambahkan field `category` di `Transaction` (perluasan aditif dari V5) untuk mendukung kategorisasi pengeluaran dan halaman transparansi publik `/pengeluaran`.
 - **V10.5** menambahkan field `isManual` dan `createdById` di `Transaction` (perluasan aditif dari V7) untuk mendukung mitigasi penambahan baris transaksi manual saat review ekstraksi (Issue #073 / F-028).
+- **V10.8** menambahkan kolom `paymentMethod` pada `Transaction` dan model `TreasuryTransfer` untuk mendukung pemantauan posisi kas fisik vs kas digital/bank serta pencatatan mutasi internal perbendaharaan (Issue #078 / F-033).
 Sehingga tidak perlu migrasi besar ulang tiap fase, cukup menambah tabel/kolom baru.
 
 ## Enum Kategori Pengeluaran (V7)

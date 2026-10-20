@@ -743,6 +743,53 @@
 - [x] Tampilan desktop tidak mengalami regresi visual atau perubahan tata letak yang merusak estetika sebelumnya.
 - [x] Seluruh alur fungsi dan test suite otomatis lulus 100%.
 
+---
+
+### F-033 — Pemantauan Posisi Kas & Perbendaharaan: Kas Fisik vs Kas Bank / Digital & Mutasi Internal (Issue #078 / F-033)
+
+**Objective:** Menyediakan visibilitas menyeluruh dan real-time atas posisi likuiditas riil kekayaan kas masjid, membedakan antara uang kas fisik (uang tunai di tromol Jum'at/brankas masjid) dengan kas perbankan/digital (rekening bank syariah & QRIS infak), mencatat mutasi kas internal (setor tunai ke bank atau tarik tunai untuk operasional), serta melacak kanal pembayaran pada setiap transaksi kas masjid.
+**User:** Seluruh pengguna (Publik / Jamaah untuk transparansi likuiditas kas, serta Bendahara dan Administrator DKM untuk operasional perbendaharaan).
+**Process:**
+- **Pembedaan Kanal Kas pada Transaksi (`Transaction.paymentMethod`)**:
+  - Kolom `paymentMethod` ("TUNAI" | "BANK", default "TUNAI") ditambahkan ke model `Transaction`.
+  - Transaksi draf maupun terverifikasi memiliki indikator visual kanal kas:
+    - `Kas Tunai` (ikon `Banknote`, badge hijau lembut) untuk uang fisik.
+    - `Bank / QRIS` (ikon `Building2`, badge biru lembut) untuk transfer rekening atau QRIS.
+  - Staf yang login dapat mengubah kanal kas transaksi secara instan melalui:
+    - Quick switch tombol `Ubah` pada kartu transaksi di `TransactionReviewPanel`.
+    - Pilihan dropdown saat melakukan edit data transaksi.
+    - Pilihan dropdown kanal kas saat menambah baris transaksi manual.
+  - Endpoint `PATCH /api/transactions/:id/payment-method` menerima `{ paymentMethod: "TUNAI" | "BANK" }` dengan otorisasi khusus staf DKM.
+- **Pencatatan Mutasi Kas Internal (`TreasuryTransfer`)**:
+  - Model `TreasuryTransfer` mencatat perpindahan saldo antar-kanal internal masjid:
+    - **Setor Tunai ke Bank (`CASH_TO_BANK`)**: Uang fisik disetorkan ke rekening bank masjid (mengurangi kas fisik, menambah kas bank).
+    - **Tarik Tunai dari Bank (`BANK_TO_CASH`)**: Uang ditarik dari rekening untuk kebutuhan kas kecil harian (mengurangi kas bank, menambah kas fisik).
+  - Mutasi internal **tidak mengubah total kekayaan kas masjid** (konservasi saldo total).
+  - Endpoint `POST /api/treasury/transfers` dan `DELETE /api/treasury/transfers/:id` dilindungi RBAC khusus staf (`isStaff`).
+- **Halaman Khusus Pemantauan Kas (`/keuangan` & `components/treasury-client.tsx`)**:
+  - Tiga kartu saldo utama:
+    1. **Total Kas Keseluruhan**: Akumulasi total saldo likuiditas masjid beserta progress bar rasio proporsi Kas Tunai vs Kas Bank.
+    2. **Kas Fisik (Tunai / Brankas)**: Saldo uang tunai riil yang memperhitungkan **Saldo Awal / Modal Kas Fisik** (rekonsiliasi otomatis dengan buku kas terverifikasi melalui `getTreasuryBaselineCashBalance()`), total pemasukan tunai, dan pengeluaran tunai. Menjamin saldo di `/keuangan` selaras sempurna dengan Saldo Kas Terkini di Dashboard.
+    3. **Kas Bank / Digital (QRIS)**: Saldo mengendap di rekening bank resmi masjid & dompet QRIS.
+  - Tiga tab navigasi analitik:
+    1. **Alokasi Pengeluaran (Tunai vs Bank)**: Memetakan 7 pos kategori pengeluaran berdasarkan kanal pembayaran (pos belanja apa saja yang dibayar tunai vs transfer bank).
+    2. **Mutasi Internal**: Riwayat pencatatan setor/tarik tunai beserta nominal, tanggal, alasan, dan nama pencatat.
+    3. **Daftar Transaksi per Kanal**: Riwayat transaksi kas terverifikasi beserta badge penanda kanal kas.
+  - Dialog interaktif bagi staf DKM untuk mencatat mutasi internal secara instan.
+- **Integrasi Navigasi & AppShell**:
+  - Tautan menu navigasi "Keuangan" dengan ikon `Wallet` terpasang di sidebar desktop dan navbar bawah mobile.
+**Acceptance Criteria:**
+- [x] Model `TreasuryTransfer` dan field `Transaction.paymentMethod` terintegrasi di skema Prisma dan database.
+- [x] Halaman `/keuangan` menampilkan saldo Kas Fisik, Kas Bank, dan Total Kas secara akurat.
+- [x] Rekonsiliasi Saldo Awal Kas Fisik otomatis diselaraskan dengan buku kas mingguan terverifikasi di Dashboard (`getTreasuryBaselineCashBalance()`).
+- [x] Rasio likuiditas kas tunai vs bank terhitung proporsional.
+- [x] Staf DKM (Admin & Bendahara) dapat mencatat mutasi kas internal (Setor Tunai & Tarik Tunai) dan menghapusnya jika terjadi kesalahan input.
+- [x] Pengguna non-staf / publik dapat melihat data transparansi kas namun dibatasi dari aksi mutasi dan ubah kanal.
+- [x] Kanal kas transaksi dapat disesuaikan pada panel review transaksi (baik baris ekstraksi AI maupun manual).
+- [x] Formula matematis menjaga total saldo kas masjid tetap konsisten saat terjadi perpindahan saldo internal.
+- [x] Seluruh unit dan integrasi test di `scripts/test-treasury-cash-bank.ts` lulus 27/27 test (100%).
+
+
 
 
 
