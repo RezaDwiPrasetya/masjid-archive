@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { EXPENSE_CATEGORIES } from "@/lib/expense-categories";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 export interface TreasurySummary {
   totalBalance: number;
@@ -142,6 +143,20 @@ export function TreasuryClient({
       console.error("Gagal refresh data treasury:", e);
     }
   };
+
+  // Paginasi Mutasi Internal
+  const [trPage, setTrPage] = useState(1);
+  const [trPageSize, setTrPageSize] = useState(10);
+  const trTotalPages = Math.max(1, Math.ceil(transfers.length / trPageSize));
+  const trSafePage = Math.min(trPage, trTotalPages);
+  const paginatedTransfers = transfers.slice((trSafePage - 1) * trPageSize, trSafePage * trPageSize);
+
+  // Paginasi Transaksi per Kanal
+  const [txPage, setTxPage] = useState(1);
+  const [txPageSize, setTxPageSize] = useState(15);
+  const txTotalPages = Math.max(1, Math.ceil(transactions.length / txPageSize));
+  const txSafePage = Math.min(txPage, txTotalPages);
+  const paginatedTransactions = transactions.slice((txSafePage - 1) * txPageSize, txSafePage * txPageSize);
 
   const handleCreateTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -578,7 +593,7 @@ export function TreasuryClient({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-outline-variant/40">
-                    {transfers.map((tr) => {
+                    {paginatedTransfers.map((tr) => {
                       const isCashToBank = tr.fromAccount === "TUNAI" && tr.toAccount === "BANK";
                       return (
                         <tr key={tr.id} className="hover:bg-surface-container-high/40 transition-colors">
@@ -626,6 +641,21 @@ export function TreasuryClient({
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination Footer Mutasi Internal */}
+              {transfers.length > 10 && (
+                <div className="px-4 py-2.5 bg-surface-container/40 border-t border-outline-variant/60">
+                  <PaginationControls
+                    currentPage={trSafePage}
+                    totalItems={transfers.length}
+                    pageSize={trPageSize}
+                    onPageChange={setTrPage}
+                    onPageSizeChange={setTrPageSize}
+                    pageSizeOptions={[10, 20, 50]}
+                    itemLabel="mutasi"
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -652,7 +682,7 @@ export function TreasuryClient({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/40">
-                  {transactions.map((tx) => {
+                  {paginatedTransactions.map((tx) => {
                     const isIncome = tx.type === "pemasukan";
                     const isCash = (tx.paymentMethod ?? "TUNAI").toUpperCase() === "TUNAI";
 
@@ -705,6 +735,19 @@ export function TreasuryClient({
                   })}
                 </tbody>
               </table>
+            </div>
+
+            {/* Pagination Footer Transaksi per Kanal */}
+            <div className="px-4 py-2.5 bg-surface-container/40 border-t border-outline-variant/60">
+              <PaginationControls
+                currentPage={txSafePage}
+                totalItems={transactions.length}
+                pageSize={txPageSize}
+                onPageChange={setTxPage}
+                onPageSizeChange={setTxPageSize}
+                pageSizeOptions={[10, 15, 30, 50]}
+                itemLabel="transaksi"
+              />
             </div>
           </div>
         </div>

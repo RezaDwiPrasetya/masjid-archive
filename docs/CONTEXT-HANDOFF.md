@@ -1,6 +1,6 @@
 # CONTEXT HANDOFF — Proyek "Masjid Archive"
 > **Terakhir diperbarui**: 20 Oktober 2026  
-> **Status**: **V1–V11 FEATURE-COMPLETE & TEST-HARDENED (Issue #078 / F-033 Selesai) — Siap UAT & Verifikasi**
+> **Status**: **V1–V12 FEATURE-COMPLETE & TEST-HARDENED (Issue #079 / F-034 Selesai) — Siap UAT & Verifikasi**
 
 ---
 
@@ -92,7 +92,13 @@ Aplikasi web arsip & manajemen keuangan digital untuk **DKM Masjid Al-Luqman** (
     - Pilihan kanal kas saat mengedit transaksi dan saat menambah baris transaksi manual.
   - **Integrasi Navigasi & AppShell (`components/app-shell.tsx`)**: Menu "Keuangan" berikon `Wallet` di sidebar desktop dan navigasi mobile.
   - **Otomasi Pengujian Presisi (`scripts/test-treasury-cash-bank.ts`)**: 27 uji coba otomatis (RBAC staf, formula matematika likuiditas, validasi input transfer, skema DB, serta rekonsiliasi saldo kas fisik dengan Dashboard) lulus 100% (27/27 passed).
-- Status kode: `tsc --noEmit` lolos 0 error, `npm run lint` lolos 0 error, seluruh suite test otomatis (128 automated test passed: 27 treasury + 12 navigation/redirect + 64 auth guards + 15 QA hardening + 10 file validation).
+- **F-034 / Issue #079 — Kontrol Paginasi Tabel & Skalabilitas Daftar Data Masif (Selesai Penuh & Teruji)**:
+  - **Komponen Standar Paginasi (`components/ui/pagination-controls.tsx`)**: Komponen modular reusable dengan kontrol First Page, Previous, Next, Last, nomor halaman dengan smart ellipsis logic, pemilih ukuran baris (10, 25, 50, 100), dan status range data responsif.
+  - **Paginasi Transaksi Pengeluaran (`components/expenses-client.tsx`)**: Default 25 item per halaman untuk tabel desktop dan kartu mobile, dengan logika render-time state check untuk reset otomatis ke halaman 1 saat filter atau sorting diubah tanpa memicu cascading render.
+  - **Paginasi Daftar Donatur (`components/donors-client.tsx`)**: Default 25 item per halaman dengan perhitungan peringkat `#rank` global yang kontinu lintas halaman (`(safePage - 1) * pageSize + idx + 1`).
+  - **Paginasi Perbendaharaan / Treasury (`components/treasury-client.tsx`)**: Paginasi Tab 2 (Mutasi Internal, size 10) dan Tab 3 (Transaksi Kanal Kas, size 15) dengan safe page clamping.
+  - **Otomasi Pengujian Presisi (`scripts/test-pagination.ts`)**: 22 uji coba otomatis (matematika pembagian halaman, index array slice, clamping batas atas/bawah, elipsis deretan tombol halaman, integrasi database query limit/offset, dan konsistensi penomoran urut donatur) lulus 100% (22/22 passed).
+- Status kode: `tsc --noEmit` lolos 0 error, `npm run lint` lolos 0 error, seluruh suite test otomatis (150+ automated test passed: 22 pagination + 27 treasury + 12 navigation/redirect + 64 auth guards + 15 QA hardening + 10 file validation).
 - **Status Migrasi Basis Data**: Bersih dan mutakhir (`npx prisma migrate status` up to date, 7 migrasi resmi tercatat dan tersinkronisasi di tabel `_prisma_migrations`).
 
 ---

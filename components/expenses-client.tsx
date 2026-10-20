@@ -18,6 +18,7 @@ import {
   getCategoryLabel,
   getCategoryColor,
 } from "@/lib/expense-categories";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 export interface ExpenseCategoryBreakdown {
   category: string | null;
@@ -201,6 +202,28 @@ export function ExpensesClient({
   const filteredTotal = React.useMemo(() => {
     return filteredTransactions.reduce((acc, t) => acc + t.amount, 0);
   }, [filteredTransactions]);
+
+  // Paginasi Transaksi Pengeluaran
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [pageSize, setPageSize] = React.useState(25);
+
+  // Reset ke halaman 1 saat filter pencarian, kategori, periode, atau sorting berubah
+  const [prevFilterKey, setPrevFilterKey] = React.useState(
+    () => `${search}-${selectedCategory}-${selectedYear}-${selectedMonth}-${sortBy}`
+  );
+  const currentFilterKey = `${search}-${selectedCategory}-${selectedYear}-${selectedMonth}-${sortBy}`;
+  if (prevFilterKey !== currentFilterKey) {
+    setPrevFilterKey(currentFilterKey);
+    setCurrentPage(1);
+  }
+
+  const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+
+  const paginatedTransactions = React.useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    return filteredTransactions.slice(start, start + pageSize);
+  }, [filteredTransactions, safePage, pageSize]);
 
   return (
     <PageShell>
@@ -545,7 +568,7 @@ export function ExpensesClient({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-outline-variant/60">
-                    {filteredTransactions.map((tx) => {
+                    {paginatedTransactions.map((tx) => {
                       const color = getCategoryColor(tx.category);
                       return (
                         <tr
@@ -591,7 +614,7 @@ export function ExpensesClient({
 
               {/* Mobile Card List View */}
               <div className="md:hidden divide-y divide-outline-variant/60">
-                {filteredTransactions.map((tx) => {
+                {paginatedTransactions.map((tx) => {
                   const color = getCategoryColor(tx.category);
                   return (
                     <div key={tx.id} className="p-3.5 space-y-2">
@@ -628,6 +651,19 @@ export function ExpensesClient({
                     </div>
                   );
                 })}
+              </div>
+
+              {/* Pagination Controls Footer */}
+              <div className="px-4 py-2.5 bg-surface-container/20 border-t border-outline-variant/60">
+                <PaginationControls
+                  currentPage={safePage}
+                  totalItems={filteredTransactions.length}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                  pageSizeOptions={[10, 25, 50, 100]}
+                  itemLabel="transaksi"
+                />
               </div>
             </div>
           )}

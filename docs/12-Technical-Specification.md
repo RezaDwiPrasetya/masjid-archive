@@ -733,5 +733,54 @@ model TreasuryTransfer {
   - Tombol mikro `Ubah` (ikon `ArrowRightLeft`) untuk staf login guna membalik status kanal kas secara instan.
   - Dropdown pemilihan kanal kas pada dialog edit transaksi dan dialog penambahan baris transaksi manual.
 
+---
+
+## Spesifikasi Teknis — Fase V12: Paginasi Tabel & Skalabilitas Daftar Data (Issue #079 / F-034)
+
+### 1. Latar Belakang & Masalah Skalabilitas
+1. Sebelumnya, halaman Pengeluaran (`/pengeluaran`) dan Donatur (`/donatur`) merender seluruh baris transaksi atau donatur secara serentak ke DOM browser (terutama saat memilih mode "Semua Waktu" / sepanjang masa).
+2. Seiring bertambahnya ratusan atau ribuan baris data transaksi seiring berjalannya waktu, rendering DOM tak terbatas memicu lag scroll, degradasi First Contentful Paint (FCP), dan konsumsi memori berlebih pada perangkat mobile.
+3. Database query API (`app/api/expenses/transactions/route.ts`) telah mendukung parameter `limit` dan `offset`, namun antarmuka klien membutuhkan komponen navigasi yang terpadu, responsif, dan konsisten.
+
+### 2. Komponen Navigasi Bersama (`components/ui/pagination-controls.tsx`)
+Komponen modular yang dapat dipakai ulang di seluruh tabel dan daftar data masif aplikasi:
+- **Props Interface**:
+  ```typescript
+  interface PaginationControlsProps {
+    currentPage: number;
+    totalPages: number;
+    pageSize: number;
+    totalItems: number;
+    onPageChange: (page: number) => void;
+    onPageSizeChange?: (pageSize: number) => void;
+    pageSizeOptions?: number[];
+    className?: string;
+  }
+  ```
+- **Logika Smart Ellipsis Halaman**:
+  - Jika total halaman `<= 7`, seluruh nomor halaman ditampilkan berurutan: `[1, 2, 3, 4, 5, 6, 7]`.
+  - Jika posisi halaman di awal (`currentPage <= 4`): `[1, 2, 3, 4, 5, '...', totalPages]`.
+  - Jika posisi halaman di akhir (`currentPage >= totalPages - 3`): `[1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages]`.
+  - Jika posisi halaman di tengah: `[1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages]`.
+- **Bound Safety & Empty State Clamping**:
+  - `startItem = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1`.
+  - `endItem = Math.min(currentPage * pageSize, totalItems)`.
+  - `safePage = Math.max(1, Math.min(currentPage, totalPages))`.
+
+### 3. Implementasi State Paginasi di Klien
+- **`components/expenses-client.tsx`**:
+  - Default `pageSize = 25`, dengan opsi `[10, 25, 50, 100]`.
+  - Menghitung `paginatedTransactions = filteredTransactions.slice((safePage - 1) * pageSize, safePage * pageSize)`.
+  - Deteksi render-time key untuk mereset `currentPage` kembali ke `1` secara instan tanpa cascading render effects (`react-hooks/set-state-in-effect` compliant) saat `search`, `selectedCategory`, `selectedYear`, `selectedMonth`, atau `sortBy` berubah.
+- **`components/donors-client.tsx`**:
+  - Default `pageSize = 25`, dengan opsi `[10, 25, 50, 100]`.
+  - Menghitung continuous rank: `const rank = (safePage - 1) * pageSize + idx + 1;` sehingga donatur peringkat ke-26 di halaman kedua tetap berperingkat `#26`.
+  - Reset otomatis ke halaman 1 saat pencarian nama atau filter periode berubah.
+- **`components/treasury-client.tsx`**:
+  - Paginasi Tab 2 (Mutasi Internal): default `pageSize = 10`.
+  - Paginasi Tab 3 (Transaksi Kanal Kas): default `pageSize = 15`.
+  - Safe page derivation menjamin navigasi tetap valid meskipun mutasi dihapus oleh staf.
+
+
 
 

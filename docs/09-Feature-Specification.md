@@ -32,6 +32,12 @@
 | F-026 | Unified AppShell & Sinkronisasi Ikon Brand | Should | ✅ Done (V9) |
 | F-027 | Cetak & Ekspor Rekapitulasi Kas Tahunan Penuh & Perapihan Toolbar | Must | ✅ Done (V10) |
 | F-028 | Tambah Baris Transaksi Manual Saat Review Ekstraksi (Mitigasi OCR/AI) | Must | ✅ Done (V10.5 / Issue #073) |
+| F-029 | Kendali Visibilitas Menu Unggah Berbasis Role & Notifikasi Akses Terbatas | Should | ✅ Done (V11 / Issue #074) |
+| F-030 | Kompresi Gambar Otomatis Client-Side Sebelum Unggah Laporan Kas | Must | ✅ Done (V11 / Issue #075) |
+| F-031 | Ekstraksi Vision-LLM Context-Aware Berbasis Periode Pekan Laporan | Must | ✅ Done (V11 / Issue #076) |
+| F-032 | Penyelarasan Responsivitas Tampilan Mobile & Ergonomi Layar Sentuh Multi-Perangkat | Should | ✅ Done (V11 / Issue #075) |
+| F-033 | Pemantauan Posisi Kas & Perbendaharaan: Kas Fisik vs Kas Bank / Digital & Mutasi Internal | Must | ✅ Done (V11.5 / Issue #078) |
+| F-034 | Kontrol Paginasi Tabel & Skalabilitas Daftar Data (Pengeluaran, Donatur, Keuangan) | Must | ✅ Done (V12 / Issue #079) |
 
 ## Feature Details — V1
 
@@ -788,6 +794,40 @@
 - [x] Kanal kas transaksi dapat disesuaikan pada panel review transaksi (baik baris ekstraksi AI maupun manual).
 - [x] Formula matematis menjaga total saldo kas masjid tetap konsisten saat terjadi perpindahan saldo internal.
 - [x] Seluruh unit dan integrasi test di `scripts/test-treasury-cash-bank.ts` lulus 27/27 test (100%).
+
+---
+
+### F-034 — Kontrol Paginasi Tabel & Skalabilitas Daftar Data (Issue #079 / F-034)
+
+**Objective:** Mencegah degradasi performa render browser dan konsumsi memori berlebih ketika menampilkan ratusan atau ribuan data transaksi kas/donatur dengan menghadirkan komponen paginasi yang responsif, accessible, dan terstandardisasi di seluruh halaman data masif (Pengeluaran `/pengeluaran`, Donatur `/donatur`, dan Perbendaharaan `/keuangan`).
+**User:** Seluruh pengguna (Publik, Pengurus DKM, Bendahara).
+**Process:**
+- **Komponen Standar Paginasi (`components/ui/pagination-controls.tsx`)**:
+  - Menghadirkan navigasi halaman lengkap: Tombol Halaman Pertama (`ChevronsLeft`), Sebelumnya (`ChevronLeft`), Nomor Halaman dengan Smart Ellipsis (`1, 2, ..., 15`), Selanjutnya (`ChevronRight`), dan Halaman Terakhir (`ChevronsRight`).
+  - Pemilih ukuran halaman fleksibel (*Items per page selector*): 10, 25, 50, 100 data per halaman.
+  - Ringkasan posisi data: menampilkan "Menampilkan X - Y dari Z data" yang akurat dan adaptif saat data kosong (0 dari 0).
+  - Navigasi responsif: ringkas pada layar ponsel pintar (*mobile*) dengan tombol navigasi touch-friendly, dan lengkap pada desktop.
+- **Implementasi pada Halaman Pengeluaran (`components/expenses-client.tsx`)**:
+  - Paginasi pada tabel transaksi pengeluaran desktop dan kartu pengeluaran mobile.
+  - Default 25 item per halaman.
+  - Reset otomatis ke halaman 1 saat pengguna mengubah kata kunci pencarian, filter kategori, filter tahun, filter bulan, atau urutan sorting via deteksi render-time key (*storing information from previous renders* tanpa efek cascading).
+- **Implementasi pada Halaman Donatur (`components/donors-client.tsx`)**:
+  - Paginasi pada daftar donatur terverifikasi.
+  - Perhitungan nomor urut global (`rank`) yang kontinu lintas halaman: `(safePage - 1) * pageSize + idx + 1`. Hal ini menjamin peringkat donatur tetap presisi (misal donatur pertama di halaman 2 berperingkat #26 bukan kembali ke #1).
+  - Reset otomatis ke halaman 1 saat pengguna melakukan filter pencarian nama donatur atau mengubah filter periode.
+- **Implementasi pada Halaman Perbendaharaan / Treasury (`components/treasury-client.tsx`)**:
+  - Paginasi pada Tab 2: Riwayat Mutasi Kas Internal (Setor Tunai & Tarik Tunai) dengan default 10 item per halaman.
+  - Paginasi pada Tab 3: Daftar Transaksi per Kanal Kas (Kas Tunai & Kas Bank) dengan default 15 item per halaman.
+  - Safe page clamping menghindari halaman kosong jika filter atau mutasi dihapus.
+**Acceptance Criteria:**
+- [x] Komponen `PaginationControls` reusable, bebas bug, dan mendukung mode disabled pada tombol saat berada di batas awal atau batas akhir halaman.
+- [x] Halaman `/pengeluaran` terpaginasi dengan mulus pada tampilan tabel desktop dan kartu mobile.
+- [x] Halaman `/donatur` terpaginasi dengan penomoran urut ranking `#rank` yang akurat dan berkesinambungan.
+- [x] Halaman `/keuangan` terpaginasi pada tab mutasi kas internal dan tab transaksi kanal kas.
+- [x] Filter pencarian dan dropdown kategori secara otomatis mereset paginasi kembali ke halaman 1.
+- [x] Pemilih baris per halaman (10, 25, 50, 100) berfungsi secara reaktif.
+- [x] Seluruh test suite otomatis di `scripts/test-pagination.ts` lulus 22/22 test (100%).
+
 
 
 

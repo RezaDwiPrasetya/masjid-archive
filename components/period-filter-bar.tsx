@@ -24,7 +24,6 @@ export function PeriodFilterBar({
 }: PeriodFilterBarProps) {
   const now = new Date();
   const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth() + 1; // 1-indexed
 
   // Deteksi status preset aktif
   const isAllTime = selectedYear === null && selectedMonth === null;

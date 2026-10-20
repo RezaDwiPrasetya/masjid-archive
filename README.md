@@ -2,14 +2,14 @@
 
 > **Sistem Arsip & Transparansi Keuangan Digital DKM Masjid Al-Luqman**  
 > Kelurahan Soklat, Kecamatan Subang, Kabupaten Subang, Jawa Barat  
-> *Versi Rilis: **V11.0 (Feature-Complete, Treasury & Multi-Channel Cash Monitoring)***
+> *Versi Rilis: **V12.0 (Feature-Complete, Table Pagination & Scalability Hardening)***
 
 [![Next.js](https://img.shields.io/badge/Next.js-16_App_Router-black?logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-5.22.0-2D3748?logo=prisma)](https://www.prisma.io/)
 [![Google Gemini](https://img.shields.io/badge/AI-Gemini_Vision_Multimodal-4285F4?logo=google)](https://ai.google.dev/)
 [![PWA Ready](https://img.shields.io/badge/PWA-Installable_Mobile_App-154212)](https://web.dev/progressive-web-apps/)
-[![Automated Tests](https://img.shields.io/badge/Tests-172_Passed_100%25-success)](scripts/)
+[![Automated Tests](https://img.shields.io/badge/Tests-194_Passed_100%25-success)](scripts/)
 
 Aplikasi web modern dan Progressive Web App (PWA) untuk mengarsipkan, mendigitalkan, dan mempublikasikan laporan pembukuan keuangan mingguan kas masjid secara transparan, akuntabel, dan mudah diakses oleh seluruh jemaah tanpa memerlukan login.
 
@@ -64,6 +64,7 @@ Pencatatan keuangan mingguan DKM Masjid Al-Luqman sebelumnya bertumpu pada lemba
 - **Filter Periode Waktu Cerdas**: Preset cepat (*Semua Waktu* dan *Tahun Ini*) serta pemilih kustom tahun dan bulan yang tertata rapi tanpa perlu geser horizontal di mobile.
 - **Transparansi Pos Pengeluaran**: Pengelompokan mutasi kas keluar ke dalam kategori resmi DKM: Operasional, Honorarium, Pembangunan Fisik, Sosial & Santunan, Konsumsi Kajian, Administrasi, dan Pos Lainnya (`/pengeluaran`).
 - **Pencatatan Donatur & Infaq Anonim**: Agregasi infaq donatur terdaftar disertai modal audit riwayat infaq tanpa nama / kotak amal tromol Jumat (`/donatur`).
+- **Paginasi Tabel & Kontrol Skalabilitas (F-034 / V12.0)**: Navigasi tabel cerdas (`PaginationControls`) dengan smart ellipsis, pemilih ukuran baris (10, 25, 50, 100), continuous ranking `#rank` donatur, dan perlindungan performa DOM di halaman Pengeluaran, Donatur, dan Keuangan.
 
 ### 7. 🖨️ Ekspor & Pratinjau Cetak Formal A4 (Mading DKM)
 - **Format Resmi Mading DKM**: Menghasilkan lembar laporan formal A4 lengkap dengan Kop Resmi DKM Masjid Al-Luqman, 4 kartu ikhtisar kas, tabel mutasi transaksi, dan kolom tanda tangan basah Ketua DKM serta Bendahara.

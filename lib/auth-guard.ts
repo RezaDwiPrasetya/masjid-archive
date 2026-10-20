@@ -29,7 +29,6 @@ export function isStaff(session: Session | null | undefined): boolean {
  */
 export function canDeleteReport({
   session,
-  reportUploadedById,
   verifiedTransactionsCount,
 }: {
   session: Session | null | undefined;

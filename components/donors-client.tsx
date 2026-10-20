@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import {
   Dialog,
   DialogPopup,
@@ -193,6 +194,28 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
     (acc, d) => acc + d.totalContribution,
     0
   );
+
+  // Paginasi Donatur
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [pageSize, setPageSize] = React.useState(25);
+
+  // Reset ke halaman 1 saat pencarian atau periode filter berubah
+  const [prevFilterKey, setPrevFilterKey] = React.useState(
+    () => `${search}-${selectedYear}-${selectedMonth}`
+  );
+  const currentFilterKey = `${search}-${selectedYear}-${selectedMonth}`;
+  if (prevFilterKey !== currentFilterKey) {
+    setPrevFilterKey(currentFilterKey);
+    setCurrentPage(1);
+  }
+
+  const totalPages = Math.max(1, Math.ceil(filteredDonors.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+
+  const paginatedDonors = React.useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    return filteredDonors.slice(start, start + pageSize);
+  }, [filteredDonors, safePage, pageSize]);
 
   // Label periode aktif untuk modal dialog
   const activePeriodLabel = React.useMemo(() => {
@@ -464,51 +487,66 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
               </p>
             </div>
           ) : (
-            <div className="rounded-2xl border border-outline-variant bg-surface-container/60 shadow-xs overflow-hidden divide-y divide-outline-variant">
-              {filteredDonors.map((donor, idx) => {
-                const rank = idx + 1;
-                const isRankOne = rank === 1 && !search;
-                return (
-                  <Link
-                    key={donor.id}
-                    href={`/donatur/${donor.id}`}
-                    className="group flex items-center justify-between gap-4 p-4 sm:p-5 hover:bg-surface-container-high transition-colors duration-150"
-                  >
-                    <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
-                      {/* Badge Nomor Urut */}
-                      <div
-                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold transition-transform group-hover:scale-105 ${isRankOne
-                          ? "border border-amber-500/40 text-amber-800 dark:text-amber-200 bg-amber-500/15"
-                          : "border border-outline-variant text-on-surface-variant bg-surface"
-                          }`}
-                      >
-                        #{rank}
+            <div className="rounded-2xl border border-outline-variant bg-surface-container/60 shadow-xs overflow-hidden">
+              <div className="divide-y divide-outline-variant">
+                {paginatedDonors.map((donor, idx) => {
+                  const rank = (safePage - 1) * pageSize + idx + 1;
+                  const isRankOne = rank === 1 && !search;
+                  return (
+                    <Link
+                      key={donor.id}
+                      href={`/donatur/${donor.id}`}
+                      className="group flex items-center justify-between gap-4 p-4 sm:p-5 hover:bg-surface-container-high transition-colors duration-150"
+                    >
+                      <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
+                        {/* Badge Nomor Urut */}
+                        <div
+                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold transition-transform group-hover:scale-105 ${isRankOne
+                            ? "border border-amber-500/40 text-amber-800 dark:text-amber-200 bg-amber-500/15"
+                            : "border border-outline-variant text-on-surface-variant bg-surface"
+                            }`}
+                        >
+                          #{rank}
+                        </div>
+
+                        {/* Nama Donatur */}
+                        <div className="min-w-0">
+                          <div className="font-semibold text-sm sm:text-base text-on-surface group-hover:text-primary transition-colors leading-snug">
+                            {donor.name}
+                          </div>
+                          <div className="text-xs text-on-surface-variant mt-1 flex items-center gap-2">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2 py-0.5 border border-outline-variant text-[11px] font-medium">
+                              <UserCheck className="h-3 w-3 text-primary" />
+                              {donor.donationCount} infaq terverifikasi
+                            </span>
+                          </div>
+                        </div>
                       </div>
 
-                      {/* Nama Donatur */}
-                      <div className="min-w-0">
-                        <div className="font-semibold text-sm sm:text-base text-on-surface group-hover:text-primary transition-colors leading-snug">
-                          {donor.name}
-                        </div>
-                        <div className="text-xs text-on-surface-variant mt-1 flex items-center gap-2">
-                          <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2 py-0.5 border border-outline-variant text-[11px] font-medium">
-                            <UserCheck className="h-3 w-3 text-primary" />
-                            {donor.donationCount} infaq terverifikasi
-                          </span>
-                        </div>
+                      {/* Nominal Uang di Sisi Kanan (Tabular Nums) + Chevron */}
+                      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                        <span className="text-sm sm:text-lg font-bold text-on-surface tabular-nums group-hover:text-primary transition-colors">
+                          {formatRupiah(donor.totalContribution)}
+                        </span>
+                        <ChevronRight className="h-4 w-4 text-on-surface-variant/60 group-hover:text-primary group-hover:translate-x-1 transition-transform duration-150" />
                       </div>
-                    </div>
+                    </Link>
+                  );
+                })}
+              </div>
 
-                    {/* Nominal Uang di Sisi Kanan (Tabular Nums) + Chevron */}
-                    <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                      <span className="text-sm sm:text-lg font-bold text-on-surface tabular-nums group-hover:text-primary transition-colors">
-                        {formatRupiah(donor.totalContribution)}
-                      </span>
-                      <ChevronRight className="h-4 w-4 text-on-surface-variant/60 group-hover:text-primary group-hover:translate-x-1 transition-transform duration-150" />
-                    </div>
-                  </Link>
-                );
-              })}
+              {/* Pagination Controls Footer */}
+              <div className="px-4 py-2.5 bg-surface-container/40 border-t border-outline-variant/60">
+                <PaginationControls
+                  currentPage={safePage}
+                  totalItems={filteredDonors.length}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                  pageSizeOptions={[10, 25, 50]}
+                  itemLabel="donatur"
+                />
+              </div>
             </div>
           )}
         </div>

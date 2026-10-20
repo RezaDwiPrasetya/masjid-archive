@@ -217,8 +217,10 @@ Halaman ini dirancang untuk menjawab kebutuhan transparansi dan manajemen perben
 - **Tab 2: Mutasi Internal**:
   - Menampilkan riwayat perpindahan uang antara brankas fisik dan rekening bank.
   - Mencatat nominal, tanggal, keterangan, dan nama staf DKM yang melakukan mutasi.
+  - Dilengkapi kontrol paginasi (10 data per halaman) untuk memudahkan penelusuran.
 - **Tab 3: Daftar Transaksi per Kanal**:
   - Menampilkan seluruh transaksi kas terverifikasi beserta badge visual identitas kanal kas (`Kas Tunai` atau `Bank / QRIS`).
+  - Dilengkapi kontrol paginasi (15 data per halaman) dengan pemilih ukuran halaman.
 
 ### 3. Cara Mencatat Mutasi Kas Internal (Khusus Staf DKM)
 
@@ -296,6 +298,12 @@ Menampilkan daftar detail setiap transaksi:
 - **Badge Kategori** (dengan warna identitas khas per kategori)
 - **Nominal (Rp)**
 
+### 7. Paginasi Tabel & Kontrol Baris Data
+Di bawah tabel dan kartu pengeluaran tersedia kontrol paginasi terpadu:
+- **Navigasi Halaman**: Tombol Halaman Pertama (`«`), Sebelumnya (`‹`), nomor halaman dengan deretan elipsis pintar (`...`), Selanjutnya (`›`), dan Halaman Terakhir (`»`).
+- **Ukuran Baris Fleksibel**: Pilihan 10, 25, 50, atau 100 transaksi per halaman.
+- **Reset Otomatis**: Jika Anda mengubah kata kunci pencarian, kategori pengeluaran, atau periode tahun/bulan, halaman akan otomatis kembali ke Halaman 1 agar data baru tidak terlewat.
+
 ---
 
 ## 8. Halaman Donatur
@@ -332,6 +340,11 @@ Di bawah kartu KPI terdapat daftar profil seluruh donatur teridentifikasi, diuru
 
 - Gunakan **kotak pencarian** di atas daftar untuk mencari nama donatur tertentu.
 - Klik nama donatur untuk membuka halaman **Detail Profil Donatur** (`/donatur/[id]`) yang berisi riwayat transaksi lengkap donatur tersebut.
+
+### 5. Paginasi Daftar Donatur & Peringkat Global Kontinu
+- Daftar profil donatur dilengkapi kontrol paginasi dengan pilihan 10, 25, 50, atau 100 donatur per halaman.
+- **Peringkat Global Kontinu**: Penomoran urut peringkat donatur (`#rank`) berlanjut secara presisi lintas halaman (misalnya donatur pertama di halaman 2 tetap berperingkat `#26`, bukan ter-reset kembali ke `#1`).
+- Pengubahan filter pencarian nama donatur atau periode otomatis mengarahkan ke Halaman 1.
 
 ---
 

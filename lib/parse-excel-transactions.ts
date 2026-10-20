@@ -147,7 +147,6 @@ export function tryDeterministicParse(rows: unknown[][]): {
   let finalBalance: number | null = summaryBalances.finalBalance;
 
   let headerRowIdx = -1;
-  let noCol = -1;
   let dateCol = -1;
   let typeCol = -1;
   let donorCol = -1;
@@ -249,7 +248,6 @@ export function tryDeterministicParse(rows: unknown[][]): {
 
     if (hasDescAndAmount || hasTypeAndAmount) {
       headerRowIdx = r;
-      noCol = tNoCol;
       dateCol = tDateCol;
       typeCol = tTypeCol;
       donorCol = tDonorCol;

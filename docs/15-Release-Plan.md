@@ -119,10 +119,30 @@
 
 ## Version
 
-Current: `0.11.0` (Fase V11: Pemantauan Posisi Kas Fisik vs Kas Bank / Digital & Mutasi Internal — Issue #078 / F-033)
+Current: `0.12.0` (Fase V12: Kontrol Paginasi Tabel & Skalabilitas Daftar Data Masif — Issue #079 / F-034)
 Next: `1.0.0`
 
 ## Changelog
+
+### 0.12.0 (2026-10-20) — Fase V12: Kontrol Paginasi Tabel & Skalabilitas Daftar Data Masif (Issue #079 / F-034)
+- **Komponen Standar Paginasi (`components/ui/pagination-controls.tsx`)**:
+  - Komponen navigasi tabel modular yang dapat dipakai ulang dengan kontrol First Page (`ChevronsLeft`), Previous (`ChevronLeft`), Page Numbers dengan smart ellipsis logic, Next (`ChevronRight`), dan Last Page (`ChevronsRight`).
+  - Pemilih ukuran baris (*Items per page selector*): 10, 25, 50, dan 100 baris per halaman.
+  - Ringkasan posisi data deskriptif: "Menampilkan X - Y dari Z data" dengan safe handling untuk data kosong (0 dari 0).
+  - Desain sepenuhnya responsif: ringkas pada mobile dengan tombol navigasi touch-friendly (≥ 36px), dan lengkap dengan angka halaman pada desktop.
+- **Paginasi Transaksi Pengeluaran (`components/expenses-client.tsx`)**:
+  - Membatasi rendering baris tabel pengeluaran desktop dan kartu pengeluaran mobile dengan default 25 item per halaman.
+  - Logika reset otomatis ke halaman 1 berbasis render-time key check saat kata kunci pencarian, filter kategori pos kas, filter tahun, filter bulan, atau urutan disortir berubah, tanpa memicu cascading render effects.
+- **Paginasi Daftar Donatur (`components/donors-client.tsx`)**:
+  - Paginasi daftar donatur terverifikasi dengan default 25 item per halaman.
+  - Perhitungan nomor urut ranking (`#rank`) global yang kontinu lintas halaman: `(safePage - 1) * pageSize + idx + 1`, menjaga integritas urutan peringkat donatur.
+  - Reset otomatis ke halaman 1 saat pencarian nama atau filter periode berubah.
+- **Paginasi Perbendaharaan / Treasury (`components/treasury-client.tsx`)**:
+  - Paginasi Tab 2: Riwayat Mutasi Internal Kas (Setor Tunai & Tarik Tunai) dengan default 10 baris per halaman.
+  - Paginasi Tab 3: Daftar Transaksi per Kanal Kas (Kas Tunai & Kas Bank) dengan default 15 baris per halaman.
+  - Derivasi safe page memastikan tidak ada rendering halaman kosong saat filter kanal kas diubah atau catatan mutasi dihapus.
+- **Suite Pengujian Otomatis (`scripts/test-pagination.ts`)**:
+  - Pengujian matematika pembagian halaman data, index slicing, boundary clamping (halaman negatif & halaman > totalPages), logika elipsis deretan tombol, integrasi query paginasi database, dan konsistensi penomoran urut ranking donatur (22/22 pengujian lulus 100%).
 
 ### 0.11.0 (2026-10-20) — Fase V11: Pemantauan Posisi Kas Fisik vs Kas Bank / Digital & Mutasi Internal (Issue #078 / F-033)
 - **Model Database & Skema Prisma (`prisma/schema.prisma`)**:

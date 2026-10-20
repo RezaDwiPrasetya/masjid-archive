@@ -173,11 +173,32 @@ Unit dasar: 8px.
     - `Setor ke Bank (Tunai ➡️ Bank)` dengan ikon `ArrowUpRight` (biru).
     - `Tarik Tunai (Bank ➡️ Tunai)` dengan ikon `ArrowDownLeft` (hijau).
 
+## Komponen Paginasi Tabel & Navigasi Data (F-034 — Issue #079)
+
+- **Layout Kontainer Paginasi (`PaginationControls`)**:
+  - Diletakkan di bagian bawah tabel/daftar dengan padding konsisten (`pt-4 sm:pt-6 border-t border-outline-variant/60`).
+  - Responsif: Flex-col pada layar HP kecil (`flex flex-col sm:flex-row items-center justify-between gap-4`), menyajikan informasi posisi item di sisi kiri/atas dan kontrol navigasi halaman di sisi kanan/bawah.
+- **Ringkasan Posisi Item (*Data Range Counter*)**:
+  - Teks deskriptif berukuran kecil (`text-xs text-on-surface-variant font-medium`).
+  - Angka nominal di-highlight dengan `font-semibold text-on-surface`.
+  - Format: `Menampilkan {start} - {end} dari {total} data`.
+  - Empty state handling: Jika total data = 0, menampilkan `Menampilkan 0 dari 0 data`.
+- **Items Per Page Selector**:
+  - Dropdown kompak (`px-2.5 py-1 text-xs font-medium rounded-lg border border-outline-variant bg-surface text-on-surface focus:ring-2 focus:ring-primary/20`).
+  - Opsi terstandarisasi: 10, 25, 50, 100 baris per halaman.
+- **Tombol Navigasi Halaman**:
+  - Ukuran minimum touch target 36×36px (`h-8.5 min-w-[34px] px-2.5`).
+  - Tombol aktif: Pill menonjol dengan warna primer (`bg-primary text-on-primary font-semibold shadow-sm`).
+  - Tombol tidak aktif: Border halus (`border border-outline-variant bg-surface text-on-surface hover:bg-surface-container font-medium transition-colors`).
+  - Tombol terdisabilitas (*Disabled*): Transparansi 40% (`opacity-40 cursor-not-allowed pointer-events-none`).
+  - Elipsis (`...`): Teks netral `text-on-surface-variant` tanpa interaksi klik saat jumlah halaman melebihi batas tampilan.
+
 ## States
 
 - Default, Hover, Focus, Loading, Empty, Error, Success — semua tetap berlaku
 - **List Row hover (baru)**: latar berubah jadi `surface-container` (bukan shadow naik seperti kartu) — memberi kesan "baris disorot", bukan "kartu terangkat"
 
 > **Catatan implementasi:** ikon di guideline ini merujuk Material Symbols (wireframe awal), implementasi aktual memakai **Lucide Icons** — lihat [12. Technical Specification](./12-Technical-Specification.md).
+
 
 
