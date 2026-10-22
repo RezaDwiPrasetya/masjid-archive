@@ -88,6 +88,7 @@ export default async function BerandaPortalPublikPage() {
       donorNameRaw: true,
       donor: { select: { name: true } },
       reportId: true,
+      report: { select: { reportDate: true } },
     },
     orderBy: { transactionDate: "desc" },
   });
@@ -141,14 +142,25 @@ export default async function BerandaPortalPublikPage() {
   const totalBalance = cashBalance + bankBalance;
 
   // Daftar infaq untuk widget pencarian cepat (50 transaksi pemasukan terverifikasi terbaru)
+  // Tanggal diprioritaskan dari transactionDate, dengan fallback ke report.reportDate dari dokumen asli
   const recentDonations: VerifiedDonation[] = verifiedTransactions
     .filter((t) => t.type === "pemasukan")
+    .sort((a, b) => {
+      const dateA = new Date(a.transactionDate ?? a.report?.reportDate ?? 0).getTime();
+      const dateB = new Date(b.transactionDate ?? b.report?.reportDate ?? 0).getTime();
+      return dateB - dateA;
+    })
     .slice(0, 50)
     .map((t) => {
-      const d = t.transactionDate ? new Date(t.transactionDate) : null;
+      const rawDate = t.transactionDate ?? t.report?.reportDate;
+      const d = rawDate ? new Date(rawDate) : null;
       const dateStr = d
-        ? `${d.getUTCDate()} ${MONTH_NAMES[d.getUTCMonth() + 1]} ${d.getUTCFullYear()}`
-        : "Tanggal tercatat";
+        ? d.toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
+        : "Tercatat di kas";
       return {
         id: t.id,
         donorName: t.donor?.name || t.donorNameRaw || "Hamba Allah",
@@ -206,6 +218,12 @@ export default async function BerandaPortalPublikPage() {
             className="px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/30 transition-colors"
           >
             Ringkasan &amp; Tren
+          </a>
+          <a
+            href="#alokasi-pengeluaran"
+            className="px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/30 transition-colors"
+          >
+            Alokasi Belanja
           </a>
           <a
             href="#cek-infaq"

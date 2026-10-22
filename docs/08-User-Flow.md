@@ -6,9 +6,10 @@
 Pengunjung Membuka Web (URL Utama /)
   │
   ├─► [Publik / Jamaah & Pengurus — Halaman Utama /]
-  │     ├── 1. Ringkasan Kas & Tren: Grafik kas masuk & keluar, filter periode (Bulan & Tahun), tombol Cetak Laporan (A4) & Excel
-  │     ├── 2. Widget Cek Infaq: Pencarian cepat riwayat infaq donatur tanpa login
-  │     └── 3. Arsip Laporan: Pindaian buku kas mingguan & buletin berkala DKM
+  │     ├── 1. Ringkasan Kas & Tren: Grafik kas masuk & keluar, filter periode terintegrasi (Bulan & Tahun), tombol Cetak Laporan (A4) & Excel
+  │     ├── 2. Alokasi Pos Pengeluaran: Distribusi belanja kas per kategori riil (Operasional, Pembangunan, Sosial, dll) terintegrasi dengan filter aktif
+  │     ├── 3. Widget Cek Infaq: Pencarian cepat riwayat infaq donatur dengan tanggal riil dokumen asli tanpa login
+  │     └── 4. Arsip Laporan: Pindaian buku kas mingguan & buletin berkala DKM
   │
   └─► [Tombol 'Akses Pengurus' di Pojok Kanan Atas]
         │
@@ -34,9 +35,10 @@ Pengunjung Membuka Web (URL Utama /)
 
 ### 1. Alur Jamaah & Publik (Tanpa Hambatan Login)
 1. Pengunjung membuka halaman utama (`/`).
-2. Melihat identitas DKM Masjid Al-Luqman, total saldo terkonsolidasi (fisik & bank), serta visualisasi interaktif **Ringkasan Kas & Tren** (lengkap dengan filter bulan/tahun, grafik batang kas masuk & keluar, dan tombol **Cetak Laporan / Excel**).
-3. Donatur dapat langsung mengetik namanya di kolom "Cek Riwayat Infaq" untuk memastikan uang infaqnya sudah tercatat secara sah.
-4. Jemaah & pengurus dapat menelusuri arsip pindaian buku kas mingguan dan mencetak dokumen mading A4 kapan saja. *(Catatan: Bagian rekening bank resmi dan kanal 3 pilar yang belum didukung skema data riil ditiadakan agar informasi 100% akurat).*
+2. Melihat identitas DKM Masjid Al-Luqman, total saldo terkonsolidasi (fisik & bank), serta visualisasi interaktif **Ringkasan Kas & Tren** (lengkap dengan filter bulan/tahun terpadu, grafik batang kas masuk & keluar, dan tombol **Cetak Laporan / Excel**).
+3. Meninjau **Alokasi Pos Pengeluaran Kas** yang terhubung langsung dengan filter periode aktif, menyajikan persentase dan nominal pembelanjaan per kategori riil (Operasional, Pembangunan, Sosial, Honor, dll) beserta tautan langsung ke halaman `/pengeluaran`.
+4. Donatur dapat langsung mengetik namanya di kolom "Cek Riwayat Infaq" untuk memastikan uang infaqnya sudah tercatat secara sah, lengkap dengan tanggal riil dari lembar dokumen kas aslinya.
+5. Jemaah & pengurus dapat menelusuri arsip pindaian buku kas mingguan dan mencetak dokumen mading A4 kapan saja.
 
 ### 2. Alur Staf Pengurus DKM
 1. Staf membuka web dan menekan tombol **"Akses Pengurus"**.

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   TrendingUp,
@@ -11,6 +12,9 @@ import {
   Printer,
   FileSpreadsheet,
   Wallet,
+  PieChart,
+  ArrowRight,
+  ChevronRight,
 } from "lucide-react";
 import {
   BarChart,
@@ -51,11 +55,20 @@ export interface TrendPoint {
   pengeluaran: number;
 }
 
+export interface ExpenseCategoryBreakdown {
+  category: string | null;
+  label: string;
+  totalAmount: number;
+  percentage: number;
+  transactionCount: number;
+}
+
 export interface CashflowTrendSectionProps {
   initialYear?: number;
   initialMonth?: number;
   availableYears?: number[];
   showTitle?: boolean;
+  showAllocationBreakdown?: boolean;
   className?: string;
 }
 
@@ -69,6 +82,63 @@ const chartConfig = {
     color: "hsl(0, 72%, 56%)",
   },
 } satisfies ChartConfig;
+
+const CATEGORY_DESCRIPTIONS: Record<string, string> = {
+  operasional: "Biaya listrik, air, perawatan rutin & kemakmuran fasilitas ibadah",
+  pembangunan: "Renovasi fisik, perbaikan kubah, AC, sajadah & pemeliharaan sarana",
+  sosial: "Penyaluran zakat, santunan yatim piatu, sembako dhuafa & bantuan musibah",
+  honor: "Honorarium marbot, imam rawatib, khotib jumat & guru pengajian",
+  konsumsi: "Konsumsi kegiatan taklim, peringatan hari besar & jumat berkah",
+  administrasi: "Pengadaan ATK, cetak pembukuan fisik, materai & kesekretariatan",
+  lainnya: "Pengeluaran umum terverifikasi lainnya di luar pos utama",
+};
+
+function getCategoryBadge(cat: string | null) {
+  switch (cat) {
+    case "operasional":
+      return {
+        badgeLabel: "Operasional",
+        bg: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30",
+        bar: "bg-blue-600",
+      };
+    case "pembangunan":
+      return {
+        badgeLabel: "Pembangunan",
+        bg: "bg-amber-500/10 text-amber-800 dark:text-amber-400 border-amber-500/30",
+        bar: "bg-amber-600",
+      };
+    case "sosial":
+      return {
+        badgeLabel: "Sosial",
+        bg: "bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border-emerald-500/30",
+        bar: "bg-emerald-600",
+      };
+    case "honor":
+      return {
+        badgeLabel: "Honorarium",
+        bg: "bg-violet-500/10 text-violet-800 dark:text-violet-400 border-violet-500/30",
+        bar: "bg-violet-600",
+      };
+    case "konsumsi":
+      return {
+        badgeLabel: "Konsumsi",
+        bg: "bg-orange-500/10 text-orange-800 dark:text-orange-400 border-orange-500/30",
+        bar: "bg-orange-600",
+      };
+    case "administrasi":
+      return {
+        badgeLabel: "Administrasi",
+        bg: "bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/30",
+        bar: "bg-slate-600",
+      };
+    default:
+      return {
+        badgeLabel: "Umum",
+        bg: "bg-surface-container-high text-on-surface-variant border-outline-variant",
+        bar: "bg-primary",
+      };
+  }
+}
 
 function formatRupiah(amount: number): string {
   return new Intl.NumberFormat("id-ID", {
@@ -190,6 +260,7 @@ export function CashflowTrendSection({
   initialMonth,
   availableYears,
   showTitle = true,
+  showAllocationBreakdown = true,
   className,
 }: CashflowTrendSectionProps) {
   const router = useRouter();
@@ -208,7 +279,9 @@ export function CashflowTrendSection({
     weekly: TrendPoint[];
     monthly: TrendPoint[];
   }>({ weekly: [], monthly: [] });
+  const [expenseBreakdown, setExpenseBreakdown] = React.useState<ExpenseCategoryBreakdown[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
+  const [loadingExpenses, setLoadingExpenses] = React.useState<boolean>(true);
   const [error, setError] = React.useState<string | null>(null);
   const [isSwitching, setIsSwitching] = React.useState(false);
 
@@ -237,23 +310,30 @@ export function CashflowTrendSection({
 
     async function loadData() {
       setLoading(true);
+      setLoadingExpenses(true);
       setError(null);
       try {
         const weeklyUrl = `/api/dashboard/trend?granularity=weekly&year=${selectedYear}&month=${selectedMonth}`;
         const monthlyUrl = `/api/dashboard/trend?granularity=monthly&year=${selectedYear}`;
+        const expensesUrl =
+          granularity === "weekly"
+            ? `/api/expenses?year=${selectedYear}&month=${selectedMonth}`
+            : `/api/expenses?year=${selectedYear}`;
 
-        const [weeklyRes, monthlyRes] = await Promise.all([
+        const [weeklyRes, monthlyRes, expensesRes] = await Promise.all([
           fetch(weeklyUrl),
           fetch(monthlyUrl),
+          fetch(expensesUrl),
         ]);
 
         if (!weeklyRes.ok || !monthlyRes.ok) {
           throw new Error("Gagal memuat tren keuangan");
         }
 
-        const [weeklyJson, monthlyJson] = await Promise.all([
+        const [weeklyJson, monthlyJson, expensesJson] = await Promise.all([
           weeklyRes.json(),
           monthlyRes.json(),
+          expensesRes.ok ? expensesRes.json() : Promise.resolve(null),
         ]);
 
         if (!cancelled) {
@@ -261,13 +341,16 @@ export function CashflowTrendSection({
             weekly: weeklyJson?.data?.points ?? [],
             monthly: monthlyJson?.data?.points ?? [],
           });
+          setExpenseBreakdown(expensesJson?.data?.breakdown ?? []);
           setLoading(false);
+          setLoadingExpenses(false);
         }
       } catch (err) {
         if (!cancelled) {
-          console.error("Error fetching trend:", err);
+          console.error("Error fetching trend & expenses:", err);
           setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
           setLoading(false);
+          setLoadingExpenses(false);
         }
       }
     }
@@ -277,7 +360,7 @@ export function CashflowTrendSection({
     return () => {
       cancelled = true;
     };
-  }, [selectedYear, selectedMonth]);
+  }, [selectedYear, selectedMonth, granularity]);
 
   const handleGranularityChange = (newGran: "weekly" | "monthly") => {
     if (newGran === granularity) return;
@@ -360,14 +443,14 @@ export function CashflowTrendSection({
   };
 
   return (
-    <section className={cn("space-y-6", className)}>
+    <section className={cn("space-y-8", className)}>
       {/* Header & Quick Action Buttons */}
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           {showTitle && (
             <div>
               <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-on-surface">
-                Ringkasan Kas & Tren
+                Ringkasan Kas &amp; Tren
               </h2>
               <p className="text-xs sm:text-sm text-on-surface-variant mt-0.5">
                 Pergerakan kas masuk, kas keluar, dan arus kas bersih kas masjid terverifikasi.
@@ -519,7 +602,7 @@ export function CashflowTrendSection({
             </div>
           )}
           <p className="mt-0.5 text-xs text-on-surface-variant">
-            Akumulasi infaq & pemasukan terverifikasi
+            Akumulasi infaq &amp; pemasukan terverifikasi
           </p>
         </div>
 
@@ -537,7 +620,7 @@ export function CashflowTrendSection({
             </div>
           )}
           <p className="mt-0.5 text-xs text-on-surface-variant">
-            Akumulasi biaya operasional & pengeluaran
+            Akumulasi biaya operasional &amp; pengeluaran
           </p>
         </div>
 
@@ -709,6 +792,115 @@ export function CashflowTrendSection({
           </div>
         )}
       </div>
+
+      {/* SECTION ALOKASI PENGELUARAN KAS TERINTEGRASI */}
+      {showAllocationBreakdown && (
+        <div id="alokasi-pengeluaran" className="space-y-4 pt-4 border-t border-outline-variant">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-outline-variant pb-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <PieChart size={18} className="text-primary" />
+                <h3 className="text-lg sm:text-xl font-bold font-sans tracking-tight text-on-surface">
+                  Alokasi Pos Pengeluaran Kas
+                </h3>
+              </div>
+              <p className="text-xs sm:text-sm text-on-surface-variant mt-0.5">
+                Rincian distribusi penggunaan dana kas masjid pada {periodCountLabel}.
+              </p>
+            </div>
+            <Link
+              href={`/pengeluaran?year=${selectedYear}${granularity === "weekly" ? `&month=${selectedMonth}` : ""}`}
+              className="text-xs text-primary font-semibold hover:underline flex items-center gap-1 self-start sm:self-auto"
+            >
+              <span>Buka Halaman Pengeluaran Lengkap</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          {loadingExpenses ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Skeleton className="h-44 rounded-2xl bg-surface-container-high" />
+              <Skeleton className="h-44 rounded-2xl bg-surface-container-high" />
+              <Skeleton className="h-44 rounded-2xl bg-surface-container-high" />
+            </div>
+          ) : expenseBreakdown.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-outline-variant bg-surface-container/40 p-8 text-center">
+              <p className="text-sm font-medium text-on-surface-variant">
+                Belum ada transaksi pengeluaran terverifikasi pada periode {periodCountLabel}.
+              </p>
+              <p className="text-xs text-on-surface-variant/70 mt-1">
+                Pilih periode lain di atas atau buka halaman pengeluaran untuk menelusuri data tahun sebelumnya.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {expenseBreakdown.map((item) => {
+                const style = getCategoryBadge(item.category);
+                const desc =
+                  (item.category && CATEGORY_DESCRIPTIONS[item.category]) ||
+                  "Alokasi pembelanjaan kebutuhan kas operasional DKM.";
+                return (
+                  <div
+                    key={item.category ?? "uncategorized"}
+                    className="rounded-2xl border border-outline-variant bg-surface-container/70 hover:bg-surface-container p-5 flex flex-col justify-between space-y-4 transition-all duration-150 hover:shadow-xs"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span
+                          className={`text-[11px] font-bold px-2 py-0.5 rounded-md border ${style.bg}`}
+                        >
+                          {style.badgeLabel}
+                        </span>
+                        <span className="text-xs font-bold text-on-surface-variant tabular-nums">
+                          {item.percentage.toFixed(1)}%
+                        </span>
+                      </div>
+                      <h4 className="text-base font-bold text-on-surface">
+                        {item.label}
+                      </h4>
+                      <p className="text-xs text-on-surface-variant leading-relaxed line-clamp-2">
+                        {desc}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2 pt-3 border-t border-outline-variant/60">
+                      {/* Bar visual alokasi */}
+                      <div className="h-1.5 w-full rounded-full bg-surface-container-highest overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${style.bar}`}
+                          style={{ width: `${Math.min(Math.max(item.percentage, 4), 100)}%` }}
+                        />
+                      </div>
+
+                      <div className="flex items-end justify-between gap-2 pt-1">
+                        <div>
+                          <span className="text-[10px] text-on-surface-variant block uppercase tracking-wider font-semibold">
+                            Total Belanja:
+                          </span>
+                          <span className="text-lg font-bold text-rose-700 dark:text-rose-400 tabular-nums">
+                            {formatRupiah(item.totalAmount)}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-on-surface-variant font-medium pb-0.5">
+                          {item.transactionCount} transaksi
+                        </span>
+                      </div>
+
+                      <Link
+                        href={`/pengeluaran?year=${selectedYear}${granularity === "weekly" ? `&month=${selectedMonth}` : ""}`}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline pt-1"
+                      >
+                        <span>Lihat Rincian Nota</span>
+                        <ChevronRight size={12} />
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
     </section>
   );
 }
