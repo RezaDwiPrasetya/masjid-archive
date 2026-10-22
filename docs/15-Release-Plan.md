@@ -117,12 +117,40 @@
 - [x] Tidak ada bug kritis
 - [x] Dokumentasi (Wiki `/docs`) sudah diperbarui dan selaras dengan implementasi
 
+### Milestone 13 — Public Transparency Portal & Homepage Consolidation (V13, Issue #080 / F-035)
+- [x] Portal Transparansi Publik pada halaman utama (`/`) dengan saldo terkonsolidasi (Kas Fisik vs Kas Bank)
+- [x] Alokasi pos pengeluaran kas reaktif terintegrasi dengan filter periode bulan & tahun
+- [x] Widget cek infaq mandiri dengan resolusi tanggal riil dokumen fisik pembukuan kas
+- [x] Konsolidasi arsitektur: eliminasi menu duplikat `/dashboard` dan redirect otomatis ke `/`
+- [x] Penyelarasan label navigasi "Beranda" konsisten di seluruh peran pengguna
+- [x] Pembersihan data statis artifisial 3 pilar dan rekening dummy
+
 ## Version
 
-Current: `0.12.0` (Fase V12: Kontrol Paginasi Tabel & Skalabilitas Daftar Data Masif — Issue #079 / F-034)
+Current: `0.13.0` (Fase V13: Portal Transparansi Publik & Konsolidasi Beranda — Issue #080 / F-035)
 Next: `1.0.0`
 
 ## Changelog
+
+### 0.13.0 (2026-10-22) — Fase V13: Portal Transparansi Publik & Konsolidasi Beranda (Issue #080 / F-035)
+- **Portal Transparansi Kas Terpadu (`app/page.tsx`)**:
+  - Halaman utama (`/`) resmi bertransformasi menjadi portal transparansi publik berkarakter Islami modern bagi jemaah dan donatur tanpa perlu login.
+  - Kartu Saldo Kas Terkonsolidasi menampilkan pembagian akurat Kas Fisik Brankas/Tromol vs Kas Bank Resmi BSI & Muamalat.
+  - Eliminasi seksi artifisial ("3 Pilar Dana Umat") dan rekening bank dummy untuk menjamin 100% data riil dari skema database.
+- **Konsolidasi Arsitektur Beranda & Eliminasi Redundansi Dashboard**:
+  - Mengeliminasi menu `/dashboard` yang sebelumnya redundan dengan Beranda.
+  - Rute `/dashboard` melakukan graceful 307 redirect otomatis ke `/` (atau `/?error=forbidden`).
+  - Navigasi sidebar staf (Bendahara & Admin) diselaraskan menggunakan label **"Beranda"** (ikon `Landmark`) seragam dengan publik.
+- **Alokasi Pos Pengeluaran Kas Terintegrasi (`components/cashflow-trend-section.tsx`)**:
+  - Menampilkan kartu alokasi pos belanja per kategori riil dari database (`operasional`, `pembangunan`, `sosial`, `honor`, `konsumsi`, `administrasi`, `lainnya`).
+  - Terhubung reaktif secara otomatis dengan filter bulan dan tahun aktif pada grafik arus kas.
+  - Progress bar proporsional, total belanja dalam Rupiah, jumlah transaksi, dan tautan langsung ke halaman `/pengeluaran`.
+- **Resolusi Tanggal Dokumen Riil pada Riwayat Infaq**:
+  - Riwayat infaq di Beranda menampilkan tanggal riil dokumen kas fisik (`transactionDate ?? report.reportDate`) dan terurut dari yang terbaru, menggantikan label statis "Tanggal tercatat".
+- **Banner Notifikasi Hak Akses (`components/auth-error-banner.tsx`)**:
+  - Banner peringatan penolakan hak akses staf kini tampil di Beranda dan dapat ditutup pengguna.
+- **Suite Pengujian Otomatis (`scripts/test-navigation-and-redirect.ts`)**:
+  - 16 uji coba otomatis alur navigasi dan redirect pasca-login lulus 100% (16/16 passed).
 
 ### 0.12.0 (2026-10-20) — Fase V12: Kontrol Paginasi Tabel & Skalabilitas Daftar Data Masif (Issue #079 / F-034)
 - **Komponen Standar Paginasi (`components/ui/pagination-controls.tsx`)**:

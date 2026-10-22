@@ -828,6 +828,44 @@
 - [x] Pemilih baris per halaman (10, 25, 50, 100) berfungsi secara reaktif.
 - [x] Seluruh test suite otomatis di `scripts/test-pagination.ts` lulus 22/22 test (100%).
 
+---
+
+### F-035 — Portal Transparansi Publik & Konsolidasi Arsitektur Beranda (Issue #080 / F-035)
+
+**Objective:** Menghadirkan portal transparansi kas publik yang ramah, hangat, dan akuntabel pada halaman utama (`/`) bagi jemaah dan donatur tanpa perlu login, sekaligus menyatukan arsitektur ikhtisar keuangan kas masjid ke dalam satu pintu utama (*single source of truth*) dan mengeliminasi halaman duplikat `/dashboard`.
+**User:** Seluruh pengguna (Publik / Jamaah untuk transparansi terbuka, donatur untuk verifikasi infaq mandiri, serta Bendahara dan Administrator DKM untuk pemantauan arus kas terkonsolidasi).
+**Process:**
+- **Hero Banner Saldo Terkonsolidasi**:
+  - Menampilkan angka tabular total saldo kas terkonsolidasi (Kas Fisik Brankas/Tromol vs Kas Rekening Bank Resmi BSI & Muamalat).
+  - Tampilan nilai kas bank dummy secara cerdas disembunyikan jika bernilai Rp 0 atau belum memiliki mutasi kas resmi.
+- **Ringkasan Kas & Tren Interaktif Terpadu (`CashflowTrendSection`)**:
+  - Grafik batang pemasukan vs pengeluaran terverifikasi yang responsif.
+  - Filter periode terpadu: pilihan granularitas (Mingguan vs Tahunan), pemilih bulan, dan tahun dinamis.
+  - Tombol aksi cetak langsung: Cetak Laporan A4 berstandar mading DKM dan ekspor spreadsheet Excel (.xlsx) tanpa modal popup tambahan.
+- **Alokasi Pos Pengeluaran Kas Terintegrasi**:
+  - Rincian distribusi belanja kas per kategori riil dari database (`operasional`, `pembangunan`, `sosial`, `honor`, `konsumsi`, `administrasi`, `lainnya`).
+  - Terhubung reaktif secara otomatis dengan filter bulan dan tahun aktif pada grafik tren kas di atasnya.
+  - Menyajikan persentase alokasi, progress bar proporsional, total nominal rupiah (Rp), jumlah transaksi, dan tautan langsung untuk menelusuri nota di `/pengeluaran`.
+- **Widget Cek Riwayat Infaq Donatur Mandiri**:
+  - Kolom pencarian cepat berbasis nama donatur tanpa perlu login.
+  - Resolusi tanggal dokumen riil: memprioritaskan `transactionDate` dan melakukan fallback ke `reportDate` dari dokumen asli pindaian mingguan, menggantikan label statis "Tanggal tercatat".
+  - Diurutkan berdasarkan transaksi terbaru.
+- **Arsip Pindaian Buku Kas Mingguan & Buletin Masjid**:
+  - Menampilkan kartu-kartu pindaian buku kas fisik terkelompok menurut tahun dan bulan.
+- **Konsolidasi Navigasi & Eliminasi Redundansi `/dashboard`**:
+  - Mengeliminasi menu `/dashboard` yang sebelumnya redundan dengan Beranda.
+  - Rute `/dashboard` melakukan HTTP 307 redirect otomatis ke `/` (atau `/?error=forbidden`).
+  - Navigasi sidebar staf (Bendahara & Admin) diselaraskan menggunakan label **"Beranda"** (ikon `Landmark`) seragam dengan publik.
+  - Komponen `AuthErrorBanner` ditempatkan di Beranda untuk menyajikan pemberitahuan penolakan hak akses yang ramah dan dapat ditutup pengguna.
+**Acceptance Criteria:**
+- [x] Halaman utama (`/`) berfungsi sebagai portal transparansi kas publik dan satu-satunya pusat ikhtisar kas terpadu bagi publik maupun staf.
+- [x] Saldo terkonsolidasi (Kas Fisik vs Kas Bank) tersaji secara akurat dan tidak menampilkan rekening dummy yang tidak valid.
+- [x] Alokasi pos pengeluaran kas reaktif memperbarui datanya mengikuti filter periode bulan/tahun yang dipilih.
+- [x] Riwayat infaq menyajikan tanggal riil dokumen kas fisik dan terurut dari yang terbaru.
+- [x] Menu duplikat `/dashboard` dihapus dari navigasi sidebar dan dialihkan (redirect) ke `/`.
+- [x] Label navigasi `/` seragam bernama "Beranda" di seluruh peran pengguna.
+- [x] Seluruh unit test navigasi di `scripts/test-navigation-and-redirect.ts` lulus 16/16 test (100%) dan TypeScript lolos 0 error.
+
 
 
 

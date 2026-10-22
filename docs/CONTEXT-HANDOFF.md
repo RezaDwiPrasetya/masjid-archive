@@ -19,8 +19,14 @@ Aplikasi web arsip & manajemen keuangan digital untuk **DKM Masjid Al-Luqman** (
   - Terpasang skill `frontend-design` dari repository resmi Anthropic (`anthropics/skills`).
   - Audit desain mengidentifikasi ~75% kemiripan dengan template SaaS AI generik; disusun matriks anti-AI tropes dan rencana 3 fase eksekusi:
     - **Fase 1 (Selesai - Commit a94fbbf)**: Gerbang Keamanan & Alur Autentikasi (`Akses Pengurus`, `/pending` approval state, router pasca-login).
-    - **Fase 2 (Selesai - Commit 0cb0c20)**: Halaman Depan Publik (`/`) berkarakter masjid, saldo kas 3 pilar, widget pencarian infaq mandiri, dan kanal rekening resmi/QRIS DKM.
-    - **Fase 3 (Selesai - Commit ae76cf9 & update)**: Penataan rute navigasi `AppShell`: publik hanya melihat 4 menu terbuka (`Beranda`, `Donatur`, `Pengeluaran`, `Cari`), sedangkan staf DKM mendapatkan menu kerja internal (`Unggah`, `Dashboard`, `Keuangan`).
+    - **Fase 2 (Selesai - Commit 0cb0c20)**: Halaman Depan Publik (`/`) berkarakter masjid, total saldo kas terkonsolidasi (brankas & rekening resmi), widget pencarian infaq mandiri, grafik tren kas interaktif, dan arsip buletin.
+    - **Fase 3 (Selesai - Commit ae76cf9 s.d. 46b2bb7)**: Penataan rute navigasi `AppShell` & Konsolidasi Arsitektur Portal:
+      - Publik melihat 4 menu bersih: `Beranda` (`/`), `Donatur` (`/donatur`), `Pengeluaran` (`/pengeluaran`), `Cari` (`/cari`).
+      - Staf DKM melihat alur kerja operasional terarah: `Unggah` (`/unggah`), `Beranda` (`/`), `Keuangan` (`/keuangan`), `Donatur` (`/donatur`), `Pengeluaran` (`/pengeluaran`), `Cari` (`/cari`), dan `Pengguna` (`/pengguna` khusus Admin).
+      - **Konsolidasi Total Beranda (`/`) & Eliminasi Redundansi `/dashboard`**: Menu `/dashboard` lama yang duplikat resmi dihapus dan dilebur ke `Beranda` sebagai *single source of truth*. Route `/dashboard` melakukan graceful 307 redirect ke `/`.
+      - **Alokasi Pos Belanja Riil Terintegrasi**: Bagian rincian kategori pengeluaran (`operasional`, `pembangunan`, `sosial`, `honor`, `konsumsi`, dll) terhubung langsung secara reaktif dengan filter periode `CashflowTrendSection`.
+      - **Resolusi Tanggal Dokumen Riil Infaq**: Pencarian infaq pada Beranda menampilkan tanggal riil dokumen kas fisik (`t.transactionDate ?? t.report?.reportDate`), menggantikan label statis "Tanggal tercatat".
+      - **Pembersihan Data Statis/Dummy**: Menghapus seksi artifisial 3 pilar dan menyembunyikan kartu rekening bank dummy jika belum memiliki mutasi kas riil.
 
 - **SELURUH FITUR V1–V10 SELESAI 100% (PROJEK TAMAT / FEATURE-COMPLETE)**:
   - **V1–V2**: Multi-format upload (JPG, PNG, PDF, Excel) & arsip berjenjang.
