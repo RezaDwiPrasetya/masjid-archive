@@ -1,37 +1,56 @@
 # 08. User Flow
 
-## Core User Flow
+## Arsitektur Alur: Dua Dunia (Dunia Publik vs Ruang Kerja DKM)
 
 ```
-Entry (buka aplikasi)
-  ↓
-Pilih menu: Unggah / Laporan / Cari
-  ↓
-Sistem merespons (arsip tersimpan / hasil pencarian tampil)
-  ↓
-Pengguna mendapat nilai (laporan aman / arsip ditemukan)
-  ↓
-Tujuan tercapai
+Pengunjung Membuka Web (URL Utama /)
+  │
+  ├─► [Publik / Jamaah — Tanpa Login]
+  │     ├── 1. Lobi Transparansi: Ringkasan 3 Pilar Kas (Operasional, Pembangunan, Sosial)
+  │     ├── 2. Widget Cek Infaq: Masukkan Nama Donatur / Kode Resi
+  │     ├── 3. Rekening Resmi & QRIS: Informasi transfer terverifikasi DKM
+  │     └── 4. Unduh Laporan: Buletin keuangan berkala (PDF A4 mading)
+  │
+  └─► [Tombol 'Akses Pengurus' di Pojok Kanan Atas]
+        │
+        ▼
+     Login Google OAuth (NextAuth)
+        │
+        ├─► [Role: null / Akun Baru / Jamaah]
+        │     └── Halaman /pending (Status: "Menunggu Verifikasi Admin DKM")
+        │           ├── Informasi profil akun Google
+        │           ├── Petunjuk aktivasi ke pengurus DKM
+        │           └── Tombol "Kembali ke Beranda Publik" / "Keluar"
+        │
+        └─► [Role: BENDAHARA / ADMIN]
+              └── Redirect Otomatis ke Workspace Staf (/unggah)
+                    ├── 1. Unggah Foto Buku Kas Jumat / Nota / PDF
+                    ├── 2. Ekstraksi Multimodal Vision-LLM (Gemini)
+                    ├── 3. Review Transaksi & Rekonsiliasi Kas (Side-by-side)
+                    ├── 4. Manajemen Kas & Mutasi Bank (/keuangan)
+                    └── 5. Kelola Hak Akses Pengguna (/pengguna - Khusus ADMIN)
 ```
 
 ## Detailed Flow
 
-1. Bendahara membuka menu **Unggah** → memilih foto laporan → memilih tanggal → menyimpan
-2. Sistem menampilkan halaman konfirmasi **"Laporan Berhasil Disimpan"**
-3. Pengurus DKM membuka menu **Laporan** → menelusuri arsip lewat accordion Tahun > Bulan
-4. Pengurus DKM membuka menu **Cari** → mengetik kata kunci atau memilih filter Tahun/Bulan
-5. Pengurus DKM menekan salah satu hasil → masuk ke halaman **Detail Laporan** → bisa mengunduh atau membagikan foto
+### 1. Alur Jamaah & Publik (Tanpa Hambatan Login)
+1. Pengunjung membuka halaman utama (`/`).
+2. Melihat sambutan hangat Masjid Al-Luqman dan ringkasan kas 3 pilar yang bersahabat.
+3. Donatur dapat langsung mengetik namanya di kolom "Cek Riwayat Infaq" untuk memastikan uang infaqnya sudah tercatat secara sah.
+4. Jemaah yang ingin bersedekah dapat memindai QRIS resmi DKM atau menyalin nomor rekening resmi BSI/Muamalat atas nama DKM Masjid Al-Luqman.
+5. Jemaah dapat mengunduh salinan berkas PDF laporan bulanan resmi.
 
-## Alternative Flows
+### 2. Alur Staf Pengurus DKM
+1. Staf membuka web dan menekan tombol **"Akses Pengurus"**.
+2. Masuk menggunakan akun Google terdaftar.
+3. Sistem memeriksa sesi dan hak akses:
+   - Jika role terdaftar sebagai `BENDAHARA` atau `ADMIN`, sistem langsung mengarahkan ke halaman `/unggah`.
+   - Header menampilkan badge peran pengurus dan tombol keluar.
+4. Staf melakukan aktivitas operasional: unggah nota, koreksi entri, verifikasi kas, dan cetak buletin mading.
 
-### Error
+### 3. Alur Calon Staf / Pending Approval
+1. Pengguna login menggunakan Google namun belum di-assign role oleh Administrator.
+2. Endpoint `app/auth/post-login` mendeteksi `role === null` dan mengarahkan ke `/pending`.
+3. Halaman `/pending` menampilkan pemberitahuan yang santun dan opsi kembali ke beranda publik atau logout.
+4. Administrator melalui menu `/pengguna` dapat meng-upgrade akun tersebut menjadi `BENDAHARA` atau `ADMIN`. Setelah di-upgrade, pada login berikutnya staf langsung diarahkan ke workspace operasional.
 
-Jika foto gagal diunggah (misal koneksi terputus), sistem menampilkan pesan error dan mengizinkan bendahara mencoba unggah ulang tanpa kehilangan foto/tanggal yang sudah dipilih.
-
-### Empty State
-
-Jika belum ada laporan pada periode yang difilter, sistem menampilkan pesan bahwa arsip untuk periode tersebut masih kosong, sambil menawarkan tombol untuk mengunggah laporan baru.
-
-### Success State
-
-Setelah laporan berhasil disimpan, sistem menampilkan halaman konfirmasi dengan ringkasan laporan (foto kecil, tanggal) dan status "Tersimpan".

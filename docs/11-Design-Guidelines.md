@@ -200,5 +200,25 @@ Unit dasar: 8px.
 
 > **Catatan implementasi:** ikon di guideline ini merujuk Material Symbols (wireframe awal), implementasi aktual memakai **Lucide Icons** — lihat [12. Technical Specification](./12-Technical-Specification.md).
 
+---
+
+## Standar Desain Anti-AI Tropes & Identitas Lembaga (Anthropic `frontend-design` Standard)
+
+Berdasarkan audit desain dan integrasi skill `frontend-design`, desain antarmuka Masjid Archive memiliki standar ketat untuk menghindari cetak-biru template generik AI (AI clichés) demi menonjolkan identitas khas Masjid Al-Luqman:
+
+### 1. Matriks Anti-AI Clichés
+
+| 🚫 Ciri Klise Template AI (Dilarang) | ✅ Standar Khusus Masjid Al-Luqman |
+| :--- | :--- |
+| **SaaS-Card Kit Berulang:** Semua konten dipotong ke dalam kartu kotak rounded seragam berjejer dengan drop-shadow abu-abu tipis. | **Tata Letak Berhirarki Alami:** Elemen penting (saldo kas 3 pilar) berdiri sebagai pilar utama; data transaksi disusun sebagai list buku besar bersih dengan border hairline tipis. |
+| **Palet Warm-Cream / Terracotta Klise:** Latar cream (#fafaf4) tanpa diferensiasi dipadukan aksen terracotta clay khas template Claude. | **Palet Kesejukan & Amanah:** Netral bersih dikombinasikan dengan warna hijau zamrud/forest teduh (#154212) yang berakar pada keteduhan arsitektur masjid. |
+| **Label Tipografi AI Kaku:** Teks serba ALL-CAPS berjarak lebar (`ALL-CAPS EYEBROW LABEL`), teks tombol selalu berakhiran panah `→`. | **Bahasa Alami & Bersahaja:** Tipografi komunikatif berbahasa Indonesia yang santun (*"Cek Riwayat Infaq Anda"*, *"Rekening Resmi DKM"*). |
+| **Empty State Generik:** Lingkaran bulat abu-abu di tengah dengan ikon Lucide besar ukuran 32 dan background `bg-primary/10`. | **Empty State Berkonteks:** Ilustrasi / kartu panduan informatif yang relevan dengan aksi nyata jamaah/pengurus. |
+| **Monospace Berlebihan:** Memaksa font koding (monospace) untuk seluruh teks data kecil. | **Tabular-Nums untuk Keuangan:** Font utama sans-serif modern dipadukan dengan `tabular-nums` untuk nominal rupiah agar angka sejajar rapi saat diaudit. |
+
+### 2. Pemisahan Karakter Antarmuka (Dua Dunia)
+- **Lobi Publik (`/`):** Dirancang tenang, mengayomi, transparan, dan tidak intimidating bagi jemaah awam. Menyajikan ringkasan 3 pilar kas (Operasional, Pembangunan, Sosial), widget pencarian infaq, dan info rekening/QRIS resmi.
+- **Ruang Kerja Staf (`/unggah`, `/keuangan`, `/pengguna`):** Dirancang presisi, fokus pada efisiensi kerja bendahara (review nota AI, paginasi mutasi bank, rekonsiliasi kas, dan administrasi akun).
+
 
 

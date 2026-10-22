@@ -1,16 +1,27 @@
 # CONTEXT HANDOFF — Proyek "Masjid Archive"
-> **Terakhir diperbarui**: 20 Oktober 2026  
-> **Status**: **V1–V12 FEATURE-COMPLETE & TEST-HARDENED (Issue #079 / F-034 Selesai) — Siap UAT & Verifikasi**
+> **Terakhir diperbarui**: 22 Oktober 2026  
+> **Status**: **AKTIF — FASE REDESIGN V3: PORTAL TRANSPARANSI PUBLIK & DKM WORKSPACE (Branch: feature/portal-transparansi-publik)**
 
 ---
 
 ## 1. TUJUAN UTAMA PROJECT
 Aplikasi web arsip & manajemen keuangan digital untuk **DKM Masjid Al-Luqman** (Kel. Soklat, Kec. Subang).  
-**Tujuan**: Mengubah pencatatan buku kas fisik mingguan (difoto, dipajang di mading) menjadi platform digital yang mengarsipkan, mengekstrak data via vision-LLM, memverifikasi manual, dan menyajikan transparansi keuangan (tren, donatur, infaq anonim, pengeluaran kas per kategori, ekspor cetak & Excel) ke publik/jemaah tanpa login.
+**Tujuan**: 
+1. **Dunia Publik (Tanpa Login)**: Memberikan wajah publik yang ramah, hangat, dan transparan bagi jamaah & donatur (Lobi saldo 3 pilar kas, widget cek infaq mandiri, kanal rekening/QRIS resmi DKM, unduh buletin PDF).
+2. **Dunia Staf DKM (Login)**: Ruang kerja operasional aman bagi pengurus (Unggah nota/foto buku kas fisik, ekstraksi vision-LLM Gemini, review side-by-side, manajemen buku besar bank/tunai, serta administrasi hak akses).
+3. **Standar Desain**: Menerapkan pedoman `frontend-design` dari Anthropic guna mengeliminasi template AI klise (SaaS-card kit, palet generik, label kaku) dan menonjolkan identitas khas Masjid Al-Luqman.
 
 ---
 
 ## 2. KONDISI PROJECT SAAT INI
+- **INISIASI TRANSFORMASI UI/UX V3 (22 Oktober 2026)**:
+  - Branch aktif: `feature/portal-transparansi-publik`.
+  - Terpasang skill `frontend-design` dari repository resmi Anthropic (`anthropics/skills`).
+  - Audit desain mengidentifikasi ~75% kemiripan dengan template SaaS AI generik; disusun matriks anti-AI tropes dan rencana 3 fase eksekusi:
+    - **Fase 1**: Gerbang Keamanan & Alur Autentikasi (`Akses Pengurus`, `/pending` approval state, router pasca-login).
+    - **Fase 2**: Halaman Depan Publik (`/`) berkarakter masjid & transparan.
+    - **Fase 3**: Refaktor navigasi `AppShell` (pemisahan layout publik vs staf).
+
 - **SELURUH FITUR V1–V10 SELESAI 100% (PROJEK TAMAT / FEATURE-COMPLETE)**:
   - **V1–V2**: Multi-format upload (JPG, PNG, PDF, Excel) & arsip berjenjang.
   - **V3**: Google SSO NextAuth & Role-based Access Control (Admin / Guest).
