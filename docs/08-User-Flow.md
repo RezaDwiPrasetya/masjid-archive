@@ -7,9 +7,8 @@ Pengunjung Membuka Web (URL Utama /)
   │
   ├─► [Publik / Jamaah & Pengurus — Halaman Utama /]
   │     ├── 1. Ringkasan Kas & Tren: Grafik kas masuk & keluar, filter periode (Bulan & Tahun), tombol Cetak Laporan (A4) & Excel
-  │     ├── 2. Lobi 3 Pilar Kas: Operasional & Kemakmuran, Pembangunan & Sarana, ZISWAF & Sosial
-  │     ├── 3. Widget Cek Infaq: Pencarian cepat riwayat infaq donatur tanpa login
-  │     └── 4. Arsip Laporan: Pindaian buku kas mingguan & buletin berkala DKM
+  │     ├── 2. Widget Cek Infaq: Pencarian cepat riwayat infaq donatur tanpa login
+  │     └── 3. Arsip Laporan: Pindaian buku kas mingguan & buletin berkala DKM
   │
   └─► [Tombol 'Akses Pengurus' di Pojok Kanan Atas]
         │
@@ -36,9 +35,8 @@ Pengunjung Membuka Web (URL Utama /)
 ### 1. Alur Jamaah & Publik (Tanpa Hambatan Login)
 1. Pengunjung membuka halaman utama (`/`).
 2. Melihat identitas DKM Masjid Al-Luqman, total saldo terkonsolidasi (fisik & bank), serta visualisasi interaktif **Ringkasan Kas & Tren** (lengkap dengan filter bulan/tahun, grafik batang kas masuk & keluar, dan tombol **Cetak Laporan / Excel**).
-3. Meninjau alokasi 3 pilar kas (Operasional, Pembangunan, Sosial) yang dihitung dari periode laporan terverifikasi terkini.
-4. Donatur dapat langsung mengetik namanya di kolom "Cek Riwayat Infaq" untuk memastikan uang infaqnya sudah tercatat secara sah.
-5. Jemaah & pengurus dapat menelusuri arsip pindaian buku kas mingguan dan mencetak dokumen mading A4 kapan saja. *(Catatan: Bagian rekening bank resmi disembunyikan sementara sampai DKM mendaftarkan nomor rekening resmi yang valid).*
+3. Donatur dapat langsung mengetik namanya di kolom "Cek Riwayat Infaq" untuk memastikan uang infaqnya sudah tercatat secara sah.
+4. Jemaah & pengurus dapat menelusuri arsip pindaian buku kas mingguan dan mencetak dokumen mading A4 kapan saja. *(Catatan: Bagian rekening bank resmi dan kanal 3 pilar yang belum didukung skema data riil ditiadakan agar informasi 100% akurat).*
 
 ### 2. Alur Staf Pengurus DKM
 1. Staf membuka web dan menekan tombol **"Akses Pengurus"**.
@@ -58,7 +56,7 @@ Pengunjung Membuka Web (URL Utama /)
 
 | Peran Pengguna | Menu Navigasi yang Ditampilkan | Keterangan |
 | :--- | :--- | :--- |
-| **Jamaah / Publik (Tanpa Login)** | 1. **Beranda** (`/`)<br>2. **Donatur** (`/donatur`)<br>3. **Pengeluaran** (`/pengeluaran`)<br>4. **Cari** (`/cari`) | Hanya 4 menu terbuka. Menampilkan Portal Transparansi Kas publik & 3 pilar dana amanah umat. Menu internal disembunyikan agar tampilan bersih dan terarah. |
+| **Jamaah / Publik (Tanpa Login)** | 1. **Beranda** (`/`)<br>2. **Donatur** (`/donatur`)<br>3. **Pengeluaran** (`/pengeluaran`)<br>4. **Cari** (`/cari`) | Hanya 4 menu terbuka. Menampilkan Portal Transparansi Kas publik dengan saldo terkonsolidasi, grafik tren, cetak laporan, dan pencarian infaq terbuka. Menu internal disembunyikan agar tampilan bersih dan terarah. |
 | **Staf DKM (BENDAHARA / ADMIN)** | 1. **Unggah** (`/unggah`)<br>2. **Laporan** (`/`)<br>3. **Dashboard** (`/dashboard`)<br>4. **Keuangan** (`/keuangan`)<br>5. **Donatur** (`/donatur`)<br>6. **Pengeluaran** (`/pengeluaran`)<br>7. **Cari** (`/cari`) | Alur kerja operasional terverifikasi diawali dengan digitalisasi fisik (`Unggah`), arsip buletin mingguan (`Laporan`), analitik kas & tren (`Dashboard`), mutasi perbankan/tunai (`Keuangan`), lalu penelusuran transaksi. |
 | **Administrator Sistem (ADMIN)** | Tambahan: 8. **Pengguna** (`/pengguna`) | Menu pengelolaan hak akses seluruh akun pengurus DKM. |
 

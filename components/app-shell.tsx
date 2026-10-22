@@ -46,7 +46,7 @@ export function AppShell({
   // - Staf DKM (BENDAHARA & ADMIN): Mengutamakan alur kerja operasional terverifikasi
   //   diawali dengan Unggah (/unggah), lalu Laporan (/ - arsip buletin mingguan), Dashboard (/dashboard), dan Keuangan (/keuangan).
   // - Publik / Jamaah (Tanpa Login): Mengutamakan keterbukaan informasi
-  //   diawali dengan Beranda (/ - portal transparansi kas & pilar dana umat).
+  //   diawali dengan Beranda (/ - portal transparansi kas & infaq umat).
   if (isStaff(session)) {
     navItems.push(
       { href: "/unggah", label: "Unggah", icon: ImagePlus },

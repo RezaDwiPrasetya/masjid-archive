@@ -103,28 +103,10 @@ export default async function BerandaPortalPublikPage() {
   let bankIn = 0;
   let bankOut = 0;
 
-  // Akumulasi 3 Pilar Kas
-  let kasOperasionalIn = 0;
-  let kasOperasionalOut = 0;
-  let kasPembangunanIn = 0;
-  let kasPembangunanOut = 0;
-  let kasSosialIn = 0;
-  let kasSosialOut = 0;
-
-  // Penentuan periode aktif laporan (mengutamakan laporan terverifikasi terkini agar tidak menampilkan periode kosong)
-  const now = new Date();
-  const latestReport = reports[0];
-  const activeYear = latestReport ? latestReport.year : now.getUTCFullYear();
-  const activeMonth = latestReport ? latestReport.month : now.getUTCMonth() + 1;
-  const activeMonthName = MONTH_NAMES[activeMonth] || "";
-  let currentMonthIn = 0;
-  let currentMonthOut = 0;
-
   for (const tx of verifiedTransactions) {
     const amount = Number(tx.amount);
     const method = (tx.paymentMethod ?? "TUNAI").toUpperCase();
     const isCash = method === "TUNAI";
-    const cat = (tx.category ?? "operasional").toLowerCase();
 
     // Akumulasi Saldo Kas & Bank
     if (tx.type === "pemasukan") {
@@ -134,32 +116,12 @@ export default async function BerandaPortalPublikPage() {
       if (isCash) cashOut += amount;
       else bankOut += amount;
     }
-
-    // Akumulasi Berdasarkan 3 Pilar Kas
-    if (cat === "pembangunan") {
-      if (tx.type === "pemasukan") kasPembangunanIn += amount;
-      else kasPembangunanOut += amount;
-    } else if (cat === "sosial") {
-      if (tx.type === "pemasukan") kasSosialIn += amount;
-      else kasSosialOut += amount;
-    } else {
-      // Operasional, honor, konsumsi, administrasi, dll.
-      if (tx.type === "pemasukan") kasOperasionalIn += amount;
-      else kasOperasionalOut += amount;
-    }
-
-    // Cek apakah transaksi terjadi di periode laporan aktif
-    if (tx.transactionDate) {
-      const txDate = new Date(tx.transactionDate);
-      if (
-        txDate.getUTCFullYear() === activeYear &&
-        txDate.getUTCMonth() + 1 === activeMonth
-      ) {
-        if (tx.type === "pemasukan") currentMonthIn += amount;
-        else currentMonthOut += amount;
-      }
-    }
   }
+
+  // Penentuan periode aktif laporan
+  const latestReport = reports[0];
+  const activeYear = latestReport ? latestReport.year : new Date().getUTCFullYear();
+  const activeMonth = latestReport ? latestReport.month : new Date().getUTCMonth() + 1;
 
   // Mutasi transfer internal
   let transfersBankToCash = 0;
@@ -246,12 +208,6 @@ export default async function BerandaPortalPublikPage() {
             Ringkasan &amp; Tren
           </a>
           <a
-            href="#tiga-pilar"
-            className="px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/30 transition-colors"
-          >
-            3 Pilar Kas
-          </a>
-          <a
             href="#cek-infaq"
             className="px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/30 transition-colors"
           >
@@ -322,106 +278,6 @@ export default async function BerandaPortalPublikPage() {
               initialMonth={activeMonth}
               availableYears={years}
             />
-          </section>
-
-          {/* SECTION 2: Alokasi 3 Pilar Kas Masjid */}
-          <section id="tiga-pilar" className="space-y-4 pt-2">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-outline-variant pb-3">
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold font-sans tracking-tight text-on-surface">
-                  Alokasi 3 Pilar Kas Masjid
-                </h2>
-                <p className="text-xs sm:text-sm text-on-surface-variant">
-                  Pembagian kas berdasarkan peruntukan amanah infaq jamaah.
-                </p>
-              </div>
-              <div className="text-xs text-on-surface-variant font-medium">
-                Arus Kas Periode {activeMonthName} {activeYear}:{" "}
-                <span className="text-emerald-700 font-bold tabular-nums">+{formatRupiah(currentMonthIn)}</span> /{" "}
-                <span className="text-rose-700 font-bold tabular-nums">-{formatRupiah(currentMonthOut)}</span>
-              </div>
-            </div>
-
-            {/* 3 Pilar Cards Berkarakter Buku Besar */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Pilar 1: Operasional */}
-              <div className="rounded-2xl border border-outline-variant bg-surface-container p-5 flex flex-col justify-between space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-primary">
-                      Pilar 1
-                    </span>
-                    <Badge variant="outline" size="sm">
-                      Rutin
-                    </Badge>
-                  </div>
-                  <h3 className="text-base font-bold text-on-surface">
-                    Kas Operasional &amp; Kemakmuran
-                  </h3>
-                  <p className="text-xs text-on-surface-variant leading-relaxed">
-                    Biaya listrik, air, kebersihan, honorarium marbot &amp; imam, serta penyelenggaraan salat berjamaah &amp; pengajian rutin.
-                  </p>
-                </div>
-                <div className="pt-3 border-t border-outline-variant/60">
-                  <span className="text-[11px] text-on-surface-variant block">Akumulasi Pemasukan:</span>
-                  <span className="text-lg font-bold text-primary tabular-nums">
-                    {formatRupiah(kasOperasionalIn)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Pilar 2: Pembangunan */}
-              <div className="rounded-2xl border border-outline-variant bg-surface-container p-5 flex flex-col justify-between space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-400">
-                      Pilar 2
-                    </span>
-                    <Badge variant="gold" size="sm">
-                      Fisik
-                    </Badge>
-                  </div>
-                  <h3 className="text-base font-bold text-on-surface">
-                    Kas Pembangunan &amp; Sarana
-                  </h3>
-                  <p className="text-xs text-on-surface-variant leading-relaxed">
-                    Pemeliharaan kubah, pengadaan AC/karpet sajadah, renovasi tempat wudu, dan perbaikan fasilitas fisik masjid.
-                  </p>
-                </div>
-                <div className="pt-3 border-t border-outline-variant/60">
-                  <span className="text-[11px] text-on-surface-variant block">Akumulasi Pemasukan:</span>
-                  <span className="text-lg font-bold text-amber-900 dark:text-amber-300 tabular-nums">
-                    {formatRupiah(kasPembangunanIn)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Pilar 3: ZISWAF & Sosial */}
-              <div className="rounded-2xl border border-outline-variant bg-surface-container p-5 flex flex-col justify-between space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-400">
-                      Pilar 3
-                    </span>
-                    <Badge variant="success" size="sm">
-                      Sosial
-                    </Badge>
-                  </div>
-                  <h3 className="text-base font-bold text-on-surface">
-                    ZISWAF &amp; Santunan Sosial
-                  </h3>
-                  <p className="text-xs text-on-surface-variant leading-relaxed">
-                    Penyaluran zakat, infaq yatim piatu, bantuan sembako dhuafa sekitar masjid, serta santunan warga yang tertimpa musibah.
-                  </p>
-                </div>
-                <div className="pt-3 border-t border-outline-variant/60">
-                  <span className="text-[11px] text-on-surface-variant block">Akumulasi Pemasukan:</span>
-                  <span className="text-lg font-bold text-emerald-800 dark:text-emerald-300 tabular-nums">
-                    {formatRupiah(kasSosialIn)}
-                  </span>
-                </div>
-              </div>
-            </div>
           </section>
 
           {/* SECTION 2: Widget Interaktif Cek Riwayat Infaq */}
