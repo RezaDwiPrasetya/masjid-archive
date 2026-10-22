@@ -121,20 +121,30 @@ export default async function CariLaporanPage({
       )
     : sortedReports;
 
+  const heroContent = (
+    <div>
+      <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed">
+        <FileSearch className="h-4 w-4 shrink-0" />
+        <span>Pencarian Arsip Kas & Warta Jum&apos;at • DKM Masjid Al-Luqman</span>
+      </div>
+
+      <div className="mt-3 text-3xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary">
+        {filteredReports.length} Dokumen
+      </div>
+
+      <div className="mt-2 text-xs md:text-sm text-primary-fixed/80">
+        {keyword || year || month
+          ? `Hasil pencarian berkas arsip kas dari total ${reports.length} pindaian tersimpan.`
+          : `Seluruh pindaian pembukuan kas mingguan tersedia lintas ${years.length} tahun pembukuan.`}
+      </div>
+    </div>
+  );
+
   return (
     <AppShell active="/cari">
-      <PageShell>
+      <PageShell heroBand={heroContent}>
         <div className="space-y-6">
-          <div className="border-b border-outline-variant pb-5">
-            <h1 className="text-3xl font-bold tracking-tight text-on-surface font-sans">
-              Cari Arsip
-            </h1>
-            <p className="text-sm text-on-surface-variant mt-1">
-              Telusuri berkas pindaian laporan kas berdasarkan kata kunci nama pengurus, tanggal, atau periode.
-            </p>
-          </div>
-
-          <form className="grid gap-4 rounded-xl border border-outline-variant bg-surface-container p-5 sm:p-6 shadow-level-1 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_140px_140px_220px_auto] lg:items-end">
+          <form className="grid gap-4 rounded-2xl border border-outline-variant bg-surface p-5 sm:p-6 shadow-xs grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_140px_140px_220px_auto] lg:items-end">
             <div>
               <label htmlFor="keyword" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
                 Kata Kunci

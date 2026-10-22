@@ -237,17 +237,27 @@ export default function UnggahLaporanPage() {
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
+  const heroContent = (
+    <div>
+      <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed">
+        <UploadCloud className="h-4 w-4 shrink-0" />
+        <span>Ruang Kerja Pengurus DKM • Pembukuan Kas Digital</span>
+      </div>
+
+      <h1 className="mt-3 text-2xl sm:text-4xl md:text-[44px] font-semibold leading-tight tracking-tight text-on-primary">
+        Unggah Berkas Laporan Kas
+      </h1>
+
+      <div className="mt-2 text-xs md:text-sm text-primary-fixed/80">
+        Digitalisasi warta Jum&apos;at, pindaian buku kas fisik, dokumen PDF, dan spreadsheet Excel ke arsip terverifikasi.
+      </div>
+    </div>
+  );
+
   return (
     <AppShell active="/unggah">
-      <PageShell>
-        <div className="mb-8 space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-on-surface font-sans">
-            Unggah Laporan Baru
-          </h1>
-          <p className="text-sm text-on-surface-variant">
-            Lampirkan satu atau beberapa file (gambar, PDF, Excel) untuk laporan mingguan ini.
-          </p>
-        </div>
+      <PageShell heroBand={heroContent}>
+        <div className="space-y-6">
 
         {/* Banner sukses */}
         {saved && (
@@ -449,6 +459,7 @@ export default function UnggahLaporanPage() {
                   : `Simpan ke Arsip (${files.length} file)`}
           </Button>
         </form>
+        </div>
       </PageShell>
     </AppShell>
   );

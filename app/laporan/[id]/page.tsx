@@ -149,57 +149,135 @@ export default async function DetailLaporanPage({
     verifiedTransactionsCount: allVerifiedInReport.length,
   });
 
+  const allVerified = report.attachments.flatMap((a) =>
+    a.transactions.filter((t) => t.isVerified)
+  );
+  const allUnverified = report.attachments.flatMap((a) =>
+    a.transactions.filter((t) => !t.isVerified)
+  );
+
+  const initialBalance = report.initialBalance
+    ? parseFloat(report.initialBalance.toString())
+    : null;
+  const finalBalance = report.finalBalance
+    ? parseFloat(report.finalBalance.toString())
+    : null;
+
+  const totalMasuk = allVerified
+    .filter((t) => t.type === "pemasukan")
+    .reduce((s, t) => s + parseFloat(t.amount.toString()), 0);
+  const totalKeluar = allVerified
+    .filter((t) => t.type === "pengeluaran")
+    .reduce((s, t) => s + parseFloat(t.amount.toString()), 0);
+  const netChange = totalMasuk - totalKeluar;
+  const calculatedFinal =
+    initialBalance !== null ? initialBalance + netChange : null;
+
+  const displayHeroFigure =
+    calculatedFinal !== null
+      ? calculatedFinal
+      : finalBalance !== null
+      ? finalBalance
+      : totalMasuk;
+
+  const displayHeroLabel =
+    calculatedFinal !== null || finalBalance !== null
+      ? "Saldo Kas Akhir Pekan Ini"
+      : "Total Pemasukan Pekan Ini";
+
+  const fmtRupiah = (n: number) =>
+    new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(n);
+
+  const heroContent = (
+    <div>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-fixed hover:underline transition-colors"
+        >
+          <ArrowLeft size={14} /> Kembali ke Arsip Laporan
+        </Link>
+        <span className="rounded-full bg-primary-container border border-primary-fixed/20 px-3 py-1 text-xs font-semibold text-primary-fixed">
+          Warta Kas Jum&apos;at • Terverifikasi DKM
+        </span>
+      </div>
+
+      <div className="mt-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <div className="text-xs md:text-sm font-medium text-primary-fixed">
+            Laporan Keuangan Kas • {new Date(report.reportDate).toLocaleDateString("id-ID", { dateStyle: "full" })}
+          </div>
+          <h1 className="mt-1 text-2xl sm:text-3xl md:text-4xl font-bold text-on-primary tracking-tight font-sans">
+            Pekan {report.weekOfMonth}, {report.month}/{report.year}
+          </h1>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2 flex-wrap shrink-0">
+          <Link href={`/laporan/${report.id}/cetak`}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1.5 text-xs font-semibold rounded-lg bg-primary-container border-primary-fixed/30 text-on-primary hover:bg-primary-fixed hover:text-primary transition-colors"
+              title="Buka pratinjau cetak A4 berkop resmi DKM"
+            >
+              <Printer size={13} /> Cetak Laporan
+            </Button>
+          </Link>
+          <a href={`/api/reports/${report.id}/export/excel`} download>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1.5 text-xs font-semibold rounded-lg bg-primary-container border-primary-fixed/30 text-on-primary hover:bg-primary-fixed hover:text-primary transition-colors"
+              title="Unduh format spreadsheet Excel (.xlsx)"
+            >
+              <FileSpreadsheet size={13} /> Unduh Excel
+            </Button>
+          </a>
+        </div>
+      </div>
+
+      <div className="mt-6 pt-5 border-t border-primary-container/80 flex flex-wrap items-baseline gap-6 sm:gap-10">
+        <div>
+          <span className="text-xs text-primary-fixed/80 block">{displayHeroLabel}</span>
+          <div className="text-3xl sm:text-4xl md:text-[44px] font-semibold text-on-primary tabular-nums mt-1 leading-none">
+            {fmtRupiah(displayHeroFigure)}
+          </div>
+        </div>
+
+        <div className="border-l border-primary-container pl-6 sm:pl-10">
+          <span className="text-xs text-primary-fixed/80 block">Pemasukan</span>
+          <div className="text-xl sm:text-2xl font-bold text-primary-fixed tabular-nums mt-1">
+            + {fmtRupiah(totalMasuk)}
+          </div>
+        </div>
+
+        <div className="border-l border-primary-container pl-6 sm:pl-10">
+          <span className="text-xs text-primary-fixed/80 block">Pengeluaran</span>
+          <div className="text-xl sm:text-2xl font-bold text-rose-200 tabular-nums mt-1">
+            - {fmtRupiah(totalKeluar)}
+          </div>
+        </div>
+
+        <div className="border-l border-primary-container pl-6 sm:pl-10">
+          <span className="text-xs text-primary-fixed/80 block">Arus Kas Bersih</span>
+          <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums mt-1">
+            {netChange >= 0 ? `+ ${fmtRupiah(netChange)}` : fmtRupiah(netChange)}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <AppShell active="/">
-      <PageShell>
+      <PageShell heroBand={heroContent}>
         <div className="space-y-6">
-          {/* Back Navigation */}
-          <div>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline transition-colors"
-            >
-              <ArrowLeft size={14} /> Kembali ke Arsip Laporan
-            </Link>
-          </div>
-
-          {/* Page Heading */}
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 border-b border-outline-variant pb-5">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-on-surface font-sans">
-                Detail Laporan
-              </h1>
-              <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
-                Laporan Keuangan Kas • {new Date(report.reportDate).toLocaleDateString("id-ID", {
-                  dateStyle: "full",
-                })}
-              </p>
-            </div>
-            {/* Tombol Ekspor & Cetak Rekapitulasi Kas (Selaras Dashboard) */}
-            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
-              <Link href={`/laporan/${report.id}/cetak`} className="flex-1 sm:flex-initial">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full sm:w-auto gap-1.5 text-xs font-semibold border-outline-variant hover:bg-surface-container-high transition-colors"
-                  title="Buka pratinjau cetak A4 berkop resmi DKM (dapat dicetak langsung atau disimpan sebagai PDF)"
-                >
-                  <Printer size={14} className="text-primary" /> Cetak Laporan
-                </Button>
-              </Link>
-              <a href={`/api/reports/${report.id}/export/excel`} download className="flex-1 sm:flex-initial">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full sm:w-auto gap-1.5 text-xs font-semibold border-outline-variant hover:bg-surface-container-high text-primary transition-colors"
-                  title="Unduh rekapitulasi data laporan dalam format spreadsheet Excel (.xlsx)"
-                >
-                  <FileSpreadsheet size={14} /> Unduh Excel
-                </Button>
-              </a>
-            </div>
-          </div>
-
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
             {/* Panel utama: daftar lampiran */}
             <div className="space-y-6">

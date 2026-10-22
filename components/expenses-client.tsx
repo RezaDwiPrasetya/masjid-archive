@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PageShell } from "@/components/page-shell";
 import { PeriodFilterBar } from "@/components/period-filter-bar";
+import { MONTH_NAMES } from "@/lib/period-filter";
 import {
   getCategoryLabel,
   getCategoryColor,
@@ -225,19 +226,69 @@ export function ExpensesClient({
     return filteredTransactions.slice(start, start + pageSize);
   }, [filteredTransactions, safePage, pageSize]);
 
-  return (
-    <PageShell>
-      <div className="space-y-8">
-        {/* Page Title Header */}
-        <div className="space-y-1">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-on-surface">
-            Rekap & Transparansi Pengeluaran
-          </h1>
-          <p className="text-xs sm:text-sm text-on-surface-variant">
-            Transparansi pembukuan alokasi dana kas masjid per kategori pengeluaran yang telah diverifikasi.
-          </p>
+  const activePeriodLabel = React.useMemo(() => {
+    if (selectedYear !== null && selectedMonth !== null) {
+      return `${MONTH_NAMES[selectedMonth - 1]} ${selectedYear}`;
+    }
+    if (selectedYear !== null) {
+      return `Tahun ${selectedYear}`;
+    }
+    return "Semua Waktu";
+  }, [selectedYear, selectedMonth]);
+
+  const heroContent = (
+    <div>
+      <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed">
+        <Receipt className="h-4 w-4 shrink-0" />
+        <span>Rekap Transparansi Pengeluaran Kas • DKM Masjid Al-Luqman</span>
+      </div>
+
+      <div className="mt-3 text-3xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary">
+        {formatRupiah(currentTotalAmount)}
+      </div>
+
+      <div className="mt-2 text-xs md:text-sm text-primary-fixed/80">
+        Akumulasi dana pengeluaran kas terverifikasi ({activePeriodLabel})
+      </div>
+
+      {/* 2 Sub-indikator di dalam Hero Band: Jumlah Transaksi vs Alokasi Terbesar */}
+      <div className="mt-6 pt-5 border-t border-primary-container grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex items-start justify-between gap-3 p-3.5 rounded-xl bg-primary-container/40 border border-primary-fixed/15">
+          <div>
+            <div className="text-[11px] font-semibold text-primary-fixed uppercase tracking-wider">
+              Jumlah Transaksi Pengeluaran
+            </div>
+            <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums mt-1">
+              {currentTransactionCount} Transaksi
+            </div>
+            <div className="text-xs text-primary-fixed/70 mt-0.5">
+              Rata-rata {currentTransactionCount > 0 ? formatRupiah(Math.round(currentTotalAmount / currentTransactionCount)) : "Rp 0"} per transaksi
+            </div>
+          </div>
         </div>
 
+        <div className="flex items-start justify-between gap-3 p-3.5 rounded-xl bg-primary-container/40 border border-primary-fixed/15">
+          <div>
+            <div className="text-[11px] font-semibold text-primary-fixed uppercase tracking-wider">
+              Alokasi Terbesar
+            </div>
+            <div className="text-xl sm:text-2xl font-bold text-on-primary truncate mt-1">
+              {topCategory ? topCategory.label : "-"}
+            </div>
+            <div className="text-xs text-primary-fixed/70 mt-0.5">
+              {topCategory
+                ? `${formatRupiah(topCategory.totalAmount)} (${((topCategory.totalAmount / (currentTotalAmount || 1)) * 100).toFixed(1)}% porsi)`
+                : "Belum ada transaksi pengeluaran"}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <PageShell heroBand={heroContent}>
+      <div className="space-y-8">
         {/* TIME-RANGE PERIOD FILTER BAR (Issue #66 / Fase V8) */}
         <PeriodFilterBar
           selectedYear={selectedYear}
@@ -249,78 +300,6 @@ export function ExpensesClient({
 
         {/* CONTAINER KONTEN DENGAN LOADING STATE TRANSITION */}
         <div className={`space-y-8 transition-opacity duration-200 ${isPeriodLoading ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
-          {/* 1. KARTU KPI TIGA KOLOM (Total Pengeluaran, Jumlah Transaksi, Kategori Terbesar) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Card 1: Total Pengeluaran */}
-            <div className="rounded-2xl border border-outline-variant bg-surface-container/70 p-5 sm:p-6 shadow-xs space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
-                  Total Pengeluaran Kas
-                </span>
-                <span className="rounded-full bg-rose-500/10 border border-rose-300 px-2 py-0.5 text-xs font-semibold text-rose-800">
-                  Terverifikasi
-                </span>
-              </div>
-              <div className="text-2xl sm:text-3xl font-bold text-on-surface tabular-nums">
-                {formatRupiah(currentTotalAmount)}
-              </div>
-              <p className="text-xs text-on-surface-variant">
-                Akumulasi dana keluar dari seluruh buku kas yang disahkan.
-              </p>
-            </div>
-
-            {/* Card 2: Jumlah Transaksi Pengeluaran */}
-            <div className="rounded-2xl border border-outline-variant bg-surface-container/70 p-5 sm:p-6 shadow-xs space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
-                  Jumlah Transaksi
-                </span>
-                <span className="rounded-full bg-primary/10 border border-primary/20 px-2 py-0.5 text-xs font-semibold text-primary">
-                  Tercatat
-                </span>
-              </div>
-              <div className="text-2xl sm:text-3xl font-bold text-on-surface tabular-nums">
-                {currentTransactionCount} <span className="text-base font-normal text-on-surface-variant">Transaksi</span>
-              </div>
-              <p className="text-xs text-on-surface-variant">
-                Rata-rata {currentTransactionCount > 0 ? formatRupiah(Math.round(currentTotalAmount / currentTransactionCount)) : "Rp 0"} per transaksi pengeluaran.
-              </p>
-            </div>
-
-            {/* Card 3: Alokasi Terbesar */}
-            <div className="rounded-2xl border border-outline-variant bg-surface-container/70 p-5 sm:p-6 shadow-xs space-y-2 sm:col-span-2 lg:col-span-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
-                  Alokasi Terbesar
-                </span>
-                {topCategory && (
-                  <span
-                    className={`rounded-full border px-2 py-0.5 text-xs font-semibold ${
-                      getCategoryColor(topCategory.category).bg
-                    } ${getCategoryColor(topCategory.category).border} ${
-                      getCategoryColor(topCategory.category).text
-                    }`}
-                  >
-                    {(
-                      topCategory.percentage ??
-                      (currentTotalAmount > 0
-                        ? (topCategory.totalAmount / currentTotalAmount) * 100
-                        : 0)
-                    ).toFixed(1)}
-                    % Porsi
-                  </span>
-                )}
-              </div>
-              <div className="text-xl sm:text-2xl font-bold text-on-surface truncate">
-                {topCategory ? topCategory.label : "-"}
-              </div>
-              <p className="text-xs text-on-surface-variant">
-                {topCategory
-                  ? `${formatRupiah(topCategory.totalAmount)} (${topCategory.transactionCount} transaksi)`
-                  : "Belum ada transaksi pengeluaran"}
-              </p>
-            </div>
-          </div>
 
           {/* 2. BREAKDOWN PER KATEGORI (DISTRIBUSI ALOKASI DANA) */}
           <div className="rounded-2xl border border-outline-variant bg-surface-container/60 p-5 sm:p-6 shadow-xs space-y-5">

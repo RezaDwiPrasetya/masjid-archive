@@ -226,20 +226,57 @@ export default function PenggunaPage() {
     (((selectedUser._count?.reports ?? 0) > 0) ||
       ((selectedUser._count?.verifiedTransactions ?? 0) > 0));
 
-  return (
-    <AppShell active="/pengguna">
-      <PageShell>
-        <div className="space-y-6 pb-12">
-        {/* Header Title */}
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-on-surface font-sans">
-            Kelola Pengguna
-          </h1>
-          <p className="text-sm text-on-surface-variant">
-            Atur hak akses, pencarian, dan manajemen akun pengguna Masjid Archive.
-          </p>
+  const heroContent = (
+    <div>
+      <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed">
+        <UserCog className="h-4 w-4 shrink-0" />
+        <span>Manajemen Pengguna & Dewan Pengurus • DKM Masjid Al-Luqman</span>
+      </div>
+
+      <div className="mt-3 text-3xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary">
+        {stats.total} Pengguna
+      </div>
+
+      <div className="mt-2 text-xs md:text-sm text-primary-fixed/80">
+        Hak akses dan akun terdaftar untuk staf pengurus DKM, bendahara, dan jemaah masjid.
+      </div>
+
+      {/* Sub-indikator Pembagian Role di dalam Hero Band */}
+      <div className="mt-6 pt-5 border-t border-primary-container grid grid-cols-3 gap-3 sm:gap-6">
+        <div className="p-3 rounded-xl bg-primary-container/40 border border-primary-fixed/15">
+          <span className="text-[11px] font-semibold text-primary-fixed uppercase tracking-wider block">
+            Administrator
+          </span>
+          <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums mt-0.5">
+            {stats.admin}
+          </div>
         </div>
 
+        <div className="p-3 rounded-xl bg-primary-container/40 border border-primary-fixed/15">
+          <span className="text-[11px] font-semibold text-primary-fixed uppercase tracking-wider block">
+            Bendahara
+          </span>
+          <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums mt-0.5">
+            {stats.bendahara}
+          </div>
+        </div>
+
+        <div className="p-3 rounded-xl bg-primary-container/40 border border-primary-fixed/15">
+          <span className="text-[11px] font-semibold text-primary-fixed uppercase tracking-wider block">
+            Jamaah / Publik
+          </span>
+          <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums mt-0.5">
+            {stats.jamaah}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <AppShell active="/pengguna">
+      <PageShell heroBand={heroContent}>
+        <div className="space-y-6 pb-12">
         {/* Feedback Alert Banner */}
         {alertFeedback && (
           <div
@@ -265,49 +302,6 @@ export default function PenggunaPage() {
             </button>
           </div>
         )}
-
-        {/* Statistik Angka Sekunder Sejajar Horizontal Terpisah Garis Vertikal (Tanpa Kotak/Shadow) */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-outline-variant py-4 border-y border-outline-variant">
-          <div className="py-2 sm:py-0 sm:px-4 first:sm:pl-0">
-            <div className="flex items-center gap-1.5 text-xs font-medium text-on-surface-variant">
-              <Users className="h-4 w-4" />
-              <span>Total Pengguna</span>
-            </div>
-            <p className="mt-1 text-2xl font-bold text-on-surface tabular-nums">
-              {stats.total}
-            </p>
-          </div>
-
-          <div className="py-2 sm:py-0 sm:px-4">
-            <div className="flex items-center gap-1.5 text-xs font-medium text-on-surface-variant">
-              <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-              <span>Administrator</span>
-            </div>
-            <p className="mt-1 text-2xl font-bold text-on-surface tabular-nums">
-              {stats.admin}
-            </p>
-          </div>
-
-          <div className="py-2 sm:py-0 sm:px-4">
-            <div className="flex items-center gap-1.5 text-xs font-medium text-on-surface-variant">
-              <UserCheck className="h-4 w-4 text-primary" />
-              <span>Bendahara</span>
-            </div>
-            <p className="mt-1 text-2xl font-bold text-on-surface tabular-nums">
-              {stats.bendahara}
-            </p>
-          </div>
-
-          <div className="py-2 sm:py-0 sm:px-4 last:sm:pr-0">
-            <div className="flex items-center gap-1.5 text-xs font-medium text-on-surface-variant">
-              <User className="h-4 w-4 text-on-surface-variant" />
-              <span>Jamaah</span>
-            </div>
-            <p className="mt-1 text-2xl font-bold text-on-surface tabular-nums">
-              {stats.jamaah}
-            </p>
-          </div>
-        </div>
 
         {/* Toolbar Pencarian dan Filter */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

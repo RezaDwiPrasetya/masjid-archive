@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { PageShell } from "@/components/page-shell";
 import {
   Dialog,
   DialogPopup,
@@ -228,184 +229,93 @@ export function TreasuryClient({
   const cashRatio = Math.max(0, Math.min(100, Math.round((summary.cash.balance / total) * 100)));
   const bankRatio = Math.max(0, Math.min(100, Math.round((summary.bank.balance / total) * 100)));
 
-  return (
-    <div className="space-y-6">
-      {/* Banner Notifikasi Sukses / Error */}
-      {successMessage && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center justify-between text-sm animate-in fade-in">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
-            <span>{successMessage}</span>
-          </div>
-          <button
-            onClick={() => setSuccessMessage(null)}
-            className="text-xs font-semibold text-emerald-700 hover:underline ml-4"
-          >
-            Tutup
-          </button>
+  const heroContent = (
+    <div>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed">
+          <Wallet className="h-4 w-4 shrink-0" />
+          <span>Posisi Kas Riil & Perbendaharaan • DKM Masjid Al-Luqman</span>
         </div>
-      )}
-
-      {/* Header Halaman & Tombol Aksi Staf */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-outline-variant/60">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-on-surface flex items-center gap-2.5">
-            <Wallet className="h-6 w-6 text-primary" />
-            Posisi Kas & Perbendaharaan
-          </h1>
-          <p className="text-sm text-on-surface-variant mt-1">
-            Pemantauan likuiditas kas fisik (brankas tunai) vs kas digital (rekening bank & QRIS) serta alokasi penggunaan dana.
-          </p>
-        </div>
-
         {isStaffUser && (
           <Button
+            size="sm"
             onClick={() => {
               setErrorMessage(null);
               setDialogOpen(true);
             }}
-            className="rounded-xl shadow-xs gap-2 shrink-0 bg-primary text-on-primary hover:bg-primary/90"
+            className="h-8 gap-1.5 text-xs font-semibold rounded-lg bg-primary-container border-primary-fixed/30 text-on-primary hover:bg-primary-fixed hover:text-primary transition-colors"
           >
-            <ArrowRightLeft size={16} />
+            <ArrowRightLeft size={14} />
             Catat Mutasi Kas Internal
           </Button>
         )}
       </div>
 
-      {/* 3 Kartu Saldo Utama */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Kartu 1: Total Kas Terpadu */}
-        <div className="p-5 rounded-2xl border border-outline-variant/80 bg-surface-container shadow-xs space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
-              Total Kas Keseluruhan
-            </span>
-            <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-              <ShieldCheck size={18} />
-            </div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-on-surface tabular-nums">
-              {formatRupiah(summary.totalBalance)}
-            </div>
-            <p className="text-xs text-on-surface-variant mt-1">
-              Akumulasi dana kas fisik + saldo rekening bank
-            </p>
-          </div>
-          {/* Liquidity Progress Bar */}
-          <div className="space-y-1.5 pt-2 border-t border-outline-variant/40">
-            <div className="flex justify-between text-[11px] text-on-surface-variant font-medium">
-              <span>Tunai: {cashRatio}%</span>
-              <span>Bank: {bankRatio}%</span>
-            </div>
-            <div className="h-2 w-full rounded-full bg-surface-container-high overflow-hidden flex">
-              <div
-                style={{ width: `${cashRatio}%` }}
-                className="bg-emerald-600 h-full transition-all duration-300"
-                title={`Kas Tunai: ${cashRatio}%`}
-              />
-              <div
-                style={{ width: `${bankRatio}%` }}
-                className="bg-blue-600 h-full transition-all duration-300"
-                title={`Kas Bank: ${bankRatio}%`}
-              />
-            </div>
-          </div>
-        </div>
+      <div className="mt-3 text-3xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary">
+        {formatRupiah(summary.totalBalance)}
+      </div>
 
-        {/* Kartu 2: Kas Fisik (Tunai / Brankas) */}
-        <div className="p-5 rounded-2xl border border-emerald-200/80 bg-emerald-50/40 shadow-xs space-y-3">
+      <div className="mt-2 text-xs md:text-sm text-primary-fixed/80">
+        Total likuiditas gabungan: kas fisik di brankas ({cashRatio}%) dan rekening bank / QRIS resmi ({bankRatio}%)
+      </div>
+
+      {/* Sub-indikator Kas Fisik vs Kas Bank di dalam Hero Band */}
+      <div className="mt-6 pt-5 border-t border-primary-container grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="p-3.5 rounded-xl bg-primary-container/40 border border-primary-fixed/15 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-800">
+            <span className="text-[11px] font-semibold text-primary-fixed uppercase tracking-wider">
               Kas Fisik (Tunai / Brankas)
             </span>
-            <div className="h-8 w-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
-              <Banknote size={18} />
-            </div>
+            <span className="text-[11px] font-bold text-primary-fixed tabular-nums">
+              {cashRatio}%
+            </span>
           </div>
-          <div>
-            <div className="text-2xl font-bold text-emerald-950 tabular-nums">
-              {formatRupiah(summary.cash.balance)}
-            </div>
-            <p className="text-xs text-emerald-700/80 mt-1">
-              Uang tunai siap pakai untuk operasional harian
-            </p>
+          <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums">
+            {formatRupiah(summary.cash.balance)}
           </div>
-          {summary.cash.baselineBalance && summary.cash.baselineBalance > 0 ? (
-            <div className="grid grid-cols-3 gap-1.5 pt-2 border-t border-emerald-200/60 text-xs">
-              <div>
-                <span className="text-muted-foreground block text-[10px]" title="Saldo kas awal bawaan pembukuan fisik">
-                  Saldo Awal
-                </span>
-                <span className="font-semibold text-emerald-800 tabular-nums text-[11px]">
-                  +{formatRupiah(summary.cash.baselineBalance)}
-                </span>
-              </div>
-              <div>
-                <span className="text-muted-foreground block text-[10px]">Pemasukan</span>
-                <span className="font-semibold text-emerald-700 tabular-nums text-[11px]">
-                  +{formatRupiah(summary.cash.income)}
-                </span>
-              </div>
-              <div>
-                <span className="text-muted-foreground block text-[10px]">Pengeluaran</span>
-                <span className="font-semibold text-rose-700 tabular-nums text-[11px]">
-                  -{formatRupiah(summary.cash.expense)}
-                </span>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-emerald-200/60 text-xs">
-              <div>
-                <span className="text-muted-foreground block text-[10px]">Total Pemasukan</span>
-                <span className="font-semibold text-emerald-700 tabular-nums">
-                  +{formatRupiah(summary.cash.income)}
-                </span>
-              </div>
-              <div>
-                <span className="text-muted-foreground block text-[10px]">Total Pengeluaran</span>
-                <span className="font-semibold text-rose-700 tabular-nums">
-                  -{formatRupiah(summary.cash.expense)}
-                </span>
-              </div>
-            </div>
-          )}
+          <div className="text-xs text-primary-fixed/70">
+            Uang tunai operasional harian DKM
+          </div>
         </div>
 
-        {/* Kartu 3: Kas Digital / Bank (Rekening BSI & QRIS) */}
-        <div className="p-5 rounded-2xl border border-blue-200/80 bg-blue-50/40 shadow-xs space-y-3">
+        <div className="p-3.5 rounded-xl bg-primary-container/40 border border-primary-fixed/15 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-blue-800">
+            <span className="text-[11px] font-semibold text-primary-fixed uppercase tracking-wider">
               Kas Bank / Digital (QRIS)
             </span>
-            <div className="h-8 w-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
-              <Building2 size={18} />
-            </div>
+            <span className="text-[11px] font-bold text-primary-fixed tabular-nums">
+              {bankRatio}%
+            </span>
           </div>
-          <div>
-            <div className="text-2xl font-bold text-blue-950 tabular-nums">
-              {formatRupiah(summary.bank.balance)}
-            </div>
-            <p className="text-xs text-blue-700/80 mt-1">
-              Saldo mengendap di rekening resmi & dompet QRIS
-            </p>
+          <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums">
+            {formatRupiah(summary.bank.balance)}
           </div>
-          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-blue-200/60 text-xs">
-            <div>
-              <span className="text-muted-foreground block text-[10px]">Total Pemasukan</span>
-              <span className="font-semibold text-blue-700 tabular-nums">
-                +{formatRupiah(summary.bank.income)}
-              </span>
-            </div>
-            <div>
-              <span className="text-muted-foreground block text-[10px]">Total Pengeluaran</span>
-              <span className="font-semibold text-rose-700 tabular-nums">
-                -{formatRupiah(summary.bank.expense)}
-              </span>
-            </div>
+          <div className="text-xs text-primary-fixed/70">
+            Saldo di rekening BSI, Muamalat & QRIS
           </div>
         </div>
       </div>
+    </div>
+  );
+
+  return (
+    <PageShell heroBand={heroContent}>
+      <div className="space-y-6">
+        {/* Banner Notifikasi Sukses / Error */}
+        {successMessage && (
+          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center justify-between text-sm animate-in fade-in">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
+              <span>{successMessage}</span>
+            </div>
+            <button
+              onClick={() => setSuccessMessage(null)}
+              className="text-xs font-semibold text-emerald-700 hover:underline ml-4"
+            >
+              Tutup
+            </button>
+          </div>
+        )}
 
       {/* Tab Navigasi Konten */}
       <div className="flex items-center gap-2 border-b border-outline-variant/60">
@@ -884,5 +794,6 @@ export function TreasuryClient({
         </DialogPopup>
       </Dialog>
     </div>
+  </PageShell>
   );
 }

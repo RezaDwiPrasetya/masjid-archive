@@ -155,15 +155,13 @@ export default async function KeuanganPage() {
 
   return (
     <AppShell active="/keuangan">
-      <PageShell>
-        <TreasuryClient
-          initialSummary={initialSummary}
-          initialBreakdowns={initialBreakdowns}
-          initialTransfers={initialTransfers}
-          initialTransactions={initialTransactions}
-          isStaffUser={isStaffUser}
-        />
-      </PageShell>
+      <TreasuryClient
+        initialSummary={initialSummary}
+        initialBreakdowns={initialBreakdowns}
+        initialTransfers={initialTransfers}
+        initialTransactions={initialTransactions}
+        isStaffUser={isStaffUser}
+      />
     </AppShell>
   );
 }

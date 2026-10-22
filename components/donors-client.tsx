@@ -13,6 +13,7 @@ import {
   RotateCcw,
   Loader2,
   Calendar,
+  Users,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -228,17 +229,71 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
     return "Semua Waktu";
   }, [selectedYear, selectedMonth]);
 
-  return (
-    <PageShell>
-      <div className="space-y-8">
-        {/* Page Title Header */}
-        <div className="space-y-1">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-on-surface">Daftar Donatur</h1>
-          <p className="text-xs sm:text-sm text-on-surface-variant">
-            Transparansi catatan infaq dan kontribusi para donatur terverifikasi kas masjid.
-          </p>
+  const totalCombinedDonations = totalNamedDonations + currentAnonymous.totalContribution;
+  const totalCombinedCount =
+    currentDonors.reduce((acc, d) => acc + d.donationCount, 0) +
+    currentAnonymous.donationCount;
+
+  const heroContent = (
+    <div>
+      <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed">
+        <Users className="h-4 w-4 shrink-0" />
+        <span>Daftar Donatur & Infaq Terverifikasi • DKM Masjid Al-Luqman</span>
+      </div>
+
+      <div className="mt-3 text-3xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary">
+        {formatRupiah(totalCombinedDonations)}
+      </div>
+
+      <div className="mt-2 text-xs md:text-sm text-primary-fixed/80">
+        Akumulasi infaq masuk dari {totalCombinedCount} catatan terverifikasi ({activePeriodLabel})
+      </div>
+
+      {/* 2 Sub-indikator di dalam Hero Band: Donatur Terdata vs Infaq Tromol/Anonim */}
+      <div className="mt-6 pt-5 border-t border-primary-container grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex items-start justify-between gap-3 p-3.5 rounded-xl bg-primary-container/40 border border-primary-fixed/15">
+          <div>
+            <div className="text-[11px] font-semibold text-primary-fixed uppercase tracking-wider">
+              Donatur Terdata ({currentDonors.length} Nama)
+            </div>
+            <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums mt-1">
+              {formatRupiah(totalNamedDonations)}
+            </div>
+            <div className="text-xs text-primary-fixed/70 mt-0.5">
+              Tercatat per nama donatur tetap
+            </div>
+          </div>
         </div>
 
+        <div className="flex items-start justify-between gap-3 p-3.5 rounded-xl bg-primary-container/40 border border-primary-fixed/15">
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold text-primary-fixed uppercase tracking-wider">
+              Infaq Kotak Amal / Anonim
+            </div>
+            <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums mt-1">
+              {formatRupiah(currentAnonymous.totalContribution)}
+            </div>
+            <div className="text-xs text-primary-fixed/70 mt-0.5 truncate">
+              {currentAnonymous.donationCount} kali infaq tromol & hamba Allah
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleOpenAnonModal}
+            className="shrink-0 h-8 text-xs font-semibold rounded-lg bg-primary-container border-primary-fixed/30 text-on-primary hover:bg-primary-fixed hover:text-primary transition-colors"
+          >
+            <ListOrdered className="h-3.5 w-3.5 mr-1" />
+            Rincian
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <PageShell heroBand={heroContent}>
+      <div className="space-y-8">
         {/* TIME-RANGE PERIOD FILTER BAR (Issue #66 / Fase V8) */}
         <PeriodFilterBar
           selectedYear={selectedYear}
@@ -250,66 +305,6 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
 
         {/* CONTAINER KONTEN DENGAN LOADING STATE TRANSITION */}
         <div className={`space-y-8 transition-opacity duration-200 ${isPeriodLoading ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
-          {/* 1. DUA KARTU KPI SIMETRIS (50:50) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Card 1: Donatur Terdaftar */}
-            <div className="rounded-2xl border border-outline-variant bg-surface-container/70 p-6 shadow-xs space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
-                  Donatur Terdata
-                </span>
-                <span className="rounded-full bg-primary/10 border border-primary/20 px-2.5 py-0.5 text-xs font-semibold text-primary">
-                  Terverifikasi
-                </span>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-on-surface tabular-nums">
-                  {currentDonors.length} Donatur
-                </div>
-                <p className="text-sm text-on-surface-variant mt-1.5">
-                  Total kontribusi: <span className="font-semibold text-primary tabular-nums">{formatRupiah(totalNamedDonations)}</span>
-                </p>
-              </div>
-            </div>
-
-            {/* Card 2: Infaq Anonim / Tromol dengan Tombol Rincian */}
-            <div className="rounded-2xl border border-outline-variant bg-surface-container/70 p-6 shadow-xs flex flex-col justify-between gap-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
-                    Infaq Anonim (Tromol / Kotak Amal)
-                  </span>
-                  {/* <span className="rounded-full bg-surface-container-high border border-outline-variant px-2.5 py-0.5 text-xs font-medium text-on-surface-variant">
-                    Tanpa Profil
-                  </span> */}
-                </div>
-                <div>
-                  <div className="text-3xl font-bold text-on-surface tabular-nums">
-                    {formatRupiah(currentAnonymous.totalContribution)}
-                  </div>
-                  <p className="text-sm text-on-surface-variant mt-1.5">
-                    Akumulasi dari <span className="font-semibold text-on-surface tabular-nums">{currentAnonymous.donationCount} kali</span> infaq tromol / kotak amal tanpa nama individual.
-                  </p>
-                </div>
-              </div>
-
-              {/* Aksi Audit Transparansi (Issue #054) */}
-              <div className="pt-3 border-t border-outline-variant/60 flex items-center justify-between">
-                <span className="text-xs text-on-surface-variant">
-                  Riwayat kotak amal & hamba Allah
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleOpenAnonModal}
-                  className="h-8 gap-1.5 text-xs font-semibold rounded-xl border-outline-variant hover:border-primary/50 hover:bg-primary/5 hover:text-primary transition-colors"
-                >
-                  <ListOrdered className="h-3.5 w-3.5" />
-                  <span>Lihat Rincian</span>
-                </Button>
-              </div>
-            </div>
-          </div>
 
           {/* DIALOG MODAL RINCIAN INFAQ ANONIM (Issue #054 / F-018) */}
           <Dialog open={isAnonModalOpen} onOpenChange={setIsAnonModalOpen}>
@@ -487,7 +482,7 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
               </p>
             </div>
           ) : (
-            <div className="rounded-2xl border border-outline-variant bg-surface-container/60 shadow-xs overflow-hidden">
+            <div className="rounded-2xl border border-outline-variant bg-surface overflow-hidden shadow-xs">
               <div className="divide-y divide-outline-variant">
                 {paginatedDonors.map((donor, idx) => {
                   const rank = (safePage - 1) * pageSize + idx + 1;
@@ -502,7 +497,7 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
                         {/* Badge Nomor Urut */}
                         <div
                           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold transition-transform group-hover:scale-105 ${isRankOne
-                            ? "border border-amber-500/40 text-amber-800 dark:text-amber-200 bg-amber-500/15"
+                            ? "border border-[#b8860b]/50 text-[#b8860b] bg-[#b8860b]/10 shadow-xs"
                             : "border border-outline-variant text-on-surface-variant bg-surface"
                             }`}
                         >
