@@ -227,22 +227,27 @@ export default function PenggunaPage() {
       ((selectedUser._count?.verifiedTransactions ?? 0) > 0));
 
   const heroContent = (
-    <div>
-      <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed">
+    <div className="space-y-5 sm:space-y-6">
+      <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed border-b border-primary-fixed/20 pb-4">
         <UserCog className="h-4 w-4 shrink-0" />
         <span>Manajemen Pengguna & Dewan Pengurus • DKM Masjid Al-Luqman</span>
       </div>
 
-      <div className="mt-3 text-3xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary">
-        {stats.total} Pengguna
+      <div className="space-y-1">
+        <span className="text-[11px] uppercase tracking-wider text-primary-fixed/80 font-bold block">
+          Total Akun Pengguna Terdaftar
+        </span>
+        <div className="text-3xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary font-sans">
+          {stats.total} Pengguna
+        </div>
       </div>
 
-      <div className="mt-2 text-xs md:text-sm text-primary-fixed/80">
+      <div className="text-xs md:text-sm text-primary-fixed/80">
         Hak akses dan akun terdaftar untuk staf pengurus DKM, bendahara, dan jemaah masjid.
       </div>
 
       {/* Sub-indikator Pembagian Role di dalam Hero Band */}
-      <div className="mt-6 pt-5 border-t border-primary-container grid grid-cols-3 gap-3 sm:gap-6">
+      <div className="pt-5 border-t border-primary-container grid grid-cols-3 gap-3 sm:gap-6">
         <div className="p-3 rounded-xl bg-primary-container/40 border border-primary-fixed/15">
           <span className="text-[11px] font-semibold text-primary-fixed uppercase tracking-wider block">
             Administrator
@@ -276,7 +281,7 @@ export default function PenggunaPage() {
   return (
     <AppShell active="/pengguna">
       <PageShell heroBand={heroContent}>
-        <div className="space-y-6 pb-12">
+        <div className="space-y-8 sm:space-y-10 pb-12">
         {/* Feedback Alert Banner */}
         {alertFeedback && (
           <div

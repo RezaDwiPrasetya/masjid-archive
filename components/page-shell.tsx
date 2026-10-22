@@ -16,13 +16,13 @@ export function PageShell({
     <div className="w-full min-w-0">
       {heroBand && (
         <section className="w-full bg-primary text-on-primary">
-          <div className="w-full px-4 sm:px-6 md:px-8 lg:px-10 pt-6 sm:pt-8 md:pt-10 pb-5 sm:pb-7 md:pb-8">
+          <div className="w-full px-4 sm:px-6 md:px-8 lg:px-10 pt-6 sm:pt-8 md:pt-10 pb-6 sm:pb-8 md:pb-9">
             {heroBand}
           </div>
           <GeometricDivider />
         </section>
       )}
-      <div className={`w-full px-4 sm:px-6 md:px-8 lg:px-10 py-5 sm:py-7 md:py-10 ${className}`}>
+      <div className={`w-full px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 md:py-10 ${className}`}>
         {children}
       </div>
     </div>

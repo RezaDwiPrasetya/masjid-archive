@@ -122,17 +122,22 @@ export default async function CariLaporanPage({
     : sortedReports;
 
   const heroContent = (
-    <div>
-      <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed">
+    <div className="space-y-5 sm:space-y-6">
+      <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed border-b border-primary-fixed/20 pb-4">
         <FileSearch className="h-4 w-4 shrink-0" />
         <span>Pencarian Arsip Kas & Warta Jum&apos;at • DKM Masjid Al-Luqman</span>
       </div>
 
-      <div className="mt-3 text-3xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary">
-        {filteredReports.length} Dokumen
+      <div className="space-y-1">
+        <span className="text-[11px] uppercase tracking-wider text-primary-fixed/80 font-bold block">
+          Total Dokumen Ditemukan
+        </span>
+        <div className="text-3xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary font-sans">
+          {filteredReports.length} Dokumen
+        </div>
       </div>
 
-      <div className="mt-2 text-xs md:text-sm text-primary-fixed/80">
+      <div className="text-xs md:text-sm text-primary-fixed/80">
         {keyword || year || month
           ? `Hasil pencarian berkas arsip kas dari total ${reports.length} pindaian tersimpan.`
           : `Seluruh pindaian pembukuan kas mingguan tersedia lintas ${years.length} tahun pembukuan.`}
@@ -143,7 +148,7 @@ export default async function CariLaporanPage({
   return (
     <AppShell active="/cari">
       <PageShell heroBand={heroContent}>
-        <div className="space-y-6">
+        <div className="space-y-8 sm:space-y-10">
           <form className="grid gap-4 rounded-2xl border border-outline-variant bg-surface p-5 sm:p-6 shadow-xs grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_140px_140px_220px_auto] lg:items-end">
             <div>
               <label htmlFor="keyword" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-on-surface-variant">

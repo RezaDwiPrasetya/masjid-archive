@@ -82,8 +82,8 @@ export function DashboardClient({
   }, [latestReportDate, now]);
 
   const heroContent = (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-primary-fixed/20 pb-3">
+    <div className="space-y-5 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-primary-fixed/20 pb-4">
         <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed">
           <Wallet className="h-4 w-4 shrink-0" />
           <span>Kokpit Analitik Kas Pengurus • DKM Al-Luqman</span>
@@ -106,11 +106,11 @@ export function DashboardClient({
         </div>
       </div>
 
-      <div>
+      <div className="space-y-1">
         <span className="text-[11px] uppercase tracking-wider text-primary-fixed/80 font-bold block">
           Saldo Kas Fisik Terverifikasi (Laporan Terakhir)
         </span>
-        <div className="mt-1 text-3xl sm:text-5xl md:text-[52px] font-bold leading-tight tracking-tight tabular-nums text-on-primary font-sans">
+        <div className="text-3xl sm:text-5xl md:text-[52px] font-bold leading-tight tracking-tight tabular-nums text-on-primary font-sans">
           {initialFinalBalance !== null
             ? formatRupiah(animatedBalance)
             : "Belum Ada"}
@@ -146,7 +146,7 @@ export function DashboardClient({
 
   return (
     <PageShell heroBand={heroContent}>
-      <div className="space-y-8">
+      <div className="space-y-8 sm:space-y-10">
         {/* Banner Notifikasi Akses Ditolak (Issue #074) */}
         {showForbiddenAlert && (
           <div className="rounded-xl border border-amber-300/80 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/40 p-4 text-amber-950 dark:text-amber-100 flex items-start justify-between gap-3 shadow-xs animate-in fade-in slide-in-from-top-2 duration-200">

@@ -230,8 +230,8 @@ export function TreasuryClient({
   const bankRatio = Math.max(0, Math.min(100, Math.round((summary.bank.balance / total) * 100)));
 
   const heroContent = (
-    <div>
-      <div className="flex items-center justify-between gap-3 flex-wrap">
+    <div className="space-y-5 sm:space-y-6">
+      <div className="flex items-center justify-between gap-3 flex-wrap border-b border-primary-fixed/20 pb-4">
         <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed">
           <Wallet className="h-4 w-4 shrink-0" />
           <span>Posisi Kas Riil & Perbendaharaan • DKM Masjid Al-Luqman</span>
@@ -251,16 +251,21 @@ export function TreasuryClient({
         )}
       </div>
 
-      <div className="mt-3 text-3xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary">
-        {formatRupiah(summary.totalBalance)}
+      <div className="space-y-1">
+        <span className="text-[11px] uppercase tracking-wider text-primary-fixed/80 font-bold block">
+          Total Kas Terkonsolidasi (Fisik & Bank)
+        </span>
+        <div className="text-3xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary font-sans">
+          {formatRupiah(summary.totalBalance)}
+        </div>
       </div>
 
-      <div className="mt-2 text-xs md:text-sm text-primary-fixed/80">
+      <div className="text-xs md:text-sm text-primary-fixed/80">
         Total likuiditas gabungan: kas fisik di brankas ({cashRatio}%) dan rekening bank / QRIS resmi ({bankRatio}%)
       </div>
 
       {/* Sub-indikator Kas Fisik vs Kas Bank di dalam Hero Band */}
-      <div className="mt-6 pt-5 border-t border-primary-container grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="pt-5 border-t border-primary-container grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="p-3.5 rounded-xl bg-primary-container/40 border border-primary-fixed/15 space-y-1">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold text-primary-fixed uppercase tracking-wider">
@@ -300,7 +305,7 @@ export function TreasuryClient({
 
   return (
     <PageShell heroBand={heroContent}>
-      <div className="space-y-6">
+      <div className="space-y-8 sm:space-y-10">
         {/* Banner Notifikasi Sukses / Error */}
         {successMessage && (
           <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center justify-between text-sm animate-in fade-in">

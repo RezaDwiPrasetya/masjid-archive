@@ -194,8 +194,8 @@ export default async function DetailLaporanPage({
     }).format(n);
 
   const heroContent = (
-    <div>
-      <div className="flex items-center justify-between gap-3 flex-wrap">
+    <div className="space-y-5 sm:space-y-6">
+      <div className="flex items-center justify-between gap-3 flex-wrap border-b border-primary-fixed/20 pb-4">
         <Link
           href="/"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-fixed hover:underline transition-colors"
@@ -207,7 +207,7 @@ export default async function DetailLaporanPage({
         </span>
       </div>
 
-      <div className="mt-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <div className="text-xs md:text-sm font-medium text-primary-fixed">
             Laporan Keuangan Kas • {new Date(report.reportDate).toLocaleDateString("id-ID", { dateStyle: "full" })}
@@ -242,31 +242,31 @@ export default async function DetailLaporanPage({
         </div>
       </div>
 
-      <div className="mt-6 pt-5 border-t border-primary-container/80 flex flex-wrap items-baseline gap-6 sm:gap-10">
+      <div className="pt-5 border-t border-primary-container/80 flex flex-wrap items-baseline gap-6 sm:gap-10">
         <div>
           <span className="text-xs text-primary-fixed/80 block">{displayHeroLabel}</span>
-          <div className="text-3xl sm:text-4xl md:text-[44px] font-semibold text-on-primary tabular-nums mt-1 leading-none">
+          <div className="text-3xl sm:text-4xl md:text-[44px] font-semibold text-on-primary tabular-nums mt-1 leading-none font-sans">
             {fmtRupiah(displayHeroFigure)}
           </div>
         </div>
 
         <div className="border-l border-primary-container pl-6 sm:pl-10">
           <span className="text-xs text-primary-fixed/80 block">Pemasukan</span>
-          <div className="text-xl sm:text-2xl font-bold text-primary-fixed tabular-nums mt-1">
+          <div className="text-xl sm:text-2xl font-bold text-primary-fixed tabular-nums mt-1 font-sans">
             + {fmtRupiah(totalMasuk)}
           </div>
         </div>
 
         <div className="border-l border-primary-container pl-6 sm:pl-10">
           <span className="text-xs text-primary-fixed/80 block">Pengeluaran</span>
-          <div className="text-xl sm:text-2xl font-bold text-rose-200 tabular-nums mt-1">
+          <div className="text-xl sm:text-2xl font-bold text-rose-200 tabular-nums mt-1 font-sans">
             - {fmtRupiah(totalKeluar)}
           </div>
         </div>
 
         <div className="border-l border-primary-container pl-6 sm:pl-10">
           <span className="text-xs text-primary-fixed/80 block">Arus Kas Bersih</span>
-          <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums mt-1">
+          <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums mt-1 font-sans">
             {netChange >= 0 ? `+ ${fmtRupiah(netChange)}` : fmtRupiah(netChange)}
           </div>
         </div>
@@ -277,7 +277,7 @@ export default async function DetailLaporanPage({
   return (
     <AppShell active="/">
       <PageShell heroBand={heroContent}>
-        <div className="space-y-6">
+        <div className="space-y-8 sm:space-y-10">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
             {/* Panel utama: daftar lampiran */}
             <div className="space-y-6">

@@ -432,13 +432,13 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
   return (
     <AppShell active="/">
       <PageShell heroBand={heroBandContent}>
-        <div className="space-y-12">
+        <div className="space-y-10 sm:space-y-12">
           {/* Banner Notifikasi Akses Ditolak (jika dialihkan dari rute berwenang staf) */}
           <AuthErrorBanner authError={authError} />
 
           {/* SECTION 1: Alokasi Belanja Umat Bulan Berjalan (Human-Centric & Ramah Jemaah) */}
-          <section id="alokasi-belanja" className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-outline-variant pb-3">
+          <section id="alokasi-belanja" className="space-y-5 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-outline-variant pb-3.5">
               <div>
                 <div className="flex items-center gap-2">
                   <Receipt className="h-5 w-5 text-primary" />
@@ -530,8 +530,8 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
           </section>
 
           {/* SECTION 2: Widget Interaktif Cek Riwayat Infaq */}
-          <section id="cek-infaq" className="space-y-4 pt-4">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-outline-variant pb-3">
+          <section id="cek-infaq" className="space-y-5 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-outline-variant pb-3.5">
               <div>
                 <div className="flex items-center gap-2">
                   <HeartHandshake className="h-5 w-5 text-primary" />
@@ -539,7 +539,7 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
                     Cek Riwayat Infaq Anda
                   </h2>
                 </div>
-                <p className="text-xs sm:text-sm text-on-surface-variant">
+                <p className="text-xs sm:text-sm text-on-surface-variant mt-0.5">
                   Pencarian mandiri untuk memastikan dana infaq yang Anda salurkan telah sah tercatat dalam pembukuan DKM.
                 </p>
               </div>
@@ -556,8 +556,8 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
           </section>
 
           {/* SECTION 3: Kanal Rekening Resmi & QRIS Masjid */}
-          <section id="rekening-resmi" className="space-y-4 pt-4">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-outline-variant pb-3">
+          <section id="rekening-resmi" className="space-y-5 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-outline-variant pb-3.5">
               <div>
                 <div className="flex items-center gap-2">
                   <Building2 className="h-5 w-5 text-primary" />
@@ -565,7 +565,7 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
                     Salurkan Infaq &amp; Sedekah Resmi
                   </h2>
                 </div>
-                <p className="text-xs sm:text-sm text-on-surface-variant">
+                <p className="text-xs sm:text-sm text-on-surface-variant mt-0.5">
                   Salurkan amanah infaq Anda melalui rekening perbankan syariah resmi atas nama DKM Masjid Al-Luqman.
                 </p>
               </div>
@@ -575,8 +575,8 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
           </section>
 
           {/* SECTION 4: Arsip Buku Kas Fisik & Laporan Berkala */}
-          <section id="arsip-laporan" className="space-y-6 pt-4">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-outline-variant pb-3">
+          <section id="arsip-laporan" className="space-y-5 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-outline-variant pb-3.5">
               <div>
                 <div className="flex items-center gap-2.5 mb-1">
                   <FileText className="h-5 w-5 text-primary" />

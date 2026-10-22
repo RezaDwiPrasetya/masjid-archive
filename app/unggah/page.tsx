@@ -238,17 +238,19 @@ export default function UnggahLaporanPage() {
   // ─── Render ────────────────────────────────────────────────────────────────
 
   const heroContent = (
-    <div>
-      <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed">
+    <div className="space-y-5 sm:space-y-6">
+      <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed border-b border-primary-fixed/20 pb-4">
         <UploadCloud className="h-4 w-4 shrink-0" />
         <span>Ruang Kerja Pengurus DKM • Pembukuan Kas Digital</span>
       </div>
 
-      <h1 className="mt-3 text-2xl sm:text-4xl md:text-[44px] font-semibold leading-tight tracking-tight text-on-primary">
-        Unggah Berkas Laporan Kas
-      </h1>
+      <div className="space-y-1">
+        <h1 className="text-2xl sm:text-4xl md:text-[44px] font-semibold leading-tight tracking-tight text-on-primary">
+          Unggah Berkas Laporan Kas
+        </h1>
+      </div>
 
-      <div className="mt-2 text-xs md:text-sm text-primary-fixed/80">
+      <div className="text-xs md:text-sm text-primary-fixed/80">
         Digitalisasi warta Jum&apos;at, pindaian buku kas fisik, dokumen PDF, dan spreadsheet Excel ke arsip terverifikasi.
       </div>
     </div>
@@ -257,7 +259,7 @@ export default function UnggahLaporanPage() {
   return (
     <AppShell active="/unggah">
       <PageShell heroBand={heroContent}>
-        <div className="space-y-6">
+        <div className="space-y-8 sm:space-y-10">
 
         {/* Banner sukses */}
         {saved && (

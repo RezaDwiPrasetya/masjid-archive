@@ -237,22 +237,27 @@ export function ExpensesClient({
   }, [selectedYear, selectedMonth]);
 
   const heroContent = (
-    <div>
-      <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed">
+    <div className="space-y-5 sm:space-y-6">
+      <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed border-b border-primary-fixed/20 pb-4">
         <Receipt className="h-4 w-4 shrink-0" />
         <span>Rekap Transparansi Pengeluaran Kas • DKM Masjid Al-Luqman</span>
       </div>
 
-      <div className="mt-3 text-3xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary">
-        {formatRupiah(currentTotalAmount)}
+      <div className="space-y-1">
+        <span className="text-[11px] uppercase tracking-wider text-primary-fixed/80 font-bold block">
+          Total Akumulasi Pengeluaran
+        </span>
+        <div className="text-3xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary font-sans">
+          {formatRupiah(currentTotalAmount)}
+        </div>
       </div>
 
-      <div className="mt-2 text-xs md:text-sm text-primary-fixed/80">
+      <div className="text-xs md:text-sm text-primary-fixed/80">
         Akumulasi dana pengeluaran kas terverifikasi ({activePeriodLabel})
       </div>
 
       {/* 2 Sub-indikator di dalam Hero Band: Jumlah Transaksi vs Alokasi Terbesar */}
-      <div className="mt-6 pt-5 border-t border-primary-container grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="pt-5 border-t border-primary-container grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="flex items-start justify-between gap-3 p-3.5 rounded-xl bg-primary-container/40 border border-primary-fixed/15">
           <div>
             <div className="text-[11px] font-semibold text-primary-fixed uppercase tracking-wider">
@@ -288,7 +293,7 @@ export function ExpensesClient({
 
   return (
     <PageShell heroBand={heroContent}>
-      <div className="space-y-8">
+      <div className="space-y-8 sm:space-y-10">
         {/* TIME-RANGE PERIOD FILTER BAR (Issue #66 / Fase V8) */}
         <PeriodFilterBar
           selectedYear={selectedYear}
@@ -299,7 +304,7 @@ export function ExpensesClient({
         />
 
         {/* CONTAINER KONTEN DENGAN LOADING STATE TRANSITION */}
-        <div className={`space-y-8 transition-opacity duration-200 ${isPeriodLoading ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
+        <div className={`space-y-6 transition-opacity duration-200 ${isPeriodLoading ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
 
           {/* 2. BREAKDOWN PER KATEGORI (DISTRIBUSI ALOKASI DANA) */}
           <div className="rounded-2xl border border-outline-variant bg-surface-container/60 p-5 sm:p-6 shadow-xs space-y-5">
