@@ -110,30 +110,30 @@ export function AppShell({
       {/* ========================================================= */}
       <aside
         aria-label="Navigasi Utama Desktop"
-        className={`hidden lg:flex fixed left-3 top-3 bottom-3 z-30 flex-col justify-between rounded-3xl bg-[#0f291e] text-white shadow-2xl border border-emerald-900/40 select-none overflow-hidden transition-all duration-300 ease-in-out ${
+        className={`hidden lg:flex fixed left-3 top-3 bottom-3 z-30 flex-col justify-between rounded-3xl bg-surface-container/95 backdrop-blur-md text-on-surface shadow-xl shadow-emerald-950/5 border border-outline-variant/70 select-none overflow-hidden transition-all duration-300 ease-in-out ${
           isCollapsed ? "w-[76px] p-2.5" : "w-[264px] p-3.5"
         }`}
       >
-        {/* BAGIAN ATAS: Chrome Window Controls & Brand */}
+        {/* BAGIAN ATAS: Window Brand Header, Search, & Navigation */}
         <div className="space-y-3">
-          {/* Top Bar: Decorative Accent Dots & Collapse Button */}
+          {/* Top Bar: Masjid Brand Accent Dots & Collapse Button */}
           <div
-            className={`flex items-center pb-2.5 border-b border-emerald-800/40 ${
+            className={`flex items-center pb-2.5 border-b border-outline-variant/50 ${
               isCollapsed ? "flex-col gap-2 justify-center" : "justify-between"
             }`}
           >
-            {/* Tiga Titik Aksen Modern (Window Dots) */}
-            <div className="flex items-center gap-1.5 px-1">
-              <span className="h-2.5 w-2.5 rounded-full bg-rose-400/80 shadow-xs" />
-              <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80 shadow-xs" />
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80 shadow-xs" />
+            {/* Tiga Titik Aksen Identitas Masjid (Emerald, Mint Sage, Archival Gold) */}
+            <div className="flex items-center gap-1.5 px-1" title="DKM Al-Luqman">
+              <span className="h-2.5 w-2.5 rounded-full bg-primary shadow-2xs" />
+              <span className="h-2.5 w-2.5 rounded-full bg-primary-fixed shadow-2xs" />
+              <span className="h-2.5 w-2.5 rounded-full bg-accent-gold shadow-2xs" />
             </div>
 
             {/* Tombol Toggle Buka/Tutup Sidebar */}
             <button
               type="button"
               onClick={toggleSidebar}
-              className="p-1.5 rounded-lg text-emerald-200/70 hover:text-white hover:bg-white/10 transition-colors"
+              className="p-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors"
               title={isCollapsed ? "Bentangkan Sidebar" : "Ciutkan Sidebar"}
               aria-label={isCollapsed ? "Bentangkan Sidebar" : "Ciutkan Sidebar"}
             >
@@ -144,14 +144,14 @@ export function AppShell({
           {/* Logo & Identitas Masjid */}
           <div className="pt-0.5">
             {!isCollapsed ? (
-              <Link href="/" className="flex items-center gap-3 px-2 py-1.5 rounded-xl hover:bg-white/5 transition-all group">
+              <Link href="/" className="flex items-center gap-3 px-2 py-1.5 rounded-xl hover:bg-surface-container-high/60 transition-all group">
                 <MasjidEmblem className="h-9 w-9 group-hover:scale-105 transition-transform shrink-0" />
                 <div className="flex flex-col min-w-0">
-                  <span className="text-sm font-bold tracking-tight text-white leading-tight font-sans truncate">
+                  <span className="text-sm font-bold tracking-tight text-on-surface leading-tight font-sans truncate">
                     Masjid Archive
                   </span>
-                  <span className="text-[10px] uppercase font-semibold tracking-wider text-emerald-300/80 mt-0.5">
-                    Sistem Kas & Arsip
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-primary mt-0.5">
+                    Sistem Kas &amp; Arsip
                   </span>
                 </div>
               </Link>
@@ -162,7 +162,7 @@ export function AppShell({
                 title="Masjid Archive - Sistem Kas & Arsip"
               >
                 <MasjidEmblem className="h-8 w-8 group-hover:scale-105 transition-transform shrink-0" />
-                <span className="absolute left-[calc(100%+12px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-[#0a1f16] border border-emerald-800 text-xs font-semibold text-white whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
+                <span className="absolute left-[calc(100%+12px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-primary text-on-primary border border-primary-container text-xs font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
                   Masjid Archive
                 </span>
               </Link>
@@ -174,23 +174,23 @@ export function AppShell({
             {!isCollapsed ? (
               <Link
                 href="/cari"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-emerald-100/75 hover:text-white text-xs transition-all group"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-surface-container-high/70 hover:bg-surface-container-high border border-outline-variant/60 focus-within:border-primary focus-within:bg-white text-on-surface text-xs transition-all group"
                 title="Pencarian cepat arsip kas & menu (Tekan /)"
               >
-                <Search size={14} className="shrink-0 text-emerald-300 group-hover:text-white transition-colors" />
-                <span className="truncate flex-1 font-medium">Cari arsip kas...</span>
-                <span className="text-[10px] font-mono bg-black/25 px-1.5 py-0.5 rounded text-emerald-200/60 border border-white/5">
+                <Search size={14} className="shrink-0 text-primary group-hover:scale-105 transition-transform" />
+                <span className="truncate flex-1 font-medium text-on-surface-variant/80 group-hover:text-on-surface">Cari arsip kas...</span>
+                <kbd className="text-[10px] font-mono bg-surface-container px-1.5 py-0.5 rounded text-on-surface-variant/70 border border-outline-variant/60 shadow-2xs">
                   /
-                </span>
+                </kbd>
               </Link>
             ) : (
               <Link
                 href="/cari"
-                className="h-10 w-10 mx-auto flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/15 text-emerald-200 hover:text-white transition-all group relative"
+                className="h-10 w-10 mx-auto flex items-center justify-center rounded-xl bg-surface-container-high/70 hover:bg-primary/10 border border-outline-variant/50 text-on-surface-variant hover:text-primary transition-all group relative"
                 title="Pencarian Arsip Kas"
               >
                 <Search size={16} />
-                <span className="absolute left-[calc(100%+12px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-[#0a1f16] border border-emerald-800 text-xs font-semibold text-white whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
+                <span className="absolute left-[calc(100%+12px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-primary text-on-primary border border-primary-container text-xs font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
                   Cari Arsip
                 </span>
               </Link>
@@ -210,12 +210,12 @@ export function AppShell({
                     href={item.href}
                     className={`h-10 w-10 mx-auto flex items-center justify-center rounded-xl transition-all duration-200 group relative ${
                       isActive
-                        ? "bg-white text-[#0f291e] font-bold shadow-md"
-                        : "text-emerald-100/75 hover:text-white hover:bg-white/10"
+                        ? "bg-primary text-white font-bold shadow-xs shadow-primary/25"
+                        : "text-on-surface-variant hover:text-primary hover:bg-surface-container-high"
                     }`}
                   >
                     <Icon size={19} className="shrink-0" />
-                    <span className="absolute left-[calc(100%+12px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-[#0a1f16] border border-emerald-800 text-xs font-semibold text-white whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
+                    <span className="absolute left-[calc(100%+12px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-primary text-on-primary border border-primary-container text-xs font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
                       {item.label}
                     </span>
                   </Link>
@@ -228,14 +228,14 @@ export function AppShell({
                   href={item.href}
                   className={`group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
                     isActive
-                      ? "bg-white text-[#0f291e] font-bold shadow-md"
-                      : "text-emerald-100/75 hover:text-white hover:bg-white/10"
+                      ? "bg-primary text-white font-semibold shadow-xs shadow-primary/25"
+                      : "text-on-surface-variant hover:text-primary hover:bg-surface-container-high"
                   }`}
                 >
                   <Icon
                     size={19}
                     className={`shrink-0 transition-transform duration-200 group-hover:scale-105 ${
-                      isActive ? "text-[#133827]" : "text-emerald-300"
+                      isActive ? "text-primary-fixed" : "text-outline group-hover:text-primary"
                     }`}
                   />
                   <span className="truncate">{item.label}</span>
@@ -246,32 +246,32 @@ export function AppShell({
         </div>
 
         {/* BAGIAN BAWAH: Kartu Sekunder (Sub-Island) & Profil Pengguna */}
-        <div className="space-y-3 pt-3 border-t border-emerald-800/40">
-          {/* KARTU SUB-ISLAND PUTIH (Sesuai Ciri Khas Gambar Referensi) */}
+        <div className="space-y-3 pt-3 border-t border-outline-variant/50">
+          {/* KARTU SUB-ISLAND (Sesuai Ciri Khas Gambar Referensi — Berpadu dengan Warna Sistem) */}
           {!isCollapsed ? (
-            <div className="rounded-2xl bg-white text-[#0f291e] p-2 shadow-lg space-y-0.5 border border-white/20 animate-in fade-in duration-200">
+            <div className="rounded-2xl bg-surface-container-high/75 border border-outline-variant/60 p-2 shadow-2xs space-y-0.5 animate-in fade-in duration-200">
               {isStaff(session) && (
                 <Link
                   href="/?view=public"
-                  className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#0f291e] hover:bg-emerald-50 transition-colors group"
+                  className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold text-on-surface hover:bg-white hover:text-primary transition-colors group"
                 >
                   <span className="flex items-center gap-2">
-                    <ExternalLink size={13} className="text-emerald-700" />
+                    <ExternalLink size={13} className="text-primary" />
                     <span>Portal Publik</span>
                   </span>
-                  <ChevronRight size={13} className="text-emerald-500 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                  <ChevronRight size={13} className="text-outline group-hover:text-primary opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
                 </Link>
               )}
 
               <Link
                 href="/cari"
-                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#0f291e] hover:bg-emerald-50 transition-colors group"
+                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold text-on-surface hover:bg-white hover:text-primary transition-colors group"
               >
                 <span className="flex items-center gap-2">
-                  <ShieldCheck size={13} className="text-emerald-700" />
+                  <ShieldCheck size={13} className="text-primary" />
                   <span>DKM Al-Luqman</span>
                 </span>
-                <ChevronRight size={13} className="text-emerald-500 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                <ChevronRight size={13} className="text-outline group-hover:text-primary opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
               </Link>
 
               {session && (
@@ -289,16 +289,16 @@ export function AppShell({
               )}
             </div>
           ) : (
-            /* Versi Ciut (Pill Putih Vertikal Sesuai Referensi Gambar) */
-            <div className="w-11 mx-auto py-2 rounded-2xl bg-white text-[#0f291e] flex flex-col items-center gap-2.5 shadow-lg animate-in fade-in duration-200">
+            /* Versi Ciut (Pill Vertikal Harmonis Sesuai Referensi Gambar) */
+            <div className="w-11 mx-auto py-2 rounded-2xl bg-surface-container-high/80 border border-outline-variant/60 flex flex-col items-center gap-2.5 shadow-2xs animate-in fade-in duration-200">
               {isStaff(session) && (
                 <Link
                   href="/?view=public"
-                  className="text-emerald-800 hover:text-emerald-950 p-1 rounded-md hover:bg-emerald-50 transition-colors group relative"
+                  className="text-on-surface-variant hover:text-primary p-1 rounded-md hover:bg-white transition-colors group relative"
                   title="Lihat Beranda Publik"
                 >
                   <ExternalLink size={15} />
-                  <span className="absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-[#0a1f16] border border-emerald-800 text-xs font-semibold text-white whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
+                  <span className="absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-primary text-on-primary border border-primary-container text-xs font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
                     Portal Publik
                   </span>
                 </Link>
@@ -306,11 +306,11 @@ export function AppShell({
 
               <Link
                 href="/cari"
-                className="text-emerald-800 hover:text-emerald-950 p-1 rounded-md hover:bg-emerald-50 transition-colors group relative"
+                className="text-on-surface-variant hover:text-primary p-1 rounded-md hover:bg-white transition-colors group relative"
                 title="Status DKM Al-Luqman"
               >
                 <ShieldCheck size={15} />
-                <span className="absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-[#0a1f16] border border-emerald-800 text-xs font-semibold text-white whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
+                <span className="absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-primary text-on-primary border border-primary-container text-xs font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
                   DKM Al-Luqman
                 </span>
               </Link>
@@ -323,7 +323,7 @@ export function AppShell({
                   title="Keluar dari Akun"
                 >
                   <LogOut size={15} />
-                  <span className="absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-[#0a1f16] border border-emerald-800 text-xs font-semibold text-white whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
+                  <span className="absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-primary text-on-primary border border-primary-container text-xs font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
                     Keluar Sistem
                   </span>
                 </button>
@@ -335,25 +335,25 @@ export function AppShell({
           <div>
             {session ? (
               !isCollapsed ? (
-                <div className="flex items-center justify-between p-2 rounded-2xl bg-white/5 border border-white/10 text-white">
+                <div className="flex items-center justify-between p-2 rounded-2xl bg-surface-container-high/50 border border-outline-variant/50 text-on-surface hover:bg-surface-container-high transition-all">
                   <div className="flex items-center gap-2.5 min-w-0">
                     {session.user?.image ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={session.user.image}
                         alt={session.user.name ?? "Avatar"}
-                        className="h-9 w-9 rounded-full ring-2 ring-emerald-400/30 object-cover shrink-0"
+                        className="h-9 w-9 rounded-full ring-2 ring-primary/20 object-cover shrink-0"
                       />
                     ) : (
-                      <div className="h-9 w-9 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs ring-2 ring-emerald-400/30 shrink-0">
+                      <div className="h-9 w-9 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs ring-2 ring-primary/20 shrink-0">
                         {userName.charAt(0)}
                       </div>
                     )}
                     <div className="flex flex-col min-w-0">
-                      <span className="text-xs font-bold text-white truncate leading-tight">
+                      <span className="text-xs font-bold text-on-surface truncate leading-tight">
                         Welcome, {userFirstName}
                       </span>
-                      <span className="text-[10px] text-emerald-300 font-semibold uppercase tracking-wider mt-0.5 truncate">
+                      <span className="text-[10px] text-primary bg-primary/10 border border-primary/20 font-bold uppercase tracking-wider px-1.5 py-0.2 rounded-md mt-0.5 inline-block w-fit truncate">
                         {role || "Jamaah"}
                       </span>
                     </div>
@@ -362,7 +362,7 @@ export function AppShell({
                   <button
                     type="button"
                     onClick={() => signOut({ callbackUrl: "/" })}
-                    className="p-1.5 rounded-lg text-emerald-200/60 hover:text-rose-300 hover:bg-white/10 transition-colors shrink-0"
+                    className="p-1.5 rounded-lg text-on-surface-variant hover:text-rose-600 hover:bg-white transition-colors shrink-0"
                     title="Keluar Akun"
                   >
                     <MoreVertical size={16} />
@@ -375,14 +375,14 @@ export function AppShell({
                     <img
                       src={session.user.image}
                       alt={session.user.name ?? "Avatar"}
-                      className="h-9 w-9 rounded-full ring-2 ring-emerald-400/40 object-cover cursor-pointer hover:scale-105 transition-transform"
+                      className="h-9 w-9 rounded-full ring-2 ring-primary/30 object-cover cursor-pointer hover:scale-105 transition-transform"
                     />
                   ) : (
-                    <div className="h-9 w-9 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs ring-2 ring-emerald-400/40 cursor-pointer hover:scale-105 transition-transform">
+                    <div className="h-9 w-9 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs ring-2 ring-primary/30 cursor-pointer hover:scale-105 transition-transform">
                       {userName.charAt(0)}
                     </div>
                   )}
-                  <span className="absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-[#0a1f16] border border-emerald-800 text-xs font-semibold text-white whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
+                  <span className="absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-primary text-on-primary border border-primary-container text-xs font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
                     {userName} ({role || "Jamaah"})
                   </span>
                 </div>
@@ -393,20 +393,20 @@ export function AppShell({
                 <button
                   type="button"
                   onClick={() => signIn("google", { callbackUrl: "/auth/post-login" })}
-                  className="w-full flex items-center justify-center gap-2 p-2.5 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/10 text-white text-xs font-bold transition-all shadow-sm"
+                  className="w-full flex items-center justify-center gap-2 p-2.5 rounded-2xl bg-primary text-white hover:bg-primary-container text-xs font-bold transition-all shadow-xs"
                 >
-                  <LogIn size={15} className="text-emerald-300" />
+                  <LogIn size={15} className="text-primary-fixed" />
                   <span>Akses Pengurus</span>
                 </button>
               ) : (
                 <button
                   type="button"
                   onClick={() => signIn("google", { callbackUrl: "/auth/post-login" })}
-                  className="h-10 w-10 mx-auto flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 text-emerald-200 hover:text-white transition-all group relative"
+                  className="h-10 w-10 mx-auto flex items-center justify-center rounded-xl bg-primary text-white hover:bg-primary-container transition-all group relative shadow-xs"
                   title="Akses Pengurus DKM"
                 >
-                  <LogIn size={16} />
-                  <span className="absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-[#0a1f16] border border-emerald-800 text-xs font-semibold text-white whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
+                  <LogIn size={16} className="text-primary-fixed" />
+                  <span className="absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-primary text-on-primary border border-primary-container text-xs font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
                     Akses Pengurus
                   </span>
                 </button>
