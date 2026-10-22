@@ -29,7 +29,6 @@ function getNavItems(session: Session | null) {
 
   items.push(
     { href: "/", label: "Beranda" },
-    { href: "/dashboard", label: "Dashboard" },
     { href: "/donatur", label: "Donatur" },
     { href: "/pengeluaran", label: "Pengeluaran" },
     { href: "/cari", label: "Cari" },
@@ -70,18 +69,22 @@ console.log("=================================================================")
 const bendaharaNav = getNavItems(sessionBendahara);
 assert("Bendahara: Menu pertama (#1) adalah '/unggah'", bendaharaNav[0].href === "/unggah");
 assert("Bendahara: Menu kedua (#2) adalah 'Beranda' (/)", bendaharaNav[1].href === "/" && bendaharaNav[1].label === "Beranda");
+assert("Bendahara: Menu '/dashboard' TIDAK ADA (dilebur ke Beranda)", !bendaharaNav.some((n) => n.href === "/dashboard"));
 
 const adminNav = getNavItems(sessionAdmin);
 assert("Admin: Menu pertama (#1) adalah '/unggah'", adminNav[0].href === "/unggah");
+assert("Admin: Menu '/dashboard' TIDAK ADA (dilebur ke Beranda)", !adminNav.some((n) => n.href === "/dashboard"));
 
 // 2. Uji Sidebar Publik / Jamaah
 const guestNav = getNavItems(sessionGuest);
 assert("Guest/Jamaah: Menu '/unggah' TIDAK muncul di daftar menu", !guestNav.some((n) => n.href === "/unggah"));
 assert("Guest/Jamaah: Menu pertama (#1) adalah 'Beranda' (/)", guestNav[0].href === "/" && guestNav[0].label === "Beranda");
+assert("Guest/Jamaah: Menu '/dashboard' TIDAK ADA", !guestNav.some((n) => n.href === "/dashboard"));
 
 const anonNav = getNavItems(sessionAnon);
 assert("Anon: Menu '/unggah' TIDAK muncul di daftar menu", !anonNav.some((n) => n.href === "/unggah"));
 assert("Anon: Menu pertama (#1) adalah 'Beranda' (/)", anonNav[0].href === "/" && anonNav[0].label === "Beranda");
+assert("Anon: Menu '/dashboard' TIDAK ADA", !anonNav.some((n) => n.href === "/dashboard"));
 
 // 3. Uji Smart Redirect
 console.log("\n--- Uji Smart Redirect Pasca Login ---");

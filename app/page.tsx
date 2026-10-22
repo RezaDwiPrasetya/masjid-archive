@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { QuickInfaqSearch, type VerifiedDonation } from "@/components/public-portal/quick-infaq-search";
 import { CashflowTrendSection } from "@/components/cashflow-trend-section";
+import { AuthErrorBanner } from "@/components/auth-error-banner";
 import {
   FolderOpen,
   CalendarDays,
@@ -50,7 +51,14 @@ function formatRupiah(amount: number): string {
   }).format(amount);
 }
 
-export default async function BerandaPortalPublikPage() {
+interface BerandaPortalPublikPageProps {
+  searchParams?: Promise<{ error?: string }>;
+}
+
+export default async function BerandaPortalPublikPage({ searchParams }: BerandaPortalPublikPageProps = {}) {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const authError = resolvedSearchParams?.error;
+
   // 1. Ambil data arsip laporan
   const reports = await prisma.report.findMany({
     orderBy: { reportDate: "desc" },
@@ -289,6 +297,9 @@ export default async function BerandaPortalPublikPage() {
     <AppShell active="/">
       <PageShell heroBand={heroBandContent}>
         <div className="space-y-12">
+          {/* Banner Notifikasi Akses Ditolak (jika dialihkan dari rute operasional berwenang staf) */}
+          <AuthErrorBanner authError={authError} />
+
           {/* SECTION 1: Ringkasan Kas & Tren Interaktif dengan Filter Periode & Cetak Laporan */}
           <section id="tren-kas" className="space-y-4">
             <CashflowTrendSection

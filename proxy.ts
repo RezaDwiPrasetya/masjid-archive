@@ -16,7 +16,7 @@ export async function proxy(request: NextRequest) {
   // Rute /unggah khusus staf DKM (ADMIN atau BENDAHARA)
   if (request.nextUrl.pathname.startsWith("/unggah")) {
     if (role !== "ADMIN" && role !== "BENDAHARA") {
-      const forbiddenUrl = new URL("/dashboard?error=forbidden", request.url);
+      const forbiddenUrl = new URL("/?error=forbidden", request.url);
       return NextResponse.redirect(forbiddenUrl);
     }
   }
@@ -24,7 +24,7 @@ export async function proxy(request: NextRequest) {
   // Rute /pengguna khusus Administrator sistem (ADMIN)
   if (request.nextUrl.pathname.startsWith("/pengguna")) {
     if (role !== "ADMIN") {
-      const forbiddenUrl = new URL("/dashboard?error=forbidden", request.url);
+      const forbiddenUrl = new URL("/?error=forbidden", request.url);
       return NextResponse.redirect(forbiddenUrl);
     }
   }

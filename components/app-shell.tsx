@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   HeartHandshake,
   ImagePlus,
-  LayoutDashboard,
   Search,
   Users,
   Receipt,
@@ -43,14 +42,13 @@ export function AppShell({
 
   // Rute navigasi berdasarkan hak akses:
   // - Staf DKM (BENDAHARA & ADMIN): Mengutamakan alur kerja operasional terverifikasi
-  //   diawali dengan Unggah (/unggah), lalu Beranda (/ - portal transparansi kas & arsip), Dashboard (/dashboard), dan Keuangan (/keuangan).
+  //   diawali dengan Unggah (/unggah), lalu Beranda (/ - portal transparansi kas & arsip), dan Keuangan (/keuangan).
   // - Publik / Jamaah (Tanpa Login): Mengutamakan keterbukaan informasi
   //   diawali dengan Beranda (/ - portal transparansi kas & infaq umat).
   if (isStaff(session)) {
     navItems.push(
       { href: "/unggah", label: "Unggah", icon: ImagePlus },
       { href: "/", label: "Beranda", icon: Landmark },
-      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
       { href: "/keuangan", label: "Keuangan", icon: Wallet }
     );
   } else {
