@@ -1,5 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { isStaff } from "@/lib/auth-guard";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getTreasuryBaselineCashBalance } from "@/lib/treasury";
 import { AppShell } from "@/components/app-shell";
@@ -7,7 +11,7 @@ import { PageShell } from "@/components/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { QuickInfaqSearch, type VerifiedDonation } from "@/components/public-portal/quick-infaq-search";
-import { CashflowTrendSection } from "@/components/cashflow-trend-section";
+import { OfficialBankAccounts } from "@/components/public-portal/official-bank-accounts";
 import { AuthErrorBanner } from "@/components/auth-error-banner";
 import {
   FolderOpen,
@@ -22,11 +26,11 @@ import {
   Landmark,
   Wallet,
   HeartHandshake,
-  ArrowDownLeft,
-  ArrowUpRight,
-  Sparkles,
-  Download,
   FileText,
+  ChevronRight,
+  Receipt,
+  QrCode,
+  LayoutDashboard,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +46,61 @@ const MONTH_NAMES = [
   "Juli", "Agustus", "September", "Oktober", "November", "Desember",
 ];
 
+const CATEGORY_STYLES: Record<string, { bg: string; bar: string; badgeLabel: string; name: string }> = {
+  operasional: {
+    bg: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-900",
+    bar: "bg-blue-600 dark:bg-blue-500",
+    badgeLabel: "Operasional Rutin",
+    name: "Operasional",
+  },
+  pembangunan: {
+    bg: "bg-amber-500/10 text-amber-800 dark:text-amber-200 border-amber-200 dark:border-amber-900",
+    bar: "bg-amber-600 dark:bg-amber-500",
+    badgeLabel: "Pembangunan & Sarana",
+    name: "Pembangunan",
+  },
+  sosial: {
+    bg: "bg-emerald-500/10 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-900",
+    bar: "bg-emerald-600 dark:bg-emerald-500",
+    badgeLabel: "Santunan & Dakwah",
+    name: "Sosial & Dakwah",
+  },
+  honor: {
+    bg: "bg-violet-500/10 text-violet-800 dark:text-violet-200 border-violet-200 dark:border-violet-900",
+    bar: "bg-violet-600 dark:bg-violet-500",
+    badgeLabel: "Honor Petugas & Imam",
+    name: "Honor Petugas",
+  },
+  konsumsi: {
+    bg: "bg-rose-500/10 text-rose-800 dark:text-rose-200 border-rose-200 dark:border-rose-900",
+    bar: "bg-rose-600 dark:bg-rose-500",
+    badgeLabel: "Konsumsi & Taklim",
+    name: "Konsumsi",
+  },
+  administrasi: {
+    bg: "bg-slate-500/10 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-800",
+    bar: "bg-slate-600 dark:bg-slate-400",
+    badgeLabel: "Administrasi & ATK",
+    name: "Administrasi",
+  },
+  lainnya: {
+    bg: "bg-stone-500/10 text-stone-800 dark:text-stone-200 border-stone-200 dark:border-stone-800",
+    bar: "bg-stone-600 dark:bg-stone-400",
+    badgeLabel: "Kebutuhan Lainnya",
+    name: "Lainnya",
+  },
+};
+
+const CATEGORY_DESCRIPTIONS: Record<string, string> = {
+  operasional: "Pembayaran listrik PLN, air PDAM, kebersihan, perawatan sound system, dan operasional ibadah harian.",
+  pembangunan: "Renovasi fisik sarana masjid, perbaikan tempat wudhu, pengecatan, dan pemeliharaan sarana ibadah.",
+  sosial: "Santunan anak yatim piatu, bantuan dhuafa lingkungan masjid, dan program kepedulian sosial umat.",
+  honor: "Honorarium marbot masjid, imam rawatib, khatib salat Jumat, muadzin, dan penceramah taklim.",
+  konsumsi: "Penyediaan konsumsi buka puasa sunnah, konsumsi gotong royong, dan jamuan takmir pengajian.",
+  administrasi: "Pengadaan kertas buletin Jumat, amplop tromol, ATK pembukuan kas, dan operasional kantor DKM.",
+  lainnya: "Pengeluaran kas terverifikasi lainnya untuk perlengkapan darurat masjid.",
+};
+
 function formatRupiah(amount: number): string {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -52,14 +111,22 @@ function formatRupiah(amount: number): string {
 }
 
 interface BerandaPortalPublikPageProps {
-  searchParams?: Promise<{ error?: string }>;
+  searchParams?: Promise<{ error?: string; view?: string; year?: string; month?: string }>;
 }
 
 export default async function BerandaPortalPublikPage({ searchParams }: BerandaPortalPublikPageProps = {}) {
+  const session = await getServerSession(authOptions);
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const authError = resolvedSearchParams?.error;
+  const isPublicPreview = resolvedSearchParams?.view === "public";
 
-  // 1. Ambil data arsip laporan
+  // Staf DKM (Bendahara & Admin) yang membuka alamat utama / otomatis dialihkan ke Dashboard analitik
+  // kecuali jika staf sengaja mengklik tautan "Lihat Beranda Publik" (?view=public)
+  if (isStaff(session) && !isPublicPreview) {
+    redirect("/dashboard");
+  }
+
+  // 1. Ambil data arsip laporan fisik
   const reports = await prisma.report.findMany({
     orderBy: { reportDate: "desc" },
     select: {
@@ -117,7 +184,6 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
     const method = (tx.paymentMethod ?? "TUNAI").toUpperCase();
     const isCash = method === "TUNAI";
 
-    // Akumulasi Saldo Kas & Bank
     if (tx.type === "pemasukan") {
       if (isCash) cashIn += amount;
       else bankIn += amount;
@@ -149,8 +215,57 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
   const bankBalance = bankIn - bankOut + transfersCashToBank - transfersBankToCash;
   const totalBalance = cashBalance + bankBalance;
 
-  // Daftar infaq untuk widget pencarian cepat (50 transaksi pemasukan terverifikasi terbaru)
-  // Tanggal diprioritaskan dari transactionDate, dengan fallback ke report.reportDate dari dokumen asli
+  // 5. Hitung alokasi pengeluaran kas periode aktif untuk disajikan secara ramah jemaah
+  const monthExpenses = verifiedTransactions.filter((t) => {
+    if (t.type !== "pengeluaran") return false;
+    const dateObj = t.transactionDate
+      ? new Date(t.transactionDate)
+      : t.report?.reportDate
+      ? new Date(t.report.reportDate)
+      : null;
+    if (!dateObj) return false;
+    return (
+      dateObj.getUTCFullYear() === activeYear &&
+      dateObj.getUTCMonth() + 1 === activeMonth
+    );
+  });
+
+  const totalMonthExpense = monthExpenses.reduce((acc, t) => acc + Number(t.amount), 0);
+
+  const categoryAggregates: Record<string, { total: number; count: number }> = {};
+  for (const t of monthExpenses) {
+    const cat = t.category || "lainnya";
+    if (!categoryAggregates[cat]) {
+      categoryAggregates[cat] = { total: 0, count: 0 };
+    }
+    categoryAggregates[cat].total += Number(t.amount);
+    categoryAggregates[cat].count += 1;
+  }
+
+  const expenseBreakdown = Object.entries(categoryAggregates)
+    .map(([cat, data]) => {
+      const percentage = totalMonthExpense > 0 ? (data.total / totalMonthExpense) * 100 : 0;
+      const meta = CATEGORY_STYLES[cat] ?? {
+        bg: "bg-surface-container text-on-surface border-outline-variant",
+        bar: "bg-primary",
+        badgeLabel: "Kebutuhan Kas",
+        name: cat,
+      };
+      return {
+        category: cat,
+        label: meta.name,
+        badgeLabel: meta.badgeLabel,
+        bg: meta.bg,
+        bar: meta.bar,
+        totalAmount: data.total,
+        percentage,
+        transactionCount: data.count,
+        description: CATEGORY_DESCRIPTIONS[cat] ?? "Penyaluran kebutuhan operasional dan sarana ibadah DKM.",
+      };
+    })
+    .sort((a, b) => b.totalAmount - a.totalAmount);
+
+  // 6. Daftar infaq untuk widget pencarian cepat (50 transaksi pemasukan terverifikasi terbaru)
   const recentDonations: VerifiedDonation[] = verifiedTransactions
     .filter((t) => t.type === "pemasukan")
     .sort((a, b) => {
@@ -180,41 +295,62 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
       };
     });
 
-  // Grouping arsip laporan per Tahun > Bulan
-  const groupedByYear = new Map<number, Map<number, typeof reports>>();
-  for (const report of reports) {
-    if (!groupedByYear.has(report.year)) groupedByYear.set(report.year, new Map());
-    const yearGroup = groupedByYear.get(report.year)!;
-    if (!yearGroup.has(report.month)) yearGroup.set(report.month, []);
-    yearGroup.get(report.month)!.push(report);
-  }
-  const years = [...groupedByYear.keys()].sort((a, b) => b - a);
+  // Filter arsip pindaian buku kas
+  const filterYear = resolvedSearchParams?.year ? parseInt(resolvedSearchParams.year, 10) : undefined;
+  const filterMonth = resolvedSearchParams?.month ? parseInt(resolvedSearchParams.month, 10) : undefined;
 
-  // Hero Band Header Publik (Berakar pada identitas masjid, bebas AI clichés)
+  const filteredReports = reports.filter((r) => {
+    if (filterYear && r.year !== filterYear) return false;
+    if (filterMonth && r.month !== filterMonth) return false;
+    return true;
+  });
+
+  const availableYears = Array.from(new Set(reports.map((r) => r.year))).sort((a, b) => b - a);
+  const activeMonthName = MONTH_NAMES[activeMonth] ?? "";
+
+  // Konten Hero Band Bersahabat
   const heroBandContent = (
-    <div className="space-y-6 sm:space-y-8">
-      {/* Baris Identitas Lembaga & Komitmen */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-primary-container pb-5">
+    <div className="space-y-6">
+      {/* Banner Khusus jika Pengurus sedang meninjau Pratinjau Publik */}
+      {isPublicPreview && (
+        <div className="rounded-xl border border-primary-fixed/40 bg-primary-container/80 p-3 text-xs flex items-center justify-between gap-3 text-primary-fixed">
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={16} />
+            <span>
+              <strong>Mode Pratinjau Publik:</strong> Anda sedang melihat Beranda sebagaimana disajikan kepada jemaah dan donatur umum.
+            </span>
+          </div>
+          <Link
+            href="/dashboard"
+            className="font-bold underline hover:no-underline text-on-primary shrink-0"
+          >
+            Kembali ke Dashboard Pengurus &rarr;
+          </Link>
+        </div>
+      )}
+
+      {/* Identitas DKM Al-Luqman */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-primary-fixed/20 pb-5">
         <div className="flex items-center gap-3.5">
           <Image
             src="/favicon.svg"
             alt="Logo DKM Masjid Al-Luqman"
-            width={44}
-            height={44}
+            width={48}
+            height={48}
             priority
-            className="h-10 w-10 sm:h-11 sm:w-11 drop-shadow-sm select-none shrink-0"
+            className="h-11 w-11 sm:h-12 sm:w-12 drop-shadow-sm select-none shrink-0"
           />
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm sm:text-base font-bold text-on-primary tracking-tight">
+              <span className="text-base sm:text-lg font-bold text-on-primary tracking-tight">
                 DKM Masjid Al-Luqman
               </span>
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/30 font-semibold">
-                Portal Transparansi Publik
+              <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/30 font-semibold">
+                Portal Transparansi Kas Umat
               </span>
             </div>
-            <p className="text-xs text-primary-fixed/80 font-medium">
-              Kel. Soklat, Kec. Subang, Kab. Subang &bull; Akuntabilitas Kas Umat
+            <p className="text-xs text-primary-fixed/80 font-medium mt-0.5">
+              Kel. Soklat, Kec. Subang, Kab. Subang &bull; Akuntabilitas Terbuka &amp; Terpercaya
             </p>
           </div>
         </div>
@@ -222,13 +358,7 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
         {/* Akses Cepat Anchor Menu */}
         <div className="flex items-center gap-2 flex-wrap text-xs font-semibold">
           <a
-            href="#tren-kas"
-            className="px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/30 transition-colors"
-          >
-            Ringkasan &amp; Tren
-          </a>
-          <a
-            href="#alokasi-pengeluaran"
+            href="#alokasi-belanja"
             className="px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/30 transition-colors"
           >
             Alokasi Belanja
@@ -238,6 +368,12 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
             className="px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/30 transition-colors"
           >
             Cek Infaq Anda
+          </a>
+          <a
+            href="#rekening-resmi"
+            className="px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/30 transition-colors"
+          >
+            Salurkan Infaq
           </a>
           <a
             href="#arsip-laporan"
@@ -297,16 +433,100 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
     <AppShell active="/">
       <PageShell heroBand={heroBandContent}>
         <div className="space-y-12">
-          {/* Banner Notifikasi Akses Ditolak (jika dialihkan dari rute operasional berwenang staf) */}
+          {/* Banner Notifikasi Akses Ditolak (jika dialihkan dari rute berwenang staf) */}
           <AuthErrorBanner authError={authError} />
 
-          {/* SECTION 1: Ringkasan Kas & Tren Interaktif dengan Filter Periode & Cetak Laporan */}
-          <section id="tren-kas" className="space-y-4">
-            <CashflowTrendSection
-              initialYear={activeYear}
-              initialMonth={activeMonth}
-              availableYears={years}
-            />
+          {/* SECTION 1: Alokasi Belanja Umat Bulan Berjalan (Human-Centric & Ramah Jemaah) */}
+          <section id="alokasi-belanja" className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-outline-variant pb-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Receipt className="h-5 w-5 text-primary" />
+                  <h2 className="text-xl sm:text-2xl font-bold font-sans tracking-tight text-on-surface">
+                    Distribusi Penyaluran Kas Umat
+                  </h2>
+                </div>
+                <p className="text-xs sm:text-sm text-on-surface-variant mt-0.5">
+                  Transparansi penggunaan dana kas pada periode pembukuan {activeMonthName} {activeYear} untuk kemakmuran ibadah dan kemaslahatan jemaah.
+                </p>
+              </div>
+              <Link
+                href="/pengeluaran"
+                className="text-xs text-primary font-semibold hover:underline flex items-center gap-1 self-start sm:self-auto shrink-0"
+              >
+                <span>Buka Rincian Seluruh Nota Belanja</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+
+            {expenseBreakdown.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-outline-variant bg-surface-container/40 p-8 text-center">
+                <p className="text-sm font-medium text-on-surface-variant">
+                  Belum ada transaksi pengeluaran tercatat pada periode {activeMonthName} {activeYear}.
+                </p>
+                <p className="text-xs text-on-surface-variant/70 mt-1">
+                  Buka halaman pengeluaran untuk menelusuri data pembukuan bulan-bulan sebelumnya.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {expenseBreakdown.map((item) => (
+                  <div
+                    key={item.category}
+                    className="rounded-2xl border border-outline-variant bg-surface-container/70 hover:bg-surface-container p-5 flex flex-col justify-between space-y-4 transition-all duration-150 hover:shadow-xs"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md border ${item.bg}`}>
+                          {item.badgeLabel}
+                        </span>
+                        <span className="text-xs font-bold text-on-surface-variant tabular-nums">
+                          {item.percentage.toFixed(1)}%
+                        </span>
+                      </div>
+                      <h3 className="text-base font-bold text-on-surface">
+                        {item.label}
+                      </h3>
+                      <p className="text-xs text-on-surface-variant leading-relaxed line-clamp-2">
+                        {item.description}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2 pt-3 border-t border-outline-variant/60">
+                      {/* Bar visual proporsi alokasi */}
+                      <div className="h-1.5 w-full rounded-full bg-surface-container-highest overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${item.bar}`}
+                          style={{ width: `${Math.min(Math.max(item.percentage, 4), 100)}%` }}
+                        />
+                      </div>
+
+                      <div className="flex items-end justify-between gap-2 pt-1">
+                        <div>
+                          <span className="text-[10px] text-on-surface-variant block uppercase tracking-wider font-semibold">
+                            Total Penyaluran:
+                          </span>
+                          <span className="text-lg font-bold text-rose-700 dark:text-rose-400 tabular-nums">
+                            {formatRupiah(item.totalAmount)}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-on-surface-variant font-medium pb-0.5">
+                          {item.transactionCount} transaksi
+                        </span>
+                      </div>
+
+                      <Link
+                        href={`/pengeluaran?year=${activeYear}&month=${activeMonth}`}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline pt-1"
+                      >
+                        <span>Lihat Rincian Nota</span>
+                        <ChevronRight size={12} />
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
 
           {/* SECTION 2: Widget Interaktif Cek Riwayat Infaq */}
@@ -325,7 +545,7 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
               </div>
               <Link
                 href="/donatur"
-                className="text-xs text-primary font-semibold hover:underline flex items-center gap-1 self-start sm:self-auto"
+                className="text-xs text-primary font-semibold hover:underline flex items-center gap-1 self-start sm:self-auto shrink-0"
               >
                 <span>Lihat Seluruh Daftar Donatur</span>
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -335,7 +555,26 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
             <QuickInfaqSearch initialDonations={recentDonations} />
           </section>
 
-          {/* SECTION 4: Arsip Laporan Buku Kas Fisik & Buletin Mingguan */}
+          {/* SECTION 3: Kanal Rekening Resmi & QRIS Masjid */}
+          <section id="rekening-resmi" className="space-y-4 pt-4">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-outline-variant pb-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5 text-primary" />
+                  <h2 className="text-xl sm:text-2xl font-bold font-sans tracking-tight text-on-surface">
+                    Salurkan Infaq &amp; Sedekah Resmi
+                  </h2>
+                </div>
+                <p className="text-xs sm:text-sm text-on-surface-variant">
+                  Salurkan amanah infaq Anda melalui rekening perbankan syariah resmi atas nama DKM Masjid Al-Luqman.
+                </p>
+              </div>
+            </div>
+
+            <OfficialBankAccounts />
+          </section>
+
+          {/* SECTION 4: Arsip Buku Kas Fisik & Laporan Berkala */}
           <section id="arsip-laporan" className="space-y-6 pt-4">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-outline-variant pb-3">
               <div>
@@ -348,187 +587,81 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
                     {reports.length} Laporan
                   </Badge>
                 </div>
-                <p className="text-xs sm:text-sm text-on-surface-variant max-w-xl leading-relaxed">
-                  Dokumentasi pindaian lembar buku kas fisik yang difoto secara berkala setiap hari Jumat oleh bendahara DKM.
+                <p className="text-xs sm:text-sm text-on-surface-variant">
+                  Dokumentasi otentik pindaian buku kas mingguan yang diunggah dan diverifikasi oleh DKM.
                 </p>
               </div>
 
-              {years.length > 1 && (
-                <div className="flex items-center gap-1.5 text-xs text-on-surface-variant shrink-0">
-                  <CalendarDays size={14} className="text-primary" />
-                  <span>Periode Arsip:</span>
-                  <span className="font-semibold text-on-surface">
-                    {years[years.length - 1]} &ndash; {years[0]}
-                  </span>
-                </div>
-              )}
+              {/* Filter Arsip */}
+              <div className="flex items-center gap-2 flex-wrap">
+                {availableYears.map((year) => (
+                  <Link
+                    key={year}
+                    href={filterYear === year ? "/" : `/?year=${year}#arsip-laporan`}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                      filterYear === year
+                        ? "bg-primary text-on-primary border-primary"
+                        : "bg-surface-container hover:bg-surface-container-high text-on-surface-variant border-outline-variant"
+                    }`}
+                  >
+                    Tahun {year}
+                  </Link>
+                ))}
+              </div>
             </div>
 
-            {/* Empty State */}
-            {reports.length === 0 ? (
-              <div className="flex flex-col items-center rounded-2xl border border-dashed border-outline-variant bg-surface-container/60 p-12 text-center">
-                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <FolderOpen size={28} />
-                </div>
-                <h3 className="mb-1 text-lg font-bold text-on-surface">
-                  Belum ada laporan yang diarsipkan
-                </h3>
-                <p className="max-w-md text-xs text-on-surface-variant">
-                  Pindaian buku kas yang diunggah oleh pengurus DKM akan tersusun otomatis di sini per tahun dan bulan.
+            {/* Grid Kartu Laporan */}
+            {filteredReports.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-outline-variant bg-surface-container/30 p-12 text-center">
+                <FolderOpen className="h-10 w-10 text-on-surface-variant/40 mx-auto mb-3" />
+                <p className="text-base font-semibold text-on-surface">Belum ada dokumen laporan kas</p>
+                <p className="text-xs text-on-surface-variant mt-1">
+                  Dokumen pindaian buku kas akan tampil setelah pengurus mengunggah arsip mingguan.
                 </p>
               </div>
             ) : (
-              years.map((year) => {
-                const yearReportsCount = [...groupedByYear.get(year)!.values()].reduce(
-                  (sum, arr) => sum + arr.length,
-                  0
-                );
-                return (
-                  <div key={year} className="space-y-5">
-                    {/* Year divider */}
-                    <div className="flex items-center gap-3">
-                      <h3 className="text-xl sm:text-2xl font-bold text-primary font-sans tracking-tight shrink-0">
-                        Tahun {year}
-                      </h3>
-                      <span className="text-xs font-semibold text-on-surface-variant/70 shrink-0">
-                        ({yearReportsCount} Laporan Tersimpan)
-                      </span>
-                      <div className="h-px flex-1 bg-outline-variant" />
-                    </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredReports.map((report) => {
+                  const date = new Date(report.reportDate);
+                  const formattedDate = date.toLocaleDateString("id-ID", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  });
+                  const verifiedCount = report.transactions.length;
 
-                    {/* Monthly groups */}
-                    <div className="space-y-4">
-                      {[...groupedByYear.get(year)!.keys()]
-                        .sort((a, b) => b - a)
-                        .map((month) => {
-                          const monthReports = groupedByYear.get(year)!.get(month)!;
-                          const monthMasuk = monthReports.reduce(
-                            (sum, r) =>
-                              sum +
-                              r.transactions
-                                .filter((t) => t.type === "pemasukan")
-                                .reduce((s, t) => s + Number(t.amount), 0),
-                            0
-                          );
-                          const monthKeluar = monthReports.reduce(
-                            (sum, r) =>
-                              sum +
-                              r.transactions
-                                .filter((t) => t.type === "pengeluaran")
-                                .reduce((s, t) => s + Number(t.amount), 0),
-                            0
-                          );
-                          const monthNet = monthMasuk - monthKeluar;
-                          const totalVerifiedTx = monthReports.reduce(
-                            (s, r) => s + r.transactions.length,
-                            0
-                          );
+                  return (
+                    <Link
+                      key={report.id}
+                      href={`/laporan/${report.id}`}
+                      className="group block rounded-2xl border border-outline-variant bg-surface-container/60 hover:bg-surface-container p-5 transition-all duration-200 hover:shadow-sm hover:border-primary/40 space-y-4"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="space-y-1">
+                          <span className="text-[11px] font-bold text-primary block uppercase tracking-wider">
+                            Pekan {report.weekOfMonth ?? 1} &bull; {MONTH_NAMES[report.month]} {report.year}
+                          </span>
+                          <h4 className="text-base font-bold text-on-surface group-hover:text-primary transition-colors">
+                            {formattedDate}
+                          </h4>
+                        </div>
+                        <span className="p-2 rounded-xl bg-surface-container-high group-hover:bg-primary/10 text-on-surface-variant group-hover:text-primary transition-colors">
+                          <ChevronRight size={16} />
+                        </span>
+                      </div>
 
-                          return (
-                            <div
-                              key={month}
-                              className="rounded-2xl border border-outline-variant bg-surface-container overflow-hidden shadow-xs"
-                            >
-                              {/* Month Header */}
-                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 py-3.5 border-b border-outline-variant/60 bg-surface-container-high/40">
-                                <div className="flex items-center gap-3">
-                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                                    <CalendarDays size={16} />
-                                  </div>
-                                  <div>
-                                    <h4 className="text-sm font-bold text-on-surface font-sans">
-                                      {MONTH_NAMES[month]} {year}
-                                    </h4>
-                                    <p className="text-xs text-on-surface-variant">
-                                      {monthReports.length} laporan pekan &bull; {totalVerifiedTx} transaksi terverifikasi
-                                    </p>
-                                  </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="text-xs font-semibold text-emerald-700 tabular-nums">
-                                    +{formatRupiah(monthMasuk)}
-                                  </span>
-                                  <span className="text-xs text-on-surface-variant">&bull;</span>
-                                  <span className="text-xs font-semibold text-rose-700 tabular-nums">
-                                    -{formatRupiah(monthKeluar)}
-                                  </span>
-                                  <span className="text-xs text-on-surface-variant">&bull;</span>
-                                  <span className={`text-xs font-bold tabular-nums ${monthNet >= 0 ? "text-primary" : "text-amber-700"}`}>
-                                    Net {monthNet >= 0 ? "+" : ""}{formatRupiah(monthNet)}
-                                  </span>
-                                </div>
-                              </div>
-
-                              {/* Grid Laporan Pekanan */}
-                              <div className="p-4">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
-                                  {monthReports.map((report) => {
-                                    const thumb = report.attachments.find((a) => a.fileType === "image");
-                                    const repMasuk = report.transactions
-                                      .filter((t) => t.type === "pemasukan")
-                                      .reduce((s, t) => s + Number(t.amount), 0);
-                                    const repKeluar = report.transactions
-                                      .filter((t) => t.type === "pengeluaran")
-                                      .reduce((s, t) => s + Number(t.amount), 0);
-
-                                    const repDate = new Date(report.reportDate);
-                                    const dateFormatted = `${repDate.getUTCDate()} ${MONTH_NAMES[repDate.getUTCMonth() + 1]} ${repDate.getUTCFullYear()}`;
-
-                                    return (
-                                      <Link
-                                        key={report.id}
-                                        href={`/laporan/${report.id}`}
-                                        className="group flex flex-col rounded-xl border border-outline-variant bg-surface overflow-hidden transition-all duration-150 hover:border-primary/50 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-                                      >
-                                        {/* Thumbnail foto buku kas */}
-                                        <div className="relative aspect-[16/10] w-full overflow-hidden bg-surface-container-high">
-                                          {thumb ? (
-                                            // eslint-disable-next-line @next/next/no-img-element
-                                            <img
-                                              src={thumb.fileUrl}
-                                              alt={`Buku Kas ${dateFormatted}`}
-                                              className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
-                                            />
-                                          ) : (
-                                            <div className="h-full w-full flex flex-col items-center justify-center text-on-surface-variant/60 gap-1 p-4 text-center">
-                                              <FileText className="h-6 w-6" />
-                                              <span className="text-[11px]">Berkas Dokumen</span>
-                                            </div>
-                                          )}
-                                        </div>
-
-                                        <div className="p-3 space-y-1.5 flex-1 flex flex-col justify-between">
-                                          <div>
-                                            <div className="text-xs font-bold text-on-surface group-hover:text-primary transition-colors">
-                                              Jum&apos;at, {dateFormatted}
-                                            </div>
-                                            <div className="text-[11px] text-on-surface-variant">
-                                              Pekan ke-{report.weekOfMonth} &bull; {report.transactions.length} mutasi
-                                            </div>
-                                          </div>
-
-                                          <div className="pt-2 border-t border-outline-variant/50 flex items-center justify-between text-xs tabular-nums">
-                                            <span className="text-emerald-700 font-semibold">
-                                              +{formatRupiah(repMasuk)}
-                                            </span>
-                                            <span className="text-rose-700 font-semibold">
-                                              -{formatRupiah(repKeluar)}
-                                            </span>
-                                          </div>
-                                        </div>
-                                      </Link>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                    </div>
-                  </div>
-                );
-              })
+                      <div className="flex items-center gap-3 pt-3 border-t border-outline-variant/60 text-xs text-on-surface-variant">
+                        <span className="flex items-center gap-1.5 font-medium">
+                          <CheckCircle2 size={13} className="text-emerald-600 dark:text-emerald-400" />
+                          <span>{verifiedCount} mutasi kas</span>
+                        </span>
+                        <span>&bull;</span>
+                        <span>{report.attachments.length} berkas fisik</span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
             )}
           </section>
         </div>

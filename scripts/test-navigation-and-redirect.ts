@@ -24,15 +24,24 @@ function getNavItems(session: Session | null) {
   const items: Array<{ href: string; label: string }> = [];
 
   if (isUserStaff) {
-    items.push({ href: "/unggah", label: "Unggah" });
+    items.push(
+      { href: "/dashboard", label: "Dashboard" },
+      { href: "/unggah", label: "Unggah" },
+      { href: "/keuangan", label: "Keuangan" }
+    );
+  } else {
+    items.push({ href: "/", label: "Beranda" });
   }
 
   items.push(
-    { href: "/", label: "Beranda" },
     { href: "/donatur", label: "Donatur" },
     { href: "/pengeluaran", label: "Pengeluaran" },
-    { href: "/cari", label: "Cari" },
+    { href: "/cari", label: "Cari" }
   );
+
+  if (session?.user?.role === "ADMIN") {
+    items.push({ href: "/pengguna", label: "Pengguna" });
+  }
 
   return items;
 }
@@ -43,7 +52,7 @@ function getPostLoginRedirect(session: Session | null, targetUrl?: string | null
     return targetUrl;
   }
   if (isStaff(session)) {
-    return "/unggah";
+    return "/dashboard";
   }
   return "/";
 }
@@ -67,34 +76,39 @@ console.log("=================================================================")
 
 // 1. Uji Sidebar Staf
 const bendaharaNav = getNavItems(sessionBendahara);
-assert("Bendahara: Menu pertama (#1) adalah '/unggah'", bendaharaNav[0].href === "/unggah");
-assert("Bendahara: Menu kedua (#2) adalah 'Beranda' (/)", bendaharaNav[1].href === "/" && bendaharaNav[1].label === "Beranda");
-assert("Bendahara: Menu '/dashboard' TIDAK ADA (dilebur ke Beranda)", !bendaharaNav.some((n) => n.href === "/dashboard"));
+assert("Bendahara: Menu pertama (#1) adalah 'Dashboard' (/dashboard)", bendaharaNav[0].href === "/dashboard" && bendaharaNav[0].label === "Dashboard");
+assert("Bendahara: Menu kedua (#2) adalah 'Unggah' (/unggah)", bendaharaNav[1].href === "/unggah");
+assert("Bendahara: Menu ketiga (#3) adalah 'Keuangan' (/keuangan)", bendaharaNav[2].href === "/keuangan");
+assert("Bendahara: Menu 'Beranda' (/) TIDAK ADA di menu utama (ada di footer link)", !bendaharaNav.some((n) => n.href === "/"));
+assert("Bendahara: Menu 'Pengguna' TIDAK ADA", !bendaharaNav.some((n) => n.href === "/pengguna"));
 
 const adminNav = getNavItems(sessionAdmin);
-assert("Admin: Menu pertama (#1) adalah '/unggah'", adminNav[0].href === "/unggah");
-assert("Admin: Menu '/dashboard' TIDAK ADA (dilebur ke Beranda)", !adminNav.some((n) => n.href === "/dashboard"));
+assert("Admin: Menu pertama (#1) adalah 'Dashboard' (/dashboard)", adminNav[0].href === "/dashboard");
+assert("Admin: Menu 'Pengguna' (/pengguna) ADA", adminNav.some((n) => n.href === "/pengguna"));
+assert("Admin: Menu 'Beranda' (/) TIDAK ADA di menu utama", !adminNav.some((n) => n.href === "/"));
 
 // 2. Uji Sidebar Publik / Jamaah
 const guestNav = getNavItems(sessionGuest);
-assert("Guest/Jamaah: Menu '/unggah' TIDAK muncul di daftar menu", !guestNav.some((n) => n.href === "/unggah"));
 assert("Guest/Jamaah: Menu pertama (#1) adalah 'Beranda' (/)", guestNav[0].href === "/" && guestNav[0].label === "Beranda");
 assert("Guest/Jamaah: Menu '/dashboard' TIDAK ADA", !guestNav.some((n) => n.href === "/dashboard"));
+assert("Guest/Jamaah: Menu '/unggah' TIDAK ADA", !guestNav.some((n) => n.href === "/unggah"));
+assert("Guest/Jamaah: Menu '/keuangan' TIDAK ADA", !guestNav.some((n) => n.href === "/keuangan"));
+assert("Guest/Jamaah: Menu '/pengguna' TIDAK ADA", !guestNav.some((n) => n.href === "/pengguna"));
 
 const anonNav = getNavItems(sessionAnon);
-assert("Anon: Menu '/unggah' TIDAK muncul di daftar menu", !anonNav.some((n) => n.href === "/unggah"));
 assert("Anon: Menu pertama (#1) adalah 'Beranda' (/)", anonNav[0].href === "/" && anonNav[0].label === "Beranda");
 assert("Anon: Menu '/dashboard' TIDAK ADA", !anonNav.some((n) => n.href === "/dashboard"));
+assert("Anon: Menu '/unggah' TIDAK ADA", !anonNav.some((n) => n.href === "/unggah"));
 
 // 3. Uji Smart Redirect
 console.log("\n--- Uji Smart Redirect Pasca Login ---");
 assert(
-  "Bendahara login (tanpa target eksplisit) -> diarahkan ke '/unggah'",
-  getPostLoginRedirect(sessionBendahara, null) === "/unggah"
+  "Bendahara login (tanpa target eksplisit) -> diarahkan ke '/dashboard'",
+  getPostLoginRedirect(sessionBendahara, null) === "/dashboard"
 );
 assert(
-  "Admin login (tanpa target eksplisit) -> diarahkan ke '/unggah'",
-  getPostLoginRedirect(sessionAdmin, null) === "/unggah"
+  "Admin login (tanpa target eksplisit) -> diarahkan ke '/dashboard'",
+  getPostLoginRedirect(sessionAdmin, null) === "/dashboard"
 );
 assert(
   "Bendahara login dengan target spesifik '/laporan/abc' -> diarahkan ke '/laporan/abc'",

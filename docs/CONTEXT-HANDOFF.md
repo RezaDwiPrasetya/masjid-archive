@@ -14,19 +14,24 @@ Aplikasi web arsip & manajemen keuangan digital untuk **DKM Masjid Al-Luqman** (
 ---
 
 ## 2. KONDISI PROJECT SAAT INI
-- **INISIASI TRANSFORMASI UI/UX V3 (22 Oktober 2026)**:
-  - Branch aktif: `feature/portal-transparansi-publik`.
-  - Terpasang skill `frontend-design` dari repository resmi Anthropic (`anthropics/skills`).
-  - Audit desain mengidentifikasi ~75% kemiripan dengan template SaaS AI generik; disusun matriks anti-AI tropes dan rencana 3 fase eksekusi:
-    - **Fase 1 (Selesai - Commit a94fbbf)**: Gerbang Keamanan & Alur Autentikasi (`Akses Pengurus`, `/pending` approval state, router pasca-login).
-    - **Fase 2 (Selesai - Commit 0cb0c20)**: Halaman Depan Publik (`/`) berkarakter masjid, total saldo kas terkonsolidasi (brankas & rekening resmi), widget pencarian infaq mandiri, grafik tren kas interaktif, dan arsip buletin.
-    - **Fase 3 (Selesai - Commit ae76cf9 s.d. 46b2bb7)**: Penataan rute navigasi `AppShell` & Konsolidasi Arsitektur Portal:
-      - Publik melihat 4 menu bersih: `Beranda` (`/`), `Donatur` (`/donatur`), `Pengeluaran` (`/pengeluaran`), `Cari` (`/cari`).
-      - Staf DKM melihat alur kerja operasional terarah: `Unggah` (`/unggah`), `Beranda` (`/`), `Keuangan` (`/keuangan`), `Donatur` (`/donatur`), `Pengeluaran` (`/pengeluaran`), `Cari` (`/cari`), dan `Pengguna` (`/pengguna` khusus Admin).
-      - **Konsolidasi Total Beranda (`/`) & Eliminasi Redundansi `/dashboard`**: Menu `/dashboard` lama yang duplikat resmi dihapus dan dilebur ke `Beranda` sebagai *single source of truth*. Route `/dashboard` melakukan graceful 307 redirect ke `/`.
-      - **Alokasi Pos Belanja Riil Terintegrasi**: Bagian rincian kategori pengeluaran (`operasional`, `pembangunan`, `sosial`, `honor`, `konsumsi`, dll) terhubung langsung secara reaktif dengan filter periode `CashflowTrendSection`.
-      - **Resolusi Tanggal Dokumen Riil Infaq**: Pencarian infaq pada Beranda menampilkan tanggal riil dokumen kas fisik (`t.transactionDate ?? t.report?.reportDate`), menggantikan label statis "Tanggal tercatat".
-      - **Pembersihan Data Statis/Dummy**: Menghapus seksi artifisial 3 pilar dan menyembunyikan kartu rekening bank dummy jika belum memiliki mutasi kas riil.
+- **TRANSFORMASI ARSITEKTUR PORTAL PUBLIK VS COCKPIT DASHBOARD PENGURUS (22 Oktober 2026)**:
+  - Branch aktif: `feature/distinct-portal-and-staff-dashboard`.
+  - Terpasang skill `frontend-design` & `grilling` dari repository resmi Matt Pocock / Anthropic.
+  - Berdasarkan evaluasi filosofis dan wawancara terstruktur (*grilling*), disepakati pemisahan hakiki antara **Beranda (`/`)** dan **Dashboard (`/dashboard`)**:
+    - **Beranda (`/`) — Portal Transparansi Kas Umat (Publik / Jamaah)**:
+      - Desain human-centric, hangat, dan ramah jamaah tanpa grafik instrumen teknis yang rumit.
+      - Menyajikan: Salam takzim & identitas Masjid Al-Luqman, ikrar amanah pengelolaan kas, saldo terkonsolidasi (kas tunai brankas vs rekening bank/QRIS), kartu naratif alokasi belanja kas umat bulan berjalan, widget pencarian riwayat infaq mandiri tanpa login, informasi rekening bank syariah & QRIS resmi, serta arsip pindaian buku kas mingguan.
+    - **Dashboard (`/dashboard`) — Cockpit Analitik & Instrumen Kerja Pengurus (Staf DKM: Bendahara & Admin)**:
+      - Diproteksi ketat oleh RBAC (`isStaff(session)`). Pengguna publik/tamu yang mengakses `/dashboard` otomatis dialihkan ke login/beranda.
+      - Hero cockpit: Saldo terverifikasi, tanggal laporan mutakhir, dan tombol aksi pintasan (`+ Unggah Laporan Baru` dan `Lihat Portal Publik`).
+      - Visualisasi tren arus kas masuk vs keluar berbasis grafik batang Recharts (mode Mingguan & Tahunan).
+      - Tombol administratif tanpa modal: **Cetak Laporan (A4)** untuk mading masjid dan **Ekspor Excel (.xlsx)**.
+      - Kartu alokasi belanja analitik yang reaktif sinkron dengan filter periode aktif.
+    - **Smart Redirection & Navigasi Terpadu**:
+      - Post-login router (`app/auth/post-login/route.ts`) secara cerdas mengarahkan staf langsung ke `/dashboard`.
+      - Staf yang membuka alamat utama `/` otomatis dialihkan ke `/dashboard`, kecuali jika sengaja mengeklik tautan *"Lihat Beranda Publik"* (`/?view=public`) di footer sidebar.
+      - Navigasi Staf DKM di sidebar menampilkan: `Dashboard` (`/dashboard`), `Unggah` (`/unggah`), `Keuangan` (`/keuangan`), `Donatur` (`/donatur`), `Pengeluaran` (`/pengeluaran`), `Cari` (`/cari`), dan `Pengguna` (`/pengguna` khusus Admin), dengan tautan pratinjau publik di footer.
+      - Navigasi Publik hanya menampilkan: `Beranda` (`/`), `Donatur` (`/donatur`), `Pengeluaran` (`/pengeluaran`), dan `Cari` (`/cari`).
 
 - **SELURUH FITUR V1–V10 SELESAI 100% (PROJEK TAMAT / FEATURE-COMPLETE)**:
   - **V1–V2**: Multi-format upload (JPG, PNG, PDF, Excel) & arsip berjenjang.

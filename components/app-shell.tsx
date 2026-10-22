@@ -5,12 +5,14 @@ import Link from "next/link";
 import {
   HeartHandshake,
   ImagePlus,
+  LayoutDashboard,
   Search,
   Users,
   Receipt,
   Wallet,
   Landmark,
   ShieldCheck,
+  ExternalLink,
 } from "lucide-react";
 import { AuthButton } from "@/components/auth-button";
 import { useSession } from "next-auth/react";
@@ -41,14 +43,14 @@ export function AppShell({
   const navItems = [];
 
   // Rute navigasi berdasarkan hak akses:
-  // - Staf DKM (BENDAHARA & ADMIN): Mengutamakan alur kerja operasional terverifikasi
-  //   diawali dengan Unggah (/unggah), lalu Beranda (/ - portal transparansi kas & arsip), dan Keuangan (/keuangan).
-  // - Publik / Jamaah (Tanpa Login): Mengutamakan keterbukaan informasi
-  //   diawali dengan Beranda (/ - portal transparansi kas & infaq umat).
+  // - Staf DKM (BENDAHARA & ADMIN): Mengutamakan instrumen analitik kas & kerja operasional
+  //   diawali dengan Dashboard (/dashboard), Unggah (/unggah), dan Keuangan (/keuangan).
+  // - Publik / Jamaah (Tanpa Login): Mengutamakan keterbukaan informasi & sambutan
+  //   diawali dengan Beranda (/ - portal transparansi kas umat).
   if (isStaff(session)) {
     navItems.push(
+      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
       { href: "/unggah", label: "Unggah", icon: ImagePlus },
-      { href: "/", label: "Beranda", icon: Landmark },
       { href: "/keuangan", label: "Keuangan", icon: Wallet }
     );
   } else {
@@ -114,7 +116,7 @@ export function AppShell({
         </nav>
 
         {/* Sidebar Footer — Status & Attribution */}
-        <div className="p-4 mx-3 mb-4 rounded-xl border border-outline-variant/60 bg-surface/80 space-y-1.5">
+        <div className="p-4 mx-3 mb-4 rounded-xl border border-outline-variant/60 bg-surface/80 space-y-2">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-on-surface">
             <ShieldCheck size={14} className="text-primary shrink-0" />
             <span>DKM Al-Luqman</span>
@@ -122,6 +124,15 @@ export function AppShell({
           <p className="text-[11px] text-on-surface-variant leading-tight">
             Transparansi pembukuan kas & donasi terverifikasi.
           </p>
+          {isStaff(session) && (
+            <Link
+              href="/?view=public"
+              className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary hover:underline pt-1 border-t border-outline-variant/40 w-full"
+            >
+              <ExternalLink size={12} />
+              <span>Lihat Beranda Publik</span>
+            </Link>
+          )}
         </div>
       </aside>
 

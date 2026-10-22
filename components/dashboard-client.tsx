@@ -10,6 +10,8 @@ import {
   Info,
   ShieldAlert,
   X,
+  ImagePlus,
+  ExternalLink,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PageShell } from "@/components/page-shell";
@@ -80,19 +82,42 @@ export function DashboardClient({
   }, [latestReportDate, now]);
 
   const heroContent = (
-    <div>
-      <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed">
-        <Wallet className="h-4 w-4 shrink-0" />
-        <span>Saldo Kas Terkini • Buku Kas Terverifikasi</span>
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-primary-fixed/20 pb-3">
+        <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed">
+          <Wallet className="h-4 w-4 shrink-0" />
+          <span>Kokpit Analitik Kas Pengurus • DKM Al-Luqman</span>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link
+            href="/unggah"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-on-primary text-primary text-xs font-bold shadow-xs hover:bg-on-primary/90 transition-colors"
+          >
+            <ImagePlus size={14} />
+            <span>+ Unggah Laporan Baru</span>
+          </Link>
+          <Link
+            href="/?view=public"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/30 text-xs font-semibold transition-colors"
+          >
+            <ExternalLink size={13} />
+            <span>Lihat Portal Publik</span>
+          </Link>
+        </div>
       </div>
 
-      <div className="mt-3 text-3xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary">
-        {initialFinalBalance !== null
-          ? formatRupiah(animatedBalance)
-          : "Belum Ada"}
+      <div>
+        <span className="text-[11px] uppercase tracking-wider text-primary-fixed/80 font-bold block">
+          Saldo Kas Fisik Terverifikasi (Laporan Terakhir)
+        </span>
+        <div className="mt-1 text-3xl sm:text-5xl md:text-[52px] font-bold leading-tight tracking-tight tabular-nums text-on-primary font-sans">
+          {initialFinalBalance !== null
+            ? formatRupiah(animatedBalance)
+            : "Belum Ada"}
+        </div>
       </div>
 
-      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs md:text-sm text-primary-fixed/80">
+      <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm text-primary-fixed/80">
         {latestReportDate ? (
           <>
             <Calendar className="h-3.5 w-3.5 shrink-0" />

@@ -37,7 +37,8 @@ export async function GET(request: NextRequest) {
     ) {
       return NextResponse.redirect(new URL(target, request.url));
     }
-    return NextResponse.redirect(new URL("/unggah", request.url));
+    // Jika pengguna adalah staf DKM (Bendahara / Admin), bawa ke dashboard analitik atau tujuan spesifik
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   // Pengguna tanpa role staf (Jamaah / Calon Staf yang belum diverifikasi) diarahkan ke halaman status pending

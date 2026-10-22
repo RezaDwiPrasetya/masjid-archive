@@ -93,90 +93,113 @@ Login diperlukan untuk mengakses fitur operasional (unggah, ekstraksi, verifikas
 ### Setelah Login Berhasil
 
 - Nama dan foto profil Google Anda akan ditampilkan di header.
-- **Smart Redirect Otomatis**: Jika Anda adalah Bendahara atau Admin, sistem secara otomatis mengarahkan Anda langsung ke halaman **Unggah** (`/unggah`) sebagai alur kerja operasional utama.
-- Menu **Unggah** diposisikan di urutan teratas (#1) pada sidebar dan navigasi mobile.
+- **Smart Redirect Otomatis**: Jika Anda adalah Bendahara atau Admin, sistem secara otomatis mengarahkan Anda langsung ke **Dashboard Pengurus** (`/dashboard`) sebagai pusat kendali dan analitik operasional.
+- Menu **Dashboard** diposisikan di urutan teratas (#1) pada sidebar staf, diikuti oleh **Unggah** (#2) dan **Keuangan** (#3).
+- Di bagian bawah sidebar staf, tersedia tautan cepat **"Lihat Beranda Publik"** (`/?view=public`) untuk melihat tampilan yang dilihat oleh jemaah.
 - Menu **Pengguna** akan muncul di navigasi bawah (khusus role Admin).
 
 ### Cara Logout
 
 Klik nama/foto profil Anda di header, kemudian pilih **"Keluar"**.
 
-> **Penting**: Jika setelah login Anda melihat pesan *"Akses Ditolak"* saat membuka menu Unggah, berarti role akun Anda belum disetel. Hubungi Administrator untuk mendapatkan akses Bendahara.
+> **Penting**: Jika setelah login Anda melihat status akun *"Menunggu Verifikasi Admin DKM"*, berarti role akun Google Anda belum disetel oleh Administrator. Hubungi Ketua DKM / Admin untuk mendapatkan akses Bendahara.
 
 ---
 
 ## 4. Navigasi Utama
 
-Sistem dapat diakses melalui navigasi di sidebar (desktop) atau bilah navigasi bawah (mobile/tablet).
+Sistem membedakan navigasi secara cerdas berdasarkan peran pengguna (*Role-Based Access Control*):
 
-### Menu Navigasi
+### Menu Navigasi Staf Pengurus DKM (Bendahara & Admin)
 
-| Menu | Ikon | Halaman | Posisi & Ketersediaan |
+| Menu | Ikon | Halaman | Fungsi & Keterangan |
 |---|---|---|---|
-| **Unggah** | ➕ | `/unggah` — Unggah laporan baru | **Urutan #1 (Khusus Bendahara & Admin)** |
-| **Beranda** | 🏛️ | `/` — Portal transparansi kas & arsip umat | Semua pengguna (Urutan #1 untuk Jamaah/Publik) |
-| **Keuangan** | 👛 | `/keuangan` — Posisi Kas Fisik vs Bank & Mutasi | Semua pengguna |
-| **Donatur** | 🤝 | `/donatur` — Daftar donatur & infaq anonim | Semua pengguna |
-| **Pengeluaran** | 🧾 | `/pengeluaran` — Rekap pengeluaran per kategori | Semua pengguna |
-| **Cari** | 🔍 | `/cari` — Pencarian arsip | Semua pengguna |
-| **Pengguna** | 👥 | `/pengguna` — Manajemen akun | Admin saja |
+| **Dashboard** | 📊 | `/dashboard` | **Urutan #1**: Cockpit analitik kas, grafik arus kas bulanan/tahunan, tombol Cetak A4 & Ekspor Excel. |
+| **Unggah** | ➕ | `/unggah` | **Urutan #2**: Digitalisasi foto buku kas mingguan/nota via Gemini AI. |
+| **Keuangan** | 👛 | `/keuangan` | **Urutan #3**: Pemantauan likuiditas fisik vs bank, pencatatan mutasi internal kas. |
+| **Donatur** | 🤝 | `/donatur` | Direktori donatur tetap dan pelacakan infaq hamba Allah. |
+| **Pengeluaran** | 🧾 | `/pengeluaran` | Rekapitulasi belanja kas per pos kategori riil masjid. |
+| **Cari** | 🔍 | `/cari` | Pencarian arsip laporan dan transaksi kas lintas periode. |
+| **Pengguna** | 👥 | `/pengguna` | Khusus Administrator: Manajemen akun pengurus & persetujuan hak akses. |
 
-> **Catatan Kendali Akses Cerdas & Prioritas Alur Kerja**:  
-> - **Bagi Staf DKM (Bendahara & Admin)**: Berdasarkan masukan operasional, menu **Unggah** ditempatkan di posisi paling atas di sidebar dan bilah bawah mobile dengan tampilan rapi seragam. Begitu login berhasil, sistem secara otomatis mengarahkan staf langsung ke halaman Unggah untuk mempercepat input pembukuan kas.
-> - **Bagi Jamaah & Pengunjung Publik**: Menu **Unggah** dan **Pengguna** disembunyikan secara otomatis dari navigasi. Jamaah mendarat di **Beranda** (`/`) untuk kemudahan melihat transparansi kas. Jika pengguna tanpa wewenang staf mencoba membuka alamat `/unggah` secara langsung melalui URL browser, sistem akan mengalihkan kembali ke Beranda disertai kotak pemberitahuan (*Banner Alert*) ramah pengguna yang dapat ditutup.
+*Catatan: Staf DKM dapat meninjau tampilan portal publik jemaah kapan saja melalui tautan **"Lihat Beranda Publik"** di footer sidebar.*
+
+### Menu Navigasi Publik / Jamaah (Tanpa Login)
+
+| Menu | Ikon | Halaman | Fungsi & Keterangan |
+|---|---|---|---|
+| **Beranda** | 🏛️ | `/` | Portal transparansi kas umat: saldo terkonsolidasi, narasi alokasi belanja, cek infaq, rekening resmi, & arsip. |
+| **Donatur** | 🤝 | `/donatur` | Transparansi daftar penerimaan infaq donatur dan kotak amal. |
+| **Pengeluaran** | 🧾 | `/pengeluaran` | Laporan terbuka alokasi pengeluaran kas masjid. |
+| **Cari** | 🔍 | `/cari` | Pencarian arsip laporan kas mingguan. |
+
+> **Catatan Kendali Akses & Proteksi Rute**:  
+> - Halaman `/dashboard` dan `/unggah` diproteksi ketat di tingkat server (middleware & proxy). Jamaah atau pengunjung yang belum login yang mencoba membuka URL `/dashboard` akan dialihkan secara otomatis ke halaman login atau beranda.
+> - Sebaliknya, staf DKM yang membuka alamat utama `/` akan dialihkan secara otomatis ke `/dashboard` agar langsung siap bekerja, kecuali saat mengakses alamat publik dengan parameter pratinjau (`/?view=public`).
 
 ---
 
-## 5. Beranda — Portal Transparansi Kas & Arsip Umat
+## 5. Beranda — Portal Transparansi Kas & Arsip Umat (Publik)
 
 **Alamat**: `/` (halaman utama)
 
-Halaman utama berfungsi sebagai **Portal Transparansi Kas Terpadu** yang menyajikan seluruh ikhtisar keuangan dan arsip kas masjid secara terbuka dan akuntabel tanpa perlu login:
+Halaman Beranda dirancang khusus sebagai **Portal Transparansi Kas Umat yang Hangat dan Ramah Jamaah**. Tampilannya human-centric dan bersih dari grafik instrumen teknis yang rumit, menyajikan:
 
 ### Konten Halaman Beranda
 
-#### 1. Total Saldo Kas Terkonsolidasi
+#### 1. Identitas & Ikrar Amanah DKM
+Sambutan hangat dari DKM Masjid Al-Luqman dengan penegasan komitmen transparansi pengelolaan dana titipan umat.
+
+#### 2. Total Saldo Kas Terkonsolidasi
 Menampilkan angka total likuiditas kas masjid yang terkonsolidasi, membedakan secara transparan antara:
-- **Kas Tunai Fisik (Brankas/Tromol)**: Uang tunai riil hasil infaq tromol Jumat dan kas harian masjid.
-- **Kas Bank & QRIS Resmi**: Dana yang mengendap di rekening bank resmi DKM (BSI & Muamalat).
+- **Kas Tunai Fisik (Brankas)**: Uang tunai riil hasil infaq tromol Jumat dan kas operasional harian di masjid.
+- **Kas Bank & QRIS Resmi**: Dana yang mengendap di rekening perbankan syariah resmi DKM (BSI & Muamalat).
 
-#### 2. Ringkasan Kas & Tren Interaktif
-Grafik tren arus kas masuk dan keluar terverifikasi yang dilengkapi dengan filter periode terpadu:
-- **Granularitas**: Pilihan mode **Mingguan** (memetakan Jumat spesifik) atau **Tahunan** (12 bulan penuh).
-- **Pemilih Periode**: Dropdown pemilihan Bulan dan Tahun yang dinamis.
-- **Dua Tombol Aksi Langsung**:
-  - **Cetak Laporan**: Membuka pratinjau dokumen resmi A4 berkop surat DKM Al-Luqman siap cetak (Bulanan atau Tahunan).
-  - **Excel**: Mengunduh berkas spreadsheet `.xlsx` resmi rekapitulasi kas.
+#### 3. Distribusi Penyaluran Kas Umat Bulan Berjalan
+Kartu-kartu alokasi belanja kas per kategori riil (`operasional`, `pembangunan`, `sosial`, `honor`, `konsumsi`, dll) yang **otomatis menyajikan data bulan berjalan terkini**. Setiap pos belanja menyajikan persentase porsi, nominal rupiah, jumlah transaksi, dan narasi penjelasan peruntukan dana umat.
 
-#### 3. Alokasi Pos Pengeluaran Kas
-Kartu-kartu alokasi belanja kas per kategori riil (`operasional`, `pembangunan`, `sosial`, `honor`, `konsumsi`, dll) yang **otomatis sinkron dan reaktif** mengikuti filter bulan/tahun aktif di atasnya. Setiap pos menyajikan persentase alokasi, progress bar berwarna, nominal rupiah, jumlah transaksi, dan tombol "Lihat Rincian Nota" ke halaman `/pengeluaran`.
+#### 4. Widget Cek Riwayat Infaq Mandiri
+Donatur dan jamaah dapat langsung mengetik namanya di kolom pencarian untuk memastikan dana infaqnya telah tercatat sah dalam pembukuan kas DKM, lengkap dengan tanggal riil dari lembar fisik buku kas.
 
-#### 4. Widget Cek Riwayat Infaq Donatur
-Donatur dapat langsung mengetik namanya untuk memastikan infaq yang disalurkan telah sah tercatat dalam pembukuan kas DKM, lengkap dengan tanggal riil dari lembar dokumen aslinya.
+#### 5. Salurkan Infaq & Sedekah Resmi
+Informasi resmi nomor rekening perbankan syariah atas nama DKM Masjid Al-Luqman beserta panduan infaq digital melalui QRIS nasional.
 
-#### 5. Arsip Laporan Kas Mingguan
-Daftar pindaian buku kas fisik terkelompok menurut Tahun, Bulan, dan Pekan. Klik kartu laporan untuk membuka **Halaman Detail Laporan**.
+#### 6. Arsip Buku Kas Fisik Mingguan
+Galeri pindaian otentik lembar buku kas fisik mingguan yang dikelompokkan menurut tahun buku. Jemaah dapat mengeklik kartu laporan untuk melihat detail pindaian dokumen aslinya.
 
 ---
 
-## 6. Konsolidasi Dashboard ke Beranda
+## 6. Dashboard — Cockpit Analitik & Instrumen Kerja Pengurus
 
-> **Catatan Arsitektur (F-035)**:  
-> Halaman `/dashboard` lama yang sebelumnya menampilkan grafik tren secara terpisah kini telah **dilebur sepenuhnya ke dalam Beranda (`/`)** sebagai *single source of truth*. Pengurus maupun jemaah kini memiliki satu pusat ringkasan kas yang sama dan komprehensif. Setiap pengunjung atau tautan yang mengakses alamat `/dashboard` secara otomatis dialihkan (*HTTP 307 Redirect*) ke Beranda (`/`).
+**Alamat**: `/dashboard` (Khusus Staf DKM: Bendahara & Admin)
 
-#### 3. Tiga Kartu Ringkasan Indikator Keuangan (KPI)
-Tiga kartu di bawah toolbar yang otomatis terhitung ulang mengikuti filter periode yang dipilih:
-- **Total Pemasukan**: Akumulasi infaq, donatur, dan penerimaan kas pada periode aktif.
-- **Total Pengeluaran**: Akumulasi seluruh pos belanja operasional kas pada periode aktif.
-- **Arus Kas Bersih**: Selisih bersih pemasukan dikurangi pengeluaran (surplus bernilai positif/hijau, defisit bernilai negatif/merah).
+Halaman `/dashboard` berfungsi sebagai **kokpit kerja analitik internal pengurus**. Di sinilah pengurus memantau kesehatan perbendaharaan kas, menganalisis tren, serta mencetak dokumen resmi:
 
-#### 4. Grafik Tren Kas Interaktif
-Grafik batang interaktif membandingkan **Pemasukan** (hijau) dan **Pengeluaran** (merah):
-- **Mode Mingguan**: Memplot pekan-pekan (hari Jumat) spesifik di dalam bulan dan tahun yang dipilih, bukan rolling-window acak.
-- **Mode Tahunan**:
-  - Pada layar komputer/laptop (desktop ≥ 768px): Menampilkan 12 batang bulan penuh (Januari s/d Desember).
-  - Pada layar ponsel pintar (mobile < 768px): Menyediakan toggle cepat **Semester 1** (`Jan - Jun`) dan **Semester 2** (`Jul - Des`) agar tampilan grafik tetap lega, proporsional, dan nyaman disentuh jari tanpa tumpang tindih label teks.
-- **Touch Tooltip**: Sentuh atau arahkan kursor ke batang grafik untuk melihat rincian angka pemasukan dan pengeluaran pada periode terkait.
+### Fitur & Kontrol Dashboard Staf
+
+#### 1. Hero Cockpit & Pintasan Operasional
+Menyajikan status saldo terverifikasi, tanggal laporan kas mutakhir, dan dua tombol pintasan aksi langsung:
+- **+ Unggah Laporan Baru**: Langsung membuka antarmuka pemindaian berkas kas (`/unggah`).
+- **Lihat Portal Publik**: Membuka pratinjau Beranda publik sebagaimana dilihat oleh jemaah (`/?view=public`).
+
+#### 2. Tiga Indikator Keuangan Kunci (KPI)
+- **Total Pemasukan**: Akumulasi infaq, donatur, dan penerimaan kas pada periode terpilih.
+- **Total Pengeluaran**: Akumulasi belanja operasional kas pada periode terpilih.
+- **Arus Kas Bersih**: Selisih bersih pemasukan dikurangi pengeluaran (surplus hijau / defisit merah).
+
+#### 3. Grafik Tren Arus Kas Interaktif (Recharts)
+Grafik batang komparasi **Pemasukan** (hijau) vs **Pengeluaran** (merah):
+- **Mode Mingguan**: Memetakan penerimaan per pekan Jumat di bulan yang dipilih.
+- **Mode Tahunan**: Menampilkan sebaran 12 bulan penuh (Januari–Desember). Pada perangkat mobile, tersedia pemisah **Semester 1** dan **Semester 2** agar grafik tetap nyaman dibaca.
+- **Tooltip Sentuh**: Menampilkan nominal presisi saat kursor atau jari menyentuh batang grafik.
+
+#### 4. Kontrol Periode & Tombol Ekspor Administratif
+- **Pemilih Bulan & Tahun**: Dropdown interaktif untuk menganalisis periode pembukuan lampau.
+- **Cetak Laporan (A4)**: Membuka dokumen format cetak A4 berkop resmi DKM siap tempel di papan mading masjid.
+- **Ekspor Excel (.xlsx)**: Mengunduh rekapitulasi buku kas dalam format spreadsheet standar.
+
+#### 5. Distribusi Belanja Analitik
+Kartu alokasi belanja per kategori yang **reaktif dan sinkron** dengan filter bulan/tahun yang sedang aktif di toolbar dashboard, memudahkan bendahara mengevaluasi persentase realisasi anggaran pengeluaran.
 
 > **Info**: Seluruh data yang ditampilkan di dashboard hanya berasal dari transaksi dengan status **terverifikasi** (`isVerified = true`). Data draft yang belum dikonfirmasi bendahara tidak pernah ditampilkan ke publik.
 

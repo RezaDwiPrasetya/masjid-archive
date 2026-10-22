@@ -13,8 +13,8 @@ export async function proxy(request: NextRequest) {
 
   const role = (token.role as string | undefined)?.trim().toUpperCase();
 
-  // Rute /unggah khusus staf DKM (ADMIN atau BENDAHARA)
-  if (request.nextUrl.pathname.startsWith("/unggah")) {
+  // Rute /dashboard & /unggah khusus staf DKM (ADMIN atau BENDAHARA)
+  if (request.nextUrl.pathname.startsWith("/dashboard") || request.nextUrl.pathname.startsWith("/unggah")) {
     if (role !== "ADMIN" && role !== "BENDAHARA") {
       const forbiddenUrl = new URL("/?error=forbidden", request.url);
       return NextResponse.redirect(forbiddenUrl);
@@ -33,5 +33,12 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/unggah", "/unggah/:path*", "/pengguna", "/pengguna/:path*"],
+  matcher: [
+    "/dashboard",
+    "/dashboard/:path*",
+    "/unggah",
+    "/unggah/:path*",
+    "/pengguna",
+    "/pengguna/:path*",
+  ],
 };
