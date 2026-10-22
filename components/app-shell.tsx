@@ -42,19 +42,23 @@ export function AppShell({
 
   const navItems = [];
 
-  // Rute operasional /unggah diposisikan di urutan teratas bagi Staf (Bendahara & Admin)
+  // Beranda selalu menjadi jangkar utama di posisi teratas
+  navItems.push({ href: "/", label: "Beranda", icon: Landmark });
+
+  // Rute operasional & analitik internal (Khusus Staf: BENDAHARA & ADMIN)
   if (isStaff(session)) {
-    navItems.push({ href: "/unggah", label: "Unggah", icon: ImagePlus });
+    navItems.push(
+      { href: "/unggah", label: "Unggah", icon: ImagePlus },
+      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/keuangan", label: "Keuangan", icon: Wallet }
+    );
   }
 
-  // Rute arsip, analitik, dan transparansi publik
+  // Rute transparansi publik (Tersedia bagi semua jemaah & publik)
   navItems.push(
-    { href: "/", label: "Beranda", icon: Landmark },
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/keuangan", label: "Keuangan", icon: Wallet },
     { href: "/donatur", label: "Donatur", icon: HeartHandshake },
     { href: "/pengeluaran", label: "Pengeluaran", icon: Receipt },
-    { href: "/cari", label: "Cari", icon: Search },
+    { href: "/cari", label: "Cari", icon: Search }
   );
 
   // Rute administratif /pengguna khusus Administrator sistem (ADMIN)

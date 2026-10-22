@@ -18,9 +18,9 @@ Aplikasi web arsip & manajemen keuangan digital untuk **DKM Masjid Al-Luqman** (
   - Branch aktif: `feature/portal-transparansi-publik`.
   - Terpasang skill `frontend-design` dari repository resmi Anthropic (`anthropics/skills`).
   - Audit desain mengidentifikasi ~75% kemiripan dengan template SaaS AI generik; disusun matriks anti-AI tropes dan rencana 3 fase eksekusi:
-    - **Fase 1**: Gerbang Keamanan & Alur Autentikasi (`Akses Pengurus`, `/pending` approval state, router pasca-login).
-    - **Fase 2**: Halaman Depan Publik (`/`) berkarakter masjid & transparan.
-    - **Fase 3**: Refaktor navigasi `AppShell` (pemisahan layout publik vs staf).
+    - **Fase 1 (Selesai - Commit a94fbbf)**: Gerbang Keamanan & Alur Autentikasi (`Akses Pengurus`, `/pending` approval state, router pasca-login).
+    - **Fase 2 (Selesai - Commit 0cb0c20)**: Halaman Depan Publik (`/`) berkarakter masjid, saldo kas 3 pilar, widget pencarian infaq mandiri, dan kanal rekening resmi/QRIS DKM.
+    - **Fase 3 (Selesai - Commit ae76cf9 & update)**: Penataan rute navigasi `AppShell`: publik hanya melihat 4 menu terbuka (`Beranda`, `Donatur`, `Pengeluaran`, `Cari`), sedangkan staf DKM mendapatkan menu kerja internal (`Unggah`, `Dashboard`, `Keuangan`).
 
 - **SELURUH FITUR V1–V10 SELESAI 100% (PROJEK TAMAT / FEATURE-COMPLETE)**:
   - **V1–V2**: Multi-format upload (JPG, PNG, PDF, Excel) & arsip berjenjang.

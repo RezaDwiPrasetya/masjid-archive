@@ -54,3 +54,12 @@ Pengunjung Membuka Web (URL Utama /)
 3. Halaman `/pending` menampilkan pemberitahuan yang santun dan opsi kembali ke beranda publik atau logout.
 4. Administrator melalui menu `/pengguna` dapat meng-upgrade akun tersebut menjadi `BENDAHARA` atau `ADMIN`. Setelah di-upgrade, pada login berikutnya staf langsung diarahkan ke workspace operasional.
 
+## Struktur Navigasi Berdasarkan Hak Akses
+
+| Peran Pengguna | Menu Navigasi yang Ditampilkan | Keterangan |
+| :--- | :--- | :--- |
+| **Jamaah / Publik (Tanpa Login)** | 1. **Beranda** (`/`)<br>2. **Donatur** (`/donatur`)<br>3. **Pengeluaran** (`/pengeluaran`)<br>4. **Cari** (`/cari`) | Hanya 4 menu terbuka. Menu internal (`Dashboard`, `Keuangan`) disembunyikan agar tampilan bersih dan tidak membingungkan. |
+| **Staf DKM (BENDAHARA / ADMIN)** | 1. **Beranda** (`/`)<br>2. **Unggah** (`/unggah`)<br>3. **Dashboard** (`/dashboard`)<br>4. **Keuangan** (`/keuangan`)<br>5. **Donatur** (`/donatur`)<br>6. **Pengeluaran** (`/pengeluaran`)<br>7. **Cari** (`/cari`) | Menu operasional (`Unggah`, `Dashboard`, `Keuangan`) terbuka penuh untuk kebutuhan kerja pembukuan dan cetak buletin. |
+| **Administrator Sistem (ADMIN)** | Tambahan: 8. **Pengguna** (`/pengguna`) | Menu pengelolaan hak akses seluruh akun pengurus DKM. |
+
+
