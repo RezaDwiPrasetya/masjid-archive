@@ -7,7 +7,7 @@ import { PageShell } from "@/components/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { QuickInfaqSearch, type VerifiedDonation } from "@/components/public-portal/quick-infaq-search";
-import { OfficialBankAccounts } from "@/components/public-portal/official-bank-accounts";
+import { CashflowTrendSection } from "@/components/cashflow-trend-section";
 import {
   FolderOpen,
   CalendarDays,
@@ -111,10 +111,12 @@ export default async function BerandaPortalPublikPage() {
   let kasSosialIn = 0;
   let kasSosialOut = 0;
 
-  // Akumulasi bulan berjalan
+  // Penentuan periode aktif laporan (mengutamakan laporan terverifikasi terkini agar tidak menampilkan periode kosong)
   const now = new Date();
-  const currentYear = now.getUTCFullYear();
-  const currentMonth = now.getUTCMonth() + 1;
+  const latestReport = reports[0];
+  const activeYear = latestReport ? latestReport.year : now.getUTCFullYear();
+  const activeMonth = latestReport ? latestReport.month : now.getUTCMonth() + 1;
+  const activeMonthName = MONTH_NAMES[activeMonth] || "";
   let currentMonthIn = 0;
   let currentMonthOut = 0;
 
@@ -146,12 +148,12 @@ export default async function BerandaPortalPublikPage() {
       else kasOperasionalOut += amount;
     }
 
-    // Cek apakah transaksi terjadi di bulan berjalan
+    // Cek apakah transaksi terjadi di periode laporan aktif
     if (tx.transactionDate) {
       const txDate = new Date(tx.transactionDate);
       if (
-        txDate.getUTCFullYear() === currentYear &&
-        txDate.getUTCMonth() + 1 === currentMonth
+        txDate.getUTCFullYear() === activeYear &&
+        txDate.getUTCMonth() + 1 === activeMonth
       ) {
         if (tx.type === "pemasukan") currentMonthIn += amount;
         else currentMonthOut += amount;
@@ -238,16 +240,22 @@ export default async function BerandaPortalPublikPage() {
         {/* Akses Cepat Anchor Menu */}
         <div className="flex items-center gap-2 flex-wrap text-xs font-semibold">
           <a
+            href="#tren-kas"
+            className="px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/30 transition-colors"
+          >
+            Ringkasan &amp; Tren
+          </a>
+          <a
+            href="#tiga-pilar"
+            className="px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/30 transition-colors"
+          >
+            3 Pilar Kas
+          </a>
+          <a
             href="#cek-infaq"
             className="px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/30 transition-colors"
           >
             Cek Infaq Anda
-          </a>
-          <a
-            href="#rekening-donasi"
-            className="px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/30 transition-colors"
-          >
-            Rekening DKM
           </a>
           <a
             href="#arsip-laporan"
@@ -307,8 +315,17 @@ export default async function BerandaPortalPublikPage() {
     <AppShell active="/">
       <PageShell heroBand={heroBandContent}>
         <div className="space-y-12">
-          {/* SECTION 1: Alokasi 3 Pilar Kas & Arus Kas Bulan Ini */}
-          <section id="tiga-pilar" className="space-y-4">
+          {/* SECTION 1: Ringkasan Kas & Tren Interaktif dengan Filter Periode & Cetak Laporan */}
+          <section id="tren-kas" className="space-y-4">
+            <CashflowTrendSection
+              initialYear={activeYear}
+              initialMonth={activeMonth}
+              availableYears={years}
+            />
+          </section>
+
+          {/* SECTION 2: Alokasi 3 Pilar Kas Masjid */}
+          <section id="tiga-pilar" className="space-y-4 pt-2">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-outline-variant pb-3">
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold font-sans tracking-tight text-on-surface">
@@ -319,7 +336,7 @@ export default async function BerandaPortalPublikPage() {
                 </p>
               </div>
               <div className="text-xs text-on-surface-variant font-medium">
-                Arus Kas Bulan {MONTH_NAMES[currentMonth]} {currentYear}:{" "}
+                Arus Kas Periode {activeMonthName} {activeYear}:{" "}
                 <span className="text-emerald-700 font-bold tabular-nums">+{formatRupiah(currentMonthIn)}</span> /{" "}
                 <span className="text-rose-700 font-bold tabular-nums">-{formatRupiah(currentMonthOut)}</span>
               </div>
@@ -431,23 +448,6 @@ export default async function BerandaPortalPublikPage() {
             </div>
 
             <QuickInfaqSearch initialDonations={recentDonations} />
-          </section>
-
-          {/* SECTION 3: Kanal Donasi & Rekening Resmi DKM */}
-          <section id="rekening-donasi" className="space-y-4 pt-4">
-            <div className="border-b border-outline-variant pb-3">
-              <div className="flex items-center gap-2">
-                <Landmark className="h-5 w-5 text-primary" />
-                <h2 className="text-xl sm:text-2xl font-bold font-sans tracking-tight text-on-surface">
-                  Rekening Resmi &amp; Kanal Donasi DKM
-                </h2>
-              </div>
-              <p className="text-xs sm:text-sm text-on-surface-variant">
-                Salurkan sedekah dan infaq Anda melalui rekening terdaftar atas nama lembaga DKM Masjid Al-Luqman untuk mencegah kekeliruan transfer.
-              </p>
-            </div>
-
-            <OfficialBankAccounts />
           </section>
 
           {/* SECTION 4: Arsip Laporan Buku Kas Fisik & Buletin Mingguan */}

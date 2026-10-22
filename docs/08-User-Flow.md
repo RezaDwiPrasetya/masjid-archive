@@ -5,11 +5,11 @@
 ```
 Pengunjung Membuka Web (URL Utama /)
   │
-  ├─► [Publik / Jamaah — Tanpa Login]
-  │     ├── 1. Lobi Transparansi: Ringkasan 3 Pilar Kas (Operasional, Pembangunan, Sosial)
-  │     ├── 2. Widget Cek Infaq: Masukkan Nama Donatur / Kode Resi
-  │     ├── 3. Rekening Resmi & QRIS: Informasi transfer terverifikasi DKM
-  │     └── 4. Unduh Laporan: Buletin keuangan berkala (PDF A4 mading)
+  ├─► [Publik / Jamaah & Pengurus — Halaman Utama /]
+  │     ├── 1. Ringkasan Kas & Tren: Grafik kas masuk & keluar, filter periode (Bulan & Tahun), tombol Cetak Laporan (A4) & Excel
+  │     ├── 2. Lobi 3 Pilar Kas: Operasional & Kemakmuran, Pembangunan & Sarana, ZISWAF & Sosial
+  │     ├── 3. Widget Cek Infaq: Pencarian cepat riwayat infaq donatur tanpa login
+  │     └── 4. Arsip Laporan: Pindaian buku kas mingguan & buletin berkala DKM
   │
   └─► [Tombol 'Akses Pengurus' di Pojok Kanan Atas]
         │
@@ -35,10 +35,10 @@ Pengunjung Membuka Web (URL Utama /)
 
 ### 1. Alur Jamaah & Publik (Tanpa Hambatan Login)
 1. Pengunjung membuka halaman utama (`/`).
-2. Melihat sambutan hangat Masjid Al-Luqman dan ringkasan kas 3 pilar yang bersahabat.
-3. Donatur dapat langsung mengetik namanya di kolom "Cek Riwayat Infaq" untuk memastikan uang infaqnya sudah tercatat secara sah.
-4. Jemaah yang ingin bersedekah dapat memindai QRIS resmi DKM atau menyalin nomor rekening resmi BSI/Muamalat atas nama DKM Masjid Al-Luqman.
-5. Jemaah dapat mengunduh salinan berkas PDF laporan bulanan resmi.
+2. Melihat identitas DKM Masjid Al-Luqman, total saldo terkonsolidasi (fisik & bank), serta visualisasi interaktif **Ringkasan Kas & Tren** (lengkap dengan filter bulan/tahun, grafik batang kas masuk & keluar, dan tombol **Cetak Laporan / Excel**).
+3. Meninjau alokasi 3 pilar kas (Operasional, Pembangunan, Sosial) yang dihitung dari periode laporan terverifikasi terkini.
+4. Donatur dapat langsung mengetik namanya di kolom "Cek Riwayat Infaq" untuk memastikan uang infaqnya sudah tercatat secara sah.
+5. Jemaah & pengurus dapat menelusuri arsip pindaian buku kas mingguan dan mencetak dokumen mading A4 kapan saja. *(Catatan: Bagian rekening bank resmi disembunyikan sementara sampai DKM mendaftarkan nomor rekening resmi yang valid).*
 
 ### 2. Alur Staf Pengurus DKM
 1. Staf membuka web dan menekan tombol **"Akses Pengurus"**.
