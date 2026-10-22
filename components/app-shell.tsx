@@ -3,16 +3,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
-  Archive,
   HeartHandshake,
   ImagePlus,
   LayoutDashboard,
   Search,
   Users,
-  ShieldCheck,
   Receipt,
   Wallet,
   Landmark,
+  ShieldCheck,
 } from "lucide-react";
 import { AuthButton } from "@/components/auth-button";
 import { useSession } from "next-auth/react";
@@ -44,13 +43,13 @@ export function AppShell({
 
   // Rute navigasi berdasarkan hak akses:
   // - Staf DKM (BENDAHARA & ADMIN): Mengutamakan alur kerja operasional terverifikasi
-  //   diawali dengan Unggah (/unggah), lalu Laporan (/ - arsip buletin mingguan), Dashboard (/dashboard), dan Keuangan (/keuangan).
+  //   diawali dengan Unggah (/unggah), lalu Beranda (/ - portal transparansi kas & arsip), Dashboard (/dashboard), dan Keuangan (/keuangan).
   // - Publik / Jamaah (Tanpa Login): Mengutamakan keterbukaan informasi
   //   diawali dengan Beranda (/ - portal transparansi kas & infaq umat).
   if (isStaff(session)) {
     navItems.push(
       { href: "/unggah", label: "Unggah", icon: ImagePlus },
-      { href: "/", label: "Laporan", icon: Archive },
+      { href: "/", label: "Beranda", icon: Landmark },
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
       { href: "/keuangan", label: "Keuangan", icon: Wallet }
     );

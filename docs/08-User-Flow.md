@@ -59,7 +59,7 @@ Pengunjung Membuka Web (URL Utama /)
 | Peran Pengguna | Menu Navigasi yang Ditampilkan | Keterangan |
 | :--- | :--- | :--- |
 | **Jamaah / Publik (Tanpa Login)** | 1. **Beranda** (`/`)<br>2. **Donatur** (`/donatur`)<br>3. **Pengeluaran** (`/pengeluaran`)<br>4. **Cari** (`/cari`) | Hanya 4 menu terbuka. Menampilkan Portal Transparansi Kas publik dengan saldo terkonsolidasi, grafik tren, cetak laporan, dan pencarian infaq terbuka. Menu internal disembunyikan agar tampilan bersih dan terarah. |
-| **Staf DKM (BENDAHARA / ADMIN)** | 1. **Unggah** (`/unggah`)<br>2. **Laporan** (`/`)<br>3. **Dashboard** (`/dashboard`)<br>4. **Keuangan** (`/keuangan`)<br>5. **Donatur** (`/donatur`)<br>6. **Pengeluaran** (`/pengeluaran`)<br>7. **Cari** (`/cari`) | Alur kerja operasional terverifikasi diawali dengan digitalisasi fisik (`Unggah`), arsip buletin mingguan (`Laporan`), analitik kas & tren (`Dashboard`), mutasi perbankan/tunai (`Keuangan`), lalu penelusuran transaksi. |
+| **Staf DKM (BENDAHARA / ADMIN)** | 1. **Unggah** (`/unggah`)<br>2. **Beranda** (`/`)<br>3. **Dashboard** (`/dashboard`)<br>4. **Keuangan** (`/keuangan`)<br>5. **Donatur** (`/donatur`)<br>6. **Pengeluaran** (`/pengeluaran`)<br>7. **Cari** (`/cari`) | Alur kerja operasional terverifikasi diawali dengan digitalisasi fisik (`Unggah`), portal kas & arsip mingguan (`Beranda`), analitik kas & tren (`Dashboard`), mutasi perbankan/tunai (`Keuangan`), lalu penelusuran transaksi. |
 | **Administrator Sistem (ADMIN)** | Tambahan: 8. **Pengguna** (`/pengguna`) | Menu pengelolaan hak akses seluruh akun pengurus DKM. |
 
 
