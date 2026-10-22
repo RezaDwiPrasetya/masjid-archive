@@ -1,7 +1,8 @@
 "use client";
 
 import { useSession, signIn, signOut } from "next-auth/react";
-import { LogOut, Loader2 } from "lucide-react";
+import { LogOut, Loader2, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 function GoogleIcon({ className = "h-4 w-4" }: { className?: string }) {
@@ -46,10 +47,11 @@ export function AuthButton() {
         size="sm"
         onClick={() => signIn("google", { callbackUrl: "/auth/post-login" })}
         className="gap-2 rounded-lg border-outline-variant bg-surface-container hover:bg-surface-container-high hover:border-primary/40 text-on-surface font-medium transition-all shadow-xs"
+        title="Masuk khusus staf & pengurus DKM"
       >
         <GoogleIcon className="h-4 w-4 shrink-0" />
-        <span className="hidden sm:inline">Masuk dengan Google</span>
-        <span className="sm:hidden">Masuk</span>
+        <span className="hidden sm:inline">Akses Pengurus</span>
+        <span className="sm:hidden">Pengurus</span>
       </Button>
     );
   }
@@ -75,10 +77,18 @@ export function AuthButton() {
           <span className="text-xs font-semibold text-on-surface leading-tight truncate max-w-[140px]">
             {session.user?.name}
           </span>
-          {role && (
+          {role ? (
             <span className="text-[10px] uppercase font-bold tracking-wider text-primary">
               {role}
             </span>
+          ) : (
+            <Link
+              href="/pending"
+              className="text-[10px] font-semibold text-warning hover:underline flex items-center gap-0.5"
+              title="Akun menunggu verifikasi hak akses dari Administrator DKM"
+            >
+              <span>Verifikasi Akses</span>
+            </Link>
           )}
         </div>
       </div>

@@ -27,21 +27,19 @@ export async function GET(request: NextRequest) {
 
   const target = request.nextUrl.searchParams.get("callbackUrl");
 
-  // Jika terdapat tujuan spesifik selain halaman beranda atau login, dahulukan tujuan tersebut
-  if (
-    target &&
-    target !== "/" &&
-    !target.startsWith("/login") &&
-    !target.startsWith("/auth/post-login")
-  ) {
-    return NextResponse.redirect(new URL(target, request.url));
-  }
-
-  // Jika pengguna adalah staf DKM (Bendahara / Admin), bawa langsung ke halaman unggah
+  // Jika pengguna adalah staf DKM (Bendahara / Admin), bawa langsung ke halaman unggah atau tujuan spesifik
   if (isUserStaff) {
+    if (
+      target &&
+      target !== "/" &&
+      !target.startsWith("/login") &&
+      !target.startsWith("/auth/post-login")
+    ) {
+      return NextResponse.redirect(new URL(target, request.url));
+    }
     return NextResponse.redirect(new URL("/unggah", request.url));
   }
 
-  // Pengguna umum / Jamaah diarahkan ke beranda arsip publik
-  return NextResponse.redirect(new URL("/", request.url));
+  // Pengguna tanpa role staf (Jamaah / Calon Staf yang belum diverifikasi) diarahkan ke halaman status pending
+  return NextResponse.redirect(new URL("/pending", request.url));
 }
