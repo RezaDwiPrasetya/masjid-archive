@@ -58,8 +58,8 @@ Pengunjung Membuka Web (URL Utama /)
 
 | Peran Pengguna | Menu Navigasi yang Ditampilkan | Keterangan |
 | :--- | :--- | :--- |
-| **Jamaah / Publik (Tanpa Login)** | 1. **Beranda** (`/`)<br>2. **Donatur** (`/donatur`)<br>3. **Pengeluaran** (`/pengeluaran`)<br>4. **Cari** (`/cari`) | Hanya 4 menu terbuka. Menu internal (`Dashboard`, `Keuangan`) disembunyikan agar tampilan bersih dan tidak membingungkan. |
-| **Staf DKM (BENDAHARA / ADMIN)** | 1. **Beranda** (`/`)<br>2. **Unggah** (`/unggah`)<br>3. **Dashboard** (`/dashboard`)<br>4. **Keuangan** (`/keuangan`)<br>5. **Donatur** (`/donatur`)<br>6. **Pengeluaran** (`/pengeluaran`)<br>7. **Cari** (`/cari`) | Menu operasional (`Unggah`, `Dashboard`, `Keuangan`) terbuka penuh untuk kebutuhan kerja pembukuan dan cetak buletin. |
+| **Jamaah / Publik (Tanpa Login)** | 1. **Beranda** (`/`)<br>2. **Donatur** (`/donatur`)<br>3. **Pengeluaran** (`/pengeluaran`)<br>4. **Cari** (`/cari`) | Hanya 4 menu terbuka. Menampilkan Portal Transparansi Kas publik & 3 pilar dana amanah umat. Menu internal disembunyikan agar tampilan bersih dan terarah. |
+| **Staf DKM (BENDAHARA / ADMIN)** | 1. **Unggah** (`/unggah`)<br>2. **Laporan** (`/`)<br>3. **Dashboard** (`/dashboard`)<br>4. **Keuangan** (`/keuangan`)<br>5. **Donatur** (`/donatur`)<br>6. **Pengeluaran** (`/pengeluaran`)<br>7. **Cari** (`/cari`) | Alur kerja operasional terverifikasi diawali dengan digitalisasi fisik (`Unggah`), arsip buletin mingguan (`Laporan`), analitik kas & tren (`Dashboard`), mutasi perbankan/tunai (`Keuangan`), lalu penelusuran transaksi. |
 | **Administrator Sistem (ADMIN)** | Tambahan: 8. **Pengguna** (`/pengguna`) | Menu pengelolaan hak akses seluruh akun pengurus DKM. |
 
 

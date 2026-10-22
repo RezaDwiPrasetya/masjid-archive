@@ -42,19 +42,23 @@ export function AppShell({
 
   const navItems = [];
 
-  // Beranda selalu menjadi jangkar utama di posisi teratas
-  navItems.push({ href: "/", label: "Beranda", icon: Landmark });
-
-  // Rute operasional & analitik internal (Khusus Staf: BENDAHARA & ADMIN)
+  // Rute navigasi berdasarkan hak akses:
+  // - Staf DKM (BENDAHARA & ADMIN): Mengutamakan alur kerja operasional terverifikasi
+  //   diawali dengan Unggah (/unggah), lalu Laporan (/ - arsip buletin mingguan), Dashboard (/dashboard), dan Keuangan (/keuangan).
+  // - Publik / Jamaah (Tanpa Login): Mengutamakan keterbukaan informasi
+  //   diawali dengan Beranda (/ - portal transparansi kas & pilar dana umat).
   if (isStaff(session)) {
     navItems.push(
       { href: "/unggah", label: "Unggah", icon: ImagePlus },
+      { href: "/", label: "Laporan", icon: Archive },
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
       { href: "/keuangan", label: "Keuangan", icon: Wallet }
     );
+  } else {
+    navItems.push({ href: "/", label: "Beranda", icon: Landmark });
   }
 
-  // Rute transparansi publik (Tersedia bagi semua jemaah & publik)
+  // Rute transparansi kas & pencarian dokumen (Tersedia bagi semua pengguna)
   navItems.push(
     { href: "/donatur", label: "Donatur", icon: HeartHandshake },
     { href: "/pengeluaran", label: "Pengeluaran", icon: Receipt },
