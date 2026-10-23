@@ -22,7 +22,7 @@ export function PageShell({
           <GeometricDivider />
         </section>
       )}
-      <div className={`w-full px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 md:py-10 ${className}`}>
+      <div className={`w-full px-4 sm:px-6 md:px-8 lg:px-10 py-5 sm:py-7 md:py-10 ${className}`}>
         {children}
       </div>
     </div>

@@ -212,10 +212,17 @@ export function AppShell({
           isCollapsed ? "w-[72px]" : "w-[260px]"
         }`}
       >
-        {/* Vektor Siluet Kubah Masjid Halus di Latar Belakang Bawah */}
-        <div className="absolute bottom-0 left-0 right-0 h-44 pointer-events-none opacity-15 overflow-hidden text-emerald-300">
-          <MosqueSilhouette className="w-full h-full object-cover object-bottom" />
-        </div>
+        {/* Ilustrasi Masjid Autentik Sesuai Referensi Pengguna (Persis media_1792723264079) */}
+        {!isCollapsed && (
+          <div className="absolute bottom-[200px] left-0 right-0 h-48 pointer-events-none overflow-hidden select-none z-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/sidebar-mosque-clean.png"
+              alt="Ilustrasi Masjid DKM"
+              className="w-full h-full object-cover object-bottom opacity-85"
+            />
+          </div>
+        )}
 
         {/* BAGIAN ATAS: Header Identitas & Menu Navigasi Utama */}
         <div className="flex flex-col z-10">
@@ -321,10 +328,10 @@ export function AppShell({
 
         {/* BAGIAN BAWAH: Kartu Kutipan Amanah, Portal Publik, & Panel Profil Pengguna */}
         <div className={`space-y-3 py-3.5 border-t border-white/10 relative z-10 ${isCollapsed ? "px-2" : "px-3"}`}>
-          {/* KARTU KUTIPAN AMANAH (Persis Referensi Gambar 1) */}
+          {/* KARTU KUTIPAN AMANAH (Persis Referensi Gambar 1 & media_1792723264079) */}
           {!isCollapsed && (
-            <div className="rounded-2xl bg-white/5 border border-white/10 p-3.5 backdrop-blur-xs text-white animate-in fade-in duration-200">
-              <p className="text-xs font-semibold leading-relaxed tracking-wide text-emerald-50">
+            <div className="rounded-2xl bg-[#0f3b28]/80 border border-emerald-500/20 p-3.5 backdrop-blur-md text-white animate-in fade-in duration-200 shadow-sm">
+              <p className="text-xs font-semibold leading-relaxed tracking-wide text-white">
                 &ldquo;Transparansi adalah bagian dari amanah.&rdquo;
               </p>
               <p className="text-[10.5px] text-emerald-300/80 mt-1.5 font-medium">
@@ -338,17 +345,17 @@ export function AppShell({
             !isCollapsed ? (
               <Link
                 href="/?view=public"
-                className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-white/10 border border-white/10 text-xs font-semibold text-white hover:bg-white/15 hover:border-white/20 transition-all group"
+                className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-[#0f3b28]/80 border border-emerald-500/20 text-xs font-semibold text-white hover:bg-[#144731] hover:border-emerald-400/30 transition-all group shadow-sm"
                 title="Buka tampilan transparansi publik untuk jemaah"
               >
                 <span className="flex items-center gap-2.5">
-                  <ExternalLink size={14} className="text-emerald-300" />
+                  <ExternalLink size={14} className="text-white" />
                   <span>Lihat Portal Publik</span>
                 </span>
                 <ChevronRight size={13} className="text-white/40 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
               </Link>
             ) : (
-              <div className="w-10 mx-auto py-1 rounded-xl bg-white/10 border border-white/10 flex flex-col items-center animate-in fade-in duration-200">
+              <div className="w-10 mx-auto py-1 rounded-xl bg-[#0f3b28]/80 border border-emerald-500/20 flex flex-col items-center animate-in fade-in duration-200">
                 <Link
                   href="/?view=public"
                   className="text-emerald-100/75 hover:text-white p-2 rounded-lg hover:bg-white/20 transition-colors group relative"
@@ -381,7 +388,7 @@ export function AppShell({
                       className="h-10 w-10 rounded-full ring-2 ring-emerald-600/30 object-cover shrink-0"
                     />
                   ) : (
-                    <div className="h-10 w-10 rounded-full bg-emerald-800 text-white flex items-center justify-center font-bold text-sm ring-2 ring-emerald-600/20 shrink-0">
+                    <div className="h-10 w-10 rounded-full bg-[#3b6d53] text-white flex items-center justify-center font-bold text-sm ring-2 ring-emerald-600/20 shrink-0">
                       {userName.charAt(0)}
                     </div>
                   )}
@@ -429,7 +436,7 @@ export function AppShell({
               !isCollapsed ? (
                 <div
                   onClick={() => setIsProfileMenuOpen((prev) => !prev)}
-                  className="flex items-center justify-between p-2 rounded-xl bg-white/10 border border-white/10 text-white hover:bg-white/15 transition-all cursor-pointer group"
+                  className="flex items-center justify-between p-2 rounded-xl bg-[#0f3b28]/80 border border-emerald-500/20 text-white hover:bg-[#144731] transition-all cursor-pointer group shadow-sm"
                   title="Klik untuk membuka menu akun"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
@@ -441,7 +448,7 @@ export function AppShell({
                         className="h-9 w-9 rounded-full ring-2 ring-white/20 object-cover shrink-0"
                       />
                     ) : (
-                      <div className="h-9 w-9 rounded-full bg-emerald-800 text-white flex items-center justify-center font-bold text-xs ring-2 ring-white/20 shrink-0">
+                      <div className="h-9 w-9 rounded-full bg-[#3b6d53] text-white flex items-center justify-center font-bold text-xs ring-2 ring-white/10 shrink-0">
                         {userName.charAt(0)}
                       </div>
                     )}
@@ -684,7 +691,7 @@ export function AppShell({
                   key={item.href}
                   href={item.href}
                   onClick={() => setOptimisticActive(item.href)}
-                  className="flex-1 flex flex-col items-center justify-center min-h-[48px] py-1 text-center group cursor-pointer relative"
+                  className="flex flex-1 min-w-0 flex-col items-center justify-center min-h-[48px] py-1 text-center group cursor-pointer relative"
                 >
                   {/* Ikon di garis datar: disembunyikan saat aktif karena sudah terangkat ke balon gelombang */}
                   <div
@@ -697,7 +704,7 @@ export function AppShell({
 
                   {/* Label Teks Navigasi */}
                   <span
-                    className={`text-[10px] sm:text-[11px] leading-tight truncate px-1 transition-all duration-200 ${
+                    className={`text-[10px] sm:text-[11px] leading-tight truncate w-full px-1 transition-all duration-200 ${
                       isActive
                         ? "text-primary-fixed font-bold translate-y-1.5"
                         : "text-emerald-200/60 font-medium translate-y-0.5 group-hover:text-emerald-100"

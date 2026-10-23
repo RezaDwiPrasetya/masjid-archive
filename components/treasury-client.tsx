@@ -15,6 +15,10 @@ import {
   AlertCircle,
   Loader2,
   ShieldCheck,
+  Clock,
+  Landmark,
+  ArrowRight,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -229,83 +233,132 @@ export function TreasuryClient({
   const cashRatio = Math.max(0, Math.min(100, Math.round((summary.cash.balance / total) * 100)));
   const bankRatio = Math.max(0, Math.min(100, Math.round((summary.bank.balance / total) * 100)));
 
-  const heroContent = (
-    <div className="space-y-5 sm:space-y-6">
-      <div className="flex items-center justify-between gap-3 flex-wrap border-b border-primary-fixed/20 pb-4">
-        <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed">
-          <Wallet className="h-4 w-4 shrink-0" />
-          <span>Posisi Kas Riil & Perbendaharaan • DKM Masjid Al-Luqman</span>
-        </div>
-        {isStaffUser && (
-          <Button
-            size="sm"
-            onClick={() => {
-              setErrorMessage(null);
-              setDialogOpen(true);
-            }}
-            className="h-8 gap-1.5 text-xs font-semibold rounded-lg bg-primary-container border-primary-fixed/30 text-on-primary hover:bg-primary-fixed hover:text-primary transition-colors"
-          >
-            <ArrowRightLeft size={14} />
-            Catat Mutasi Kas Internal
-          </Button>
-        )}
-      </div>
-
-      <div className="space-y-1">
-        <span className="text-[11px] uppercase tracking-wider text-primary-fixed/80 font-bold block">
-          Total Kas Terkonsolidasi (Fisik & Bank)
-        </span>
-        <div className="text-3xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary font-sans">
-          {formatRupiah(summary.totalBalance)}
-        </div>
-      </div>
-
-      <div className="text-xs md:text-sm text-primary-fixed/80">
-        Total likuiditas gabungan: kas fisik di brankas ({cashRatio}%) dan rekening bank / QRIS resmi ({bankRatio}%)
-      </div>
-
-      {/* Sub-indikator Kas Fisik vs Kas Bank di dalam Hero Band */}
-      <div className="pt-5 border-t border-primary-container grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="p-3.5 rounded-xl bg-primary-container/40 border border-primary-fixed/15 space-y-1">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-primary-fixed uppercase tracking-wider">
-              Kas Fisik (Tunai / Brankas)
-            </span>
-            <span className="text-[11px] font-bold text-primary-fixed tabular-nums">
-              {cashRatio}%
-            </span>
-          </div>
-          <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums">
-            {formatRupiah(summary.cash.balance)}
-          </div>
-          <div className="text-xs text-primary-fixed/70">
-            Uang tunai operasional harian DKM
-          </div>
-        </div>
-
-        <div className="p-3.5 rounded-xl bg-primary-container/40 border border-primary-fixed/15 space-y-1">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-primary-fixed uppercase tracking-wider">
-              Kas Bank / Digital (QRIS)
-            </span>
-            <span className="text-[11px] font-bold text-primary-fixed tabular-nums">
-              {bankRatio}%
-            </span>
-          </div>
-          <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums">
-            {formatRupiah(summary.bank.balance)}
-          </div>
-          <div className="text-xs text-primary-fixed/70">
-            Saldo di rekening BSI, Muamalat & QRIS
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
-    <PageShell heroBand={heroContent}>
-      <div className="space-y-8 sm:space-y-10">
+    <PageShell>
+      <div className="space-y-6 sm:space-y-8">
+        {/* HEADER ATAS: Breadcrumb, Judul Masjid, & Aksi Cepat (Persis Mockup Gambar 1) */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Arsip Digital Keuangan Masjid
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Masjid Al-Luqman
+            </h1>
+            <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
+              <span>Transparan</span>
+              <span className="text-slate-300">•</span>
+              <span>Amanah</span>
+              <span className="text-slate-300">•</span>
+              <span>Berkah</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-3 px-3.5 py-2 rounded-2xl bg-white border border-slate-200/90 shadow-2xs">
+              <div className="h-9 w-9 rounded-xl bg-[#0e3824] text-white flex items-center justify-center shrink-0">
+                <ShieldCheck size={18} className="text-emerald-300" />
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-xs font-bold text-slate-900 leading-tight">
+                  Posisi Kas Riil & Perbendaharaan
+                </span>
+                <span className="text-[11px] text-slate-500 font-medium">
+                  DKM Masjid Al-Luqman
+                </span>
+              </div>
+            </div>
+
+            {isStaffUser && (
+              <Button
+                onClick={() => {
+                  setErrorMessage(null);
+                  setDialogOpen(true);
+                }}
+                className="h-10 px-4 rounded-xl bg-[#0e3824] hover:bg-[#144731] text-white text-xs font-bold gap-2 shadow-sm transition-all"
+              >
+                <span>Catat Mutasi Kas Internal</span>
+                <ArrowRight size={14} />
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* HERO CARD MELAYANG (PERSIS GAMBAR REFERENSI 1) */}
+        <div className="rounded-3xl bg-[#0e3824] text-white p-6 sm:p-8 lg:p-9 shadow-sm relative overflow-hidden">
+          {/* Efek aksen radial halus */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            {/* Sisi Kiri: Saldo Konsolidasi Utama */}
+            <div className="lg:col-span-7 space-y-4">
+              <div className="flex items-center gap-2.5 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
+                <div className="h-8 w-8 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
+                  <Wallet size={16} />
+                </div>
+                <span>Total Kas Terkonsolidasi (Fisik & Bank)</span>
+              </div>
+
+              <div className="text-4xl sm:text-5xl lg:text-[54px] font-bold tracking-tight text-white tabular-nums leading-none font-sans">
+                {formatRupiah(summary.totalBalance)}
+              </div>
+
+              <p className="text-xs sm:text-sm text-emerald-100/80 leading-relaxed max-w-xl">
+                Total likuiditas gabungan: kas fisik di brankas ({cashRatio}%) dan rekening bank / QRIS resmi ({bankRatio}%)
+              </p>
+            </div>
+
+            {/* Sisi Kanan: Kartu Sub-Kanal (Tunai & Digital) */}
+            <div className="lg:col-span-5 space-y-3">
+              {/* Sub-Card 1: Kas Fisik (Tunai / Brankas) */}
+              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex items-center justify-between">
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center text-white shrink-0">
+                    <Banknote size={20} className="text-emerald-300" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider truncate">
+                      Kas Fisik (Tunai / Brankas)
+                    </div>
+                    <div className="text-lg sm:text-xl font-bold text-white tabular-nums">
+                      {formatRupiah(summary.cash.balance)}
+                    </div>
+                    <div className="text-[11px] text-emerald-300/70 truncate">
+                      Uang tunai operasional harian DKM
+                    </div>
+                  </div>
+                </div>
+                <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-xs font-bold self-start ml-2 shrink-0">
+                  {cashRatio}%
+                </span>
+              </div>
+
+              {/* Sub-Card 2: Kas Bank / Digital (QRIS) */}
+              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex items-center justify-between">
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center text-white shrink-0">
+                    <Landmark size={20} className="text-emerald-300" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider truncate">
+                      Kas Bank / Digital (QRIS)
+                    </div>
+                    <div className="text-lg sm:text-xl font-bold text-white tabular-nums">
+                      {formatRupiah(summary.bank.balance)}
+                    </div>
+                    <div className="text-[11px] text-emerald-300/70 truncate">
+                      Saldo di rekening BSI, Muamalat & QRIS
+                    </div>
+                  </div>
+                </div>
+                <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-xs font-bold self-start ml-2 shrink-0">
+                  {bankRatio}%
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Banner Notifikasi Sukses / Error */}
         {successMessage && (
           <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center justify-between text-sm animate-in fade-in">
@@ -322,159 +375,162 @@ export function TreasuryClient({
           </div>
         )}
 
-      {/* Tab Navigasi Konten */}
-      <div className="flex items-center gap-2 border-b border-outline-variant/60">
-        <button
-          onClick={() => setActiveTab("allocation")}
-          className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-all ${
-            activeTab === "allocation"
-              ? "border-primary text-primary"
-              : "border-transparent text-on-surface-variant hover:text-on-surface"
-          }`}
-        >
-          <span className="flex items-center gap-2">
+        {/* TAB NAVIGASI PERSIS GAMBAR 1 */}
+        <div className="flex items-center gap-4 sm:gap-6 border-b border-slate-200 overflow-x-auto no-scrollbar">
+          <button
+            onClick={() => setActiveTab("allocation")}
+            className={`pb-3.5 flex items-center gap-2 text-sm font-semibold border-b-2 whitespace-nowrap transition-all ${
+              activeTab === "allocation"
+                ? "border-[#0e3824] text-[#0e3824] font-bold"
+                : "border-transparent text-slate-500 hover:text-slate-800"
+            }`}
+          >
             <Layers size={16} />
-            Alokasi Pengeluaran (Tunai vs Bank)
-          </span>
-        </button>
+            <span>Alokasi Pengeluaran (Tunai vs Bank)</span>
+          </button>
 
-        <button
-          onClick={() => setActiveTab("transfers")}
-          className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-all ${
-            activeTab === "transfers"
-              ? "border-primary text-primary"
-              : "border-transparent text-on-surface-variant hover:text-on-surface"
-          }`}
-        >
-          <span className="flex items-center gap-2">
+          <button
+            onClick={() => setActiveTab("transfers")}
+            className={`pb-3.5 flex items-center gap-2 text-sm font-semibold border-b-2 whitespace-nowrap transition-all ${
+              activeTab === "transfers"
+                ? "border-[#0e3824] text-[#0e3824] font-bold"
+                : "border-transparent text-slate-500 hover:text-slate-800"
+            }`}
+          >
             <ArrowRightLeft size={16} />
-            Mutasi Internal ({transfers.length})
-          </span>
-        </button>
+            <span>Mutasi Internal ({transfers.length})</span>
+          </button>
 
-        <button
-          onClick={() => setActiveTab("transactions")}
-          className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-all ${
-            activeTab === "transactions"
-              ? "border-primary text-primary"
-              : "border-transparent text-on-surface-variant hover:text-on-surface"
-          }`}
-        >
-          <span className="flex items-center gap-2">
+          <button
+            onClick={() => setActiveTab("transactions")}
+            className={`pb-3.5 flex items-center gap-2 text-sm font-semibold border-b-2 whitespace-nowrap transition-all ${
+              activeTab === "transactions"
+                ? "border-[#0e3824] text-[#0e3824] font-bold"
+                : "border-transparent text-slate-500 hover:text-slate-800"
+            }`}
+          >
             <Calendar size={16} />
-            Daftar Transaksi per Kanal
-          </span>
-        </button>
-      </div>
+            <span>Daftar Transaksi per Kanal</span>
+          </button>
+        </div>
 
-      {/* TAB 1: ALOKASI PENGELUARAN (TUNAI VS BANK) */}
-      {activeTab === "allocation" && (
-        <div className="space-y-4">
-          <p className="text-xs text-on-surface-variant">
-            Rincian penggunaan dana kas masjid berdasarkan sumber pembayaran: pos belanja mana yang dibayar dengan uang tunai brankas dan mana yang melalui transfer rekening bank.
-          </p>
+        {/* TAB 1: ALOKASI PENGELUARAN (TUNAI VS BANK) */}
+        {activeTab === "allocation" && (
+          <div className="space-y-4">
+            <p className="text-xs text-slate-500 max-w-2xl">
+              Rincian penggunaan dana kas masjid berdasarkan sumber pembayaran: pos belanja mana yang dibayar dengan uang tunai brankas dan mana yang melalui transfer rekening bank.
+            </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Kolom 1: Pengeluaran Kas Fisik (Tunai) */}
-            <div className="p-5 rounded-2xl border border-outline-variant/80 bg-surface-container space-y-4 shadow-xs">
-              <div className="flex items-center justify-between pb-3 border-b border-outline-variant/60">
-                <div className="flex items-center gap-2">
-                  <Banknote className="h-5 w-5 text-emerald-600" />
-                  <h2 className="text-base font-bold text-on-surface">
-                    Belanja Kas Tunai (Fisik)
-                  </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Kolom 1: Pengeluaran Kas Fisik (Tunai) */}
+              <div className="p-6 rounded-2xl border border-slate-200/90 bg-white space-y-5 shadow-xs">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+                      <Banknote className="h-4 w-4" />
+                    </div>
+                    <h2 className="text-sm sm:text-base font-bold text-slate-800">
+                      Belanja Kas Tunai (Fisik)
+                    </h2>
+                  </div>
+                  <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/60 px-3 py-1 rounded-full">
+                    Total: {formatRupiah(summary.cash.expense)}
+                  </span>
                 </div>
-                <Badge variant="outline" className="text-emerald-700 bg-emerald-50 border-emerald-200">
-                  Total: {formatRupiah(summary.cash.expense)}
-                </Badge>
+
+                {Object.keys(breakdowns.cashExpensesByCategory).length === 0 ? (
+                  <div className="py-8 text-center text-sm text-slate-400">
+                    Belum ada catatan pengeluaran kas tunai.
+                  </div>
+                ) : (
+                  <div className="space-y-3.5">
+                    {EXPENSE_CATEGORIES.map((cat) => {
+                      const amount = breakdowns.cashExpensesByCategory[cat.value] || 0;
+                      if (amount <= 0) return null;
+                      const percent = Math.round((amount / Math.max(summary.cash.expense, 1)) * 100);
+
+                      return (
+                        <div key={cat.value} className="space-y-1.5">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-semibold text-slate-700 flex items-center gap-2">
+                              <span className="h-2 w-2 rounded-full bg-emerald-600" />
+                              <span>{cat.label}</span>
+                            </span>
+                            <span className="font-bold text-slate-800 tabular-nums">
+                              {formatRupiah(amount)} ({percent}%)
+                            </span>
+                          </div>
+                          <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                            <div
+                              style={{ width: `${percent}%` }}
+                              className="h-full rounded-full bg-[#0e3824]"
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
-              {Object.keys(breakdowns.cashExpensesByCategory).length === 0 ? (
-                <div className="py-8 text-center text-sm text-on-surface-variant">
-                  Belum ada catatan pengeluaran kas tunai.
+              {/* Kolom 2: Pengeluaran Kas Bank / QRIS */}
+              <div className="p-6 rounded-2xl border border-slate-200/90 bg-white space-y-5 shadow-xs">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-8 w-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center shrink-0">
+                      <Landmark className="h-4 w-4" />
+                    </div>
+                    <h2 className="text-sm sm:text-base font-bold text-slate-800">
+                      Belanja Kas Bank / Digital
+                    </h2>
+                  </div>
+                  <span className="text-xs font-bold text-blue-800 bg-blue-50 border border-blue-200/60 px-3 py-1 rounded-full">
+                    Total: {formatRupiah(summary.bank.expense)}
+                  </span>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  {EXPENSE_CATEGORIES.map((cat) => {
-                    const amount = breakdowns.cashExpensesByCategory[cat.value] || 0;
-                    if (amount <= 0) return null;
-                    const percent = Math.round((amount / Math.max(summary.cash.expense, 1)) * 100);
 
-                    return (
-                      <div key={cat.value} className="space-y-1">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-medium text-on-surface flex items-center gap-1.5">
-                            <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                            <span>{cat.label}</span>
-                          </span>
-                          <span className="font-bold text-on-surface tabular-nums">
-                            {formatRupiah(amount)} ({percent}%)
-                          </span>
-                        </div>
-                        <div className="h-2 w-full rounded-full bg-surface-container-high overflow-hidden">
-                          <div
-                            style={{ width: `${percent}%` }}
-                            className="h-full rounded-full bg-emerald-600"
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+                {Object.keys(breakdowns.bankExpensesByCategory).length === 0 ? (
+                  <div className="py-12 flex flex-col items-center justify-center text-center space-y-3">
+                    <div className="p-3 text-slate-300">
+                      <Landmark strokeWidth={1.5} size={48} />
+                    </div>
+                    <p className="text-xs sm:text-sm text-slate-500 max-w-xs">
+                      Belum ada catatan pengeluaran dari rekening bank.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3.5">
+                    {EXPENSE_CATEGORIES.map((cat) => {
+                      const amount = breakdowns.bankExpensesByCategory[cat.value] || 0;
+                      if (amount <= 0) return null;
+                      const percent = Math.round((amount / Math.max(summary.bank.expense, 1)) * 100);
 
-            {/* Kolom 2: Pengeluaran Kas Bank / QRIS */}
-            <div className="p-5 rounded-2xl border border-outline-variant/80 bg-surface-container space-y-4 shadow-xs">
-              <div className="flex items-center justify-between pb-3 border-b border-outline-variant/60">
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-blue-600" />
-                  <h2 className="text-base font-bold text-on-surface">
-                    Belanja Kas Bank / Digital
-                  </h2>
-                </div>
-                <Badge variant="outline" className="text-blue-700 bg-blue-50 border-blue-200">
-                  Total: {formatRupiah(summary.bank.expense)}
-                </Badge>
+                      return (
+                        <div key={cat.value} className="space-y-1.5">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-semibold text-slate-700 flex items-center gap-2">
+                              <span className="h-2 w-2 rounded-full bg-blue-500" />
+                              <span>{cat.label}</span>
+                            </span>
+                            <span className="font-bold text-slate-800 tabular-nums">
+                              {formatRupiah(amount)} ({percent}%)
+                            </span>
+                          </div>
+                          <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                            <div
+                              style={{ width: `${percent}%` }}
+                              className="h-full rounded-full bg-blue-600"
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-
-              {Object.keys(breakdowns.bankExpensesByCategory).length === 0 ? (
-                <div className="py-8 text-center text-sm text-on-surface-variant">
-                  Belum ada catatan pengeluaran dari rekening bank.
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {EXPENSE_CATEGORIES.map((cat) => {
-                    const amount = breakdowns.bankExpensesByCategory[cat.value] || 0;
-                    if (amount <= 0) return null;
-                    const percent = Math.round((amount / Math.max(summary.bank.expense, 1)) * 100);
-
-                    return (
-                      <div key={cat.value} className="space-y-1">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-medium text-on-surface flex items-center gap-1.5">
-                            <span className="h-2 w-2 rounded-full bg-blue-500" />
-                            <span>{cat.label}</span>
-                          </span>
-                          <span className="font-bold text-on-surface tabular-nums">
-                            {formatRupiah(amount)} ({percent}%)
-                          </span>
-                        </div>
-                        <div className="h-2 w-full rounded-full bg-surface-container-high overflow-hidden">
-                          <div
-                            style={{ width: `${percent}%` }}
-                            className="h-full rounded-full bg-blue-600"
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
             </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* TAB 2: MUTASI INTERNAL (SETOR / TARIK TUNAI) */}
       {activeTab === "transfers" && (
@@ -667,6 +723,61 @@ export function TreasuryClient({
           </div>
         </div>
       )}
+
+      {/* BANNER 4 PILAR NILAI (PERSIS GAMBAR REFERENSI 1 DI BAWAH) */}
+      <div className="rounded-2xl bg-[#edf5f0] border border-emerald-100 p-5 sm:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* 1. Aman */}
+        <div className="flex items-start gap-3.5">
+          <div className="h-9 w-9 rounded-xl bg-white border border-emerald-100 flex items-center justify-center text-emerald-800 shrink-0 shadow-2xs">
+            <ShieldCheck size={18} />
+          </div>
+          <div className="space-y-0.5">
+            <h3 className="text-xs sm:text-sm font-bold text-slate-800">Aman</h3>
+            <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed">
+              Data tersimpan dengan teknologi enkripsi modern
+            </p>
+          </div>
+        </div>
+
+        {/* 2. Transparan */}
+        <div className="flex items-start gap-3.5">
+          <div className="h-9 w-9 rounded-xl bg-white border border-emerald-100 flex items-center justify-center text-emerald-800 shrink-0 shadow-2xs">
+            <FileText size={18} />
+          </div>
+          <div className="space-y-0.5">
+            <h3 className="text-xs sm:text-sm font-bold text-slate-800">Transparan</h3>
+            <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed">
+              Setiap transaksi dapat dilihat dan diverifikasi
+            </p>
+          </div>
+        </div>
+
+        {/* 3. Efisien */}
+        <div className="flex items-start gap-3.5">
+          <div className="h-9 w-9 rounded-xl bg-white border border-emerald-100 flex items-center justify-center text-emerald-800 shrink-0 shadow-2xs">
+            <Clock size={18} />
+          </div>
+          <div className="space-y-0.5">
+            <h3 className="text-xs sm:text-sm font-bold text-slate-800">Efisien</h3>
+            <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed">
+              Memudahkan pencatatan dan pelaporan keuangan
+            </p>
+          </div>
+        </div>
+
+        {/* 4. Untuk Masjid */}
+        <div className="flex items-start gap-3.5">
+          <div className="h-9 w-9 rounded-xl bg-white border border-emerald-100 flex items-center justify-center text-emerald-800 shrink-0 shadow-2xs">
+            <Landmark size={18} />
+          </div>
+          <div className="space-y-0.5">
+            <h3 className="text-xs sm:text-sm font-bold text-slate-800">Untuk Masjid</h3>
+            <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed">
+              Mendukung pengelolaan masjid yang lebih baik
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* MODAL DIALOG: CATAT MUTASI INTERNAL */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
