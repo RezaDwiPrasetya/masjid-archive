@@ -19,6 +19,10 @@ import {
   Loader2,
   Lock,
   FileText,
+  ChevronRight,
+  ChevronLeft,
+  Home,
+  Crown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -186,6 +190,15 @@ export default function PenggunaPage() {
     };
   }, [users]);
 
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
+  const paginatedUsers = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredUsers.slice(start, start + pageSize);
+  }, [filteredUsers, page, pageSize]);
+
   if (status === "loading" || loading) {
     return (
       <AppShell active="/pengguna">
@@ -226,295 +239,427 @@ export default function PenggunaPage() {
     (((selectedUser._count?.reports ?? 0) > 0) ||
       ((selectedUser._count?.verifiedTransactions ?? 0) > 0));
 
-  const heroContent = (
-    <div className="space-y-5 sm:space-y-6">
-      <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed border-b border-primary-fixed/20 pb-4">
-        <UserCog className="h-4 w-4 shrink-0" />
-        <span>Manajemen Pengguna & Dewan Pengurus • DKM Masjid Al-Luqman</span>
-      </div>
-
-      <div className="space-y-1">
-        <span className="text-[11px] uppercase tracking-wider text-primary-fixed/80 font-bold block">
-          Total Akun Pengguna Terdaftar
-        </span>
-        <div className="text-3xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary font-sans">
-          {stats.total} Pengguna
-        </div>
-      </div>
-
-      <div className="text-xs md:text-sm text-primary-fixed/80">
-        Hak akses dan akun terdaftar untuk staf pengurus DKM, bendahara, dan jemaah masjid.
-      </div>
-
-      {/* Sub-indikator Pembagian Role di dalam Hero Band */}
-      <div className="pt-5 border-t border-primary-container grid grid-cols-3 gap-3 sm:gap-6">
-        <div className="p-3 rounded-xl bg-primary-container/40 border border-primary-fixed/15">
-          <span className="text-[11px] font-semibold text-primary-fixed uppercase tracking-wider block">
-            Administrator
-          </span>
-          <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums mt-0.5">
-            {stats.admin}
-          </div>
-        </div>
-
-        <div className="p-3 rounded-xl bg-primary-container/40 border border-primary-fixed/15">
-          <span className="text-[11px] font-semibold text-primary-fixed uppercase tracking-wider block">
-            Bendahara
-          </span>
-          <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums mt-0.5">
-            {stats.bendahara}
-          </div>
-        </div>
-
-        <div className="p-3 rounded-xl bg-primary-container/40 border border-primary-fixed/15">
-          <span className="text-[11px] font-semibold text-primary-fixed uppercase tracking-wider block">
-            Jamaah / Publik
-          </span>
-          <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums mt-0.5">
-            {stats.jamaah}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <AppShell active="/pengguna">
-      <PageShell heroBand={heroContent}>
-        <div className="space-y-8 sm:space-y-10 pb-12">
-        {/* Feedback Alert Banner */}
-        {alertFeedback && (
-          <div
-            className={`flex items-center justify-between gap-3 rounded-xl border p-4 text-sm transition-all ${
-              alertFeedback.type === "success"
-                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300"
-                : "border-destructive/30 bg-destructive/10 text-destructive"
-            }`}
-          >
-            <div className="flex items-center gap-2.5">
-              {alertFeedback.type === "success" ? (
-                <CheckCircle2 className="h-4 w-4 shrink-0" />
-              ) : (
-                <AlertCircle className="h-4 w-4 shrink-0" />
-              )}
-              <span>{alertFeedback.message}</span>
+      <PageShell>
+        <div className="space-y-6 sm:space-y-8 pb-12">
+          {/* HEADER ATAS & 3 KARTU ROLE KPI (PERSIS MOCKUP GAMBAR 2) */}
+          <div className="space-y-4">
+            {/* Breadcrumb Label */}
+            <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
+              <Home className="h-3.5 w-3.5 text-emerald-800" />
+              <span>Manajemen Pengguna & Dewan Pengurus</span>
+              <span className="text-slate-300">•</span>
+              <span>DKM Masjid Al-Luqman</span>
             </div>
-            <button
-              onClick={() => setAlertFeedback(null)}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        )}
 
-        {/* Toolbar Pencarian dan Filter */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-on-surface-variant" />
-            <input
-              type="text"
-              placeholder="Cari nama atau email pengguna..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-10 w-full rounded-lg border border-outline-variant bg-surface-container pl-9 pr-8 text-sm text-on-surface placeholder:text-on-surface-variant/60 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary shadow-xs"
-            />
-            {searchQuery && (
+            {/* Row Judul Total & 3 Kartu Role KPI */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+              {/* Sisi Kiri: Headline Total Pengguna */}
+              <div className="lg:col-span-5 space-y-1">
+                <span className="text-[11px] uppercase tracking-wider text-emerald-800 font-bold block">
+                  Total Akun Pengguna Terdaftar
+                </span>
+                <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                  {stats.total} Pengguna
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                  Hak akses dan akun terdaftar untuk staf pengurus DKM, bendahara, dan jemaah masjid.
+                </p>
+              </div>
+
+              {/* Sisi Kanan: 3 Kartu KPI Role */}
+              <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* Card 1: Administrator */}
+                <div
+                  onClick={() => {
+                    setRoleFilter(roleFilter === "ADMIN" ? "ALL" : "ADMIN");
+                    setPage(1);
+                  }}
+                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer shadow-2xs flex items-center justify-between gap-3 ${
+                    roleFilter === "ADMIN"
+                      ? "bg-emerald-50/60 border-emerald-600 ring-1 ring-emerald-600"
+                      : "bg-white border-slate-200/90 hover:border-emerald-300"
+                  }`}
+                  title="Klik untuk memfilter Administrator"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-10 w-10 rounded-full bg-[#0e3824] text-white flex items-center justify-center shrink-0">
+                      <ShieldCheck size={18} className="text-emerald-300" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block truncate">
+                        Administrator
+                      </span>
+                      <div className="text-xl font-bold text-slate-900 tabular-nums">
+                        {stats.admin}
+                      </div>
+                      <span className="text-[10px] text-slate-400 block truncate">
+                        Akses penuh ke semua fitur
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronRight size={14} className="text-slate-300 shrink-0" />
+                </div>
+
+                {/* Card 2: Bendahara */}
+                <div
+                  onClick={() => {
+                    setRoleFilter(roleFilter === "BENDAHARA" ? "ALL" : "BENDAHARA");
+                    setPage(1);
+                  }}
+                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer shadow-2xs flex items-center justify-between gap-3 ${
+                    roleFilter === "BENDAHARA"
+                      ? "bg-emerald-50/60 border-emerald-600 ring-1 ring-emerald-600"
+                      : "bg-white border-slate-200/90 hover:border-emerald-300"
+                  }`}
+                  title="Klik untuk memfilter Bendahara"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-10 w-10 rounded-full bg-[#0e3824] text-white flex items-center justify-center shrink-0">
+                      <UserCheck size={18} className="text-emerald-300" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block truncate">
+                        Bendahara
+                      </span>
+                      <div className="text-xl font-bold text-slate-900 tabular-nums">
+                        {stats.bendahara}
+                      </div>
+                      <span className="text-[10px] text-slate-400 block truncate">
+                        Kelola keuangan & laporan
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronRight size={14} className="text-slate-300 shrink-0" />
+                </div>
+
+                {/* Card 3: Jamaah / Publik */}
+                <div
+                  onClick={() => {
+                    setRoleFilter(roleFilter === "JAMAAH" ? "ALL" : "JAMAAH");
+                    setPage(1);
+                  }}
+                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer shadow-2xs flex items-center justify-between gap-3 ${
+                    roleFilter === "JAMAAH"
+                      ? "bg-emerald-50/60 border-emerald-600 ring-1 ring-emerald-600"
+                      : "bg-white border-slate-200/90 hover:border-emerald-300"
+                  }`}
+                  title="Klik untuk memfilter Jamaah"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-10 w-10 rounded-full bg-[#0e3824] text-white flex items-center justify-center shrink-0">
+                      <Users size={18} className="text-emerald-300" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block truncate">
+                        Jamaah / Publik
+                      </span>
+                      <div className="text-xl font-bold text-slate-900 tabular-nums">
+                        {stats.jamaah}
+                      </div>
+                      <span className="text-[10px] text-slate-400 block truncate">
+                        Akses terbatas (read-only)
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronRight size={14} className="text-slate-300 shrink-0" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Feedback Alert Banner */}
+          {alertFeedback && (
+            <div
+              className={`flex items-center justify-between gap-3 rounded-2xl border p-4 text-xs font-medium transition-all ${
+                alertFeedback.type === "success"
+                  ? "border-emerald-300 bg-emerald-50 text-emerald-900"
+                  : "border-rose-200 bg-rose-50 text-rose-900"
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                {alertFeedback.type === "success" ? (
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                ) : (
+                  <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+                )}
+                <span>{alertFeedback.message}</span>
+              </div>
               <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface"
+                onClick={() => setAlertFeedback(null)}
+                className="text-slate-400 hover:text-slate-700"
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="h-4 w-4" />
               </button>
-            )}
+            </div>
+          )}
+
+          {/* Toolbar Pencarian dan Filter (Rounded-2xl Persis Mockup) */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Cari nama atau email pengguna..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
+                }}
+                className="h-11 w-full rounded-2xl border border-slate-200/90 bg-white pl-10 pr-9 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700 shadow-2xs"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setPage(1);
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <select
+                value={roleFilter}
+                onChange={(e) => {
+                  setRoleFilter(e.target.value);
+                  setPage(1);
+                }}
+                className="h-11 rounded-2xl border border-slate-200/90 bg-white px-4 text-xs font-semibold text-slate-700 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700 shadow-2xs cursor-pointer"
+              >
+                <option value="ALL">Semua Role ({users.length})</option>
+                <option value="ADMIN">Administrator ({stats.admin})</option>
+                <option value="BENDAHARA">Bendahara ({stats.bendahara})</option>
+                <option value="JAMAAH">Jamaah ({stats.jamaah})</option>
+              </select>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <select
-              value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-              className="h-10 rounded-lg border border-outline-variant bg-surface-container px-3 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary shadow-xs"
-            >
-              <option value="ALL">Semua Role ({users.length})</option>
-              <option value="ADMIN">Administrator ({stats.admin})</option>
-              <option value="BENDAHARA">Bendahara ({stats.bendahara})</option>
-              <option value="JAMAAH">Jamaah ({stats.jamaah})</option>
-            </select>
-          </div>
-        </div>
+          {/* Tabel Daftar Pengguna (Card Rounded-2xl Persis Mockup Gambar 2) */}
+          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-slate-100 bg-slate-50/70 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                  <tr>
+                    <th className="px-6 py-4">Pengguna</th>
+                    <th className="px-6 py-4">Email</th>
+                    <th className="px-6 py-4">Status & Riwayat</th>
+                    <th className="px-6 py-4">Hak Akses (Role)</th>
+                    <th className="px-6 py-4 text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {paginatedUsers.map((user) => {
+                    const isSelf = user.id === session.user.id;
+                    const reportCount = user._count?.reports ?? 0;
+                    const verifiedCount = user._count?.verifiedTransactions ?? 0;
+                    const hasHistory = reportCount > 0 || verifiedCount > 0;
 
-        {/* Tabel Daftar Pengguna (Border 1px tanpa shadow mengambang) */}
-        <div className="overflow-hidden rounded-2xl border border-outline-variant bg-surface-container shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-outline-variant bg-surface-container-high/70 text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
-                <tr>
-                  <th className="px-6 py-3.5">Pengguna</th>
-                  <th className="px-6 py-3.5">Email</th>
-                  <th className="px-6 py-3.5">Status & Riwayat</th>
-                  <th className="px-6 py-3.5">Hak Akses (Role)</th>
-                  <th className="px-6 py-3.5 text-right">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-outline-variant">
-                {filteredUsers.map((user) => {
-                  const isSelf = user.id === session.user.id;
-                  const reportCount = user._count?.reports ?? 0;
-                  const verifiedCount = user._count?.verifiedTransactions ?? 0;
-                  const hasHistory = reportCount > 0 || verifiedCount > 0;
+                    return (
+                      <tr
+                        key={user.id}
+                        className="transition-colors hover:bg-slate-50/60"
+                      >
+                        {/* Kolom Pengguna */}
+                        <td className="px-6 py-4 font-medium text-slate-900">
+                          <div className="flex items-center gap-3">
+                            {user.image ? (
+                              <img
+                                src={user.image}
+                                alt=""
+                                className="h-10 w-10 rounded-full border border-slate-200 object-cover shrink-0"
+                              />
+                            ) : (
+                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0e3824] text-white font-bold text-sm shrink-0">
+                                {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-slate-900 text-xs sm:text-sm truncate">
+                                  {user.name || "Bapak Kosasih"}
+                                </span>
+                                {isSelf && (
+                                  <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-800 border border-emerald-200/80">
+                                    Anda
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[11px] text-slate-400 sm:hidden block truncate">
+                                {user.email || "Tidak tertera"}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
 
-                  return (
-                    <tr
-                      key={user.id}
-                      className="transition-colors hover:bg-surface-container-high/50"
-                    >
-                      {/* Kolom Pengguna */}
-                      <td className="px-6 py-4 font-medium text-on-surface">
-                        <div className="flex items-center gap-3">
-                          {user.image ? (
-                            <img
-                              src={user.image}
-                              alt=""
-                              className="h-9 w-9 rounded-full border border-outline-variant object-cover"
-                            />
+                        {/* Kolom Email */}
+                        <td className="px-6 py-4 text-xs text-slate-600">
+                          {user.email ? (
+                            <span className="font-medium text-slate-700">{user.email}</span>
                           ) : (
-                            <div className="flex h-9 w-9 items-center justify-center rounded-full border border-outline-variant bg-primary/10">
-                              <UserCog className="h-4 w-4 text-primary" />
+                            <div className="space-y-0.5">
+                              <span className="text-slate-400 block">—</span>
+                              <span className="italic text-[11px] text-slate-400">Tidak tertera</span>
                             </div>
                           )}
-                          <div>
+                        </td>
+
+                        {/* Kolom Status & Riwayat */}
+                        <td className="px-6 py-4">
+                          <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                              <span>{user.name || "Anonim"}</span>
-                              {isSelf && (
-                                <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary border border-primary/20">
-                                  Anda
+                              <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
+                              <span className="text-xs font-bold text-slate-800">Aktif</span>
+                            </div>
+                            <div className="text-[11px] text-slate-500">
+                              {hasHistory ? (
+                                <span>
+                                  {reportCount > 0 && `${reportCount} Laporan`}
+                                  {reportCount > 0 && verifiedCount > 0 && " • "}
+                                  {verifiedCount > 0 && `${verifiedCount} Verifikasi`}
                                 </span>
+                              ) : (
+                                <span>Bergabung baru-baru ini</span>
                               )}
                             </div>
-                            <span className="text-xs text-on-surface-variant sm:hidden">
-                              {user.email || "Tanpa email"}
-                            </span>
                           </div>
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* Kolom Email */}
-                      <td className="px-6 py-4 text-on-surface-variant">
-                        {user.email || (
-                          <span className="italic text-on-surface-variant/60">
-                            Tidak tertera
-                          </span>
-                        )}
-                      </td>
-
-                      {/* Kolom Status & Riwayat Audit */}
-                      <td className="px-6 py-4">
-                        {hasHistory ? (
-                          <div className="inline-flex items-center gap-1.5 rounded-lg border border-outline-variant bg-surface px-2.5 py-1 text-xs text-on-surface-variant font-medium">
-                            <FileText className="h-3.5 w-3.5 shrink-0 text-primary" />
-                            <span>
-                              {reportCount > 0 && `${reportCount} Laporan`}
-                              {reportCount > 0 && verifiedCount > 0 && " • "}
-                              {verifiedCount > 0 && `${verifiedCount} Verifikasi`}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-on-surface-variant/70">
-                            Belum ada riwayat
-                          </span>
-                        )}
-                      </td>
-
-                      {/* Kolom Dropdown Role */}
-                      <td className="px-6 py-4">
-                        <select
-                          className="inline-block cursor-pointer rounded-lg border border-outline-variant bg-surface px-3 py-1.5 text-sm text-on-surface outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-70 shadow-xs"
-                          value={user.role || ""}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            handleRoleChange(user.id, val === "" ? null : val);
-                          }}
-                          disabled={isSelf}
-                          title={
-                            isSelf
-                              ? "Anda tidak dapat mengubah hak akses akun Anda sendiri"
-                              : "Pilih hak akses pengguna"
-                          }
-                        >
-                          <option value="">Jamaah (Read-only)</option>
-                          <option value="BENDAHARA">Bendahara (Upload)</option>
-                          <option value="ADMIN">Administrator</option>
-                        </select>
-                      </td>
-
-                      {/* Kolom Aksi */}
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end">
-                          {isSelf ? (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              disabled
-                              className="h-8 gap-1.5 border-dashed border-outline-variant bg-surface px-3 text-xs text-on-surface-variant/70 disabled:cursor-not-allowed disabled:opacity-100"
-                              title="Akun Anda yang sedang aktif digunakan (tidak dapat dihapus)"
-                            >
-                              <Lock className="h-3.5 w-3.5 shrink-0 text-on-surface-variant/60" />
-                              <span>Akun Anda</span>
-                            </Button>
-                          ) : (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedUser(user);
-                                setDialogError(null);
+                        {/* Kolom Dropdown Role (Pill Cantik Persis Mockup) */}
+                        <td className="px-6 py-4">
+                          <div className="relative inline-block">
+                            <select
+                              className="inline-flex items-center cursor-pointer rounded-xl border border-slate-200/90 bg-slate-50/80 px-3.5 py-1.5 text-xs font-semibold text-slate-800 outline-none transition-colors hover:bg-slate-100 focus:border-emerald-700 focus:ring-1 focus:ring-emerald-700 disabled:cursor-not-allowed disabled:opacity-70 shadow-2xs"
+                              value={user.role || ""}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                handleRoleChange(user.id, val === "" ? null : val);
                               }}
-                              className={`h-8 gap-1.5 px-3 text-xs transition-colors ${
-                                hasHistory
-                                  ? "border-outline-variant text-on-surface-variant hover:border-outline hover:bg-surface-container hover:text-on-surface"
-                                  : "border-destructive/30 text-destructive hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
-                              }`}
+                              disabled={isSelf}
                               title={
-                                hasHistory
-                                  ? "Pengguna memiliki jejak audit (tidak dapat dihapus)"
-                                  : "Hapus pengguna permanen"
+                                isSelf
+                                  ? "Anda tidak dapat mengubah hak akses akun Anda sendiri"
+                                  : "Pilih hak akses pengguna"
                               }
                             >
-                              <Trash2 className="h-3.5 w-3.5 shrink-0" />
-                              <span>Hapus</span>
-                            </Button>
-                          )}
+                              <option value="">Jamaah (Read-only)</option>
+                              <option value="BENDAHARA">Bendahara (Upload)</option>
+                              <option value="ADMIN">Administrator</option>
+                            </select>
+                          </div>
+                        </td>
+
+                        {/* Kolom Aksi */}
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end">
+                            {isSelf ? (
+                              <div
+                                className="h-8 gap-1.5 px-3 rounded-xl border border-dashed border-slate-200 bg-slate-50 text-xs font-medium text-slate-400 flex items-center"
+                                title="Akun Anda yang sedang aktif digunakan (tidak dapat dihapus)"
+                              >
+                                <User className="h-3.5 w-3.5 text-slate-400" />
+                                <span>Akun Anda</span>
+                              </div>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedUser(user);
+                                  setDialogError(null);
+                                }}
+                                className={`h-8 gap-1.5 px-3 rounded-xl text-xs font-semibold transition-colors ${
+                                  hasHistory
+                                    ? "border-slate-200 text-slate-600 hover:bg-slate-100"
+                                    : "border-slate-200 text-slate-600 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+                                }`}
+                                title={
+                                  hasHistory
+                                    ? "Pengguna memiliki jejak audit (tidak dapat dihapus)"
+                                    : "Hapus pengguna permanen"
+                                }
+                              >
+                                <Trash2 className="h-3.5 w-3.5 shrink-0" />
+                                <span>Hapus</span>
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+
+                  {filteredUsers.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={5}
+                        className="px-6 py-12 text-center text-slate-400"
+                      >
+                        <div className="mx-auto flex flex-col items-center justify-center">
+                          <UserCog className="mb-2 h-8 w-8 text-slate-300" />
+                          <p className="font-bold text-slate-700 text-sm">
+                            Tidak ada pengguna ditemukan
+                          </p>
+                          <p className="mt-1 text-xs text-slate-400">
+                            {searchQuery
+                              ? `Tidak ada data pengguna yang cocok dengan "${searchQuery}".`
+                              : "Belum ada pengguna terdaftar untuk filter ini."}
+                          </p>
                         </div>
                       </td>
                     </tr>
-                  );
-                })}
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-                {filteredUsers.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="px-6 py-12 text-center text-muted-foreground"
-                    >
-                      <div className="mx-auto flex flex-col items-center justify-center">
-                        <UserCog className="mb-2 h-8 w-8 text-muted-foreground/50" />
-                        <p className="font-medium text-foreground">
-                          Tidak ada pengguna ditemukan
-                        </p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {searchQuery
-                            ? `Tidak ada data pengguna yang cocok dengan "${searchQuery}".`
-                            : "Belum ada pengguna terdaftar untuk filter ini."}
-                        </p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+            {/* Footer Tabel: Menampilkan X dari Y & Kontrol Pagination */}
+            <div className="flex items-center justify-between px-6 py-3.5 bg-white border-t border-slate-100 text-xs text-slate-500">
+              <span>
+                Menampilkan {filteredUsers.length > 0 ? (page - 1) * pageSize + 1 : 0}-
+                {Math.min(page * pageSize, filteredUsers.length)} dari {filteredUsers.length} pengguna
+              </span>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className="h-8 w-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  title="Halaman sebelumnya"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`h-8 w-8 rounded-lg text-xs font-bold transition-colors ${
+                      page === p
+                        ? "bg-[#0e3824] text-white"
+                        : "border border-slate-200 text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                  className="h-8 w-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  title="Halaman selanjutnya"
+                >
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Dialog Konfirmasi Hapus / Peringatan Proteksi Jejak Audit */}
       <AlertDialog
