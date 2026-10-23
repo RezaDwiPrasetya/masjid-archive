@@ -9,6 +9,9 @@ import {
   FileSearch,
   FileText,
   CalendarDays,
+  TrendingUp,
+  TrendingDown,
+  ArrowRight,
   ArrowDownLeft,
   ArrowUpRight,
   ChevronRight,
@@ -147,6 +150,23 @@ export default async function CariLaporanPage({
       })
     : sortedReports;
 
+  // Kelompokkan hasil pencarian berdasarkan Tahun dan Bulan
+  const groupedByYear = new Map<number, Map<number, typeof filteredReports>>();
+  for (const report of filteredReports) {
+    if (!groupedByYear.has(report.year)) {
+      groupedByYear.set(report.year, new Map());
+    }
+    const yearGroup = groupedByYear.get(report.year)!;
+    if (!yearGroup.has(report.month)) {
+      yearGroup.set(report.month, []);
+    }
+    yearGroup.get(report.month)!.push(report);
+  }
+
+  const yearsWithReports = [...groupedByYear.keys()].sort((a, b) =>
+    sort === "tanggal_asc" ? a - b : b - a
+  );
+
   return (
     <AppShell active="/cari">
       <PageShell>
@@ -274,7 +294,7 @@ export default async function CariLaporanPage({
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-8">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
                   Ditemukan {filteredReports.length} Laporan
@@ -286,164 +306,247 @@ export default async function CariLaporanPage({
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                {filteredReports.map((report) => {
-                  const thumb = report.attachments.find((a) => a.fileType === "image");
+              {yearsWithReports.map((yr) => {
+                const yearReportsCount = [...groupedByYear.get(yr)!.values()].reduce(
+                  (sum, arr) => sum + arr.length,
+                  0
+                );
 
-                  // Hitung ringkasan keuangan
-                  const totalMasuk = report.transactions
-                    .filter((t) => t.type === "pemasukan")
-                    .reduce((s, t) => s + Number(t.amount), 0);
-                  const totalKeluar = report.transactions
-                    .filter((t) => t.type === "pengeluaran")
-                    .reduce((s, t) => s + Number(t.amount), 0);
-                  const netChange = totalMasuk - totalKeluar;
+                return (
+                  <section key={yr} className="space-y-6">
+                    {/* Year divider */}
+                    <div className="flex items-center gap-3">
+                      <h2 className="text-2xl font-bold text-primary font-sans tracking-tight shrink-0">
+                        {yr}
+                      </h2>
+                      <span className="text-xs font-semibold text-on-surface-variant/70 shrink-0">
+                        ({yearReportsCount} Laporan)
+                      </span>
+                      <div className="h-px flex-1 bg-outline-variant" />
+                    </div>
 
-                  const verifiedCount = report.transactions.filter((t) => t.isVerified).length;
-                  const unverifiedCount = report.transactions.length - verifiedCount;
-                  const isAllVerified = report.transactions.length > 0 && unverifiedCount === 0;
+                    {/* Monthly groups */}
+                    <div className="space-y-5">
+                      {[...groupedByYear.get(yr)!.keys()]
+                        .sort((a, b) => (sort === "tanggal_asc" ? a - b : b - a))
+                        .map((mo) => {
+                          const monthReports = groupedByYear.get(yr)!.get(mo)!;
 
-                  const repDate = new Date(report.reportDate);
-                  const dateFormatted = repDate.toLocaleDateString("id-ID", {
-                    weekday: "long",
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  });
+                          const monthMasuk = monthReports.reduce(
+                            (sum, r) =>
+                              sum +
+                              r.transactions
+                                .filter((t) => t.type === "pemasukan")
+                                .reduce((s, t) => s + Number(t.amount), 0),
+                            0
+                          );
+                          const monthKeluar = monthReports.reduce(
+                            (sum, r) =>
+                              sum +
+                              r.transactions
+                                .filter((t) => t.type === "pengeluaran")
+                                .reduce((s, t) => s + Number(t.amount), 0),
+                            0
+                          );
+                          const monthNet = monthMasuk - monthKeluar;
+                          const hasFinancialData = monthMasuk > 0 || monthKeluar > 0;
+                          const totalVerifiedTx = monthReports.reduce(
+                            (s, r) => s + r.transactions.filter((t) => t.isVerified).length,
+                            0
+                          );
 
-                  return (
-                    <Link
-                      key={report.id}
-                      href={`/laporan/${report.id}`}
-                      className="group flex flex-col justify-between rounded-2xl border border-outline-variant bg-surface-container/40 hover:bg-surface-container transition-all duration-200 hover:border-primary/50 hover:shadow-md overflow-hidden p-4 sm:p-5 space-y-4 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/60"
-                    >
-                      {/* Visual Unit: Photo/Doc container with 16:10 aspect ratio */}
-                      <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl border border-outline-variant/60 bg-surface-container-high">
-                        {thumb ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={thumb.fileUrl}
-                            alt={`Laporan Kas ${dateFormatted}`}
-                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full flex-col items-center justify-center bg-surface-container text-on-surface-variant/60 gap-1.5 p-4 text-center">
-                            <FileText size={32} className="text-primary/70" />
-                            <span className="text-xs font-medium">Berkas Fisik Laporan</span>
-                          </div>
-                        )}
+                          return (
+                            <div
+                              key={mo}
+                              className="rounded-2xl border border-outline-variant bg-surface-container/40 overflow-hidden shadow-xs"
+                            >
+                              {/* Month Header with Financial Info at the Top */}
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 py-4 border-b border-outline-variant/60 bg-surface-container">
+                                <div className="flex items-center gap-3">
+                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                    <CalendarDays size={16} />
+                                  </div>
+                                  <div>
+                                    <h3 className="text-sm font-bold text-on-surface font-sans">
+                                      {MONTH_NAMES[mo - 1] ?? mo} {yr}
+                                    </h3>
+                                    <p className="text-xs text-on-surface-variant">
+                                      {monthReports.length} laporan pekan &middot; {totalVerifiedTx} transaksi terverifikasi
+                                    </p>
+                                  </div>
+                                </div>
 
-                        {/* Overlay Badge Pekan & Periode */}
-                        <div className="absolute top-2.5 left-2.5">
-                          <span className="rounded-lg bg-slate-900/80 px-2.5 py-1 text-[11px] font-semibold text-white border border-white/10 shadow-xs backdrop-blur-md">
-                            Pekan {report.weekOfMonth ?? 1}
-                          </span>
-                        </div>
-
-                        {/* Overlay Status Badge */}
-                        <div className="absolute top-2.5 right-2.5">
-                          {report.transactions.length === 0 ? (
-                            <span className="rounded-lg bg-slate-900/80 px-2.5 py-1 text-[11px] font-semibold text-slate-200 border border-white/10 shadow-xs backdrop-blur-md flex items-center gap-1.5">
-                              <FileText size={12} />
-                              <span>Belum Diekstrak</span>
-                            </span>
-                          ) : isAllVerified ? (
-                            <span className="rounded-lg bg-emerald-900/85 px-2.5 py-1 text-[11px] font-semibold text-emerald-100 border border-emerald-500/20 shadow-xs backdrop-blur-md flex items-center gap-1.5">
-                              <CheckCircle2 size={12} className="text-emerald-300" />
-                              <span>Terverifikasi</span>
-                            </span>
-                          ) : (
-                            <span className="rounded-lg bg-amber-900/85 px-2.5 py-1 text-[11px] font-semibold text-amber-100 border border-amber-400/20 shadow-xs backdrop-blur-md flex items-center gap-1.5">
-                              <Clock size={12} className="text-amber-300" />
-                              <span>{unverifiedCount} Menunggu Verifikasi</span>
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Header Informasi Periode & Tanggal */}
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1.5 text-[11px] font-bold text-primary uppercase tracking-wider">
-                          <CalendarDays size={12} />
-                          <span>
-                            {MONTH_NAMES[report.month - 1] ?? ""} {report.year} &bull; Pekan {report.weekOfMonth ?? 1}
-                          </span>
-                        </div>
-                        <h4 className="text-base font-bold text-on-surface group-hover:text-primary transition-colors line-clamp-1">
-                          {dateFormatted}
-                        </h4>
-                        <p className="text-xs text-on-surface-variant truncate">
-                          Diunggah oleh: <span className="font-semibold text-on-surface">{report.uploadedBy.name}</span>
-                        </p>
-                      </div>
-
-                      {/* Mini Financial Breakdown Grid */}
-                      {report.transactions.length > 0 ? (
-                        <div className="space-y-2">
-                          <div className="grid grid-cols-2 gap-2 p-2.5 sm:p-3 rounded-xl bg-surface border border-outline-variant/70 shadow-xs">
-                            <div className="space-y-0.5 min-w-0">
-                              <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
-                                <ArrowDownLeft size={13} className="text-emerald-700 shrink-0" />
-                                <span>Pemasukan</span>
+                                {hasFinancialData && (
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <div className="flex items-center gap-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5">
+                                      <TrendingUp size={12} className="text-emerald-700 dark:text-emerald-400 shrink-0" />
+                                      <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 tabular-nums">
+                                        +{formatRupiah(monthMasuk)}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 px-2.5 py-1.5">
+                                      <TrendingDown size={12} className="text-rose-700 dark:text-rose-400 shrink-0" />
+                                      <span className="text-xs font-semibold text-rose-800 dark:text-rose-300 tabular-nums">
+                                        -{formatRupiah(monthKeluar)}
+                                      </span>
+                                    </div>
+                                    <div
+                                      className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 border ${
+                                        monthNet >= 0
+                                          ? "bg-emerald-600/10 border-emerald-600/20"
+                                          : "bg-rose-500/10 border-rose-500/20"
+                                      }`}
+                                    >
+                                      <span
+                                        className={`text-xs font-bold tabular-nums ${
+                                          monthNet >= 0
+                                            ? "text-emerald-800 dark:text-emerald-300"
+                                            : "text-rose-800 dark:text-rose-300"
+                                        }`}
+                                      >
+                                        Net {monthNet >= 0 ? "+" : ""}
+                                        {formatRupiah(monthNet)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
-                              <div className="text-xs sm:text-sm font-bold text-emerald-950 dark:text-emerald-100 tabular-nums truncate">
-                                +{formatRupiah(totalMasuk)}
+
+                              {/* Weekly report cards: 4 to 5 cards per row */}
+                              <div className="p-4 sm:p-5">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3.5 sm:gap-4">
+                                  {monthReports.map((report) => {
+                                    const thumb = report.attachments.find((a) => a.fileType === "image");
+                                    const verifiedCount = report.transactions.filter((t) => t.isVerified).length;
+                                    const reportMasuk = report.transactions
+                                      .filter((t) => t.type === "pemasukan")
+                                      .reduce((s, t) => s + Number(t.amount), 0);
+                                    const reportKeluar = report.transactions
+                                      .filter((t) => t.type === "pengeluaran")
+                                      .reduce((s, t) => s + Number(t.amount), 0);
+                                    const hasReportFinancials = reportMasuk > 0 || reportKeluar > 0;
+                                    const isVerified =
+                                      report.transactions.length > 0 && verifiedCount === report.transactions.length;
+
+                                    const repDate = new Date(report.reportDate);
+                                    const dateFormatted = repDate.toLocaleDateString("id-ID", {
+                                      weekday: "short",
+                                      day: "numeric",
+                                      month: "short",
+                                    });
+
+                                    return (
+                                      <Link
+                                        key={report.id}
+                                        href={`/laporan/${report.id}`}
+                                        className="group flex flex-col rounded-xl border border-outline-variant bg-surface overflow-hidden transition-all duration-200 hover:border-primary/50 hover:shadow-level-2 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                                      >
+                                        {/* Thumbnail 16:10 */}
+                                        <div className="relative aspect-[16/10] w-full overflow-hidden bg-surface-container-high">
+                                          {thumb ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img
+                                              src={thumb.fileUrl}
+                                              alt={`Laporan ${report.reportDate}`}
+                                              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                            />
+                                          ) : (
+                                            <div className="flex h-full w-full items-center justify-center bg-surface-container">
+                                              <FileText size={28} className="text-primary/40" />
+                                            </div>
+                                          )}
+
+                                          {thumb && (
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+                                          )}
+
+                                          {/* Week badge top-left */}
+                                          <div className="absolute top-2 left-2">
+                                            <span className="rounded-md bg-primary/90 px-1.5 py-0.5 text-[10px] font-bold text-on-primary shadow-xs backdrop-blur-sm">
+                                              Pekan {report.weekOfMonth}
+                                            </span>
+                                          </div>
+
+                                          {/* Verification badge top-right */}
+                                          <div className="absolute top-2 right-2">
+                                            {report.transactions.length === 0 ? (
+                                              <span className="flex items-center gap-1 rounded-md bg-black/60 px-1.5 py-0.5 text-[10px] font-semibold text-slate-200 shadow-xs backdrop-blur-sm">
+                                                Belum Ekstrak
+                                              </span>
+                                            ) : isVerified ? (
+                                              <span className="flex items-center gap-1 rounded-md bg-emerald-600/90 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-xs backdrop-blur-sm">
+                                                <CheckCircle2 size={10} />
+                                                Terverifikasi
+                                              </span>
+                                            ) : (
+                                              <span className="flex items-center gap-1 rounded-md bg-amber-600/90 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-xs backdrop-blur-sm">
+                                                <Clock size={10} />
+                                                Draft
+                                              </span>
+                                            )}
+                                          </div>
+
+                                          {/* Extra attachments count bottom-right */}
+                                          {report.attachments.length > 1 && (
+                                            <div className="absolute bottom-2 right-2">
+                                              <span className="rounded-md bg-black/60 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-xs backdrop-blur-sm">
+                                                +{report.attachments.length - 1} berkas
+                                              </span>
+                                            </div>
+                                          )}
+                                        </div>
+
+                                        {/* Card body */}
+                                        <div className="flex flex-1 flex-col justify-between gap-1.5 p-3">
+                                          <div>
+                                            <div className="flex items-center justify-between gap-1.5">
+                                              <h4 className="text-xs font-bold text-on-surface group-hover:text-primary transition-colors line-clamp-1 leading-snug">
+                                                {dateFormatted}
+                                              </h4>
+                                              <ArrowRight
+                                                size={13}
+                                                className="shrink-0 text-on-surface-variant/40 transition-all group-hover:text-primary group-hover:translate-x-0.5"
+                                              />
+                                            </div>
+                                            <p className="text-[11px] text-on-surface-variant truncate mt-0.5">
+                                              Oleh: {report.uploadedBy.name}
+                                            </p>
+                                          </div>
+
+                                          {/* Financial chips — single symmetrical row */}
+                                          {hasReportFinancials ? (
+                                            <div className="flex items-center gap-1.5 pt-1.5 border-t border-outline-variant/40">
+                                              {reportMasuk > 0 && (
+                                                <span className="flex-1 text-center rounded-md bg-emerald-500/10 border border-emerald-500/20 py-0.5 px-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 tabular-nums truncate">
+                                                  +{formatRupiah(reportMasuk)}
+                                                </span>
+                                              )}
+                                              {reportKeluar > 0 && (
+                                                <span className="flex-1 text-center rounded-md bg-rose-500/10 border border-rose-500/20 py-0.5 px-1 text-[11px] font-bold text-rose-600 dark:text-rose-300 tabular-nums truncate">
+                                                  -{formatRupiah(reportKeluar)}
+                                                </span>
+                                              )}
+                                            </div>
+                                          ) : (
+                                            <div className="pt-1.5 border-t border-outline-variant/40">
+                                              <span className="text-[10px] text-on-surface-variant/50 italic">
+                                                Belum ada mutasi
+                                              </span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </Link>
+                                    );
+                                  })}
+                                </div>
                               </div>
                             </div>
-                            <div className="space-y-0.5 border-l border-outline-variant/70 pl-2.5 sm:pl-3 min-w-0">
-                              <div className="flex items-center gap-1 text-[11px] font-semibold text-rose-800 dark:text-rose-300">
-                                <ArrowUpRight size={13} className="text-rose-700 shrink-0" />
-                                <span>Pengeluaran</span>
-                              </div>
-                              <div className="text-xs sm:text-sm font-bold text-rose-950 dark:text-rose-100 tabular-nums truncate">
-                                -{formatRupiah(totalKeluar)}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-between text-xs px-1 text-on-surface-variant">
-                            <span className="flex items-center gap-1">
-                              <span>Arus Kas:</span>
-                              <strong
-                                className={`font-bold tabular-nums ${
-                                  netChange >= 0
-                                    ? "text-emerald-800 dark:text-emerald-300"
-                                    : "text-rose-800 dark:text-rose-300"
-                                }`}
-                              >
-                                {netChange >= 0 ? "+" : ""}
-                                {formatRupiah(netChange)}
-                              </strong>
-                            </span>
-                            <span className="text-[11px] font-medium text-on-surface-variant">
-                              {report.transactions.length} mutasi kas
-                            </span>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="p-3 rounded-xl bg-surface border border-dashed border-outline-variant/80 text-center space-y-1">
-                          <p className="text-xs font-semibold text-on-surface">Data Mutasi Belum Diekstrak</p>
-                          <p className="text-[11px] text-on-surface-variant">
-                            Buka detail laporan untuk menjalankan ekstraksi AI
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Footer Card */}
-                      <div className="pt-3 border-t border-outline-variant/60 flex items-center justify-between text-xs text-on-surface-variant">
-                        <span className="flex items-center gap-1.5 text-[11px]">
-                          <Paperclip size={12} className="text-on-surface-variant/70" />
-                          <span>{report.attachments.length} berkas fisik</span>
-                        </span>
-                        <span className="font-semibold text-primary flex items-center gap-1 group-hover:translate-x-0.5 transition-transform text-xs">
-                          <span>Detail Laporan</span>
-                          <ChevronRight size={14} />
-                        </span>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
+                          );
+                        })}
+                    </div>
+                  </section>
+                );
+              })}
             </div>
           )}
         </div>
