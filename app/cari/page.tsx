@@ -4,7 +4,18 @@ import { AppShell } from "@/components/app-shell";
 import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, FileSearch, FileText } from "lucide-react";
+import {
+  Search,
+  FileSearch,
+  FileText,
+  CalendarDays,
+  ArrowDownLeft,
+  ArrowUpRight,
+  ChevronRight,
+  CheckCircle2,
+  Clock,
+  Paperclip,
+} from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +28,15 @@ const MONTH_NAMES = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
   "Juli", "Agustus", "September", "Oktober", "November", "Desember",
 ];
+
+function formatRupiah(amount: number): string {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
 
 function valueOf(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? "" : value ?? "";
@@ -96,7 +116,13 @@ export default async function CariLaporanPage({
         },
       },
       transactions: {
-        select: { verifiedAt: true },
+        select: {
+          id: true,
+          type: true,
+          amount: true,
+          isVerified: true,
+          verifiedAt: true,
+        },
       },
     },
   });
@@ -114,11 +140,11 @@ export default async function CariLaporanPage({
   });
 
   const filteredReports = keyword
-    ? sortedReports.filter((report) =>
-        `${new Date(report.reportDate).toLocaleDateString("id-ID")} ${report.uploadedBy.name ?? ""}`
-          .toLowerCase()
-          .includes(keyword.toLowerCase())
-      )
+    ? sortedReports.filter((report) => {
+        const monthName = MONTH_NAMES[report.month - 1] ?? "";
+        const searchTarget = `${new Date(report.reportDate).toLocaleDateString("id-ID")} ${monthName} pekan ${report.weekOfMonth ?? ""} ${report.uploadedBy.name ?? ""}`.toLowerCase();
+        return searchTarget.includes(keyword.toLowerCase());
+      })
     : sortedReports;
 
   return (
@@ -260,59 +286,159 @@ export default async function CariLaporanPage({
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {filteredReports.map((report) => {
                   const thumb = report.attachments.find((a) => a.fileType === "image");
-                  const lastActive = getReportLastActivity(report);
+
+                  // Hitung ringkasan keuangan
+                  const totalMasuk = report.transactions
+                    .filter((t) => t.type === "pemasukan")
+                    .reduce((s, t) => s + Number(t.amount), 0);
+                  const totalKeluar = report.transactions
+                    .filter((t) => t.type === "pengeluaran")
+                    .reduce((s, t) => s + Number(t.amount), 0);
+                  const netChange = totalMasuk - totalKeluar;
+
+                  const verifiedCount = report.transactions.filter((t) => t.isVerified).length;
+                  const unverifiedCount = report.transactions.length - verifiedCount;
+                  const isAllVerified = report.transactions.length > 0 && unverifiedCount === 0;
+
+                  const repDate = new Date(report.reportDate);
+                  const dateFormatted = repDate.toLocaleDateString("id-ID", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  });
+
                   return (
                     <Link
                       key={report.id}
                       href={`/laporan/${report.id}`}
-                      className="group flex flex-col focus:outline-hidden"
+                      className="group flex flex-col justify-between rounded-2xl border border-outline-variant bg-surface-container/40 hover:bg-surface-container transition-all duration-200 hover:border-primary/50 hover:shadow-md overflow-hidden p-4 sm:p-5 space-y-4 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/60"
                     >
-                      {/* Visual Unit: Photo container with 3:4 aspect ratio */}
-                      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl border border-outline-variant bg-surface-container-high transition-all duration-200 group-hover:scale-[1.02] group-hover:border-primary/50 group-hover:shadow-level-2">
+                      {/* Visual Unit: Photo/Doc container with 16:10 aspect ratio */}
+                      <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl border border-outline-variant/60 bg-surface-container-high">
                         {thumb ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={thumb.fileUrl}
-                            alt={`Laporan ${report.reportDate}`}
-                            className="h-full w-full object-cover transition-opacity duration-200 group-hover:opacity-95"
+                            alt={`Laporan Kas ${dateFormatted}`}
+                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center text-primary/40 bg-surface-container">
-                            <FileText size={36} className="text-primary/60" />
+                          <div className="flex h-full w-full flex-col items-center justify-center bg-surface-container text-on-surface-variant/60 gap-1.5 p-4 text-center">
+                            <FileText size={32} className="text-primary/70" />
+                            <span className="text-xs font-medium">Berkas Fisik Laporan</span>
                           </div>
                         )}
 
-                        <div className="absolute top-2 right-2">
-                          <span className="rounded-md bg-surface-container/90 px-1.5 py-0.5 text-[10px] font-semibold text-on-surface border border-outline-variant/60 shadow-xs backdrop-blur-xs">
-                            Pekan {report.weekOfMonth}
+                        {/* Overlay Badge Pekan & Periode */}
+                        <div className="absolute top-2.5 left-2.5">
+                          <span className="rounded-lg bg-slate-900/80 px-2.5 py-1 text-[11px] font-semibold text-white border border-white/10 shadow-xs backdrop-blur-md">
+                            Pekan {report.weekOfMonth ?? 1}
                           </span>
+                        </div>
+
+                        {/* Overlay Status Badge */}
+                        <div className="absolute top-2.5 right-2.5">
+                          {report.transactions.length === 0 ? (
+                            <span className="rounded-lg bg-slate-900/80 px-2.5 py-1 text-[11px] font-semibold text-slate-200 border border-white/10 shadow-xs backdrop-blur-md flex items-center gap-1.5">
+                              <FileText size={12} />
+                              <span>Belum Diekstrak</span>
+                            </span>
+                          ) : isAllVerified ? (
+                            <span className="rounded-lg bg-emerald-900/85 px-2.5 py-1 text-[11px] font-semibold text-emerald-100 border border-emerald-500/20 shadow-xs backdrop-blur-md flex items-center gap-1.5">
+                              <CheckCircle2 size={12} className="text-emerald-300" />
+                              <span>Terverifikasi</span>
+                            </span>
+                          ) : (
+                            <span className="rounded-lg bg-amber-900/85 px-2.5 py-1 text-[11px] font-semibold text-amber-100 border border-amber-400/20 shadow-xs backdrop-blur-md flex items-center gap-1.5">
+                              <Clock size={12} className="text-amber-300" />
+                              <span>{unverifiedCount} Menunggu Verifikasi</span>
+                            </span>
+                          )}
                         </div>
                       </div>
 
-                      {/* Caption directly under photo */}
-                      <div className="mt-2 space-y-0.5">
-                        <h4 className="text-xs sm:text-sm font-semibold text-on-surface group-hover:text-primary transition-colors line-clamp-1 leading-snug">
-                          {new Date(report.reportDate).toLocaleDateString("id-ID", {
-                            weekday: "short",
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })}
+                      {/* Header Informasi Periode & Tanggal */}
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1.5 text-[11px] font-bold text-primary uppercase tracking-wider">
+                          <CalendarDays size={12} />
+                          <span>
+                            {MONTH_NAMES[report.month - 1] ?? ""} {report.year} &bull; Pekan {report.weekOfMonth ?? 1}
+                          </span>
+                        </div>
+                        <h4 className="text-base font-bold text-on-surface group-hover:text-primary transition-colors line-clamp-1">
+                          {dateFormatted}
                         </h4>
-                        <p className="text-[11px] text-on-surface-variant truncate">
-                          Oleh: {report.uploadedBy.name}
+                        <p className="text-xs text-on-surface-variant truncate">
+                          Diunggah oleh: <span className="font-semibold text-on-surface">{report.uploadedBy.name}</span>
                         </p>
-                        <p className="text-[10px] text-on-surface-variant/70 truncate">
-                          Aktivitas:{" "}
-                          {new Date(lastActive).toLocaleDateString("id-ID", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })}
-                        </p>
+                      </div>
+
+                      {/* Mini Financial Breakdown Grid */}
+                      {report.transactions.length > 0 ? (
+                        <div className="space-y-2">
+                          <div className="grid grid-cols-2 gap-2 p-2.5 sm:p-3 rounded-xl bg-surface border border-outline-variant/70 shadow-xs">
+                            <div className="space-y-0.5 min-w-0">
+                              <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
+                                <ArrowDownLeft size={13} className="text-emerald-700 shrink-0" />
+                                <span>Pemasukan</span>
+                              </div>
+                              <div className="text-xs sm:text-sm font-bold text-emerald-950 dark:text-emerald-100 tabular-nums truncate">
+                                +{formatRupiah(totalMasuk)}
+                              </div>
+                            </div>
+                            <div className="space-y-0.5 border-l border-outline-variant/70 pl-2.5 sm:pl-3 min-w-0">
+                              <div className="flex items-center gap-1 text-[11px] font-semibold text-rose-800 dark:text-rose-300">
+                                <ArrowUpRight size={13} className="text-rose-700 shrink-0" />
+                                <span>Pengeluaran</span>
+                              </div>
+                              <div className="text-xs sm:text-sm font-bold text-rose-950 dark:text-rose-100 tabular-nums truncate">
+                                -{formatRupiah(totalKeluar)}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between text-xs px-1 text-on-surface-variant">
+                            <span className="flex items-center gap-1">
+                              <span>Arus Kas:</span>
+                              <strong
+                                className={`font-bold tabular-nums ${
+                                  netChange >= 0
+                                    ? "text-emerald-800 dark:text-emerald-300"
+                                    : "text-rose-800 dark:text-rose-300"
+                                }`}
+                              >
+                                {netChange >= 0 ? "+" : ""}
+                                {formatRupiah(netChange)}
+                              </strong>
+                            </span>
+                            <span className="text-[11px] font-medium text-on-surface-variant">
+                              {report.transactions.length} mutasi kas
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-3 rounded-xl bg-surface border border-dashed border-outline-variant/80 text-center space-y-1">
+                          <p className="text-xs font-semibold text-on-surface">Data Mutasi Belum Diekstrak</p>
+                          <p className="text-[11px] text-on-surface-variant">
+                            Buka detail laporan untuk menjalankan ekstraksi AI
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Footer Card */}
+                      <div className="pt-3 border-t border-outline-variant/60 flex items-center justify-between text-xs text-on-surface-variant">
+                        <span className="flex items-center gap-1.5 text-[11px]">
+                          <Paperclip size={12} className="text-on-surface-variant/70" />
+                          <span>{report.attachments.length} berkas fisik</span>
+                        </span>
+                        <span className="font-semibold text-primary flex items-center gap-1 group-hover:translate-x-0.5 transition-transform text-xs">
+                          <span>Detail Laporan</span>
+                          <ChevronRight size={14} />
+                        </span>
                       </div>
                     </Link>
                   );
