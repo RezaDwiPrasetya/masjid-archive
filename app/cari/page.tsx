@@ -412,10 +412,18 @@ export default async function CariLaporanPage({
                                 )}
                               </div>
 
-                              {/* Weekly report cards: 4 to 5 cards per row */}
+                              {/* Weekly report cards: Proporsional 4 laporan per baris */}
                               <div className="p-4 sm:p-5">
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3.5 sm:gap-4">
-                                  {monthReports.map((report) => {
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                  {monthReports
+                                    .slice()
+                                    .sort((a, b) => {
+                                      if (sort === "tanggal_desc") {
+                                        return new Date(b.reportDate).getTime() - new Date(a.reportDate).getTime();
+                                      }
+                                      return new Date(a.reportDate).getTime() - new Date(b.reportDate).getTime();
+                                    })
+                                    .map((report) => {
                                     const thumb = report.attachments.find((a) => a.fileType === "image");
                                     const verifiedCount = report.transactions.filter((t) => t.isVerified).length;
                                     const reportMasuk = report.transactions
