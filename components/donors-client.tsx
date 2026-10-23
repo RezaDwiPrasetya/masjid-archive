@@ -234,71 +234,84 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
     currentDonors.reduce((acc, d) => acc + d.donationCount, 0) +
     currentAnonymous.donationCount;
 
-  const heroContent = (
-    <div className="space-y-5 sm:space-y-6">
-      <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed border-b border-primary-fixed/20 pb-4">
-        <Users className="h-4 w-4 shrink-0" />
-        <span>Daftar Donatur & Infaq Terverifikasi • DKM Masjid Al-Luqman</span>
-      </div>
-
-      <div className="space-y-1">
-        <span className="text-[11px] uppercase tracking-wider text-primary-fixed/80 font-bold block">
-          Total Akumulasi Infaq Masuk
-        </span>
-        <div className="text-3xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary font-sans">
-          {formatRupiah(totalCombinedDonations)}
-        </div>
-      </div>
-
-      <div className="text-xs md:text-sm text-primary-fixed/80">
-        Akumulasi infaq masuk dari {totalCombinedCount} catatan terverifikasi ({activePeriodLabel})
-      </div>
-
-      {/* 2 Sub-indikator di dalam Hero Band: Donatur Terdata vs Infaq Tromol/Anonim */}
-      <div className="pt-5 border-t border-primary-container grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="flex items-start justify-between gap-3 p-3.5 rounded-xl bg-primary-container/40 border border-primary-fixed/15">
-          <div>
-            <div className="text-[11px] font-semibold text-primary-fixed uppercase tracking-wider">
-              Donatur Terdata ({currentDonors.length} Nama)
-            </div>
-            <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums mt-1">
-              {formatRupiah(totalNamedDonations)}
-            </div>
-            <div className="text-xs text-primary-fixed/70 mt-0.5">
-              Tercatat per nama donatur tetap
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-start justify-between gap-3 p-3.5 rounded-xl bg-primary-container/40 border border-primary-fixed/15">
-          <div className="min-w-0">
-            <div className="text-[11px] font-semibold text-primary-fixed uppercase tracking-wider">
-              Infaq Kotak Amal / Anonim
-            </div>
-            <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums mt-1">
-              {formatRupiah(currentAnonymous.totalContribution)}
-            </div>
-            <div className="text-xs text-primary-fixed/70 mt-0.5 truncate">
-              {currentAnonymous.donationCount} kali infaq tromol & hamba Allah
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleOpenAnonModal}
-            className="shrink-0 h-8 text-xs font-semibold rounded-lg bg-primary-container border-primary-fixed/30 text-on-primary hover:bg-primary-fixed hover:text-primary transition-colors"
-          >
-            <ListOrdered className="h-3.5 w-3.5 mr-1" />
-            Rincian
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
-    <PageShell heroBand={heroContent}>
-      <div className="space-y-8 sm:space-y-10">
+    <PageShell>
+      <div className="space-y-6 sm:space-y-8">
+        {/* HEADER ATAS DI KANVAS TERANG */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <Users className="h-3.5 w-3.5 text-emerald-800" />
+              <span>Daftar Donatur & Infaq Terverifikasi • DKM Masjid Al-Luqman</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-on-surface">
+              Donatur & Infaq Kas Masjid
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+              Akumulasi infaq masuk dari {totalCombinedCount} catatan terverifikasi ({activePeriodLabel})
+            </p>
+          </div>
+        </div>
+
+        {/* HERO CARD MELAYANG */}
+        <div className="rounded-3xl bg-[#0e3824] text-white p-6 sm:p-8 lg:p-9 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            <div className="lg:col-span-6 space-y-3">
+              <div className="flex items-center gap-2.5 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
+                <div className="h-8 w-8 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
+                  <Users size={16} />
+                </div>
+                <span>Total Akumulasi Infaq Masuk</span>
+              </div>
+              <div className="text-4xl sm:text-5xl lg:text-[54px] font-bold tracking-tight text-white tabular-nums leading-none font-sans">
+                {formatRupiah(totalCombinedDonations)}
+              </div>
+              <div className="text-xs sm:text-sm text-emerald-100/80">
+                Akumulasi infaq terverifikasi ({activePeriodLabel})
+              </div>
+            </div>
+
+            <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm">
+                <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider">
+                  Donatur Terdata ({currentDonors.length} Nama)
+                </div>
+                <div className="text-xl sm:text-2xl font-bold text-white tabular-nums mt-1">
+                  {formatRupiah(totalNamedDonations)}
+                </div>
+                <div className="text-xs text-emerald-300/70 mt-0.5">
+                  Tercatat per nama donatur tetap
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider">
+                    Infaq Tromol / Anonim
+                  </div>
+                  <div className="text-xl sm:text-2xl font-bold text-white tabular-nums mt-1">
+                    {formatRupiah(currentAnonymous.totalContribution)}
+                  </div>
+                  <div className="text-xs text-emerald-300/70 mt-0.5 truncate">
+                    {currentAnonymous.donationCount} kali infaq tromol & hamba Allah
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleOpenAnonModal}
+                  className="shrink-0 h-8 text-xs font-semibold rounded-xl bg-white/10 border-white/20 text-white hover:bg-white hover:text-[#0e3824] transition-colors"
+                >
+                  <ListOrdered className="h-3.5 w-3.5 mr-1" />
+                  Rincian
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* TIME-RANGE PERIOD FILTER BAR (Issue #66 / Fase V8) */}
         <PeriodFilterBar
           selectedYear={selectedYear}

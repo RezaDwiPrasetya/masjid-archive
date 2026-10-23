@@ -121,34 +121,49 @@ export default async function CariLaporanPage({
       )
     : sortedReports;
 
-  const heroContent = (
-    <div className="space-y-5 sm:space-y-6">
-      <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed border-b border-primary-fixed/20 pb-4">
-        <FileSearch className="h-4 w-4 shrink-0" />
-        <span>Pencarian Arsip Kas & Warta Jum&apos;at • DKM Masjid Al-Luqman</span>
-      </div>
-
-      <div className="space-y-1">
-        <span className="text-[11px] uppercase tracking-wider text-primary-fixed/80 font-bold block">
-          Total Dokumen Ditemukan
-        </span>
-        <div className="text-3xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary font-sans">
-          {filteredReports.length} Dokumen
-        </div>
-      </div>
-
-      <div className="text-xs md:text-sm text-primary-fixed/80">
-        {keyword || year || month
-          ? `Hasil pencarian berkas arsip kas dari total ${reports.length} pindaian tersimpan.`
-          : `Seluruh pindaian pembukuan kas mingguan tersedia lintas ${years.length} tahun pembukuan.`}
-      </div>
-    </div>
-  );
-
   return (
     <AppShell active="/cari">
-      <PageShell heroBand={heroContent}>
-        <div className="space-y-8 sm:space-y-10">
+      <PageShell>
+        <div className="space-y-6 sm:space-y-8">
+          {/* HEADER ATAS DI KANVAS TERANG */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <FileSearch className="h-3.5 w-3.5 text-emerald-800" />
+                <span>Pencarian Arsip Kas & Warta Jum&apos;at • DKM Masjid Al-Luqman</span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                Pencarian Arsip Laporan
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                {keyword || year || month
+                  ? `Hasil pencarian berkas arsip kas dari total ${reports.length} pindaian tersimpan.`
+                  : `Seluruh pindaian pembukuan kas mingguan tersedia lintas ${years.length} tahun pembukuan.`}
+              </p>
+            </div>
+          </div>
+
+          {/* HERO CARD MELAYANG */}
+          <div className="rounded-3xl bg-[#0e3824] text-white p-6 sm:p-8 lg:p-9 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2.5 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
+                  <div className="h-8 w-8 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
+                    <FileSearch size={16} />
+                  </div>
+                  <span>Total Dokumen Ditemukan</span>
+                </div>
+                <div className="text-4xl sm:text-5xl lg:text-[54px] font-bold tracking-tight text-white tabular-nums leading-none font-sans">
+                  {filteredReports.length} Dokumen
+                </div>
+                <p className="text-xs sm:text-sm text-emerald-100/80">
+                  {keyword ? `Pencarian untuk kata kunci "${keyword}"` : "Semua berkas laporan fisik terarsip"}
+                </p>
+              </div>
+            </div>
+          </div>
           <form className="grid gap-4 rounded-2xl border border-outline-variant bg-surface p-5 sm:p-6 shadow-xs grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_140px_140px_220px_auto] lg:items-end">
             <div>
               <label htmlFor="keyword" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-on-surface-variant">

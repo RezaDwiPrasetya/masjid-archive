@@ -109,63 +109,66 @@ export default async function DonorDetailPage({
       ? totalContribution / donor.transactions.length
       : 0;
 
-  const heroContent = (
-    <div>
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <Link
-          href="/donatur"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-fixed hover:underline transition-colors"
-        >
-          <ArrowLeft size={14} /> Kembali ke Daftar Donatur
-        </Link>
-        <span className="rounded-full bg-primary-container border border-primary-fixed/20 px-3 py-1 text-xs font-semibold text-primary-fixed">
-          Donatur Terverifikasi
-        </span>
-      </div>
-
-      <div className="mt-4 flex items-center gap-3.5">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-container text-primary-fixed border border-primary-fixed/20 shadow-xs">
-          <User size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-on-primary tracking-tight font-sans">
-            {donor.name}
-          </h1>
-          <p className="text-xs text-primary-fixed/80 mt-0.5">
-            Profil donatur tercatat dalam buku kas DKM Masjid Al-Luqman
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-6 pt-5 border-t border-primary-container/80 flex flex-wrap items-baseline gap-6 sm:gap-10">
-        <div>
-          <span className="text-xs text-primary-fixed/80 block">Total Kontribusi Terverifikasi</span>
-          <div className="text-3xl sm:text-4xl md:text-[44px] font-semibold text-on-primary tabular-nums mt-1 leading-none">
-            {formatRupiah(totalContribution)}
-          </div>
-        </div>
-
-        <div className="border-l border-primary-container pl-6 sm:pl-10">
-          <span className="text-xs text-primary-fixed/80 block">Frekuensi Infaq</span>
-          <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums mt-1">
-            {donor.transactions.length} <span className="text-xs font-normal text-primary-fixed/70">kali tercatat</span>
-          </div>
-        </div>
-
-        <div className="border-l border-primary-container pl-6 sm:pl-10">
-          <span className="text-xs text-primary-fixed/80 block">Rata-rata per Infaq</span>
-          <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums mt-1">
-            {formatRupiah(averagePerDonation)}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <AppShell active="/donatur">
-      <PageShell heroBand={heroContent}>
-        <div className="space-y-6">
+      <PageShell>
+        <div className="space-y-6 sm:space-y-8">
+          {/* HEADER ATAS DI KANVAS TERANG */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <Link
+                href="/donatur"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
+              >
+                <ArrowLeft size={14} /> Kembali ke Daftar Donatur
+              </Link>
+              <span className="rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-semibold text-emerald-800">
+                Donatur Terverifikasi
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#0e3824] text-white shadow-xs">
+                <User size={24} className="text-emerald-300" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight font-sans">
+                  {donor.name}
+                </h1>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Profil donatur tercatat dalam buku kas DKM Masjid Al-Luqman
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* HERO CARD MELAYANG */}
+          <div className="rounded-3xl bg-[#0e3824] text-white p-6 sm:p-8 lg:p-9 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 flex flex-wrap items-baseline gap-6 sm:gap-10">
+              <div>
+                <span className="text-xs text-emerald-200/90 font-bold uppercase tracking-wider block">Total Kontribusi Terverifikasi</span>
+                <div className="text-3xl sm:text-4xl md:text-[44px] font-bold text-white tabular-nums mt-1 leading-none">
+                  {formatRupiah(totalContribution)}
+                </div>
+              </div>
+
+              <div className="border-l border-emerald-400/20 pl-6 sm:pl-10">
+                <span className="text-xs text-emerald-200/90 font-bold uppercase tracking-wider block">Frekuensi Infaq</span>
+                <div className="text-xl sm:text-2xl font-bold text-white tabular-nums mt-1">
+                  {donor.transactions.length} <span className="text-xs font-normal text-emerald-200/70">kali tercatat</span>
+                </div>
+              </div>
+
+              <div className="border-l border-emerald-400/20 pl-6 sm:pl-10">
+                <span className="text-xs text-emerald-200/90 font-bold uppercase tracking-wider block">Rata-rata per Infaq</span>
+                <div className="text-xl sm:text-2xl font-bold text-white tabular-nums mt-1">
+                  {formatRupiah(averagePerDonation)}
+                </div>
+              </div>
+            </div>
+          </div>
           {/* Riwayat Transaksi — Format Buku Besar */}
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 border-b border-outline-variant pb-3">

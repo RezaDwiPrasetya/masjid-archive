@@ -309,130 +309,130 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
   const activeMonthName = MONTH_NAMES[activeMonth] ?? "";
 
   // Konten Hero Band Bersahabat
-  const heroBandContent = (
-    <div className="space-y-6">
-      {/* Banner Khusus jika Pengurus sedang meninjau Pratinjau Publik */}
-      {isPublicPreview && (
-        <div className="rounded-xl border border-primary-fixed/40 bg-primary-container/80 p-3 text-xs flex items-center justify-between gap-3 text-primary-fixed">
-          <div className="flex items-center gap-2">
-            <ShieldCheck size={16} />
-            <span>
-              <strong>Mode Pratinjau Publik:</strong> Anda sedang melihat Beranda sebagaimana disajikan kepada jemaah dan donatur umum.
-            </span>
-          </div>
-          <Link
-            href="/dashboard"
-            className="font-bold underline hover:no-underline text-on-primary shrink-0"
-          >
-            Kembali ke Dashboard Pengurus &rarr;
-          </Link>
-        </div>
-      )}
-
-      {/* Identitas DKM Al-Luqman */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-primary-fixed/20 pb-5">
-        <div className="flex items-center gap-3.5">
-          <Image
-            src="/favicon.svg"
-            alt="Logo DKM Masjid Al-Luqman"
-            width={48}
-            height={48}
-            priority
-            className="h-11 w-11 sm:h-12 sm:w-12 drop-shadow-sm select-none shrink-0"
-          />
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-base sm:text-lg font-bold text-on-primary tracking-tight">
-                DKM Masjid Al-Luqman
-              </span>
-              <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/30 font-semibold">
-                Portal Transparansi Kas Umat
-              </span>
-            </div>
-            <p className="text-xs text-primary-fixed/80 font-medium mt-0.5">
-              Kel. Soklat, Kec. Subang, Kab. Subang &bull; Akuntabilitas Terbuka &amp; Terpercaya
-            </p>
-          </div>
-        </div>
-
-        {/* Akses Cepat Anchor Menu */}
-        <div className="flex items-center gap-2 flex-wrap text-xs font-semibold">
-          <a
-            href="#alokasi-belanja"
-            className="px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/30 transition-colors"
-          >
-            Alokasi Belanja
-          </a>
-          <a
-            href="#cek-infaq"
-            className="px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/30 transition-colors"
-          >
-            Cek Infaq Anda
-          </a>
-          <a
-            href="#rekening-resmi"
-            className="px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/30 transition-colors"
-          >
-            Salurkan Infaq
-          </a>
-          <a
-            href="#arsip-laporan"
-            className="px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/30 transition-colors"
-          >
-            Arsip Laporan
-          </a>
-        </div>
-      </div>
-
-      {/* Figur Utama Saldo Kas Terkonsolidasi (Angka Tabular Gagah) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end">
-        <div className="lg:col-span-7 space-y-2">
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-primary-fixed font-bold">
-            <ShieldCheck className="h-4 w-4 text-primary-fixed" />
-            <span>Total Saldo Kas Terkonsolidasi (Fisik &amp; Bank)</span>
-          </div>
-          <div className="text-4xl sm:text-5xl lg:text-6xl font-bold font-sans tracking-tight text-on-primary tabular-nums">
-            {formatRupiah(totalBalance)}
-          </div>
-          <p className="text-xs sm:text-sm text-primary-fixed/90 max-w-xl leading-relaxed pt-1">
-            Dana titipan jamaah yang dikelola secara amanah untuk kegiatan ibadah, pemeliharaan sarana, dan program kepedulian sosial umat.
-          </p>
-        </div>
-
-        {/* Sub-Stat: Kas Fisik vs Bank */}
-        <div className="lg:col-span-5 grid grid-cols-2 gap-3 pt-2 lg:pt-0">
-          <div className="rounded-xl border border-primary-container bg-primary-container/40 p-3.5 space-y-1">
-            <span className="text-[11px] text-primary-fixed/80 block font-medium">
-              Kas Tunai Fisik (Brankas)
-            </span>
-            <span className="text-base sm:text-lg font-bold text-on-primary tabular-nums block">
-              {formatRupiah(cashBalance)}
-            </span>
-            <span className="text-[10px] text-primary-fixed/60 block">
-              Tromol Jumat &amp; Kas Harian
-            </span>
-          </div>
-
-          <div className="rounded-xl border border-primary-container bg-primary-container/40 p-3.5 space-y-1">
-            <span className="text-[11px] text-primary-fixed/80 block font-medium">
-              Kas Bank &amp; QRIS Resmi
-            </span>
-            <span className="text-base sm:text-lg font-bold text-on-primary tabular-nums block">
-              {formatRupiah(bankBalance)}
-            </span>
-            <span className="text-[10px] text-primary-fixed/60 block">
-              Rekening DKM di BSI &amp; Muamalat
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <AppShell active="/">
-      <PageShell heroBand={heroBandContent}>
-        <div className="space-y-10 sm:space-y-12">
+      <PageShell>
+        <div className="space-y-8 sm:space-y-10">
+          {/* Banner Khusus jika Pengurus sedang meninjau Pratinjau Publik */}
+          {isPublicPreview && (
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-xs flex items-center justify-between gap-3 text-emerald-900 shadow-2xs">
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={18} className="text-emerald-700 shrink-0" />
+                <span>
+                  <strong>Mode Pratinjau Publik:</strong> Anda sedang melihat Beranda sebagaimana disajikan kepada jemaah dan donatur umum.
+                </span>
+              </div>
+              <Link
+                href="/dashboard"
+                className="font-bold underline hover:no-underline text-emerald-800 shrink-0"
+              >
+                Kembali ke Dashboard Pengurus &rarr;
+              </Link>
+            </div>
+          )}
+
+          {/* HEADER ATAS DI KANVAS TERANG */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <Image
+                src="/favicon.svg"
+                alt="Logo DKM Masjid Al-Luqman"
+                width={48}
+                height={48}
+                priority
+                className="h-11 w-11 sm:h-12 sm:w-12 drop-shadow-sm select-none shrink-0"
+              />
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight font-sans">
+                    DKM Masjid Al-Luqman
+                  </span>
+                  <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold">
+                    Portal Transparansi Kas Umat
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Kel. Soklat, Kec. Subang, Kab. Subang &bull; Akuntabilitas Terbuka &amp; Terpercaya
+                </p>
+              </div>
+            </div>
+
+            {/* Akses Cepat Anchor Menu */}
+            <div className="flex items-center gap-2 flex-wrap text-xs font-semibold">
+              <a
+                href="#alokasi-belanja"
+                className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition-colors"
+              >
+                Alokasi Belanja
+              </a>
+              <a
+                href="#cek-infaq"
+                className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition-colors"
+              >
+                Cek Infaq Anda
+              </a>
+              <a
+                href="#rekening-resmi"
+                className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition-colors"
+              >
+                Salurkan Infaq
+              </a>
+              <a
+                href="#arsip-laporan"
+                className="px-3 py-1.5 rounded-xl bg-[#0e3824] hover:bg-[#144731] text-white font-bold shadow-xs transition-colors"
+              >
+                Arsip Laporan
+              </a>
+            </div>
+          </div>
+
+          {/* HERO CARD MELAYANG */}
+          <div className="rounded-3xl bg-[#0e3824] text-white p-6 sm:p-8 lg:p-9 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-end">
+              <div className="lg:col-span-7 space-y-3">
+                <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-emerald-200/90 font-bold">
+                  <ShieldCheck className="h-4 w-4 text-emerald-300" />
+                  <span>Total Saldo Kas Terkonsolidasi (Fisik &amp; Bank)</span>
+                </div>
+                <div className="text-4xl sm:text-5xl lg:text-6xl font-bold font-sans tracking-tight text-white tabular-nums">
+                  {formatRupiah(totalBalance)}
+                </div>
+                <p className="text-xs sm:text-sm text-emerald-100/80 max-w-xl leading-relaxed pt-1">
+                  Dana titipan jamaah yang dikelola secara amanah untuk kegiatan ibadah, pemeliharaan sarana, dan program kepedulian sosial umat.
+                </p>
+              </div>
+
+              {/* Sub-Stat: Kas Fisik vs Bank */}
+              <div className="lg:col-span-5 grid grid-cols-2 gap-3 pt-2 lg:pt-0">
+                <div className="rounded-2xl border border-emerald-400/20 bg-[#144731]/80 backdrop-blur-sm p-4 space-y-1">
+                  <span className="text-[11px] text-emerald-200 font-bold uppercase tracking-wider block">
+                    Kas Fisik (Brankas)
+                  </span>
+                  <span className="text-lg sm:text-xl font-bold text-white tabular-nums block">
+                    {formatRupiah(cashBalance)}
+                  </span>
+                  <span className="text-[11px] text-emerald-300/70 block">
+                    Tromol Jumat &amp; Kas Harian
+                  </span>
+                </div>
+
+                <div className="rounded-2xl border border-emerald-400/20 bg-[#144731]/80 backdrop-blur-sm p-4 space-y-1">
+                  <span className="text-[11px] text-emerald-200 font-bold uppercase tracking-wider block">
+                    Kas Bank &amp; QRIS
+                  </span>
+                  <span className="text-lg sm:text-xl font-bold text-white tabular-nums block">
+                    {formatRupiah(bankBalance)}
+                  </span>
+                  <span className="text-[11px] text-emerald-300/70 block">
+                    Rekening DKM BSI &amp; Muamalat
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Banner Notifikasi Akses Ditolak (jika dialihkan dari rute berwenang staf) */}
           <AuthErrorBanner authError={authError} />
 

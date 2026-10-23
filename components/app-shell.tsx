@@ -130,12 +130,7 @@ export function AppShell({
   React.useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
-      if (
-        profileMenuRef.current &&
-        !profileMenuRef.current.contains(target) &&
-        headerProfileRef.current &&
-        !headerProfileRef.current.contains(target)
-      ) {
+      if (headerProfileRef.current && !headerProfileRef.current.contains(target)) {
         setIsProfileMenuOpen(false);
       }
       if (notificationRef.current && !notificationRef.current.contains(target)) {
@@ -214,7 +209,7 @@ export function AppShell({
       >
         {/* Ilustrasi Masjid Autentik Sesuai Referensi Pengguna (Persis media_1792723264079) */}
         {!isCollapsed && (
-          <div className="absolute bottom-[200px] left-0 right-0 h-48 pointer-events-none overflow-hidden select-none z-0">
+          <div className="absolute bottom-[90px] left-0 right-0 h-48 pointer-events-none overflow-hidden select-none z-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/images/sidebar-mosque-clean.png"
@@ -226,10 +221,12 @@ export function AppShell({
 
         {/* BAGIAN ATAS: Header Identitas & Menu Navigasi Utama */}
         <div className="flex flex-col z-10">
-          {/* Top Bar: Masjid Brand Accent & Collapse Button (Tinggi h-16 menyatu rata dengan header) */}
+          {/* Top Bar: Masjid Brand Accent & Collapse Button (Rapi, lega, tidak berdesakan) */}
           <div
-            className={`h-16 flex items-center border-b border-white/10 ${
-              isCollapsed ? "justify-center px-2" : "justify-between px-4"
+            className={`border-b border-white/10 ${
+              isCollapsed
+                ? "py-3 flex flex-col items-center justify-center gap-2"
+                : "h-16 flex items-center justify-between px-4"
             }`}
           >
             {!isCollapsed ? (
@@ -247,7 +244,7 @@ export function AppShell({
             ) : (
               <Link
                 href="/"
-                className="flex items-center justify-center py-1 group relative"
+                className="flex items-center justify-center p-1 rounded-xl hover:bg-white/10 transition-colors group relative"
                 title="Masjid Archive - Sistem Kas & Arsip"
               >
                 <MasjidEmblem className="h-8 w-8 group-hover:scale-105 transition-transform shrink-0" />
@@ -257,19 +254,19 @@ export function AppShell({
               </Link>
             )}
 
-            {/* Tombol Toggle Buka/Tutup Sidebar */}
+            {/* Tombol Toggle Buka/Tutup Sidebar (Terpisah rapi dengan ruang yang lega) */}
             <button
               type="button"
               onClick={toggleSidebar}
-              className="p-1.5 rounded-lg text-emerald-100/75 hover:text-white hover:bg-white/10 transition-colors"
+              className="p-1.5 rounded-lg text-emerald-100/75 hover:text-white hover:bg-white/10 transition-colors shrink-0"
               title={isCollapsed ? "Bentangkan Sidebar" : "Ciutkan Sidebar"}
               aria-label={isCollapsed ? "Bentangkan Sidebar" : "Ciutkan Sidebar"}
             >
-              {isCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+              {isCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={18} />}
             </button>
           </div>
 
-          {/* Menu Navigasi Utama (Dengan Gaya Kapsul Halus & Chevron Rapi Sesuai Referensi) */}
+          {/* Menu Navigasi Utama (Bersih tanpa chevron dropdown yang membingungkan) */}
           <nav className={`space-y-1 pt-3 ${isCollapsed ? "px-2" : "px-3"}`}>
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -298,7 +295,7 @@ export function AppShell({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`group flex items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-all duration-200 ${
+                  className={`group flex items-center rounded-xl px-3 py-2.5 text-sm transition-all duration-200 ${
                     isActive
                       ? "bg-white/15 text-white font-semibold border border-white/10 shadow-xs backdrop-blur-xs"
                       : "text-emerald-100/80 hover:text-white hover:bg-white/10 font-medium"
@@ -313,20 +310,13 @@ export function AppShell({
                     />
                     <span className="truncate">{item.label}</span>
                   </div>
-
-                  {!isActive && (
-                    <ChevronRight
-                      size={13}
-                      className="text-white/30 group-hover:text-white/80 group-hover:translate-x-0.5 transition-all shrink-0 ml-1"
-                    />
-                  )}
                 </Link>
               );
             })}
           </nav>
         </div>
 
-        {/* BAGIAN BAWAH: Kartu Kutipan Amanah, Portal Publik, & Panel Profil Pengguna */}
+        {/* BAGIAN BAWAH: Kartu Kutipan Amanah & Portal Publik (Tanpa profil duplikat) */}
         <div className={`space-y-3 py-3.5 border-t border-white/10 relative z-10 ${isCollapsed ? "px-2" : "px-3"}`}>
           {/* KARTU KUTIPAN AMANAH (Persis Referensi Gambar 1 & media_1792723264079) */}
           {!isCollapsed && (
@@ -369,158 +359,6 @@ export function AppShell({
               </div>
             )
           )}
-
-          {/* KARTU PROFIL PENGGUNA (Dengan Menu Popover Fungsional) */}
-          <div ref={profileMenuRef} className="relative">
-            {/* Popover Menu Akun Interaktif */}
-            {isProfileMenuOpen && session && (
-              <div
-                className={`absolute bottom-[calc(100%+12px)] rounded-2xl bg-white text-slate-800 border border-slate-200 shadow-2xl p-3 z-50 animate-in fade-in zoom-in-95 duration-150 ${
-                  isCollapsed ? "left-0 w-64" : "left-0 right-0"
-                }`}
-              >
-                <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-                  {session.user?.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={session.user.image}
-                      alt={session.user.name ?? "Avatar"}
-                      className="h-10 w-10 rounded-full ring-2 ring-emerald-600/30 object-cover shrink-0"
-                    />
-                  ) : (
-                    <div className="h-10 w-10 rounded-full bg-[#3b6d53] text-white flex items-center justify-center font-bold text-sm ring-2 ring-emerald-600/20 shrink-0">
-                      {userName.charAt(0)}
-                    </div>
-                  )}
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-xs font-bold text-slate-800 truncate">
-                      {session.user?.name || "Pengurus DKM"}
-                    </span>
-                    <span className="text-[11px] text-slate-500 truncate">
-                      {session.user?.email || "Akun Terverifikasi"}
-                    </span>
-                    <span className="text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-200 font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md mt-1 w-fit">
-                      {role || "ADMIN"}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="pt-2 space-y-1">
-                  {isStaff(session) && (
-                    <Link
-                      href="/dashboard"
-                      onClick={() => setIsProfileMenuOpen(false)}
-                      className="flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 transition-colors"
-                    >
-                      <LayoutDashboard size={14} className="text-emerald-700" />
-                      <span>Kokpit Dashboard Kas</span>
-                    </Link>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsProfileMenuOpen(false);
-                      signOut({ callbackUrl: "/" });
-                    }}
-                    className="w-full flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-medium text-rose-700 hover:bg-rose-50 transition-colors"
-                  >
-                    <LogOut size={14} className="text-rose-600" />
-                    <span>Keluar dari Akun</span>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {session ? (
-              !isCollapsed ? (
-                <div
-                  onClick={() => setIsProfileMenuOpen((prev) => !prev)}
-                  className="flex items-center justify-between p-2 rounded-xl bg-[#0f3b28]/80 border border-emerald-500/20 text-white hover:bg-[#144731] transition-all cursor-pointer group shadow-sm"
-                  title="Klik untuk membuka menu akun"
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    {session.user?.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={session.user.image}
-                        alt={session.user.name ?? "Avatar"}
-                        className="h-9 w-9 rounded-full ring-2 ring-white/20 object-cover shrink-0"
-                      />
-                    ) : (
-                      <div className="h-9 w-9 rounded-full bg-[#3b6d53] text-white flex items-center justify-center font-bold text-xs ring-2 ring-white/10 shrink-0">
-                        {userName.charAt(0)}
-                      </div>
-                    )}
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-xs font-bold text-white truncate leading-tight group-hover:text-primary-fixed transition-colors">
-                        Welcome, {userFirstName}
-                      </span>
-                      <span className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider mt-0.5 inline-block w-fit truncate">
-                        {role || "ADMIN"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <ChevronDown
-                    size={16}
-                    className={`text-white/60 group-hover:text-white transition-transform duration-200 shrink-0 ${
-                      isProfileMenuOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                </div>
-              ) : (
-                <div className="flex justify-center group relative">
-                  <button
-                    type="button"
-                    onClick={() => setIsProfileMenuOpen((prev) => !prev)}
-                    className="focus:outline-hidden"
-                    title="Menu Akun"
-                  >
-                    {session.user?.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={session.user.image}
-                        alt={session.user.name ?? "Avatar"}
-                        className="h-9 w-9 rounded-full ring-2 ring-white/20 object-cover cursor-pointer hover:scale-105 transition-transform"
-                      />
-                    ) : (
-                      <div className="h-9 w-9 rounded-full bg-emerald-800 text-white flex items-center justify-center font-bold text-xs ring-2 ring-white/20 cursor-pointer hover:scale-105 transition-transform">
-                        {userName.charAt(0)}
-                      </div>
-                    )}
-                  </button>
-                  <span className="absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-surface text-on-surface border border-outline-variant text-xs font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
-                    {userName} ({role || "ADMIN"})
-                  </span>
-                </div>
-              )
-            ) : (
-              /* Saat Tamu / Belum Login */
-              !isCollapsed ? (
-                <button
-                  type="button"
-                  onClick={() => signIn("google", { callbackUrl: "/auth/post-login" })}
-                  className="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl bg-white text-primary hover:bg-primary-fixed text-xs font-bold transition-all shadow-md"
-                >
-                  <LogIn size={15} className="text-primary" />
-                  <span>Akses Pengurus</span>
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => signIn("google", { callbackUrl: "/auth/post-login" })}
-                  className="h-10 w-10 mx-auto flex items-center justify-center rounded-xl bg-white text-primary hover:bg-primary-fixed transition-all group relative shadow-md"
-                  title="Akses Pengurus DKM"
-                >
-                  <LogIn size={16} className="text-primary" />
-                  <span className="absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-surface text-on-surface border border-outline-variant text-xs font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
-                    Akses Pengurus
-                  </span>
-                </button>
-              )
-            )}
-          </div>
         </div>
       </aside>
 

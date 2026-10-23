@@ -22,6 +22,7 @@ import {
   ShieldAlert,
   Sparkles,
   Loader2,
+  ArrowRight,
 } from "lucide-react";
 
 // ─── Tipe & Konstanta ─────────────────────────────────────────────────────────
@@ -88,6 +89,8 @@ export default function UnggahLaporanPage() {
   const [compressing, setCompressing] = useState(false);
   const [compressingText, setCompressingText] = useState("");
   const [saved, setSaved] = useState(false);
+  const [uploadedReportId, setUploadedReportId] = useState<string | null>(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   if (status === "loading") {
     return (
@@ -224,11 +227,18 @@ export default function UnggahLaporanPage() {
     setLoading(false);
 
     if (res.ok) {
+      const result = await res.json();
+      const newReportId = result.data?.id;
       setSaved(true);
       setFiles([]);
       setReportDate("");
       setValidationErrors([]);
-      router.refresh();
+      if (newReportId) {
+        setUploadedReportId(newReportId);
+        setIsRedirecting(true);
+        // Langsung arahkan ke halaman detail laporan tempat ekstraksi data AI berada!
+        router.push(`/laporan/${newReportId}`);
+      }
     } else {
       const data = await res.json();
       setSubmitError(data.error || "Terjadi kesalahan saat mengunggah.");
@@ -237,40 +247,57 @@ export default function UnggahLaporanPage() {
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
-  const heroContent = (
-    <div className="space-y-5 sm:space-y-6">
-      <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed border-b border-primary-fixed/20 pb-4">
-        <UploadCloud className="h-4 w-4 shrink-0" />
-        <span>Ruang Kerja Pengurus DKM • Pembukuan Kas Digital</span>
-      </div>
-
-      <div className="space-y-1">
-        <h1 className="text-2xl sm:text-4xl md:text-[44px] font-semibold leading-tight tracking-tight text-on-primary">
-          Unggah Berkas Laporan Kas
-        </h1>
-      </div>
-
-      <div className="text-xs md:text-sm text-primary-fixed/80">
-        Digitalisasi warta Jum&apos;at, pindaian buku kas fisik, dokumen PDF, dan spreadsheet Excel ke arsip terverifikasi.
-      </div>
-    </div>
-  );
-
   return (
     <AppShell active="/unggah">
-      <PageShell heroBand={heroContent}>
-        <div className="space-y-8 sm:space-y-10">
+      <PageShell>
+        <div className="space-y-6 sm:space-y-8">
+          {/* HEADER ATAS DI KANVAS TERANG */}
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <UploadCloud className="h-3.5 w-3.5 text-emerald-800" />
+              <span>Ruang Kerja Pengurus DKM • Pembukuan Kas Digital</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Unggah Berkas Laporan Kas
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+              Digitalisasi warta Jum&apos;at, pindaian buku kas fisik, dokumen PDF, dan spreadsheet Excel ke arsip terverifikasi.
+            </p>
+          </div>
 
         {/* Banner sukses */}
         {saved && (
-          <div className="mb-6 flex items-center gap-3 rounded-2xl border border-primary/30 bg-primary/10 p-4 text-primary">
-            <CheckCircle2 size={22} className="shrink-0" />
-            <div>
-              <p className="font-semibold text-sm">Laporan Berhasil Disimpan</p>
-              <Link href="/" className="text-xs underline hover:text-primary-container">
-                Lihat di Arsip Laporan &rarr;
-              </Link>
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-950 shadow-xs animate-in fade-in">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 size={24} className="text-emerald-700 shrink-0" />
+              <div>
+                <p className="font-bold text-sm text-emerald-900">
+                  {isRedirecting
+                    ? "Laporan Berhasil Disimpan! Mengalihkan ke halaman ekstraksi..."
+                    : "Laporan Berhasil Disimpan"}
+                </p>
+                <p className="text-xs text-emerald-700 mt-0.5">
+                  Lampiran siap diproses melalui ekstraksi otomatis AI.
+                </p>
+              </div>
             </div>
+            {uploadedReportId ? (
+              <Link
+                href={`/laporan/${uploadedReportId}`}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-[#0e3824] hover:bg-[#144731] text-white text-xs font-bold shadow-xs transition-colors shrink-0"
+              >
+                <span>Buka Detail &amp; Ekstraksi Data</span>
+                <ArrowRight size={14} />
+              </Link>
+            ) : (
+              <Link
+                href="/cari"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-[#0e3824] hover:bg-[#144731] text-white text-xs font-bold shadow-xs transition-colors shrink-0"
+              >
+                <span>Buka Arsip Laporan</span>
+                <ArrowRight size={14} />
+              </Link>
+            )}
           </div>
         )}
 

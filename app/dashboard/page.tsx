@@ -53,12 +53,67 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   const latestReportId = latestReportWithBalance?.id ?? null;
 
+  // Ambil laporan terbaru yang menunggu ekstraksi AI atau verifikasi transaksi
+  const pendingReportsRaw = await prisma.report.findMany({
+    where: {
+      OR: [
+        { finalBalance: null },
+        { attachments: { some: { extractionStatus: { in: ["not_extracted", "processing", "failed"] } } } },
+        { transactions: { some: { isVerified: false } } },
+      ],
+    },
+    orderBy: {
+      uploadedAt: "desc",
+    },
+    take: 4,
+    select: {
+      id: true,
+      reportDate: true,
+      weekOfMonth: true,
+      month: true,
+      year: true,
+      uploadedAt: true,
+      attachments: {
+        select: {
+          id: true,
+          originalFileName: true,
+          extractionStatus: true,
+        },
+      },
+      transactions: {
+        select: {
+          isVerified: true,
+        },
+      },
+    },
+  });
+
+  const pendingReports = pendingReportsRaw.map((r) => {
+    const unextractedCount = r.attachments.filter(
+      (a) => !a.extractionStatus || a.extractionStatus === "not_extracted" || a.extractionStatus === "failed"
+    ).length;
+    const unverifiedCount = r.transactions.filter((t) => !t.isVerified).length;
+
+    return {
+      id: r.id,
+      reportDate: r.reportDate.toISOString(),
+      weekOfMonth: r.weekOfMonth,
+      month: r.month,
+      year: r.year,
+      uploadedAt: r.uploadedAt.toISOString(),
+      attachmentCount: r.attachments.length,
+      unextractedCount,
+      unverifiedCount,
+    };
+  });
+
   return (
     <AppShell active="/dashboard">
       <DashboardClient
         initialFinalBalance={initialFinalBalance}
         latestReportDate={latestReportDate}
         latestReportId={latestReportId}
+        pendingReports={pendingReports}
         authError={error}
       />
     </AppShell>

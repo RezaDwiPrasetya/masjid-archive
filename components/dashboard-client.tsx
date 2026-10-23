@@ -12,15 +12,30 @@ import {
   X,
   ImagePlus,
   ExternalLink,
+  Sparkles,
+  ArrowRight,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PageShell } from "@/components/page-shell";
 import { CashflowTrendSection } from "@/components/cashflow-trend-section";
 
+export interface PendingReportItem {
+  id: string;
+  reportDate: string;
+  weekOfMonth: number;
+  month: number;
+  year: number;
+  uploadedAt: string;
+  attachmentCount: number;
+  unextractedCount: number;
+  unverifiedCount: number;
+}
+
 interface DashboardClientProps {
   initialFinalBalance: number | null;
   latestReportDate: string | null;
   latestReportId: string | null;
+  pendingReports?: PendingReportItem[];
   authError?: string | null;
 }
 
@@ -63,6 +78,7 @@ export function DashboardClient({
   initialFinalBalance,
   latestReportDate,
   latestReportId,
+  pendingReports = [],
   authError,
 }: DashboardClientProps) {
   const searchParams = useSearchParams();
@@ -81,72 +97,141 @@ export function DashboardClient({
     return now;
   }, [latestReportDate, now]);
 
-  const heroContent = (
-    <div className="space-y-5 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-primary-fixed/20 pb-4">
-        <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed">
-          <Wallet className="h-4 w-4 shrink-0" />
-          <span>Kokpit Analitik Kas Pengurus • DKM Al-Luqman</span>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Link
-            href="/unggah"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-on-primary text-primary text-xs font-bold shadow-xs hover:bg-on-primary/90 transition-colors"
-          >
-            <ImagePlus size={14} />
-            <span>+ Unggah Laporan Baru</span>
-          </Link>
-          <Link
-            href="/?view=public"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/30 text-xs font-semibold transition-colors"
-          >
-            <ExternalLink size={13} />
-            <span>Lihat Portal Publik</span>
-          </Link>
-        </div>
-      </div>
-
-      <div className="space-y-1">
-        <span className="text-[11px] uppercase tracking-wider text-primary-fixed/80 font-bold block">
-          Saldo Kas Fisik Terverifikasi (Laporan Terakhir)
-        </span>
-        <div className="text-3xl sm:text-5xl md:text-[52px] font-bold leading-tight tracking-tight tabular-nums text-on-primary font-sans">
-          {initialFinalBalance !== null
-            ? formatRupiah(animatedBalance)
-            : "Belum Ada"}
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm text-primary-fixed/80">
-        {latestReportDate ? (
-          <>
-            <Calendar className="h-3.5 w-3.5 shrink-0" />
-            <span>
-              Laporan terakhir:{" "}
-              {new Date(latestReportDate).toLocaleDateString("id-ID", {
-                dateStyle: "medium",
-              })}
-            </span>
-            {latestReportId && (
-              <Link
-                href={`/laporan/${latestReportId}`}
-                className="inline-flex items-center gap-1 text-primary-fixed hover:underline ml-1"
-              >
-                <span>(Lihat Dokumen)</span>
-                <FileText className="h-3 w-3" />
-              </Link>
-            )}
-          </>
-        ) : (
-          <span>Belum ada laporan dengan saldo kas terverifikasi.</span>
-        )}
-      </div>
-    </div>
-  );
-
   return (
-    <PageShell heroBand={heroContent}>
-      <div className="space-y-8 sm:space-y-10">
+    <PageShell>
+      <div className="space-y-6 sm:space-y-8">
+        {/* HEADER ATAS DI KANVAS TERANG */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <Wallet className="h-3.5 w-3.5 text-emerald-800" />
+              <span>Kokpit Analitik Kas Pengurus • DKM Al-Luqman</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Dashboard Kas Masjid
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <Link
+              href="/unggah"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#0e3824] hover:bg-[#144731] text-white text-xs font-bold shadow-xs transition-colors"
+            >
+              <ImagePlus size={14} />
+              <span>+ Unggah Laporan Baru</span>
+            </Link>
+            <Link
+              href="/?view=public"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold shadow-2xs transition-colors"
+            >
+              <ExternalLink size={13} />
+              <span>Lihat Portal Publik</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* HERO CARD MELAYANG (PERSIS KEBIJAKAN DESAIN BARU) */}
+        <div className="rounded-3xl bg-[#0e3824] text-white p-6 sm:p-8 lg:p-9 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 space-y-4">
+            <div className="flex items-center gap-2.5 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
+              <div className="h-8 w-8 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
+                <Wallet size={16} />
+              </div>
+              <span>Saldo Kas Fisik Terverifikasi (Laporan Terakhir)</span>
+            </div>
+
+            <div className="text-4xl sm:text-5xl lg:text-[54px] font-bold tracking-tight text-white tabular-nums leading-none font-sans">
+              {initialFinalBalance !== null
+                ? formatRupiah(animatedBalance)
+                : "Belum Ada"}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-emerald-100/80">
+              {latestReportDate ? (
+                <>
+                  <Calendar className="h-3.5 w-3.5 shrink-0 text-emerald-300" />
+                  <span>
+                    Laporan terakhir:{" "}
+                    {new Date(latestReportDate).toLocaleDateString("id-ID", {
+                      dateStyle: "medium",
+                    })}
+                  </span>
+                  {latestReportId && (
+                    <Link
+                      href={`/laporan/${latestReportId}`}
+                      className="inline-flex items-center gap-1 text-emerald-200 hover:text-white underline ml-1"
+                    >
+                      <span>(Lihat Dokumen)</span>
+                      <FileText className="h-3 w-3" />
+                    </Link>
+                  )}
+                </>
+              ) : (
+                <span>Belum ada laporan dengan saldo kas terverifikasi.</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* BANNER LAPORAN BARU MENUNGGU EKSTRAKSI (Alur Cepat Staf Pengurus) */}
+        {pendingReports && pendingReports.length > 0 && (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 sm:p-5 shadow-xs space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5">
+                <div className="h-8 w-8 rounded-lg bg-[#0e3824] text-white flex items-center justify-center shrink-0">
+                  <Sparkles size={16} className="text-emerald-300" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">
+                    Laporan Baru Menunggu Ekstraksi AI &amp; Verifikasi ({pendingReports.length})
+                  </h3>
+                  <p className="text-xs text-slate-600">
+                    Berkas laporan fisik telah berhasil diunggah dan siap diekstraksi ke pembukuan kas.
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/cari"
+                className="text-xs font-bold text-emerald-800 hover:underline self-start sm:self-auto"
+              >
+                Lihat Semua di Arsip &rarr;
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+              {pendingReports.map((rep) => (
+                <div
+                  key={rep.id}
+                  className="p-3.5 rounded-xl bg-white border border-slate-200/90 shadow-2xs flex flex-col justify-between gap-3"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between gap-1.5 flex-wrap">
+                      <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">
+                        Pekan {rep.weekOfMonth}, {rep.month}/{rep.year}
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-semibold">
+                        {rep.unextractedCount > 0 ? "Perlu Ekstraksi" : "Perlu Verifikasi"}
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      {new Date(rep.reportDate).toLocaleDateString("id-ID", { dateStyle: "medium" })}
+                    </div>
+                  </div>
+
+                  <Link
+                    href={`/laporan/${rep.id}`}
+                    className="inline-flex items-center justify-center gap-1.5 w-full py-2 rounded-lg bg-[#0e3824] hover:bg-[#144731] text-white text-xs font-bold transition-colors shadow-2xs"
+                  >
+                    <span>Buka &amp; Ekstrak Data</span>
+                    <ArrowRight size={13} />
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {/* Banner Notifikasi Akses Ditolak (Issue #074) */}
         {showForbiddenAlert && (
           <div className="rounded-xl border border-amber-300/80 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/40 p-4 text-amber-950 dark:text-amber-100 flex items-start justify-between gap-3 shadow-xs animate-in fade-in slide-in-from-top-2 duration-200">

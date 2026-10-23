@@ -236,64 +236,75 @@ export function ExpensesClient({
     return "Semua Waktu";
   }, [selectedYear, selectedMonth]);
 
-  const heroContent = (
-    <div className="space-y-5 sm:space-y-6">
-      <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-primary-fixed border-b border-primary-fixed/20 pb-4">
-        <Receipt className="h-4 w-4 shrink-0" />
-        <span>Rekap Transparansi Pengeluaran Kas • DKM Masjid Al-Luqman</span>
-      </div>
-
-      <div className="space-y-1">
-        <span className="text-[11px] uppercase tracking-wider text-primary-fixed/80 font-bold block">
-          Total Akumulasi Pengeluaran
-        </span>
-        <div className="text-3xl sm:text-5xl md:text-[56px] font-semibold leading-tight md:leading-[64px] tracking-tight tabular-nums text-on-primary font-sans">
-          {formatRupiah(currentTotalAmount)}
-        </div>
-      </div>
-
-      <div className="text-xs md:text-sm text-primary-fixed/80">
-        Akumulasi dana pengeluaran kas terverifikasi ({activePeriodLabel})
-      </div>
-
-      {/* 2 Sub-indikator di dalam Hero Band: Jumlah Transaksi vs Alokasi Terbesar */}
-      <div className="pt-5 border-t border-primary-container grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="flex items-start justify-between gap-3 p-3.5 rounded-xl bg-primary-container/40 border border-primary-fixed/15">
-          <div>
-            <div className="text-[11px] font-semibold text-primary-fixed uppercase tracking-wider">
-              Jumlah Transaksi Pengeluaran
-            </div>
-            <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums mt-1">
-              {currentTransactionCount} Transaksi
-            </div>
-            <div className="text-xs text-primary-fixed/70 mt-0.5">
-              Rata-rata {currentTransactionCount > 0 ? formatRupiah(Math.round(currentTotalAmount / currentTransactionCount)) : "Rp 0"} per transaksi
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-start justify-between gap-3 p-3.5 rounded-xl bg-primary-container/40 border border-primary-fixed/15">
-          <div>
-            <div className="text-[11px] font-semibold text-primary-fixed uppercase tracking-wider">
-              Alokasi Terbesar
-            </div>
-            <div className="text-xl sm:text-2xl font-bold text-on-primary truncate mt-1">
-              {topCategory ? topCategory.label : "-"}
-            </div>
-            <div className="text-xs text-primary-fixed/70 mt-0.5">
-              {topCategory
-                ? `${formatRupiah(topCategory.totalAmount)} (${((topCategory.totalAmount / (currentTotalAmount || 1)) * 100).toFixed(1)}% porsi)`
-                : "Belum ada transaksi pengeluaran"}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
-    <PageShell heroBand={heroContent}>
-      <div className="space-y-8 sm:space-y-10">
+    <PageShell>
+      <div className="space-y-6 sm:space-y-8">
+        {/* HEADER ATAS DI KANVAS TERANG */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <Receipt className="h-3.5 w-3.5 text-emerald-800" />
+              <span>Rekap Transparansi Pengeluaran Kas • DKM Masjid Al-Luqman</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Pengeluaran Kas Masjid
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+              Akumulasi dana pengeluaran kas terverifikasi ({activePeriodLabel})
+            </p>
+          </div>
+        </div>
+
+        {/* HERO CARD MELAYANG */}
+        <div className="rounded-3xl bg-[#0e3824] text-white p-6 sm:p-8 lg:p-9 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            <div className="lg:col-span-6 space-y-3">
+              <div className="flex items-center gap-2.5 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
+                <div className="h-8 w-8 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
+                  <Receipt size={16} />
+                </div>
+                <span>Total Akumulasi Pengeluaran</span>
+              </div>
+              <div className="text-4xl sm:text-5xl lg:text-[54px] font-bold tracking-tight text-white tabular-nums leading-none font-sans">
+                {formatRupiah(currentTotalAmount)}
+              </div>
+              <div className="text-xs sm:text-sm text-emerald-100/80">
+                Akumulasi dana operasional, pemeliharaan & kegiatan ({activePeriodLabel})
+              </div>
+            </div>
+
+            <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm">
+                <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider">
+                  Jumlah Transaksi
+                </div>
+                <div className="text-xl sm:text-2xl font-bold text-white tabular-nums mt-1">
+                  {currentTransactionCount} Transaksi
+                </div>
+                <div className="text-xs text-emerald-300/70 mt-0.5">
+                  Rata-rata {currentTransactionCount > 0 ? formatRupiah(Math.round(currentTotalAmount / currentTransactionCount)) : "Rp 0"} / tx
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm">
+                <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider">
+                  Alokasi Terbesar
+                </div>
+                <div className="text-xl sm:text-2xl font-bold text-white truncate mt-1">
+                  {topCategory ? topCategory.label : "-"}
+                </div>
+                <div className="text-xs text-emerald-300/70 mt-0.5 truncate">
+                  {topCategory
+                    ? `${formatRupiah(topCategory.totalAmount)} (${((topCategory.totalAmount / (currentTotalAmount || 1)) * 100).toFixed(1)}%)`
+                    : "Belum ada pengeluaran"}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* TIME-RANGE PERIOD FILTER BAR (Issue #66 / Fase V8) */}
         <PeriodFilterBar
           selectedYear={selectedYear}

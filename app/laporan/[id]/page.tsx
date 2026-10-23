@@ -193,91 +193,107 @@ export default async function DetailLaporanPage({
       maximumFractionDigits: 0,
     }).format(n);
 
-  const heroContent = (
-    <div className="space-y-5 sm:space-y-6">
-      <div className="flex items-center justify-between gap-3 flex-wrap border-b border-primary-fixed/20 pb-4">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-fixed hover:underline transition-colors"
-        >
-          <ArrowLeft size={14} /> Kembali ke Arsip Laporan
-        </Link>
-        <span className="rounded-full bg-primary-container border border-primary-fixed/20 px-3 py-1 text-xs font-semibold text-primary-fixed">
-          Warta Kas Jum&apos;at • Terverifikasi DKM
-        </span>
-      </div>
-
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <div className="text-xs md:text-sm font-medium text-primary-fixed">
-            Laporan Keuangan Kas • {new Date(report.reportDate).toLocaleDateString("id-ID", { dateStyle: "full" })}
-          </div>
-          <h1 className="mt-1 text-2xl sm:text-3xl md:text-4xl font-bold text-on-primary tracking-tight font-sans">
-            Pekan {report.weekOfMonth}, {report.month}/{report.year}
-          </h1>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2 flex-wrap shrink-0">
-          <Link href={`/laporan/${report.id}/cetak`}>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 gap-1.5 text-xs font-semibold rounded-lg bg-primary-container border-primary-fixed/30 text-on-primary hover:bg-primary-fixed hover:text-primary transition-colors"
-              title="Buka pratinjau cetak A4 berkop resmi DKM"
-            >
-              <Printer size={13} /> Cetak Laporan
-            </Button>
-          </Link>
-          <a href={`/api/reports/${report.id}/export/excel`} download>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 gap-1.5 text-xs font-semibold rounded-lg bg-primary-container border-primary-fixed/30 text-on-primary hover:bg-primary-fixed hover:text-primary transition-colors"
-              title="Unduh format spreadsheet Excel (.xlsx)"
-            >
-              <FileSpreadsheet size={13} /> Unduh Excel
-            </Button>
-          </a>
-        </div>
-      </div>
-
-      <div className="pt-5 border-t border-primary-container/80 flex flex-wrap items-baseline gap-6 sm:gap-10">
-        <div>
-          <span className="text-xs text-primary-fixed/80 block">{displayHeroLabel}</span>
-          <div className="text-3xl sm:text-4xl md:text-[44px] font-semibold text-on-primary tabular-nums mt-1 leading-none font-sans">
-            {fmtRupiah(displayHeroFigure)}
-          </div>
-        </div>
-
-        <div className="border-l border-primary-container pl-6 sm:pl-10">
-          <span className="text-xs text-primary-fixed/80 block">Pemasukan</span>
-          <div className="text-xl sm:text-2xl font-bold text-primary-fixed tabular-nums mt-1 font-sans">
-            + {fmtRupiah(totalMasuk)}
-          </div>
-        </div>
-
-        <div className="border-l border-primary-container pl-6 sm:pl-10">
-          <span className="text-xs text-primary-fixed/80 block">Pengeluaran</span>
-          <div className="text-xl sm:text-2xl font-bold text-rose-200 tabular-nums mt-1 font-sans">
-            - {fmtRupiah(totalKeluar)}
-          </div>
-        </div>
-
-        <div className="border-l border-primary-container pl-6 sm:pl-10">
-          <span className="text-xs text-primary-fixed/80 block">Arus Kas Bersih</span>
-          <div className="text-xl sm:text-2xl font-bold text-on-primary tabular-nums mt-1 font-sans">
-            {netChange >= 0 ? `+ ${fmtRupiah(netChange)}` : fmtRupiah(netChange)}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <AppShell active="/">
-      <PageShell heroBand={heroContent}>
-        <div className="space-y-8 sm:space-y-10">
+      <PageShell>
+        <div className="space-y-6 sm:space-y-8">
+          {/* HEADER ATAS DI KANVAS TERANG */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-2 text-xs">
+                <Link
+                  href={staff ? "/dashboard" : "/"}
+                  className="inline-flex items-center gap-1.5 font-semibold text-slate-500 hover:text-slate-800 transition-colors"
+                >
+                  <ArrowLeft size={14} /> Kembali ke {staff ? "Dashboard" : "Arsip Laporan"}
+                </Link>
+                {staff && (
+                  <>
+                    <span className="text-slate-300">•</span>
+                    <Link
+                      href="/cari"
+                      className="font-semibold text-emerald-800 hover:underline"
+                    >
+                      Daftar Semua Laporan &rarr;
+                    </Link>
+                  </>
+                )}
+              </div>
+              <span className="rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-semibold text-emerald-800">
+                Warta Kas Jum&apos;at • Terverifikasi DKM
+              </span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Laporan Keuangan Kas • {new Date(report.reportDate).toLocaleDateString("id-ID", { dateStyle: "full" })}
+                </div>
+                <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-on-surface">
+                  Pekan {report.weekOfMonth}, {report.month}/{report.year}
+                </h1>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2 flex-wrap shrink-0 w-full sm:w-auto">
+                <Link href={`/laporan/${report.id}/cetak`} className="flex-1 sm:flex-initial">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full sm:w-auto h-9 gap-1.5 text-xs font-bold rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-2xs transition-colors"
+                    title="Buka pratinjau cetak A4 berkop resmi DKM"
+                  >
+                    <Printer size={13} /> Cetak Laporan
+                  </Button>
+                </Link>
+                <a href={`/api/reports/${report.id}/export/excel`} download className="flex-1 sm:flex-initial">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full sm:w-auto h-9 gap-1.5 text-xs font-bold rounded-xl bg-[#0e3824] border border-[#0e3824] text-white hover:bg-[#144731] shadow-xs transition-colors"
+                    title="Unduh format spreadsheet Excel (.xlsx)"
+                  >
+                    <FileSpreadsheet size={13} /> Unduh Excel
+                  </Button>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* HERO CARD MELAYANG */}
+          <div className="rounded-3xl bg-[#0e3824] text-white p-6 sm:p-8 lg:p-9 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 flex flex-wrap items-baseline gap-6 sm:gap-10">
+              <div>
+                <span className="text-xs text-emerald-200/90 font-bold uppercase tracking-wider block">{displayHeroLabel}</span>
+                <div className="text-3xl sm:text-4xl md:text-[44px] font-bold text-white tabular-nums mt-1 leading-none font-sans">
+                  {fmtRupiah(displayHeroFigure)}
+                </div>
+              </div>
+
+              <div className="border-l border-emerald-400/20 pl-6 sm:pl-10">
+                <span className="text-xs text-emerald-200/90 font-bold uppercase tracking-wider block">Pemasukan</span>
+                <div className="text-xl sm:text-2xl font-bold text-emerald-300 tabular-nums mt-1 font-sans">
+                  + {fmtRupiah(totalMasuk)}
+                </div>
+              </div>
+
+              <div className="border-l border-emerald-400/20 pl-6 sm:pl-10">
+                <span className="text-xs text-emerald-200/90 font-bold uppercase tracking-wider block">Pengeluaran</span>
+                <div className="text-xl sm:text-2xl font-bold text-rose-300 tabular-nums mt-1 font-sans">
+                  - {fmtRupiah(totalKeluar)}
+                </div>
+              </div>
+
+              <div className="border-l border-emerald-400/20 pl-6 sm:pl-10">
+                <span className="text-xs text-emerald-200/90 font-bold uppercase tracking-wider block">Arus Kas Bersih</span>
+                <div className="text-xl sm:text-2xl font-bold text-white tabular-nums mt-1 font-sans">
+                  {netChange >= 0 ? `+ ${fmtRupiah(netChange)}` : fmtRupiah(netChange)}
+                </div>
+              </div>
+            </div>
+          </div>
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
             {/* Panel utama: daftar lampiran */}
             <div className="space-y-6">
