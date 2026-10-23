@@ -190,6 +190,7 @@ export function AppShell({
   const role = session?.user?.role;
   const userName = session?.user?.name || "Reza Dwi";
   const userFirstName = userName.split(" ")[0];
+  const userEmail = session?.user?.email;
 
   const currentActive = optimisticActive ?? active;
   const activeIndex = navItems.findIndex((item) => item.href === currentActive);
@@ -330,22 +331,36 @@ export function AppShell({
             </div>
           )}
 
-          {/* KARTU AKSI CEPAT / PORTAL PUBLIK */}
+          {/* KARTU AKSI CEPAT / PORTAL PUBLIK & LOGOUT */}
           {isStaff(session) && (
             !isCollapsed ? (
-              <Link
-                href="/?view=public"
-                className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-[#0f3b28]/80 border border-emerald-500/20 text-xs font-semibold text-white hover:bg-[#144731] hover:border-emerald-400/30 transition-all group shadow-sm"
-                title="Buka tampilan transparansi publik untuk jemaah"
-              >
-                <span className="flex items-center gap-2.5">
-                  <ExternalLink size={14} className="text-white" />
-                  <span>Lihat Portal Publik</span>
-                </span>
-                <ChevronRight size={13} className="text-white/40 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
-              </Link>
+              <div className="flex flex-col gap-1.5">
+                <Link
+                  href="/?view=public"
+                  className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-[#0f3b28]/80 border border-emerald-500/20 text-xs font-semibold text-white hover:bg-[#144731] hover:border-emerald-400/30 transition-all group shadow-sm"
+                  title="Buka tampilan transparansi publik untuk jemaah"
+                >
+                  <span className="flex items-center gap-2.5">
+                    <ExternalLink size={14} className="text-white" />
+                    <span>Lihat Portal Publik</span>
+                  </span>
+                  <ChevronRight size={13} className="text-white/40 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-red-950/20 border border-red-500/20 text-xs font-medium text-rose-200 hover:bg-red-900/40 hover:text-white hover:border-red-400/40 transition-all group cursor-pointer"
+                  title="Keluar dari akun pengurus"
+                >
+                  <span className="flex items-center gap-2.5">
+                    <LogOut size={14} className="text-rose-300 group-hover:text-white transition-colors" />
+                    <span>Keluar Akun</span>
+                  </span>
+                </button>
+              </div>
             ) : (
-              <div className="w-10 mx-auto py-1 rounded-xl bg-[#0f3b28]/80 border border-emerald-500/20 flex flex-col items-center animate-in fade-in duration-200">
+              <div className="w-10 mx-auto py-1 rounded-xl bg-[#0f3b28]/80 border border-emerald-500/20 flex flex-col items-center gap-1 animate-in fade-in duration-200">
                 <Link
                   href="/?view=public"
                   className="text-emerald-100/75 hover:text-white p-2 rounded-lg hover:bg-white/20 transition-colors group relative"
@@ -356,6 +371,18 @@ export function AppShell({
                     Portal Publik
                   </span>
                 </Link>
+
+                <button
+                  type="button"
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="text-rose-300/80 hover:text-rose-100 p-2 rounded-lg hover:bg-rose-500/20 transition-colors group relative cursor-pointer"
+                  title="Keluar Akun"
+                >
+                  <LogOut size={16} />
+                  <span className="absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-surface text-rose-600 border border-outline-variant text-xs font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
+                    Keluar Akun
+                  </span>
+                </button>
               </div>
             )
           )}
@@ -447,23 +474,77 @@ export function AppShell({
             {/* Profil Pengguna / DKM di Header (Sesuai Referensi Gambar 1 & 2) */}
             <div ref={headerProfileRef} className="relative">
               {session ? (
-                <div
-                  onClick={() => setIsProfileMenuOpen((prev) => !prev)}
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-slate-50 border border-slate-200/90 hover:bg-slate-100 hover:border-slate-300 transition-all cursor-pointer group"
-                >
-                  <div className="h-7 w-7 rounded-full bg-emerald-800 text-white flex items-center justify-center font-bold text-xs shrink-0">
-                    {userName.charAt(0)}
-                  </div>
-                  <div className="hidden md:flex flex-col text-left">
-                    <span className="text-xs font-bold text-slate-800 leading-tight">
-                      {userName}
-                    </span>
-                    <span className="text-[10px] font-semibold text-emerald-800">
-                      {role || "ADMIN"}
-                    </span>
-                  </div>
-                  <ChevronDown size={14} className="text-slate-400 group-hover:text-slate-700 transition-colors" />
-                </div>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setIsProfileMenuOpen((prev) => !prev)}
+                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-slate-50 border border-slate-200/90 hover:bg-slate-100 hover:border-slate-300 transition-all cursor-pointer group focus:outline-none"
+                    aria-label="Menu Profil & Keluar"
+                  >
+                    <div className="h-7 w-7 rounded-full bg-emerald-800 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                      {userName.charAt(0)}
+                    </div>
+                    <div className="hidden md:flex flex-col text-left">
+                      <span className="text-xs font-bold text-slate-800 leading-tight">
+                        {userName}
+                      </span>
+                      <span className="text-[10px] font-semibold text-emerald-800">
+                        {role || "ADMIN"}
+                      </span>
+                    </div>
+                    <ChevronDown size={14} className="text-slate-400 group-hover:text-slate-700 transition-colors" />
+                  </button>
+
+                  {/* Dropdown Menu Profil & Logout Interaktif */}
+                  {isProfileMenuOpen && (
+                    <div className="absolute right-0 top-[calc(100%+8px)] w-60 rounded-2xl bg-white border border-slate-200 shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                      <div className="px-3 py-2.5 border-b border-slate-100">
+                        <p className="text-xs font-bold text-slate-900 truncate">{userName}</p>
+                        {userEmail && (
+                          <p className="text-[11px] text-slate-500 truncate mt-0.5">{userEmail}</p>
+                        )}
+                        <span className="mt-1.5 inline-block text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 uppercase tracking-wider">
+                          {role || "ADMIN"}
+                        </span>
+                      </div>
+
+                      <div className="py-1">
+                        {isAdmin(session) && (
+                          <Link
+                            href="/pengguna"
+                            onClick={() => setIsProfileMenuOpen(false)}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-emerald-800 transition-colors"
+                          >
+                            <Users size={15} />
+                            <span>Kelola Pengguna</span>
+                          </Link>
+                        )}
+                        <Link
+                          href="/?view=public"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-emerald-800 transition-colors"
+                        >
+                          <ExternalLink size={15} />
+                          <span>Lihat Portal Publik</span>
+                        </Link>
+                      </div>
+
+                      <div className="pt-1 border-t border-slate-100">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsProfileMenuOpen(false);
+                            signOut({ callbackUrl: "/" });
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors text-left cursor-pointer"
+                        >
+                          <LogOut size={15} />
+                          <span>Keluar (Logout)</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
               ) : (
                 <button
                   type="button"
