@@ -130,28 +130,30 @@ export function AppShell({
   return (
     <div className="min-h-screen bg-surface text-on-surface antialiased flex flex-col">
       {/* ========================================================= */}
-      {/* DESKTOP MODERN FLOATING COLLAPSIBLE SIDEBAR               */}
+      {/* DESKTOP MODERN DOCKED COLLAPSIBLE SIDEBAR                 */}
       {/* ========================================================= */}
       <aside
         aria-label="Navigasi Utama Desktop"
-        className={`hidden lg:flex fixed left-3 top-3 bottom-3 z-30 flex-col justify-between rounded-3xl bg-surface-container/95 backdrop-blur-md text-on-surface shadow-xl shadow-emerald-950/5 border border-outline-variant/70 select-none overflow-hidden transition-all duration-300 ease-in-out ${
-          isCollapsed ? "w-[76px] p-2.5" : "w-[264px] p-3.5"
+        className={`hidden lg:flex fixed left-0 top-0 bottom-0 z-30 flex-col justify-between bg-surface-container text-on-surface border-r border-emerald-950/10 select-none overflow-hidden transition-all duration-300 ease-in-out ${
+          isCollapsed ? "w-[72px]" : "w-[260px]"
         }`}
       >
         {/* BAGIAN ATAS: Header Identitas & Menu Navigasi Utama */}
-        <div className="space-y-4">
-          {/* Top Bar: Masjid Brand Accent Dots & Collapse Button */}
+        <div className="flex flex-col">
+          {/* Top Bar: Masjid Brand Accent Dots & Collapse Button (Tinggi h-14 menyatu rata dengan header utama) */}
           <div
-            className={`flex items-center pb-2.5 border-b border-outline-variant/50 ${
-              isCollapsed ? "flex-col gap-2 justify-center" : "justify-between"
+            className={`h-14 flex items-center border-b border-emerald-950/10 ${
+              isCollapsed ? "justify-center px-2" : "justify-between px-4"
             }`}
           >
             {/* Tiga Titik Aksen Identitas Masjid (Emerald, Mint Sage, Archival Gold) */}
-            <div className="flex items-center gap-1.5 px-1" title="DKM Al-Luqman">
-              <span className="h-2.5 w-2.5 rounded-full bg-primary shadow-2xs" />
-              <span className="h-2.5 w-2.5 rounded-full bg-primary-fixed shadow-2xs" />
-              <span className="h-2.5 w-2.5 rounded-full bg-accent-gold shadow-2xs" />
-            </div>
+            {!isCollapsed ? (
+              <div className="flex items-center gap-1.5" title="DKM Al-Luqman">
+                <span className="h-2.5 w-2.5 rounded-full bg-primary" />
+                <span className="h-2.5 w-2.5 rounded-full bg-primary-fixed" />
+                <span className="h-2.5 w-2.5 rounded-full bg-accent-gold" />
+              </div>
+            ) : null}
 
             {/* Tombol Toggle Buka/Tutup Sidebar */}
             <button
@@ -166,7 +168,7 @@ export function AppShell({
           </div>
 
           {/* Logo & Identitas Masjid */}
-          <div>
+          <div className={isCollapsed ? "px-2 pt-3" : "px-3.5 pt-3"}>
             {!isCollapsed ? (
               <Link href="/" className="flex items-center gap-3 px-2 py-1.5 rounded-xl hover:bg-surface-container-high/60 transition-all group">
                 <MasjidEmblem className="h-9 w-9 group-hover:scale-105 transition-transform shrink-0" />
@@ -193,8 +195,8 @@ export function AppShell({
             )}
           </div>
 
-          {/* Menu Navigasi Utama (Fungsional, Bersih dari Kotak Pencarian Duplikat) */}
-          <nav className="space-y-1.5 pt-1">
+          {/* Menu Navigasi Utama (Fungsional, Rapi, & Bersih) */}
+          <nav className={`space-y-1.5 pt-2 ${isCollapsed ? "px-2" : "px-3.5"}`}>
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = active === item.href;
@@ -242,14 +244,14 @@ export function AppShell({
         </div>
 
         {/* BAGIAN BAWAH: Aksi Khusus Staf & Panel Profil Pengguna */}
-        <div className="space-y-3 pt-3 border-t border-outline-variant/50 relative">
+        <div className={`space-y-3 py-3 border-t border-emerald-950/10 relative ${isCollapsed ? "px-2" : "px-3.5"}`}>
           {/* KARTU SUB-ISLAND KHUSUS AKSI BERMAKNA (Hanya tampil jika ada aksi nyata) */}
           {isStaff(session) && (
             !isCollapsed ? (
-              <div className="rounded-2xl bg-surface-container-high/75 border border-outline-variant/60 p-2 shadow-2xs space-y-0.5 animate-in fade-in duration-200">
+              <div className="rounded-xl bg-surface-container-high/70 border border-emerald-950/8 p-1.5 space-y-0.5 animate-in fade-in duration-200">
                 <Link
                   href="/?view=public"
-                  className="flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold text-on-surface hover:bg-white hover:text-primary transition-colors group"
+                  className="flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-semibold text-on-surface hover:bg-white hover:text-primary transition-colors group"
                   title="Buka tampilan transparansi publik untuk jemaah"
                 >
                   <span className="flex items-center gap-2">
@@ -261,10 +263,10 @@ export function AppShell({
               </div>
             ) : (
               /* Versi Ciut (Ikon Portal Publik dengan Tooltip) */
-              <div className="w-11 mx-auto py-1.5 rounded-2xl bg-surface-container-high/80 border border-outline-variant/60 flex flex-col items-center shadow-2xs animate-in fade-in duration-200">
+              <div className="w-10 mx-auto py-1 rounded-xl bg-surface-container-high/70 border border-emerald-950/8 flex flex-col items-center animate-in fade-in duration-200">
                 <Link
                   href="/?view=public"
-                  className="text-on-surface-variant hover:text-primary p-2 rounded-xl hover:bg-white transition-colors group relative"
+                  className="text-on-surface-variant hover:text-primary p-2 rounded-lg hover:bg-white transition-colors group relative"
                   title="Lihat Beranda Publik"
                 >
                   <ExternalLink size={16} />
@@ -342,7 +344,7 @@ export function AppShell({
               !isCollapsed ? (
                 <div
                   onClick={() => setIsProfileMenuOpen((prev) => !prev)}
-                  className="flex items-center justify-between p-2 rounded-2xl bg-surface-container-high/50 border border-outline-variant/50 text-on-surface hover:bg-surface-container-high transition-all cursor-pointer group"
+                  className="flex items-center justify-between p-2 rounded-xl bg-surface-container-high/50 border border-emerald-950/8 text-on-surface hover:bg-surface-container-high transition-all cursor-pointer group"
                   title="Klik untuk membuka menu akun"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
@@ -407,7 +409,7 @@ export function AppShell({
                 <button
                   type="button"
                   onClick={() => signIn("google", { callbackUrl: "/auth/post-login" })}
-                  className="w-full flex items-center justify-center gap-2 p-2.5 rounded-2xl bg-primary text-white hover:bg-primary-container text-xs font-bold transition-all shadow-xs"
+                  className="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl bg-primary text-white hover:bg-primary-container text-xs font-bold transition-all shadow-xs"
                 >
                   <LogIn size={15} className="text-primary-fixed" />
                   <span>Akses Pengurus</span>
@@ -431,15 +433,15 @@ export function AppShell({
       </aside>
 
       {/* ========================================================= */}
-      {/* AREA KONTEN UTAMA (Dengan Margin Dinamis Smooth)           */}
+      {/* AREA KONTEN UTAMA (Dengan Margin Dinamis Rata Sempurna)    */}
       {/* ========================================================= */}
       <div
         className={`flex-1 min-w-0 flex flex-col min-h-screen transition-all duration-300 ease-in-out ${
-          isCollapsed ? "lg:pl-[96px]" : "lg:pl-[284px]"
+          isCollapsed ? "lg:pl-[72px]" : "lg:pl-[260px]"
         }`}
       >
-        {/* Structural Header */}
-        <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-outline-variant bg-surface-container/95 backdrop-blur-sm px-4 lg:px-8">
+        {/* Structural Header (Tinggi h-14 dan garis border-b bersambung rata dengan sidebar) */}
+        <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-emerald-950/10 bg-surface-container/95 backdrop-blur-sm px-4 lg:px-8">
           {/* Mobile Brand / Desktop Context Breadcrumb */}
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="lg:hidden flex items-center gap-2">
