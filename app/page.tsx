@@ -391,15 +391,15 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
             <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-end">
-              <div className="lg:col-span-7 space-y-3">
+              <div className="lg:col-span-7 space-y-2.5">
                 <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-emerald-200/90 font-bold">
                   <ShieldCheck className="h-4 w-4 text-emerald-300" />
                   <span>Total Saldo Kas Terkonsolidasi (Fisik &amp; Bank)</span>
                 </div>
-                <div className="text-4xl sm:text-5xl lg:text-6xl font-bold font-sans tracking-tight text-white tabular-nums">
+                <div className="text-2xl sm:text-3xl lg:text-[36px] font-extrabold font-sans tracking-tight text-white tabular-nums leading-tight">
                   {formatRupiah(totalBalance)}
                 </div>
-                <p className="text-xs sm:text-sm text-emerald-100/80 max-w-xl leading-relaxed pt-1">
+                <p className="text-xs sm:text-sm text-emerald-100/80 max-w-xl leading-relaxed pt-0.5">
                   Dana titipan jamaah yang dikelola secara amanah untuk kegiatan ibadah, pemeliharaan sarana, dan program kepedulian sosial umat.
                 </p>
               </div>
@@ -407,25 +407,25 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
               {/* Sub-Stat: Kas Fisik vs Bank */}
               <div className="lg:col-span-5 grid grid-cols-2 gap-3 pt-2 lg:pt-0">
                 <div className="rounded-2xl border border-emerald-400/20 bg-[#144731]/80 backdrop-blur-sm p-4 space-y-1">
-                  <span className="text-[11px] text-emerald-200 font-bold uppercase tracking-wider block">
+                  <span className="text-[11px] text-emerald-200 font-bold uppercase tracking-wider block truncate">
                     Kas Fisik (Brankas)
                   </span>
-                  <span className="text-lg sm:text-xl font-bold text-white tabular-nums block">
+                  <span className="text-base sm:text-lg font-bold text-white tabular-nums block">
                     {formatRupiah(cashBalance)}
                   </span>
-                  <span className="text-[11px] text-emerald-300/70 block">
+                  <span className="text-[11px] text-emerald-300/70 block truncate">
                     Tromol Jumat &amp; Kas Harian
                   </span>
                 </div>
 
                 <div className="rounded-2xl border border-emerald-400/20 bg-[#144731]/80 backdrop-blur-sm p-4 space-y-1">
-                  <span className="text-[11px] text-emerald-200 font-bold uppercase tracking-wider block">
+                  <span className="text-[11px] text-emerald-200 font-bold uppercase tracking-wider block truncate">
                     Kas Bank &amp; QRIS
                   </span>
-                  <span className="text-lg sm:text-xl font-bold text-white tabular-nums block">
+                  <span className="text-base sm:text-lg font-bold text-white tabular-nums block">
                     {formatRupiah(bankBalance)}
                   </span>
-                  <span className="text-[11px] text-emerald-300/70 block">
+                  <span className="text-[11px] text-emerald-300/70 block truncate">
                     Rekening DKM BSI &amp; Muamalat
                   </span>
                 </div>
@@ -438,21 +438,21 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
 
           {/* SECTION 1: Alokasi Belanja Umat Bulan Berjalan (Human-Centric & Ramah Jemaah) */}
           <section id="alokasi-belanja" className="space-y-5 sm:space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-outline-variant pb-3.5">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-200 pb-3.5">
               <div>
                 <div className="flex items-center gap-2">
-                  <Receipt className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl sm:text-2xl font-bold font-sans tracking-tight text-on-surface">
+                  <Receipt className="h-5 w-5 text-emerald-800" />
+                  <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">
                     Distribusi Penyaluran Kas Umat
                   </h2>
                 </div>
-                <p className="text-xs sm:text-sm text-on-surface-variant mt-0.5">
+                <p className="text-xs sm:text-sm text-slate-500 mt-1">
                   Transparansi penggunaan dana kas pada periode pembukuan {activeMonthName} {activeYear} untuk kemakmuran ibadah dan kemaslahatan jemaah.
                 </p>
               </div>
               <Link
                 href="/pengeluaran"
-                className="text-xs text-primary font-semibold hover:underline flex items-center gap-1 self-start sm:self-auto shrink-0"
+                className="text-xs text-emerald-800 hover:text-emerald-950 font-semibold hover:underline flex items-center gap-1 self-start sm:self-auto shrink-0"
               >
                 <span>Buka Rincian Seluruh Nota Belanja</span>
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -460,11 +460,11 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
             </div>
 
             {expenseBreakdown.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-outline-variant bg-surface-container/40 p-8 text-center">
-                <p className="text-sm font-medium text-on-surface-variant">
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center shadow-2xs">
+                <p className="text-sm font-semibold text-slate-700">
                   Belum ada transaksi pengeluaran tercatat pada periode {activeMonthName} {activeYear}.
                 </p>
-                <p className="text-xs text-on-surface-variant/70 mt-1">
+                <p className="text-xs text-slate-500 mt-1">
                   Buka halaman pengeluaran untuk menelusuri data pembukuan bulan-bulan sebelumnya.
                 </p>
               </div>
@@ -473,28 +473,28 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
                 {expenseBreakdown.map((item) => (
                   <div
                     key={item.category}
-                    className="rounded-2xl border border-outline-variant bg-surface-container/70 hover:bg-surface-container p-5 flex flex-col justify-between space-y-4 transition-all duration-150 hover:shadow-xs"
+                    className="rounded-2xl border border-slate-200/90 bg-white hover:bg-slate-50/50 p-5 flex flex-col justify-between space-y-4 transition-all duration-150 shadow-2xs"
                   >
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md border ${item.bg}`}>
                           {item.badgeLabel}
                         </span>
-                        <span className="text-xs font-bold text-on-surface-variant tabular-nums">
+                        <span className="text-xs font-bold text-slate-500 tabular-nums">
                           {item.percentage.toFixed(1)}%
                         </span>
                       </div>
-                      <h3 className="text-base font-bold text-on-surface">
+                      <h3 className="text-base font-bold text-slate-900">
                         {item.label}
                       </h3>
-                      <p className="text-xs text-on-surface-variant leading-relaxed line-clamp-2">
+                      <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
                         {item.description}
                       </p>
                     </div>
 
-                    <div className="space-y-2 pt-3 border-t border-outline-variant/60">
+                    <div className="space-y-2 pt-3 border-t border-slate-100">
                       {/* Bar visual proporsi alokasi */}
-                      <div className="h-1.5 w-full rounded-full bg-surface-container-highest overflow-hidden">
+                      <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
                         <div
                           className={`h-full rounded-full ${item.bar}`}
                           style={{ width: `${Math.min(Math.max(item.percentage, 4), 100)}%` }}
@@ -503,21 +503,21 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
 
                       <div className="flex items-end justify-between gap-2 pt-1">
                         <div>
-                          <span className="text-[10px] text-on-surface-variant block uppercase tracking-wider font-semibold">
+                          <span className="text-[10px] text-slate-500 block uppercase tracking-wider font-semibold">
                             Total Penyaluran:
                           </span>
-                          <span className="text-lg font-bold text-rose-700 dark:text-rose-400 tabular-nums">
+                          <span className="text-lg font-bold text-rose-700 tabular-nums">
                             {formatRupiah(item.totalAmount)}
                           </span>
                         </div>
-                        <span className="text-[11px] text-on-surface-variant font-medium pb-0.5">
+                        <span className="text-[11px] text-slate-500 font-medium pb-0.5">
                           {item.transactionCount} transaksi
                         </span>
                       </div>
 
                       <Link
                         href={`/pengeluaran?year=${activeYear}&month=${activeMonth}`}
-                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline pt-1"
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-800 hover:underline pt-1"
                       >
                         <span>Lihat Rincian Nota</span>
                         <ChevronRight size={12} />
@@ -531,21 +531,21 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
 
           {/* SECTION 2: Widget Interaktif Cek Riwayat Infaq */}
           <section id="cek-infaq" className="space-y-5 sm:space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-outline-variant pb-3.5">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-200 pb-3.5">
               <div>
                 <div className="flex items-center gap-2">
-                  <HeartHandshake className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl sm:text-2xl font-bold font-sans tracking-tight text-on-surface">
+                  <HeartHandshake className="h-5 w-5 text-emerald-800" />
+                  <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">
                     Cek Riwayat Infaq Anda
                   </h2>
                 </div>
-                <p className="text-xs sm:text-sm text-on-surface-variant mt-0.5">
+                <p className="text-xs sm:text-sm text-slate-500 mt-1">
                   Pencarian mandiri untuk memastikan dana infaq yang Anda salurkan telah sah tercatat dalam pembukuan DKM.
                 </p>
               </div>
               <Link
                 href="/donatur"
-                className="text-xs text-primary font-semibold hover:underline flex items-center gap-1 self-start sm:self-auto shrink-0"
+                className="text-xs text-emerald-800 hover:text-emerald-950 font-semibold hover:underline flex items-center gap-1 self-start sm:self-auto shrink-0"
               >
                 <span>Lihat Seluruh Daftar Donatur</span>
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -557,15 +557,15 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
 
           {/* SECTION 3: Kanal Rekening Resmi & QRIS Masjid */}
           <section id="rekening-resmi" className="space-y-5 sm:space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-outline-variant pb-3.5">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-200 pb-3.5">
               <div>
                 <div className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl sm:text-2xl font-bold font-sans tracking-tight text-on-surface">
+                  <Building2 className="h-5 w-5 text-emerald-800" />
+                  <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">
                     Salurkan Infaq &amp; Sedekah Resmi
                   </h2>
                 </div>
-                <p className="text-xs sm:text-sm text-on-surface-variant mt-0.5">
+                <p className="text-xs sm:text-sm text-slate-500 mt-1">
                   Salurkan amanah infaq Anda melalui rekening perbankan syariah resmi atas nama DKM Masjid Al-Luqman.
                 </p>
               </div>
@@ -576,18 +576,18 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
 
           {/* SECTION 4: Arsip Buku Kas Fisik & Laporan Berkala */}
           <section id="arsip-laporan" className="space-y-5 sm:space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-outline-variant pb-3.5">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-200 pb-3.5">
               <div>
                 <div className="flex items-center gap-2.5 mb-1">
-                  <FileText className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl sm:text-2xl font-bold font-sans tracking-tight text-on-surface">
+                  <FileText className="h-5 w-5 text-emerald-800" />
+                  <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">
                     Arsip Buku Kas Fisik &amp; Laporan Berkala
                   </h2>
-                  <Badge variant="secondary" size="sm">
+                  <Badge variant="secondary" size="sm" className="bg-slate-100 text-slate-700 border-slate-200">
                     {reports.length} Laporan
                   </Badge>
                 </div>
-                <p className="text-xs sm:text-sm text-on-surface-variant">
+                <p className="text-xs sm:text-sm text-slate-500 mt-1">
                   Dokumentasi otentik pindaian buku kas mingguan yang diunggah dan diverifikasi oleh DKM.
                 </p>
               </div>
@@ -598,10 +598,10 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
                   <Link
                     key={year}
                     href={filterYear === year ? "/" : `/?year=${year}#arsip-laporan`}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-colors shadow-2xs ${
                       filterYear === year
-                        ? "bg-primary text-on-primary border-primary"
-                        : "bg-surface-container hover:bg-surface-container-high text-on-surface-variant border-outline-variant"
+                        ? "bg-[#0e3824] text-white border-[#0e3824] shadow-xs"
+                        : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200"
                     }`}
                   >
                     Tahun {year}
@@ -612,10 +612,10 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
 
             {/* Grid Kartu Laporan */}
             {filteredReports.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-outline-variant bg-surface-container/30 p-12 text-center">
-                <FolderOpen className="h-10 w-10 text-on-surface-variant/40 mx-auto mb-3" />
-                <p className="text-base font-semibold text-on-surface">Belum ada dokumen laporan kas</p>
-                <p className="text-xs text-on-surface-variant mt-1">
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center shadow-2xs">
+                <FolderOpen className="h-10 w-10 text-slate-400 mx-auto mb-3" />
+                <p className="text-base font-bold text-slate-900">Belum ada dokumen laporan kas</p>
+                <p className="text-xs text-slate-500 mt-1">
                   Dokumen pindaian buku kas akan tampil setelah pengurus mengunggah arsip mingguan.
                 </p>
               </div>
@@ -634,25 +634,25 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
                     <Link
                       key={report.id}
                       href={`/laporan/${report.id}`}
-                      className="group block rounded-2xl border border-outline-variant bg-surface-container/60 hover:bg-surface-container p-5 transition-all duration-200 hover:shadow-sm hover:border-primary/40 space-y-4"
+                      className="group block rounded-2xl border border-slate-200/90 bg-white hover:bg-slate-50/70 p-5 transition-all duration-150 shadow-2xs hover:border-emerald-600/40 space-y-4"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="space-y-1">
-                          <span className="text-[11px] font-bold text-primary block uppercase tracking-wider">
+                          <span className="text-[11px] font-bold text-emerald-800 block uppercase tracking-wider">
                             Pekan {report.weekOfMonth ?? 1} &bull; {MONTH_NAMES[report.month]} {report.year}
                           </span>
-                          <h4 className="text-base font-bold text-on-surface group-hover:text-primary transition-colors">
+                          <h4 className="text-base font-bold text-slate-900 group-hover:text-emerald-800 transition-colors">
                             {formattedDate}
                           </h4>
                         </div>
-                        <span className="p-2 rounded-xl bg-surface-container-high group-hover:bg-primary/10 text-on-surface-variant group-hover:text-primary transition-colors">
+                        <span className="p-2 rounded-xl bg-slate-100 group-hover:bg-emerald-50 text-slate-500 group-hover:text-emerald-800 transition-colors">
                           <ChevronRight size={16} />
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-3 pt-3 border-t border-outline-variant/60 text-xs text-on-surface-variant">
+                      <div className="flex items-center gap-3 pt-3 border-t border-slate-100 text-xs text-slate-500">
                         <span className="flex items-center gap-1.5 font-medium">
-                          <CheckCircle2 size={13} className="text-emerald-600 dark:text-emerald-400" />
+                          <CheckCircle2 size={13} className="text-emerald-600" />
                           <span>{verifiedCount} mutasi kas</span>
                         </span>
                         <span>&bull;</span>

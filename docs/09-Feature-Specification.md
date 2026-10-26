@@ -866,8 +866,69 @@
 - [x] Label navigasi `/` seragam bernama "Beranda" di seluruh peran pengguna.
 - [x] Seluruh unit test navigasi di `scripts/test-navigation-and-redirect.ts` lulus 16/16 test (100%) dan TypeScript lolos 0 error.
 
+---
 
+### F-036 — Modern Collapsible Emerald Sidebar, Mobile Fluid Navigation & Profil Popover Interaktif (Issue #081 / F-036)
 
+**Objective:** Meningkatkan kualitas estetika, ergonomi navigasi, dan efisiensi ruang kerja aplikasi dengan menghadirkan bilah navigasi samping (sidebar) berdesain modern *Deep Mosque Emerald* (`#0e3824`) yang dapat diciutkan (*collapsible floating sidebar*), watermark ilustrasi siluet masjid autentik, navigasi mobile *fluid wave*, popover interaktif profil pengguna dengan opsi keluar akun terpadu, serta tombol logout minimalis di bagian bawah sidebar.
+**User:** Seluruh pengguna (Publik / Jamaah, Bendahara, dan Administrator DKM).
+**Process:**
+- **Collapsible Floating Sidebar (`components/app-shell.tsx`)**:
+  - Sidebar desktop memiliki dua mode: Melebar (260px) dan Menciut (72px / icon-only) yang dapat di-toggle melalui tombol panah `PanelLeftClose` / `PanelLeftOpen`.
+  - State ciut tersimpan di `localStorage` (`masjid_sidebar_collapsed`) sehingga status preferensi pengguna bertahan lintas sesi navigasi halaman.
+  - Saat mode ciut aktif, setiap menu navigasi menampilkan tooltip melayang (*floating tooltip badge*) saat di-hover untuk menjaga kejelasan fungsi.
+  - Ilustrasi masjid berkarakter otentik (`/images/sidebar-mosque-clean.png`) terintegrasi anggun sebagai latar belakang watermark di bagian bawah sidebar tanpa mengganggu keterbacaan teks menu.
+- **Navigasi Mobile Fluid Wave**:
+  - Bilah navigasi bawah ponsel dirancang melengkung halus dengan latar belakang emerald serasi dan indikator menu aktif berupa pill kontras putih dengan ikon hijau gelap (`bg-white text-emerald-950`).
+- **Popover Profil Pengguna Interaktif (`components/app-shell.tsx`)**:
+  - Mengklik avatar profil di topbar membuka popover interaktif yang menyajikan nama lengkap, email, badge peran DKM (Administrator / Bendahara / Jemaah), dan tombol **Keluar Akun** (`signOut`).
+  - Penambahan tombol **Keluar Akun** khusus di bagian bawah sidebar untuk memudahkan staf log out dengan satu klik.
+**Acceptance Criteria:**
+- [x] Sidebar desktop dapat diciutkan (collapsed) dan dilebarkan (expanded) secara mulus dengan transisi animasi halus.
+- [x] Status collapse tersimpan di browser via `localStorage`.
+- [x] Tooltip label menu muncul saat menu di-hover dalam kondisi sidebar ciut.
+- [x] Ilustrasi siluet masjid tampil harmonis di latar bawah sidebar.
+- [x] Avatar profil di topbar membuka dropdown popover interaktif dengan informasi akun dan tombol keluar.
+- [x] Tombol keluar akun tersedia di kaki sidebar dan berfungsi dengan benar via `next-auth/react`.
 
+---
 
+### F-037 — Redesain Pencarian Arsip: Grid 4-Kolom Proporsional, Header Ringkasan Keuangan Bulanan, dan Pengurutan Kronologis (Issue #082 / F-037)
 
+**Objective:** Memperkaya pengalaman eksplorasi arsip laporan mingguan di halaman Pencarian Arsip (`/cari`) dengan menyajikan pengelompokan laporan per bulan kalender, ringkasan agregasi keuangan bulanan (Pemasukan, Pengeluaran, dan Arus Kas Bersih), layout kartu laporan 4-kolom desktop yang proporsional, serta pengurutan pekan secara kronologis (Pekan 1 menuju Pekan akhir).
+**User:** Seluruh pengguna (Publik / Jamaah untuk audit arsip, Bendahara dan Admin untuk verifikasi kelengkapan berkas kas).
+**Process:**
+- **Header Ringkasan Finansial Bulanan (`app/cari/page.tsx`)**:
+  - Setiap kelompok bulan memiliki kartu header berdesain emerald lembut yang merangkum:
+    - Total Pemasukan Kas Bulan Berjalan (hijau).
+    - Total Pengeluaran Kas Bulan Berjalan (merah/rose).
+    - Arus Kas Bersih (*Net Cash Flow*) dengan indikator surplus/defisit.
+- **Kartu Laporan Informatif & Kompak**:
+  - Menampilkan nomor pekan, rentang tanggal Jumat, jumlah mutasi kas terverifikasi, serta breakdown mini pemasukan vs pengeluaran langsung pada kartu laporan.
+- **Tata Letak Grid 4-Kolom Desktop**:
+  - Menggantikan layout kartu lebar yang memakan ruang vertikal berlebih dengan grid 4-kolom (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4`) yang serasi dan proporsional.
+- **Pengurutan Kronologis Pekan**:
+  - Laporan dalam satu bulan diurutkan secara maju (Pekan 1, Pekan 2, dst.) sehingga runtutan arus kas bulanan terbaca logis dari awal bulan hingga akhir bulan.
+**Acceptance Criteria:**
+- [x] Laporan kas pada `/cari` dikelompokkan secara terstruktur per bulan kalender.
+- [x] Header grup bulan menampilkan total pemasukan, pengeluaran, dan net cash flow bulanan.
+- [x] Kartu laporan tersusun dalam grid proporsional 4-kolom pada layar desktop.
+- [x] Pekan terurut secara kronologis dari pekan pertama hingga pekan penutupan.
+- [x] Filter pencarian kata kunci dan filter tahun/bulan tetap bekerja reaktif.
+
+---
+
+### F-038 — Alur Kerja Unggah Cepat: Redirect Langsung ke Detail Laporan & Seksi Laporan Tertunda (Issue #083 / F-038)
+
+**Objective:** Mempercepat alur kerja digitalisasi kas bendahara dengan mengarahkan pengguna langsung ke halaman detail laporan yang baru dibuat pasca-unggah berkas untuk segera memicu ekstraksi AI dan peninjauan, serta menghadirkan seksi daftar laporan tertunda (*pending queue*) di dashboard staf untuk memantau laporan yang belum diekstrak atau belum diverifikasi.
+**User:** Pengurus DKM (Bendahara dan Administrator).
+**Process:**
+- **Smart Redirect Pasca-Unggah (`app/unggah/page.tsx`)**:
+  - Setelah berkas berhasil diunggah dan dibuat di database, sistem langsung melakukan navigasi ke `/laporan/${reportId}` (menggantikan redirect sebelumnya yang kembali ke dashboard).
+  - Bendahara langsung disajikan tombol ekstraksi AI Vision-LLM tanpa langkah tambahan.
+- **Seksi Laporan Tertunda di Dashboard (`components/dashboard-client.tsx`)**:
+  - Menampilkan seksi antrean laporan kas yang memerlukan perhatian (status `not_extracted`, `failed`, atau memiliki transaksi draf yang belum diverifikasi).
+  - Dilengkapi badge status dan tombol pintas satu klik untuk langsung membuka laporan terkait.
+**Acceptance Criteria:**
+- [x] Mengunggah laporan kas secara otomatis mengalihkan pengguna ke halaman detail laporan terkait.
+- [x] Dashboard staf menampilkan seksi laporan tertunda jika ada berkas yang belum tuntas diproses.

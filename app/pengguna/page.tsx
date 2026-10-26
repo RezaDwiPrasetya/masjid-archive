@@ -217,14 +217,14 @@ export default function PenggunaPage() {
       <AppShell active="/pengguna">
         <PageShell>
           <div className="flex flex-col items-center justify-center py-16">
-            <div className="w-full max-w-md rounded-2xl border border-outline-variant bg-surface-container p-8 text-center shadow-xs">
-              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+            <div className="w-full max-w-md rounded-2xl border border-slate-200/90 bg-white p-8 text-center shadow-2xs">
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 text-rose-700 border border-rose-200 shadow-2xs">
                 <ShieldAlert className="h-8 w-8" />
               </div>
-              <h1 className="mb-2 text-2xl font-bold tracking-tight text-on-surface font-sans">
+              <h1 className="mb-2 text-2xl font-bold tracking-tight text-slate-900 font-sans">
                 Akses Ditolak
               </h1>
-              <p className="text-sm text-on-surface-variant">
+              <p className="text-sm text-slate-500">
                 Halaman ini khusus untuk Administrator sistem.
               </p>
             </div>

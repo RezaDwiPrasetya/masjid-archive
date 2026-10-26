@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Search, CheckCircle2, FileText, X, HeartHandshake, ShieldCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
 export interface VerifiedDonation {
   id: string;
@@ -49,19 +48,19 @@ export function QuickInfaqSearch({ initialDonations }: QuickInfaqSearchProps) {
     <div className="space-y-4">
       {/* Input Pencarian Cepat */}
       <div className="relative">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-on-surface-variant pointer-events-none" />
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
         <Input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Ketik nama Anda atau kata kunci donasi (misal: Fulan, Pembangunan, Subuh)..."
-          className="pl-10 pr-9 h-11 text-sm bg-surface-container border-outline-variant focus:border-primary focus:ring-primary/20 rounded-xl"
+          className="pl-10 pr-9 h-11 text-sm bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 rounded-xl shadow-2xs"
         />
         {query && (
           <button
             type="button"
             onClick={() => setQuery("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface p-1"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1"
             title="Hapus pencarian"
           >
             <X className="h-4 w-4" />
@@ -70,17 +69,17 @@ export function QuickInfaqSearch({ initialDonations }: QuickInfaqSearchProps) {
       </div>
 
       {/* Indikator Status & Keterangan */}
-      <div className="flex items-center justify-between text-xs text-on-surface-variant px-1">
+      <div className="flex items-center justify-between text-xs text-slate-500 px-1">
         <span>
           {query ? (
             <>
-              Ditemukan <strong className="text-on-surface">{filtered.length}</strong> riwayat infaq
+              Ditemukan <strong className="text-slate-900">{filtered.length}</strong> riwayat infaq
             </>
           ) : (
             <>Menampilkan 6 infaq terverifikasi terbaru</>
           )}
         </span>
-        <div className="flex items-center gap-1 text-primary font-medium">
+        <div className="flex items-center gap-1 text-emerald-800 font-medium">
           <ShieldCheck className="h-3.5 w-3.5" />
           <span>Terverifikasi DKM</span>
         </div>
@@ -88,25 +87,25 @@ export function QuickInfaqSearch({ initialDonations }: QuickInfaqSearchProps) {
 
       {/* Daftar Hasil (List Bergaya Buku Kas, Bukan Kartu Bertumpuk) */}
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-outline-variant bg-surface-container/50 p-8 text-center space-y-2">
-          <HeartHandshake className="h-8 w-8 text-on-surface-variant/60 mx-auto" />
-          <p className="text-sm font-semibold text-on-surface">
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center space-y-2 shadow-2xs">
+          <HeartHandshake className="h-10 w-10 text-slate-400 mx-auto mb-1" />
+          <p className="text-base font-bold text-slate-900">
             Tidak ditemukan riwayat infaq dengan kata kunci &ldquo;{query}&rdquo;
           </p>
-          <p className="text-xs text-on-surface-variant max-w-md mx-auto">
+          <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto">
             Catatan: Sebagian infaq disalurkan secara anonim sebagai <em>Hamba Allah</em>. Jika donasi Anda belum muncul, silakan hubungi bendahara DKM untuk konfirmasi pencatatan.
           </p>
         </div>
       ) : (
-        <div className="rounded-xl border border-outline-variant bg-surface-container overflow-hidden divide-y divide-outline-variant/60">
+        <div className="rounded-2xl border border-slate-200/90 bg-white overflow-hidden divide-y divide-slate-100 shadow-2xs">
           {filtered.map((item) => (
             <div
               key={item.id}
-              className="p-3.5 sm:px-4 sm:py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 hover:bg-surface-container-high/60 transition-colors"
+              className="p-3.5 sm:px-4 sm:py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 hover:bg-slate-50/70 transition-colors"
             >
               <div className="min-w-0 space-y-0.5">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-bold text-on-surface">
+                  <span className="text-sm font-bold text-slate-900">
                     {item.donorName}
                   </span>
                   <Badge variant="success" size="sm">
@@ -114,12 +113,12 @@ export function QuickInfaqSearch({ initialDonations }: QuickInfaqSearchProps) {
                     Sah Masuk Kas
                   </Badge>
                   {item.category && (
-                    <span className="text-[11px] px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface-variant font-medium border border-outline-variant/40">
+                    <span className="text-[11px] px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 font-medium border border-slate-200">
                       {item.category}
                     </span>
                   )}
                 </div>
-                <div className="text-xs text-on-surface-variant flex items-center gap-2 flex-wrap">
+                <div className="text-xs text-slate-500 flex items-center gap-2 flex-wrap">
                   <span>{item.date}</span>
                   {item.description && (
                     <>
@@ -131,12 +130,12 @@ export function QuickInfaqSearch({ initialDonations }: QuickInfaqSearchProps) {
               </div>
 
               <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
-                <span className="text-sm sm:text-base font-bold text-primary font-sans tabular-nums">
+                <span className="text-sm sm:text-base font-bold text-emerald-800 font-sans tabular-nums">
                   {formatRupiah(item.amount)}
                 </span>
                 <Link
                   href={`/laporan/${item.reportId}`}
-                  className="text-xs text-on-surface-variant hover:text-primary flex items-center gap-1 border border-outline-variant/60 rounded-lg px-2 py-1 bg-surface hover:bg-surface-container-high transition-colors"
+                  className="text-xs text-slate-600 hover:text-emerald-800 flex items-center gap-1 border border-slate-200 rounded-xl px-2.5 py-1 bg-white hover:bg-slate-50 transition-colors shadow-2xs"
                   title="Lihat dokumen buku kas fisik laporan ini"
                 >
                   <FileText className="h-3.5 w-3.5" />

@@ -299,7 +299,7 @@ export function TreasuryClient({
                 <span>Total Kas Terkonsolidasi (Fisik & Bank)</span>
               </div>
 
-              <div className="text-4xl sm:text-5xl lg:text-[54px] font-bold tracking-tight text-white tabular-nums leading-none font-sans">
+              <div className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold tracking-tight text-white tabular-nums leading-tight font-sans">
                 {formatRupiah(summary.totalBalance)}
               </div>
 
@@ -311,47 +311,47 @@ export function TreasuryClient({
             {/* Sisi Kanan: Kartu Sub-Kanal (Tunai & Digital) */}
             <div className="lg:col-span-5 space-y-3">
               {/* Sub-Card 1: Kas Fisik (Tunai / Brankas) */}
-              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex items-center justify-between">
+              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center text-white shrink-0">
-                    <Banknote size={20} className="text-emerald-300" />
+                  <div className="h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center text-white shrink-0">
+                    <Banknote size={18} className="text-emerald-300" />
                   </div>
                   <div className="min-w-0">
                     <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider truncate">
                       Kas Fisik (Tunai / Brankas)
                     </div>
-                    <div className="text-lg sm:text-xl font-bold text-white tabular-nums">
+                    <div className="text-base sm:text-lg lg:text-xl font-bold text-white tabular-nums">
                       {formatRupiah(summary.cash.balance)}
                     </div>
-                    <div className="text-[11px] text-emerald-300/70 truncate">
+                    <div className="text-[11px] text-emerald-300/80 truncate">
                       Uang tunai operasional harian DKM
                     </div>
                   </div>
                 </div>
-                <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-xs font-bold self-start ml-2 shrink-0">
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-xs font-bold self-start ml-2 shrink-0">
                   {cashRatio}%
                 </span>
               </div>
 
               {/* Sub-Card 2: Kas Bank / Digital (QRIS) */}
-              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex items-center justify-between">
+              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center text-white shrink-0">
-                    <Landmark size={20} className="text-emerald-300" />
+                  <div className="h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center text-white shrink-0">
+                    <Landmark size={18} className="text-emerald-300" />
                   </div>
                   <div className="min-w-0">
                     <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider truncate">
                       Kas Bank / Digital (QRIS)
                     </div>
-                    <div className="text-lg sm:text-xl font-bold text-white tabular-nums">
+                    <div className="text-base sm:text-lg lg:text-xl font-bold text-white tabular-nums">
                       {formatRupiah(summary.bank.balance)}
                     </div>
-                    <div className="text-[11px] text-emerald-300/70 truncate">
-                      Saldo di rekening BSI, Muamalat & QRIS
+                    <div className="text-[11px] text-emerald-300/80 truncate">
+                      Saldo di rekening BSI, Muamalat &amp; QRIS
                     </div>
                   </div>
                 </div>
-                <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-xs font-bold self-start ml-2 shrink-0">
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-xs font-bold self-start ml-2 shrink-0">
                   {bankRatio}%
                 </span>
               </div>

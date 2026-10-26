@@ -125,12 +125,43 @@
 - [x] Penyelarasan label navigasi "Beranda" konsisten di seluruh peran pengguna
 - [x] Pembersihan data statis artifisial 3 pilar dan rekening dummy
 
+### Milestone 14 — Modern Emerald UI, Collapsible Sidebar, Intelligent Search Grid & Production Release (V14, Issue #081, #082, #083 / F-036, F-037, F-038)
+- [x] Floating Collapsible Sidebar (`components/app-shell.tsx`) dengan mode Compact (72px) & Expanded (260px) beserta persistensi `localStorage`
+- [x] Integrasi autentik ilustrasi siluet masjid (`/images/sidebar-mosque-clean.png`) di latar bawah sidebar
+- [x] Mobile curved fluid wave navigation dengan indikator menu aktif white pill kontras tinggi
+- [x] Popover interaktif profil pengguna dengan detail akun, badge peran DKM, dan tombol keluar akun
+- [x] Tombol keluar akun minimalis di bagian bawah sidebar desktop
+- [x] Redesain Pencarian Arsip (`app/cari/page.tsx`): Header agregasi finansial bulanan (Pemasukan, Pengeluaran, Net Cash Flow), kartu laporan kompak, tata letak grid 4-kolom desktop proporsional, dan pengurutan kronologis
+- [x] Optimasi Alur Kerja Unggah (`app/unggah/page.tsx`): Auto-redirect langsung ke detail laporan untuk ekstraksi AI instan
+- [x] Antrean Laporan Tertunda (*Pending Reports Queue*) di dashboard staf (`components/dashboard-client.tsx`)
+- [x] Modernisasi kartu KPI peran dan tabel Manajemen Pengguna (`app/pengguna/page.tsx`)
+- [x] Harmonisasi skema warna Deep Mosque Emerald (`#0e3824`) dan penataan estetika bersih di seluruh antarmuka
+
 ## Version
 
-Current: `0.13.0` (Fase V13: Portal Transparansi Publik & Konsolidasi Beranda — Issue #080 / F-035)
+Current: `0.14.0` (Fase V14: Modern Collapsible Sidebar, Redesain Pencarian 4-Kolom & Finalisasi Produksi TA)
 Next: `1.0.0`
 
 ## Changelog
+
+### 0.14.0 (2026-10-26) — Fase V14: Modern Collapsible Sidebar, Redesain Pencarian 4-Kolom & Finalisasi Produksi TA (F-036, F-037, F-038)
+- **Modern Collapsible Floating Emerald Sidebar (`components/app-shell.tsx`)**:
+  - Sidebar desktop kini mendukung dua mode: Melebar (260px) dan Menciut (72px) dengan animasi transisi mulus dan penyimpanan preferensi di `localStorage`.
+  - Floating tooltip label saat mode ciut di-hover untuk menjaga kejelasan fungsi.
+  - Watermark ilustrasi siluet masjid autentik di latar bawah sidebar desktop.
+  - Bilah navigasi mobile curved fluid wave dengan active pill putih kontras.
+  - Dropdown popover interaktif profil pengguna pada avatar topbar + tombol keluar akun minimalis di kaki sidebar.
+- **Redesain Halaman Pencarian Arsip (`app/cari/page.tsx`)**:
+  - Pengelompokan arsip laporan kas per bulan kalender lengkap dengan header ringkasan finansial (Total Pemasukan, Total Pengeluaran, dan Arus Kas Bersih bulanan).
+  - Kartu laporan kompak dengan grid proporsional 4-kolom pada layar desktop.
+  - Pengurutan laporan secara kronologis dari pekan pertama hingga pekan penutupan.
+- **Penyempurnaan Alur Kerja Unggah Berkas & Dashboard Staf**:
+  - Pengalihan langsung pasca-unggah berkas ke halaman detail laporan (`/laporan/[id]`) untuk memicu ekstraksi AI secara cepat.
+  - Seksi antrean laporan tertunda (*pending queue*) pada dashboard pengurus untuk memantau dokumen yang belum diekstrak atau belum diverifikasi.
+- **Modernisasi Kartu KPI Manajemen Pengguna (`app/pengguna/page.tsx`)**:
+  - Penambahan kartu metrik ringkasan peran pengguna (Total Pengguna, Administrator DKM, Bendahara, dan Jemaah) serta pembaruan tampilan tabel bulat modern.
+- **Harmonisasi Palet Warna & Desain Sistem**:
+  - Penyelarasan skema warna emerald gelap terstandarisasi di seluruh halaman aplikasi, menghapus inkonsistensi warna dan elemen redundant.
 
 ### 0.13.0 (2026-10-22) — Fase V13: Portal Transparansi Publik & Konsolidasi Beranda (Issue #080 / F-035)
 - **Portal Transparansi Kas Terpadu (`app/page.tsx`)**:

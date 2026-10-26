@@ -27,14 +27,14 @@ export function AuthErrorBanner({ authError }: AuthErrorBannerProps) {
   };
 
   return (
-    <div className="rounded-xl border border-amber-300/80 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/40 p-4 text-amber-950 dark:text-amber-100 flex items-start justify-between gap-3 shadow-xs animate-in fade-in slide-in-from-top-2 duration-200">
+    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 sm:p-5 text-amber-950 flex items-start justify-between gap-3 shadow-2xs animate-in fade-in slide-in-from-top-2 duration-200">
       <div className="flex items-start gap-3 min-w-0">
-        <ShieldAlert className="h-5 w-5 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
+        <ShieldAlert className="h-5 w-5 text-amber-700 shrink-0 mt-0.5" />
         <div className="flex-1 text-xs space-y-1">
-          <div className="font-semibold text-sm text-amber-900 dark:text-amber-200">
+          <div className="font-bold text-sm text-amber-900">
             Akses Ditolak — Fitur Khusus Staf Pengurus DKM
           </div>
-          <p className="leading-relaxed text-amber-800 dark:text-amber-300">
+          <p className="leading-relaxed text-amber-800">
             Anda dialihkan kembali ke Beranda karena halaman yang dituju (seperti <strong>Unggah Laporan</strong> atau <strong>Manajemen Pengguna</strong>) memerlukan hak akses staf (<strong>Bendahara</strong> atau <strong>Administrator</strong>). Akun Anda saat ini memiliki hak akses sebagai <strong>Jemaah</strong>. Silakan hubungi Administrator DKM jika memerlukan peningkatan wewenang operasional.
           </p>
         </div>
@@ -42,7 +42,7 @@ export function AuthErrorBanner({ authError }: AuthErrorBannerProps) {
       <button
         type="button"
         onClick={handleDismiss}
-        className="p-1 rounded-md text-amber-700 hover:text-amber-900 hover:bg-amber-200/50 dark:text-amber-400 dark:hover:text-amber-200 dark:hover:bg-amber-900/40 transition-colors shrink-0"
+        className="p-1 rounded-lg text-amber-700 hover:text-amber-900 hover:bg-amber-100 transition-colors shrink-0"
         title="Tutup pemberitahuan"
       >
         <X size={16} />

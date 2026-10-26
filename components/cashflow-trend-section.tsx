@@ -282,7 +282,7 @@ export function CashflowTrendSection({
   const [expenseBreakdown, setExpenseBreakdown] = React.useState<ExpenseCategoryBreakdown[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
   const [loadingExpenses, setLoadingExpenses] = React.useState<boolean>(true);
-  const [error, setError] = React.useState<string | null>(null);
+  const [, setError] = React.useState<string | null>(null);
   const [isSwitching, setIsSwitching] = React.useState(false);
 
   React.useEffect(() => {
@@ -449,10 +449,10 @@ export function CashflowTrendSection({
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           {showTitle && (
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-on-surface">
+              <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">
                 Ringkasan Kas &amp; Tren
               </h2>
-              <p className="text-xs sm:text-sm text-on-surface-variant mt-0.5">
+              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
                 Pergerakan kas masuk, kas keluar, dan arus kas bersih kas masjid terverifikasi.
               </p>
             </div>
@@ -470,14 +470,14 @@ export function CashflowTrendSection({
                   router.push(`/laporan/cetak/bulanan?year=${selectedYear}&month=${selectedMonth}`);
                 }
               }}
-              className="h-8 gap-1.5 text-xs font-semibold px-2.5 border-outline-variant hover:bg-surface-container-high transition-colors"
+              className="h-8 gap-1.5 text-xs font-semibold px-2.5 rounded-xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-2xs transition-colors"
               title={
                 granularity === "monthly"
                   ? `Buka pratinjau cetak laporan kas tahun ${selectedYear} (A4)`
                   : `Buka pratinjau cetak laporan kas bulan ${currentMonthName} ${selectedYear} (A4)`
               }
             >
-              <Printer size={13} className="text-primary" />
+              <Printer size={13} className="text-[#0e3824]" />
               <span>Cetak Laporan</span>
             </Button>
 
@@ -491,29 +491,33 @@ export function CashflowTrendSection({
                   handleDownload(`/api/reports/export/monthly/excel?year=${selectedYear}&month=${selectedMonth}`);
                 }
               }}
-              className="h-8 gap-1.5 text-xs font-semibold px-2.5 border-outline-variant hover:bg-surface-container-high text-primary transition-colors"
+              className="h-8 gap-1.5 text-xs font-semibold px-2.5 rounded-xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-2xs transition-colors"
               title={
                 granularity === "monthly"
                   ? `Unduh rekapitulasi Excel tahun ${selectedYear}`
                   : `Unduh rekapitulasi Excel bulan ${currentMonthName} ${selectedYear}`
               }
             >
-              <FileSpreadsheet size={13} />
-              <span>Excel</span>
+              <FileSpreadsheet size={13} className="text-emerald-700" />
+              <span>Unduh Excel</span>
             </Button>
           </div>
         </div>
 
         {/* Filter Bar: Mode Switcher + Periode Dropdowns */}
-        <div className="flex items-center justify-between gap-3 flex-wrap rounded-xl border border-outline-variant/70 bg-surface-container-low p-2">
+        <div className="flex items-center justify-between gap-3 flex-wrap rounded-2xl border border-slate-200/90 bg-white p-2.5 shadow-2xs">
           <div className="flex items-center gap-2 flex-wrap">
             {/* Toggle Mode: Mingguan vs Tahunan */}
-            <div className="inline-flex items-center rounded-lg border border-outline-variant bg-surface p-0.5">
+            <div className="inline-flex items-center rounded-xl border border-slate-200 bg-slate-50/70 p-0.5">
               <Button
                 size="sm"
                 variant={granularity === "weekly" ? "default" : "ghost"}
                 onClick={() => handleGranularityChange("weekly")}
-                className="rounded-md px-3 h-7 text-xs font-medium transition-all"
+                className={`rounded-lg px-3 h-7 text-xs font-semibold transition-all ${
+                  granularity === "weekly"
+                    ? "bg-[#0e3824] text-white shadow-2xs hover:bg-[#144731]"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
                 disabled={loading}
               >
                 Mingguan
@@ -522,7 +526,11 @@ export function CashflowTrendSection({
                 size="sm"
                 variant={granularity === "monthly" ? "default" : "ghost"}
                 onClick={() => handleGranularityChange("monthly")}
-                className="rounded-md px-3 h-7 text-xs font-medium transition-all"
+                className={`rounded-lg px-3 h-7 text-xs font-semibold transition-all ${
+                  granularity === "monthly"
+                    ? "bg-[#0e3824] text-white shadow-2xs hover:bg-[#144731]"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
                 disabled={loading}
               >
                 Tahunan
@@ -535,7 +543,7 @@ export function CashflowTrendSection({
                 <select
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(parseInt(e.target.value, 10))}
-                  className="h-7 rounded-lg border border-outline-variant bg-surface px-2.5 text-xs font-medium text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/40 cursor-pointer"
+                  className="h-8 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 cursor-pointer shadow-2xs"
                 >
                   {MONTH_OPTIONS.map((m) => (
                     <option key={m.value} value={m.value}>
@@ -551,7 +559,7 @@ export function CashflowTrendSection({
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value, 10))}
-                className="h-7 rounded-lg border border-outline-variant bg-surface px-2.5 text-xs font-medium text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/40 cursor-pointer"
+                className="h-8 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 cursor-pointer shadow-2xs"
               >
                 {yearOptions.map((y) => (
                   <option key={y} value={y}>
@@ -564,12 +572,14 @@ export function CashflowTrendSection({
 
           {/* Khusus Mobile pada Mode Tahunan: Selector Semester (Jan-Jun vs Jul-Des) */}
           {granularity === "monthly" && isMobile && (
-            <div className="inline-flex items-center rounded-lg border border-outline-variant bg-surface p-0.5 self-end">
+            <div className="inline-flex items-center rounded-xl border border-slate-200 bg-slate-50/70 p-0.5 self-end">
               <Button
                 size="sm"
                 variant={semester === "s1" ? "default" : "ghost"}
                 onClick={() => setSemester("s1")}
-                className="rounded-md px-2.5 h-6 text-[11px] font-medium"
+                className={`rounded-lg px-2.5 h-6 text-[11px] font-semibold ${
+                  semester === "s1" ? "bg-[#0e3824] text-white" : "text-slate-600"
+                }`}
               >
                 Jan - Jun
               </Button>
@@ -577,7 +587,9 @@ export function CashflowTrendSection({
                 size="sm"
                 variant={semester === "s2" ? "default" : "ghost"}
                 onClick={() => setSemester("s2")}
-                className="rounded-md px-2.5 h-6 text-[11px] font-medium"
+                className={`rounded-lg px-2.5 h-6 text-[11px] font-semibold ${
+                  semester === "s2" ? "bg-[#0e3824] text-white" : "text-slate-600"
+                }`}
               >
                 Jul - Des
               </Button>
@@ -587,46 +599,46 @@ export function CashflowTrendSection({
       </div>
 
       {/* 3 Angka Sekunder Sejajar Horizontal Terpisah Garis Vertikal */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-outline-variant py-4 border-y border-outline-variant">
+      <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 py-4 border-y border-slate-200">
         {/* Total Pemasukan */}
         <div className="py-3 sm:py-0 sm:px-6 first:sm:pl-0">
-          <div className="flex items-center gap-1.5 text-xs font-medium text-on-surface-variant">
+          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
             <ArrowUpRight className="h-4 w-4 text-emerald-600 shrink-0" />
             <span>Total Pemasukan ({periodCountLabel})</span>
           </div>
           {loading ? (
-            <Skeleton className="h-8 w-32 mt-2 rounded bg-surface-container-high" />
+            <Skeleton className="h-8 w-32 mt-2 rounded-xl bg-slate-100" />
           ) : (
-            <div className="mt-1 text-2xl font-semibold text-emerald-700 tabular-nums">
+            <div className="mt-1 text-xl sm:text-2xl lg:text-[26px] font-extrabold text-emerald-700 tabular-nums tracking-tight">
               {formatRupiah(totalPemasukan)}
             </div>
           )}
-          <p className="mt-0.5 text-xs text-on-surface-variant">
+          <p className="mt-0.5 text-xs text-slate-500">
             Akumulasi infaq &amp; pemasukan terverifikasi
           </p>
         </div>
 
         {/* Total Pengeluaran */}
         <div className="py-3 sm:py-0 sm:px-6">
-          <div className="flex items-center gap-1.5 text-xs font-medium text-on-surface-variant">
+          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
             <ArrowDownRight className="h-4 w-4 text-rose-500 shrink-0" />
             <span>Total Pengeluaran ({periodCountLabel})</span>
           </div>
           {loading ? (
-            <Skeleton className="h-8 w-32 mt-2 rounded bg-surface-container-high" />
+            <Skeleton className="h-8 w-32 mt-2 rounded-xl bg-slate-100" />
           ) : (
-            <div className="mt-1 text-2xl font-semibold text-rose-600 tabular-nums">
+            <div className="mt-1 text-xl sm:text-2xl lg:text-[26px] font-extrabold text-rose-600 tabular-nums tracking-tight">
               {formatRupiah(totalPengeluaran)}
             </div>
           )}
-          <p className="mt-0.5 text-xs text-on-surface-variant">
+          <p className="mt-0.5 text-xs text-slate-500">
             Akumulasi biaya operasional &amp; pengeluaran
           </p>
         </div>
 
         {/* Arus Kas Bersih */}
         <div className="py-3 sm:py-0 sm:px-6 last:sm:pr-0">
-          <div className="flex items-center gap-1.5 text-xs font-medium text-on-surface-variant">
+          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
             <Scale className="h-4 w-4 shrink-0" />
             <span>Arus Kas Bersih ({periodCountLabel})</span>
             {netChange >= 0 ? (
@@ -636,10 +648,10 @@ export function CashflowTrendSection({
             )}
           </div>
           {loading ? (
-            <Skeleton className="h-8 w-32 mt-2 rounded bg-surface-container-high" />
+            <Skeleton className="h-8 w-32 mt-2 rounded-xl bg-slate-100" />
           ) : (
             <div
-              className={`mt-1 text-2xl font-semibold tabular-nums ${
+              className={`mt-1 text-xl sm:text-2xl lg:text-[26px] font-extrabold tabular-nums tracking-tight ${
                 netChange >= 0 ? "text-emerald-700" : "text-rose-600"
               }`}
             >
@@ -647,7 +659,7 @@ export function CashflowTrendSection({
               {formatRupiah(netChange)}
             </div>
           )}
-          <p className="mt-0.5 text-xs text-on-surface-variant">
+          <p className="mt-0.5 text-xs text-slate-500">
             {netChange >= 0 ? "Surplus kas pada periode ini" : "Defisit kas pada periode ini"}
           </p>
         </div>
@@ -795,22 +807,22 @@ export function CashflowTrendSection({
 
       {/* SECTION ALOKASI PENGELUARAN KAS TERINTEGRASI */}
       {showAllocationBreakdown && (
-        <div id="alokasi-pengeluaran" className="space-y-4 pt-4 border-t border-outline-variant">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-outline-variant pb-3">
+        <div id="alokasi-pengeluaran" className="space-y-4 pt-4 border-t border-slate-200">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-200 pb-3">
             <div>
               <div className="flex items-center gap-2">
-                <PieChart size={18} className="text-primary" />
-                <h3 className="text-lg sm:text-xl font-bold font-sans tracking-tight text-on-surface">
+                <PieChart size={18} className="text-[#0e3824]" />
+                <h3 className="text-lg sm:text-xl font-bold font-sans tracking-tight text-slate-900">
                   Alokasi Pos Pengeluaran Kas
                 </h3>
               </div>
-              <p className="text-xs sm:text-sm text-on-surface-variant mt-0.5">
+              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
                 Rincian distribusi penggunaan dana kas masjid pada {periodCountLabel}.
               </p>
             </div>
             <Link
               href={`/pengeluaran?year=${selectedYear}${granularity === "weekly" ? `&month=${selectedMonth}` : ""}`}
-              className="text-xs text-primary font-semibold hover:underline flex items-center gap-1 self-start sm:self-auto"
+              className="text-xs text-emerald-800 font-bold hover:underline flex items-center gap-1 self-start sm:self-auto"
             >
               <span>Buka Halaman Pengeluaran Lengkap</span>
               <ArrowRight className="h-3.5 w-3.5" />
@@ -819,16 +831,16 @@ export function CashflowTrendSection({
 
           {loadingExpenses ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Skeleton className="h-44 rounded-2xl bg-surface-container-high" />
-              <Skeleton className="h-44 rounded-2xl bg-surface-container-high" />
-              <Skeleton className="h-44 rounded-2xl bg-surface-container-high" />
+              <Skeleton className="h-44 rounded-2xl bg-slate-100" />
+              <Skeleton className="h-44 rounded-2xl bg-slate-100" />
+              <Skeleton className="h-44 rounded-2xl bg-slate-100" />
             </div>
           ) : expenseBreakdown.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-outline-variant bg-surface-container/40 p-8 text-center">
-              <p className="text-sm font-medium text-on-surface-variant">
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-2xs">
+              <p className="text-sm font-semibold text-slate-800">
                 Belum ada transaksi pengeluaran terverifikasi pada periode {periodCountLabel}.
               </p>
-              <p className="text-xs text-on-surface-variant/70 mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 Pilih periode lain di atas atau buka halaman pengeluaran untuk menelusuri data tahun sebelumnya.
               </p>
             </div>
@@ -842,7 +854,7 @@ export function CashflowTrendSection({
                 return (
                   <div
                     key={item.category ?? "uncategorized"}
-                    className="rounded-2xl border border-outline-variant bg-surface-container/70 hover:bg-surface-container p-5 flex flex-col justify-between space-y-4 transition-all duration-150 hover:shadow-xs"
+                    className="rounded-2xl border border-slate-200/90 bg-white hover:bg-slate-50/50 p-5 flex flex-col justify-between space-y-4 transition-all duration-150 shadow-2xs hover:shadow-xs"
                   >
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
@@ -851,21 +863,21 @@ export function CashflowTrendSection({
                         >
                           {style.badgeLabel}
                         </span>
-                        <span className="text-xs font-bold text-on-surface-variant tabular-nums">
+                        <span className="text-xs font-bold text-slate-500 tabular-nums">
                           {item.percentage.toFixed(1)}%
                         </span>
                       </div>
-                      <h4 className="text-base font-bold text-on-surface">
+                      <h4 className="text-base font-bold text-slate-900">
                         {item.label}
                       </h4>
-                      <p className="text-xs text-on-surface-variant leading-relaxed line-clamp-2">
+                      <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
                         {desc}
                       </p>
                     </div>
 
-                    <div className="space-y-2 pt-3 border-t border-outline-variant/60">
+                    <div className="space-y-2 pt-3 border-t border-slate-100">
                       {/* Bar visual alokasi */}
-                      <div className="h-1.5 w-full rounded-full bg-surface-container-highest overflow-hidden">
+                      <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
                         <div
                           className={`h-full rounded-full ${style.bar}`}
                           style={{ width: `${Math.min(Math.max(item.percentage, 4), 100)}%` }}
@@ -874,21 +886,21 @@ export function CashflowTrendSection({
 
                       <div className="flex items-end justify-between gap-2 pt-1">
                         <div>
-                          <span className="text-[10px] text-on-surface-variant block uppercase tracking-wider font-semibold">
+                          <span className="text-[10px] text-slate-400 block uppercase tracking-wider font-semibold">
                             Total Belanja:
                           </span>
                           <span className="text-lg font-bold text-rose-700 dark:text-rose-400 tabular-nums">
                             {formatRupiah(item.totalAmount)}
                           </span>
                         </div>
-                        <span className="text-[11px] text-on-surface-variant font-medium pb-0.5">
+                        <span className="text-[11px] text-slate-500 font-medium pb-0.5">
                           {item.transactionCount} transaksi
                         </span>
                       </div>
 
                       <Link
                         href={`/pengeluaran?year=${selectedYear}${granularity === "weekly" ? `&month=${selectedMonth}` : ""}`}
-                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline pt-1"
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 hover:underline pt-1"
                       >
                         <span>Lihat Rincian Nota</span>
                         <ChevronRight size={12} />

@@ -306,7 +306,7 @@ export default function UnggahLaporanPage() {
           {/* ── #028: Drop zone multi-file ── */}
           <label
             htmlFor="file-input"
-            className="relative flex min-h-52 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant bg-surface-container/70 p-8 shadow-xs text-center transition-colors hover:border-primary/80 hover:bg-surface-container"
+            className="relative flex min-h-52 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-white p-8 shadow-2xs text-center transition-all hover:border-emerald-600 hover:bg-emerald-50/20"
           >
             <input
               id="file-input"
@@ -321,31 +321,31 @@ export default function UnggahLaporanPage() {
             <div className="pointer-events-none flex flex-col items-center gap-3">
               {compressing ? (
                 <>
-                  <div className="rounded-full bg-primary/10 p-4 text-primary animate-pulse">
+                  <div className="rounded-2xl bg-emerald-50 text-emerald-800 p-4 border border-emerald-200 animate-pulse">
                     <Loader2 size={32} className="animate-spin" />
                   </div>
                   <div>
-                    <p className="font-semibold text-base text-on-surface">
+                    <p className="font-bold text-base text-slate-900">
                       {compressingText || "Mengoptimalkan dan mengompresi foto..."}
                     </p>
-                    <p className="mt-1 text-sm text-on-surface-variant">
+                    <p className="mt-1 text-xs sm:text-sm text-slate-500">
                       Mengonversi ke WebP beresolusi tajam & menghemat kuota penyimpanan
                     </p>
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="rounded-full bg-primary/10 p-4 text-primary">
+                  <div className="rounded-2xl bg-emerald-50 text-emerald-800 p-4 border border-emerald-200">
                     <UploadCloud size={32} />
                   </div>
                   <div>
-                    <p className="font-semibold text-base text-on-surface">
+                    <p className="font-bold text-base text-slate-900">
                       Ketuk atau seret file laporan ke sini
                     </p>
-                    <p className="mt-1 text-sm text-on-surface-variant">
+                    <p className="mt-1 text-xs sm:text-sm text-slate-500">
                       Gambar (dioptimasi otomatis ke WebP) · PDF (maks 10 MB) · Excel (maks 10 MB)
                     </p>
-                    <p className="mt-1 text-xs text-on-surface-variant/80">
+                    <p className="mt-1 text-xs text-slate-400">
                       Format: .jpg · .png · .webp · .pdf · .xlsx · .xls
                     </p>
                   </div>
@@ -375,38 +375,38 @@ export default function UnggahLaporanPage() {
 
           {/* ── #029 & #030: Daftar file terpilih ── */}
           {files.length > 0 && (
-            <div className="rounded-2xl border border-outline-variant bg-surface-container shadow-xs overflow-hidden">
-              <div className="border-b border-outline-variant px-5 py-3.5 bg-surface-container-high/60">
-                <p className="text-sm font-semibold text-on-surface">
+            <div className="rounded-2xl border border-slate-200/90 bg-white shadow-2xs overflow-hidden">
+              <div className="border-b border-slate-100 px-5 py-3.5 bg-slate-50/60">
+                <p className="text-sm font-bold text-slate-900">
                   File Terpilih ({files.length})
                 </p>
               </div>
-              <ul className="divide-y divide-outline-variant">
+              <ul className="divide-y divide-slate-100">
                 {files.map((entry) => (
                   <li
                     key={entry.id}
-                    className="flex items-center gap-3 px-5 py-3.5 hover:bg-surface-container-high/40 transition-colors"
+                    className="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50/50 transition-colors"
                   >
                     <FileIcon mime={entry.file.type} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-on-surface">
+                      <p className="truncate text-sm font-semibold text-slate-900">
                         {entry.file.name}
                       </p>
                       {entry.isCompressed ? (
                         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                          <span className="text-xs text-on-surface-variant line-through">
+                          <span className="text-xs text-slate-400 line-through">
                             {formatBytes(entry.originalSize)}
                           </span>
-                          <span className="text-xs font-semibold text-primary">
+                          <span className="text-xs font-semibold text-emerald-800">
                             → {formatBytes(entry.compressedSize)}
                           </span>
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
                             <Sparkles className="size-3" />
                             Hemat {entry.savingsPercent}%
                           </span>
                         </div>
                       ) : (
-                        <p className="text-xs text-on-surface-variant mt-0.5">
+                        <p className="text-xs text-slate-500 mt-0.5">
                           {formatBytes(entry.file.size)}
                         </p>
                       )}
@@ -416,7 +416,7 @@ export default function UnggahLaporanPage() {
                       type="button"
                       onClick={() => removeFile(entry.id)}
                       disabled={compressing || loading}
-                      className="shrink-0 rounded-lg p-1.5 text-on-surface-variant transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+                      className="shrink-0 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
                       aria-label={`Hapus ${entry.file.name}`}
                     >
                       <X size={16} />
@@ -425,10 +425,10 @@ export default function UnggahLaporanPage() {
                 ))}
               </ul>
               {/* Tombol tambah lebih banyak file */}
-              <div className="border-t border-outline-variant px-5 py-3 bg-surface-container/70">
+              <div className="border-t border-slate-100 px-5 py-3 bg-slate-50/40">
                 <label
                   htmlFor="file-input"
-                  className={`text-xs font-semibold text-primary inline-flex items-center gap-1 ${compressing || loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:underline"
+                  className={`text-xs font-bold text-emerald-800 inline-flex items-center gap-1 ${compressing || loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:underline"
                     }`}
                 >
                   + Tambah berkas lain
@@ -446,15 +446,15 @@ export default function UnggahLaporanPage() {
           )}
 
           {/* Detail laporan */}
-          <div className="space-y-3 rounded-2xl border border-outline-variant bg-surface-container/70 p-6 shadow-xs">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-on-surface-variant">
+          <div className="space-y-4 rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-2.5">
               Detail Laporan
             </h3>
 
             <div>
               <label
                 htmlFor="report-date"
-                className="mb-1.5 block text-sm font-medium text-on-surface"
+                className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500"
               >
                 Tanggal Laporan
               </label>
@@ -464,9 +464,9 @@ export default function UnggahLaporanPage() {
                 value={reportDate}
                 onChange={(e) => setReportDate(e.target.value)}
                 required
-                className="bg-surface border-outline-variant max-w-sm"
+                className="rounded-xl border-slate-200 bg-white text-slate-900 max-w-sm h-10 text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
               />
-              <p className="mt-1.5 text-xs text-on-surface-variant">
+              <p className="mt-1.5 text-xs text-slate-500">
                 Pilih tanggal laporan ini dibacakan di hadapan jamaah (biasanya hari Jumat)
               </p>
             </div>
@@ -475,10 +475,10 @@ export default function UnggahLaporanPage() {
           <Button
             type="submit"
             size="lg"
-            className="w-full h-11 text-base font-semibold gap-2"
+            className="w-full h-11 text-sm font-bold rounded-xl bg-[#0e3824] hover:bg-[#144731] text-white shadow-xs gap-2 transition-colors disabled:opacity-50"
             disabled={loading || compressing || files.length === 0}
           >
-            <CloudUpload size={20} />
+            <CloudUpload size={18} />
             {loading
               ? "Mengunggah..."
               : compressing

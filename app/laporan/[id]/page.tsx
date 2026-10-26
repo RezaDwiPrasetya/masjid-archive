@@ -49,6 +49,11 @@ function downloadUrl(fileUrl: string, fileName: string): string {
   return `${fileUrl}?download=${encodeURIComponent(fileName)}`;
 }
 
+const MONTH_NAMES = [
+  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+  "Juli", "Agustus", "September", "Oktober", "November", "Desember",
+];
+
 export default async function DetailLaporanPage({
   params,
 }: {
@@ -177,8 +182,8 @@ export default async function DetailLaporanPage({
     calculatedFinal !== null
       ? calculatedFinal
       : finalBalance !== null
-      ? finalBalance
-      : totalMasuk;
+        ? finalBalance
+        : totalMasuk;
 
   const displayHeroLabel =
     calculatedFinal !== null || finalBalance !== null
@@ -225,13 +230,17 @@ export default async function DetailLaporanPage({
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Laporan Keuangan Kas • {new Date(report.reportDate).toLocaleDateString("id-ID", { dateStyle: "full" })}
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  <FileText className="h-3.5 w-3.5 text-emerald-800" />
+                  <span>Laporan Keuangan Kas • {new Date(report.reportDate).toLocaleDateString("id-ID", { dateStyle: "full" })}</span>
                 </div>
-                <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-on-surface">
-                  Pekan {report.weekOfMonth}, {report.month}/{report.year}
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                  Laporan Kas Pekan {report.weekOfMonth} — {MONTH_NAMES[report.month - 1] ?? `Bulan ${report.month}`} {report.year}
                 </h1>
+                <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                  Warta keuangan kas mingguan terverifikasi dan pembukuan DKM Masjid Al-Luqman.
+                </p>
               </div>
 
               {/* Action Buttons */}
@@ -297,574 +306,572 @@ export default async function DetailLaporanPage({
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
             {/* Panel utama: daftar lampiran */}
             <div className="space-y-6">
-          {report.attachments.length === 0 ? (
-            <div className="flex flex-col items-center rounded-2xl border bg-card p-12 text-center text-muted-foreground">
-              <ImageOff size={40} className="mb-3" />
-              <p>Tidak ada lampiran untuk laporan ini.</p>
-            </div>
-          ) : (
-            attachmentsWithFilteredTx.map((att) => {
-              const txCount = att.transactions.length;
-              const verifiedCount = att.transactions.filter(
-                (t) => t.isVerified
-              ).length;
-              const unverifiedCount = att.transactions.filter(
-                (t) => !t.isVerified
-              ).length;
-              const manualCount = att.transactions.filter(
-                (t) => t.isManual
-              ).length;
+              {report.attachments.length === 0 ? (
+                <div className="flex flex-col items-center rounded-2xl border bg-card p-12 text-center text-muted-foreground">
+                  <ImageOff size={40} className="mb-3" />
+                  <p>Tidak ada lampiran untuk laporan ini.</p>
+                </div>
+              ) : (
+                attachmentsWithFilteredTx.map((att) => {
+                  const txCount = att.transactions.length;
+                  const verifiedCount = att.transactions.filter(
+                    (t) => t.isVerified
+                  ).length;
+                  const unverifiedCount = att.transactions.filter(
+                    (t) => !t.isVerified
+                  ).length;
+                  const manualCount = att.transactions.filter(
+                    (t) => t.isManual
+                  ).length;
 
-              return (
-                <div
-                  key={att.id}
-                  className="rounded-xl border border-outline-variant bg-surface-container shadow-level-1 overflow-hidden"
-                >
-                  {/* ── Gambar ── */}
-                  {att.fileType === "image" && (
-                    <>
-                      <div className="relative">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={att.fileUrl}
-                          alt={att.originalFileName}
-                          className="max-h-[70vh] w-full object-contain"
-                        />
-                      </div>
-                      <div className="p-4 space-y-3 border-t border-border/50">
-                        {/* Meta + aksi file */}
-                        <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <p className="truncate text-sm text-muted-foreground">
-                            {att.originalFileName}
-                          </p>
-                          <div className="flex items-center gap-2 shrink-0">
-                            <a
-                              href={downloadUrl(
-                                att.fileUrl,
-                                att.originalFileName
-                              )}
-                              className="shrink-0"
-                            >
-                              <Button size="sm" variant="outline">
-                                <Download size={14} /> Unduh
-                              </Button>
-                            </a>
-                            {staff && (
-                              <DeleteAttachmentButton attachmentId={att.id} />
-                            )}
-                          </div>
-                        </div>
-
-                        {/* ── Blok Ekstraksi (F-011) — hanya tampil jika ada sesi ── */}
-                        {staff && (
-                          <div className="rounded-2xl bg-surface-container border border-outline-variant p-4 space-y-3 shadow-xs">
-                            <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
-                              Ekstraksi Data Transaksi
-                            </p>
-                            <ExtractButton
-                              attachmentId={att.id}
-                              extractionStatus={
-                                att.extractionStatus as
-                                | "not_extracted"
-                                | "processing"
-                                | "done"
-                                | "failed"
-                              }
-                              extractionError={att.extractionError}
-                              extractionModel={att.extractionModel}
-                              transactionCount={txCount}
-                              verifiedCount={verifiedCount}
-                              manualCount={manualCount}
+                  return (
+                    <div
+                      key={att.id}
+                      className="rounded-2xl border border-slate-200/90 bg-white shadow-2xs overflow-hidden"
+                    >
+                      {/* ── Gambar ── */}
+                      {att.fileType === "image" && (
+                        <>
+                          <div className="relative bg-slate-900/5">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={att.fileUrl}
+                              alt={att.originalFileName}
+                              className="max-h-[70vh] w-full object-contain"
                             />
                           </div>
-                        )}
-
-                        {/* ── Panel Review Transaksi (F-012) ── */}
-                        {(txCount > 0 || (staff && att.extractionStatus === "done")) && (
-                          <div className="space-y-3 pt-2">
-                            <div className="flex items-center justify-between">
-                              <h2 className="text-base font-bold text-on-surface font-sans">
-                                Transaksi Kas ({txCount})
-                              </h2>
-                              {staff && unverifiedCount > 0 && (
-                                <span className="text-xs font-semibold text-amber-800 bg-amber-500/15 border border-amber-300 px-2.5 py-0.5 rounded-full">
-                                  {unverifiedCount} perlu dikonfirmasi
-                                </span>
-                              )}
-                            </div>
-                            <TransactionReviewPanel
-                              key={`${att.id}-${att.transactions.length}-${unverifiedCount}`}
-                              transactions={att.transactions.map((t) => ({
-                                ...t,
-                                amount: t.amount.toString(),
-                                transactionDate: t.transactionDate
-                                  ? t.transactionDate.toISOString()
-                                  : null,
-                                verifiedAt: t.verifiedAt
-                                  ? t.verifiedAt.toISOString()
-                                  : null,
-                                donorNameRaw: t.donorNameRaw,
-                                donorId: t.donorId,
-                                donor: t.donor
-                                  ? { id: t.donor.id, name: t.donor.name }
-                                  : null,
-                                isManual: t.isManual,
-                              }))}
-                              hasSession={staff}
-                              allVerifiedTransactions={allVerifiedInReport}
-                              attachmentId={att.id}
-                              extractionStatus={att.extractionStatus}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  )}
-
-                  {/* ── PDF (Fase V6 — Issue #055) ── */}
-                  {att.fileType === "pdf" && (
-                    <>
-                      {/* Pratinjau Dokumen PDF Tersemat */}
-                      <div className="relative bg-surface border-b border-outline-variant">
-                        <iframe
-                          src={`${att.fileUrl}#toolbar=0&navpanes=0`}
-                          title={`Pratinjau PDF ${att.originalFileName}`}
-                          className="w-full h-[65vh] border-0"
-                        />
-                      </div>
-
-                      <div className="p-4 space-y-3">
-                        {/* Meta + aksi file */}
-                        <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-600 border border-red-500/20">
-                              <FileText size={18} />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold text-on-surface">
+                          <div className="p-4 sm:p-5 space-y-4 border-t border-slate-100 bg-white">
+                            {/* Meta + aksi file */}
+                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                              <p className="truncate text-sm font-semibold text-slate-800">
                                 {att.originalFileName}
                               </p>
-                              <p className="text-xs text-on-surface-variant">
-                                Dokumen PDF · {(att.fileSizeBytes / 1024 / 1024).toFixed(2)} MB
-                              </p>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <a
+                                  href={downloadUrl(
+                                    att.fileUrl,
+                                    att.originalFileName
+                                  )}
+                                  className="shrink-0"
+                                >
+                                  <Button size="sm" variant="outline" className="h-8 text-xs rounded-xl">
+                                    <Download size={14} /> Unduh
+                                  </Button>
+                                </a>
+                                {staff && (
+                                  <DeleteAttachmentButton attachmentId={att.id} />
+                                )}
+                              </div>
                             </div>
-                          </div>
 
-                          <div className="flex items-center gap-2 shrink-0">
-                            <a
-                              href={att.fileUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="shrink-0"
-                            >
-                              <Button size="sm" variant="outline" className="gap-1.5 text-xs">
-                                <ExternalLink size={13} /> Buka Tab Baru
-                              </Button>
-                            </a>
-                            <a
-                              href={downloadUrl(att.fileUrl, att.originalFileName)}
-                              className="shrink-0"
-                            >
-                              <Button size="sm" variant="outline" className="gap-1.5 text-xs">
-                                <Download size={13} /> Unduh
-                              </Button>
-                            </a>
+                            {/* ── Blok Ekstraksi (F-011) — hanya tampil jika ada sesi ── */}
                             {staff && (
-                              <DeleteAttachmentButton attachmentId={att.id} />
+                              <div className="rounded-2xl bg-slate-50/80 border border-slate-200/80 p-4 space-y-3 shadow-2xs">
+                                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                  Ekstraksi Data Transaksi
+                                </p>
+                                <ExtractButton
+                                  attachmentId={att.id}
+                                  extractionStatus={
+                                    att.extractionStatus as
+                                    | "not_extracted"
+                                    | "processing"
+                                    | "done"
+                                    | "failed"
+                                  }
+                                  extractionError={att.extractionError}
+                                  extractionModel={att.extractionModel}
+                                  transactionCount={txCount}
+                                  verifiedCount={verifiedCount}
+                                  manualCount={manualCount}
+                                />
+                              </div>
+                            )}
+
+                            {/* ── Panel Review Transaksi (F-012) ── */}
+                            {(txCount > 0 || (staff && att.extractionStatus === "done")) && (
+                              <div className="space-y-3 pt-2">
+                                <div className="flex items-center justify-between">
+                                  <h2 className="text-base font-bold text-slate-900 font-sans">
+                                    Transaksi Kas ({txCount})
+                                  </h2>
+                                  {staff && unverifiedCount > 0 && (
+                                    <span className="text-xs font-semibold text-amber-800 bg-amber-500/15 border border-amber-300 px-2.5 py-0.5 rounded-full">
+                                      {unverifiedCount} perlu dikonfirmasi
+                                    </span>
+                                  )}
+                                </div>
+                                <TransactionReviewPanel
+                                  key={`${att.id}-${att.transactions.length}-${unverifiedCount}`}
+                                  transactions={att.transactions.map((t) => ({
+                                    ...t,
+                                    amount: t.amount.toString(),
+                                    transactionDate: t.transactionDate
+                                      ? t.transactionDate.toISOString()
+                                      : null,
+                                    verifiedAt: t.verifiedAt
+                                      ? t.verifiedAt.toISOString()
+                                      : null,
+                                    donorNameRaw: t.donorNameRaw,
+                                    donorId: t.donorId,
+                                    donor: t.donor
+                                      ? { id: t.donor.id, name: t.donor.name }
+                                      : null,
+                                    isManual: t.isManual,
+                                  }))}
+                                  hasSession={staff}
+                                  allVerifiedTransactions={allVerifiedInReport}
+                                  attachmentId={att.id}
+                                  extractionStatus={att.extractionStatus}
+                                />
+                              </div>
                             )}
                           </div>
-                        </div>
+                        </>
+                      )}
 
-                        {/* ── Blok Ekstraksi AI (F-019) — hanya tampil jika ada sesi ── */}
-                        {staff && (
-                          <div className="rounded-2xl bg-surface-container border border-outline-variant p-4 space-y-3 shadow-xs">
-                            <div className="flex items-center justify-between">
-                              <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
-                                Ekstraksi Data Transaksi
-                              </p>
-                              <span className="text-[11px] font-medium text-primary bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-full">
-                                Dokumen PDF
-                              </span>
-                            </div>
-                            <ExtractButton
-                              attachmentId={att.id}
-                              extractionStatus={
-                                att.extractionStatus as
-                                | "not_extracted"
-                                | "processing"
-                                | "done"
-                                | "failed"
-                              }
-                              extractionError={att.extractionError}
-                              extractionModel={att.extractionModel}
-                              transactionCount={txCount}
-                              verifiedCount={verifiedCount}
-                              manualCount={manualCount}
+                      {/* ── PDF (Fase V6 — Issue #055) ── */}
+                      {att.fileType === "pdf" && (
+                        <>
+                          {/* Pratinjau Dokumen PDF Tersemat */}
+                          <div className="relative bg-slate-100 border-b border-slate-200">
+                            <iframe
+                              src={`${att.fileUrl}#toolbar=0&navpanes=0`}
+                              title={`Pratinjau PDF ${att.originalFileName}`}
+                              className="w-full h-[65vh] border-0"
                             />
                           </div>
-                        )}
 
-                        {/* ── Panel Review Transaksi (F-012) ── */}
-                        {(txCount > 0 || (staff && att.extractionStatus === "done")) && (
-                          <div className="space-y-3 pt-2">
-                            <div className="flex items-center justify-between">
-                              <h2 className="text-base font-bold text-on-surface font-sans">
-                                Transaksi Kas ({txCount})
-                              </h2>
-                              {staff && unverifiedCount > 0 && (
-                                <span className="text-xs font-semibold text-amber-800 bg-amber-500/15 border border-amber-300 px-2.5 py-0.5 rounded-full">
-                                  {unverifiedCount} perlu dikonfirmasi
-                                </span>
+                          <div className="p-4 sm:p-5 space-y-4 bg-white">
+                            {/* Meta + aksi file */}
+                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-600 border border-red-500/20">
+                                  <FileText size={18} />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="truncate text-sm font-semibold text-slate-900">
+                                    {att.originalFileName}
+                                  </p>
+                                  <p className="text-xs text-slate-500">
+                                    Dokumen PDF · {(att.fileSizeBytes / 1024 / 1024).toFixed(2)} MB
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 shrink-0">
+                                <a
+                                  href={att.fileUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="shrink-0"
+                                >
+                                  <Button size="sm" variant="outline" className="gap-1.5 text-xs rounded-xl h-8">
+                                    <ExternalLink size={13} /> Buka Tab Baru
+                                  </Button>
+                                </a>
+                                <a
+                                  href={downloadUrl(att.fileUrl, att.originalFileName)}
+                                  className="shrink-0"
+                                >
+                                  <Button size="sm" variant="outline" className="gap-1.5 text-xs rounded-xl h-8">
+                                    <Download size={13} /> Unduh
+                                  </Button>
+                                </a>
+                                {staff && (
+                                  <DeleteAttachmentButton attachmentId={att.id} />
+                                )}
+                              </div>
+                            </div>
+
+                            {/* ── Blok Ekstraksi AI (F-019) — hanya tampil jika ada sesi ── */}
+                            {staff && (
+                              <div className="rounded-2xl bg-slate-50/80 border border-slate-200/80 p-4 space-y-3 shadow-2xs">
+                                <div className="flex items-center justify-between">
+                                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                    Ekstraksi Data Transaksi
+                                  </p>
+                                  <span className="text-[11px] font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                                    Dokumen PDF
+                                  </span>
+                                </div>
+                                <ExtractButton
+                                  attachmentId={att.id}
+                                  extractionStatus={
+                                    att.extractionStatus as
+                                    | "not_extracted"
+                                    | "processing"
+                                    | "done"
+                                    | "failed"
+                                  }
+                                  extractionError={att.extractionError}
+                                  extractionModel={att.extractionModel}
+                                  transactionCount={txCount}
+                                  verifiedCount={verifiedCount}
+                                  manualCount={manualCount}
+                                />
+                              </div>
+                            )}
+
+                            {/* ── Panel Review Transaksi (F-012) ── */}
+                            {(txCount > 0 || (staff && att.extractionStatus === "done")) && (
+                              <div className="space-y-3 pt-2">
+                                <div className="flex items-center justify-between">
+                                  <h2 className="text-base font-bold text-slate-900 font-sans">
+                                    Transaksi Kas ({txCount})
+                                  </h2>
+                                  {staff && unverifiedCount > 0 && (
+                                    <span className="text-xs font-semibold text-amber-800 bg-amber-500/15 border border-amber-300 px-2.5 py-0.5 rounded-full">
+                                      {unverifiedCount} perlu dikonfirmasi
+                                    </span>
+                                  )}
+                                </div>
+                                <TransactionReviewPanel
+                                  key={`${att.id}-${att.transactions.length}-${unverifiedCount}`}
+                                  transactions={att.transactions.map((t) => ({
+                                    ...t,
+                                    amount: t.amount.toString(),
+                                    transactionDate: t.transactionDate
+                                      ? t.transactionDate.toISOString()
+                                      : null,
+                                    verifiedAt: t.verifiedAt
+                                      ? t.verifiedAt.toISOString()
+                                      : null,
+                                    donorNameRaw: t.donorNameRaw,
+                                    donorId: t.donorId,
+                                    donor: t.donor
+                                      ? { id: t.donor.id, name: t.donor.name }
+                                      : null,
+                                    isManual: t.isManual,
+                                  }))}
+                                  hasSession={staff}
+                                  allVerifiedTransactions={allVerifiedInReport}
+                                  attachmentId={att.id}
+                                  extractionStatus={att.extractionStatus}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
+
+
+                      {/* ── Excel (Fase V6 — Issue #056) ── */}
+                      {att.fileType === "excel" && (
+                        <div className="p-4 sm:p-5 space-y-4 bg-white">
+                          {/* Meta + aksi file */}
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                                <FileSpreadsheet size={20} />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-semibold text-slate-900">
+                                  {att.originalFileName}
+                                </p>
+                                <p className="text-xs text-slate-500">
+                                  Spreadsheet Excel · {(att.fileSizeBytes / 1024 / 1024).toFixed(2)} MB
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                              <a
+                                href={downloadUrl(att.fileUrl, att.originalFileName)}
+                                className="shrink-0"
+                              >
+                                <Button size="sm" variant="outline" className="gap-1.5 text-xs rounded-xl h-8">
+                                  <Download size={13} /> Unduh
+                                </Button>
+                              </a>
+                              {staff && (
+                                <DeleteAttachmentButton attachmentId={att.id} />
                               )}
                             </div>
-                            <TransactionReviewPanel
-                              key={`${att.id}-${att.transactions.length}-${unverifiedCount}`}
-                              transactions={att.transactions.map((t) => ({
-                                ...t,
-                                amount: t.amount.toString(),
-                                transactionDate: t.transactionDate
-                                  ? t.transactionDate.toISOString()
-                                  : null,
-                                verifiedAt: t.verifiedAt
-                                  ? t.verifiedAt.toISOString()
-                                  : null,
-                                donorNameRaw: t.donorNameRaw,
-                                donorId: t.donorId,
-                                donor: t.donor
-                                  ? { id: t.donor.id, name: t.donor.name }
-                                  : null,
-                                isManual: t.isManual,
-                              }))}
-                              hasSession={staff}
-                              allVerifiedTransactions={allVerifiedInReport}
-                              attachmentId={att.id}
-                              extractionStatus={att.extractionStatus}
-                            />
+                          </div>
+
+                          {/* ── Blok Impor / Ekstraksi Data (Issue #056) — hanya tampil jika ada sesi ── */}
+                          {staff && (
+                            <div className="rounded-2xl bg-slate-50/80 border border-slate-200/80 p-4 space-y-3 shadow-2xs">
+                              <div className="flex items-center justify-between">
+                                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                  Impor Tabular Spreadsheet
+                                </p>
+                                <span className="text-[11px] font-medium text-emerald-800 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
+                                  Spreadsheet Excel
+                                </span>
+                              </div>
+                              <p className="text-xs text-slate-500 leading-relaxed">
+                                Data tabel dibaca secara deterministik dari berkas spreadsheet (.xlsx/.xls) dan dimasukkan sebagai draf transaksi untuk ditinjau.
+                              </p>
+                              <ExtractButton
+                                attachmentId={att.id}
+                                extractionStatus={
+                                  att.extractionStatus as
+                                  | "not_extracted"
+                                  | "processing"
+                                  | "done"
+                                  | "failed"
+                                }
+                                extractionError={att.extractionError}
+                                extractionModel={att.extractionModel}
+                                transactionCount={txCount}
+                                verifiedCount={verifiedCount}
+                                manualCount={manualCount}
+                              />
+                            </div>
+                          )}
+
+                          {/* ── Panel Review Transaksi (F-012) ── */}
+                          {(txCount > 0 || (staff && att.extractionStatus === "done")) && (
+                            <div className="space-y-3 pt-2">
+                              <div className="flex items-center justify-between">
+                                <h2 className="text-base font-bold text-slate-900 font-sans">
+                                  Transaksi Kas ({txCount})
+                                </h2>
+                                {staff && unverifiedCount > 0 && (
+                                  <span className="text-xs font-semibold text-amber-800 bg-amber-500/15 border border-amber-300 px-2.5 py-0.5 rounded-full">
+                                    {unverifiedCount} perlu dikonfirmasi
+                                  </span>
+                                )}
+                              </div>
+                              <TransactionReviewPanel
+                                key={`${att.id}-${att.transactions.length}-${unverifiedCount}`}
+                                transactions={att.transactions.map((t) => ({
+                                  ...t,
+                                  amount: t.amount.toString(),
+                                  transactionDate: t.transactionDate
+                                    ? t.transactionDate.toISOString()
+                                    : null,
+                                  verifiedAt: t.verifiedAt
+                                    ? t.verifiedAt.toISOString()
+                                    : null,
+                                  donorNameRaw: t.donorNameRaw,
+                                  donorId: t.donorId,
+                                  donor: t.donor
+                                    ? { id: t.donor.id, name: t.donor.name }
+                                    : null,
+                                  isManual: t.isManual,
+                                }))}
+                                hasSession={staff}
+                                allVerifiedTransactions={allVerifiedInReport}
+                                attachmentId={att.id}
+                                extractionStatus={att.extractionStatus}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Sidebar: metadata laporan */}
+            <aside className="h-fit rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs">
+              <div className="space-y-5">
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-2.5">
+                    Informasi Dokumen
+                  </h3>
+                  <dl className="mt-3 space-y-3 text-xs sm:text-sm">
+                    <div>
+                      <dt className="text-slate-500 text-xs font-medium">Tanggal Laporan</dt>
+                      <dd className="font-semibold text-slate-900 mt-0.5">
+                        {new Date(report.reportDate).toLocaleDateString("id-ID", {
+                          dateStyle: "long",
+                        })}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-slate-500 text-xs font-medium">Diunggah Oleh</dt>
+                      <dd className="font-semibold text-slate-900 mt-0.5">{report.uploadedBy.name}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-slate-500 text-xs font-medium">Tanggal Pengunggahan</dt>
+                      <dd className="font-medium text-slate-800 mt-0.5">
+                        {new Date(report.uploadedAt).toLocaleDateString("id-ID", {
+                          dateStyle: "medium",
+                        })}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-slate-500 text-xs font-medium">Jumlah Lampiran</dt>
+                      <dd className="font-semibold text-slate-900 mt-0.5">
+                        {report.attachments.length} berkas pindaian
+                      </dd>
+                      {staff && (
+                        <div className="mt-2.5">
+                          <AddAttachmentButton reportId={report.id} />
+                        </div>
+                      )}
+                    </div>
+                  </dl>
+                </div>
+
+                {/* Ringkasan kas & transaksi terverifikasi */}
+                {(() => {
+                  const allVerified = report.attachments.flatMap((a) =>
+                    a.transactions.filter((t) => t.isVerified)
+                  );
+                  const allUnverified = report.attachments.flatMap((a) =>
+                    a.transactions.filter((t) => !t.isVerified)
+                  );
+
+                  const initialBalance = report.initialBalance
+                    ? parseFloat(report.initialBalance.toString())
+                    : null;
+                  const finalBalance = report.finalBalance
+                    ? parseFloat(report.finalBalance.toString())
+                    : null;
+
+                  if (
+                    allVerified.length === 0 &&
+                    allUnverified.length === 0 &&
+                    initialBalance === null &&
+                    finalBalance === null
+                  ) {
+                    return null;
+                  }
+
+                  const totalMasuk = allVerified
+                    .filter((t) => t.type === "pemasukan")
+                    .reduce((s, t) => s + parseFloat(t.amount.toString()), 0);
+                  const totalKeluar = allVerified
+                    .filter((t) => t.type === "pengeluaran")
+                    .reduce((s, t) => s + parseFloat(t.amount.toString()), 0);
+                  const netChange = totalMasuk - totalKeluar;
+                  const calculatedFinal =
+                    initialBalance !== null ? initialBalance + netChange : null;
+
+                  const isReconciled =
+                    calculatedFinal !== null &&
+                    finalBalance !== null &&
+                    Math.abs(calculatedFinal - finalBalance) < 1;
+
+                  const hasDifference =
+                    calculatedFinal !== null &&
+                    finalBalance !== null &&
+                    !isReconciled;
+
+                  const fmt = (n: number) =>
+                    new Intl.NumberFormat("id-ID", {
+                      style: "currency",
+                      currency: "IDR",
+                      minimumFractionDigits: 0,
+                    }).format(n);
+
+                  return (
+                    <div className="border-t border-slate-100 pt-4 space-y-3">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                        Ringkasan Kas Pekan Ini
+                      </h3>
+
+                      {allUnverified.length > 0 && (
+                        <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 px-3 py-2 text-xs text-amber-900 dark:text-amber-300 font-medium">
+                          {allUnverified.length} transaksi belum diverifikasi
+                        </div>
+                      )}
+
+                      <div className="space-y-2 text-xs sm:text-sm">
+                        {initialBalance !== null && (
+                          <div className="flex justify-between items-baseline">
+                            <span className="text-slate-500">Saldo Lalu</span>
+                            <span className="font-semibold text-slate-900 tabular-nums">
+                              {fmt(initialBalance)}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="flex justify-between items-baseline">
+                          <span className="text-slate-500">Pemasukan</span>
+                          <span className="font-semibold text-emerald-700 dark:text-emerald-400 tabular-nums">
+                            + {fmt(totalMasuk)}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between items-baseline">
+                          <span className="text-slate-500">Pengeluaran</span>
+                          <span className="font-semibold text-rose-600 dark:text-rose-400 tabular-nums">
+                            - {fmt(totalKeluar)}
+                          </span>
+                        </div>
+
+                        {initialBalance !== null && (
+                          <div className="flex justify-between items-baseline py-1 border-t border-dashed border-slate-200 text-xs">
+                            <span className="text-slate-500">Arus Kas Pekan Ini</span>
+                            <span
+                              className={`font-semibold tabular-nums ${netChange >= 0
+                                  ? "text-emerald-700 dark:text-emerald-400"
+                                  : "text-rose-600 dark:text-rose-400"
+                                }`}
+                            >
+                              {netChange > 0 ? `+ ${fmt(netChange)}` : fmt(netChange)}
+                            </span>
+                          </div>
+                        )}
+
+                        {initialBalance !== null ? (
+                          <div className="flex justify-between items-baseline border-t border-slate-200 pt-2">
+                            <span className="font-bold text-slate-900">Saldo Kas Akhir</span>
+                            <span className="font-extrabold text-base text-emerald-800 tabular-nums">
+                              {fmt(calculatedFinal!)}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex justify-between items-baseline border-t border-slate-200 pt-2">
+                            <span className="font-semibold text-slate-900">Selisih Kas</span>
+                            <span
+                              className={`font-bold tabular-nums ${netChange >= 0
+                                  ? "text-emerald-700 dark:text-emerald-400"
+                                  : "text-rose-600 dark:text-rose-400"
+                                }`}
+                            >
+                              {fmt(netChange)}
+                            </span>
                           </div>
                         )}
                       </div>
-                    </>
-                  )}
 
-
-                  {/* ── Excel (Fase V6 — Issue #056) ── */}
-                  {att.fileType === "excel" && (
-                    <div className="p-4 space-y-4">
-                      {/* Meta + aksi file */}
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                            <FileSpreadsheet size={20} />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-on-surface">
-                              {att.originalFileName}
-                            </p>
-                            <p className="text-xs text-on-surface-variant">
-                              Spreadsheet Excel · {(att.fileSizeBytes / 1024 / 1024).toFixed(2)} MB
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 shrink-0">
-                          <a
-                            href={downloadUrl(att.fileUrl, att.originalFileName)}
-                            className="shrink-0"
-                          >
-                            <Button size="sm" variant="outline" className="gap-1.5 text-xs">
-                              <Download size={13} /> Unduh
-                            </Button>
-                          </a>
-                          {staff && (
-                            <DeleteAttachmentButton attachmentId={att.id} />
-                          )}
-                        </div>
-                      </div>
-
-                      {/* ── Blok Impor / Ekstraksi Data (Issue #056) — hanya tampil jika ada sesi ── */}
-                      {staff && (
-                        <div className="rounded-2xl bg-surface-container border border-outline-variant p-4 space-y-3 shadow-xs">
-                          <div className="flex items-center justify-between">
-                            <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
-                              Impor Tabular Spreadsheet
-                            </p>
-                            <span className="text-[11px] font-medium text-emerald-800 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
-                              Spreadsheet Excel
-                            </span>
-                          </div>
-                          <p className="text-xs text-on-surface-variant leading-relaxed">
-                            Data tabel dibaca secara deterministik dari berkas spreadsheet (.xlsx/.xls) dan dimasukkan sebagai draf transaksi untuk ditinjau.
-                          </p>
-                          <ExtractButton
-                            attachmentId={att.id}
-                            extractionStatus={
-                              att.extractionStatus as
-                              | "not_extracted"
-                              | "processing"
-                              | "done"
-                              | "failed"
-                            }
-                            extractionError={att.extractionError}
-                            extractionModel={att.extractionModel}
-                            transactionCount={txCount}
-                            verifiedCount={verifiedCount}
-                            manualCount={manualCount}
-                          />
+                      {isReconciled && (
+                        <div className="flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-200 p-2.5 text-xs font-semibold text-emerald-800">
+                          <CheckCircle2 size={15} className="shrink-0 text-emerald-600" />
+                          <span>Perhitungan buku kas seimbang</span>
                         </div>
                       )}
 
-                      {/* ── Panel Review Transaksi (F-012) ── */}
-                      {(txCount > 0 || (staff && att.extractionStatus === "done")) && (
-                        <div className="space-y-3 pt-2">
-                          <div className="flex items-center justify-between">
-                            <h2 className="text-base font-bold text-on-surface font-sans">
-                              Transaksi Kas ({txCount})
-                            </h2>
-                            {staff && unverifiedCount > 0 && (
-                              <span className="text-xs font-semibold text-amber-800 bg-amber-500/15 border border-amber-300 px-2.5 py-0.5 rounded-full">
-                                {unverifiedCount} perlu dikonfirmasi
-                              </span>
-                            )}
+                      {hasDifference && (
+                        <div className="flex items-start gap-2 rounded-xl bg-amber-50 border border-amber-200 p-2.5 text-xs text-amber-900">
+                          <AlertTriangle size={15} className="shrink-0 text-amber-600 mt-0.5" />
+                          <div>
+                            <p className="font-semibold">
+                              Total di buku: {fmt(finalBalance!)}
+                            </p>
+                            <p className="text-[11px] opacity-80 mt-0.5">
+                              Selisih {fmt(Math.abs(calculatedFinal! - finalBalance!))} dengan transaksi terverifikasi.
+                            </p>
                           </div>
-                          <TransactionReviewPanel
-                            key={`${att.id}-${att.transactions.length}-${unverifiedCount}`}
-                            transactions={att.transactions.map((t) => ({
-                              ...t,
-                              amount: t.amount.toString(),
-                              transactionDate: t.transactionDate
-                                ? t.transactionDate.toISOString()
-                                : null,
-                              verifiedAt: t.verifiedAt
-                                ? t.verifiedAt.toISOString()
-                                : null,
-                              donorNameRaw: t.donorNameRaw,
-                              donorId: t.donorId,
-                              donor: t.donor
-                                ? { id: t.donor.id, name: t.donor.name }
-                                : null,
-                              isManual: t.isManual,
-                            }))}
-                            hasSession={staff}
-                            allVerifiedTransactions={allVerifiedInReport}
-                            attachmentId={att.id}
-                            extractionStatus={att.extractionStatus}
-                          />
                         </div>
                       )}
+
+                      <p className="text-[10px] text-slate-400">
+                        * Berdasarkan transaksi yang telah diverifikasi
+                      </p>
                     </div>
-                  )}
-                </div>
-              );
-            })
-          )}
-        </div>
+                  );
+                })()}
 
-        {/* Sidebar: metadata laporan */}
-        <aside className="h-fit rounded-xl border border-outline-variant bg-surface-container p-5 sm:p-6 shadow-level-1">
-          <div className="space-y-5">
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-on-surface-variant border-b border-outline-variant pb-2">
-                Informasi Dokumen
-              </h3>
-              <dl className="mt-3 space-y-3 text-xs sm:text-sm">
-                <div>
-                  <dt className="text-on-surface-variant text-xs">Tanggal Laporan</dt>
-                  <dd className="font-semibold text-on-surface">
-                    {new Date(report.reportDate).toLocaleDateString("id-ID", {
-                      dateStyle: "long",
-                    })}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-on-surface-variant text-xs">Diunggah Oleh</dt>
-                  <dd className="font-semibold text-on-surface">{report.uploadedBy.name}</dd>
-                </div>
-                <div>
-                  <dt className="text-on-surface-variant text-xs">Tanggal Pengunggahan</dt>
-                  <dd className="font-medium text-on-surface">
-                    {new Date(report.uploadedAt).toLocaleDateString("id-ID", {
-                      dateStyle: "medium",
-                    })}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-on-surface-variant text-xs">Jumlah Lampiran</dt>
-                  <dd className="font-semibold text-on-surface mt-0.5">
-                    {report.attachments.length} berkas pindaian
-                  </dd>
-                  {staff && (
-                    <div className="mt-2.5">
-                      <AddAttachmentButton reportId={report.id} />
-                    </div>
-                  )}
-                </div>
-              </dl>
-            </div>
-
-            {/* Ringkasan kas & transaksi terverifikasi */}
-            {(() => {
-              const allVerified = report.attachments.flatMap((a) =>
-                a.transactions.filter((t) => t.isVerified)
-              );
-              const allUnverified = report.attachments.flatMap((a) =>
-                a.transactions.filter((t) => !t.isVerified)
-              );
-
-              const initialBalance = report.initialBalance
-                ? parseFloat(report.initialBalance.toString())
-                : null;
-              const finalBalance = report.finalBalance
-                ? parseFloat(report.finalBalance.toString())
-                : null;
-
-              if (
-                allVerified.length === 0 &&
-                allUnverified.length === 0 &&
-                initialBalance === null &&
-                finalBalance === null
-              ) {
-                return null;
-              }
-
-              const totalMasuk = allVerified
-                .filter((t) => t.type === "pemasukan")
-                .reduce((s, t) => s + parseFloat(t.amount.toString()), 0);
-              const totalKeluar = allVerified
-                .filter((t) => t.type === "pengeluaran")
-                .reduce((s, t) => s + parseFloat(t.amount.toString()), 0);
-              const netChange = totalMasuk - totalKeluar;
-              const calculatedFinal =
-                initialBalance !== null ? initialBalance + netChange : null;
-
-              const isReconciled =
-                calculatedFinal !== null &&
-                finalBalance !== null &&
-                Math.abs(calculatedFinal - finalBalance) < 1;
-
-              const hasDifference =
-                calculatedFinal !== null &&
-                finalBalance !== null &&
-                !isReconciled;
-
-              const fmt = (n: number) =>
-                new Intl.NumberFormat("id-ID", {
-                  style: "currency",
-                  currency: "IDR",
-                  minimumFractionDigits: 0,
-                }).format(n);
-
-              return (
-                <div className="border-t border-outline-variant pt-4 space-y-3">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                    Ringkasan Kas Pekan Ini
-                  </h3>
-
-                  {allUnverified.length > 0 && (
-                    <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5 text-xs text-amber-900 dark:text-amber-300 font-medium">
-                      {allUnverified.length} transaksi belum diverifikasi
-                    </div>
-                  )}
-
-                  <div className="space-y-2 text-xs sm:text-sm">
-                    {initialBalance !== null && (
-                      <div className="flex justify-between items-baseline">
-                        <span className="text-on-surface-variant">Saldo Lalu</span>
-                        <span className="font-semibold text-on-surface tabular-nums">
-                          {fmt(initialBalance)}
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="flex justify-between items-baseline">
-                      <span className="text-on-surface-variant">Pemasukan</span>
-                      <span className="font-semibold text-emerald-700 dark:text-emerald-400 tabular-nums">
-                        + {fmt(totalMasuk)}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between items-baseline">
-                      <span className="text-on-surface-variant">Pengeluaran</span>
-                      <span className="font-semibold text-rose-600 dark:text-rose-400 tabular-nums">
-                        - {fmt(totalKeluar)}
-                      </span>
-                    </div>
-
-                    {initialBalance !== null && (
-                      <div className="flex justify-between items-baseline py-1 border-t border-dashed border-outline-variant text-xs">
-                        <span className="text-on-surface-variant">Arus Kas Pekan Ini</span>
-                        <span
-                          className={`font-semibold tabular-nums ${
-                            netChange >= 0
-                              ? "text-emerald-700 dark:text-emerald-400"
-                              : "text-rose-600 dark:text-rose-400"
-                          }`}
-                        >
-                          {netChange > 0 ? `+ ${fmt(netChange)}` : fmt(netChange)}
-                        </span>
-                      </div>
-                    )}
-
-                    {initialBalance !== null ? (
-                      <div className="flex justify-between items-baseline border-t border-outline-variant pt-2">
-                        <span className="font-bold text-on-surface">Saldo Kas Akhir</span>
-                        <span className="font-extrabold text-base text-primary tabular-nums">
-                          {fmt(calculatedFinal!)}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex justify-between items-baseline border-t border-outline-variant pt-2">
-                        <span className="font-semibold text-on-surface">Selisih Kas</span>
-                        <span
-                          className={`font-bold tabular-nums ${
-                            netChange >= 0
-                              ? "text-emerald-700 dark:text-emerald-400"
-                              : "text-rose-600 dark:text-rose-400"
-                          }`}
-                        >
-                          {fmt(netChange)}
-                        </span>
-                      </div>
-                    )}
+                {canDelete && (
+                  <div className="pt-4 border-t border-slate-100">
+                    <DeleteReportButton reportId={report.id} />
                   </div>
-
-                  {isReconciled && (
-                    <div className="flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 text-xs font-semibold text-emerald-800">
-                      <CheckCircle2 size={15} className="shrink-0 text-emerald-600" />
-                      <span>Perhitungan buku kas seimbang</span>
-                    </div>
-                  )}
-
-                  {hasDifference && (
-                    <div className="flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 p-2.5 text-xs text-amber-900">
-                      <AlertTriangle size={15} className="shrink-0 text-amber-600 mt-0.5" />
-                      <div>
-                        <p className="font-semibold">
-                          Total di buku: {fmt(finalBalance!)}
-                        </p>
-                        <p className="text-[11px] opacity-80 mt-0.5">
-                          Selisih {fmt(Math.abs(calculatedFinal! - finalBalance!))} dengan transaksi terverifikasi.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  <p className="text-[10px] text-on-surface-variant/80">
-                    * Berdasarkan transaksi yang telah diverifikasi
-                  </p>
-                </div>
-              );
-            })()}
-
-            {canDelete && (
-              <div className="pt-4 border-t border-outline-variant">
-                <DeleteReportButton reportId={report.id} />
+                )}
               </div>
-            )}
+            </aside>
           </div>
-        </aside>
-      </div>
-    </div>
-  </PageShell>
+        </div>
+      </PageShell>
     </AppShell>
   );
 }

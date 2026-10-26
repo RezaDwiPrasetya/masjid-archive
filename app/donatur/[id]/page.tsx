@@ -149,21 +149,21 @@ export default async function DonorDetailPage({
             <div className="relative z-10 flex flex-wrap items-baseline gap-6 sm:gap-10">
               <div>
                 <span className="text-xs text-emerald-200/90 font-bold uppercase tracking-wider block">Total Kontribusi Terverifikasi</span>
-                <div className="text-3xl sm:text-4xl md:text-[44px] font-bold text-white tabular-nums mt-1 leading-none">
+                <div className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-white tabular-nums mt-1 leading-tight">
                   {formatRupiah(totalContribution)}
                 </div>
               </div>
 
-              <div className="border-l border-emerald-400/20 pl-6 sm:pl-10">
+              <div className="border-l border-emerald-400/20 pl-6 sm:pl-8">
                 <span className="text-xs text-emerald-200/90 font-bold uppercase tracking-wider block">Frekuensi Infaq</span>
-                <div className="text-xl sm:text-2xl font-bold text-white tabular-nums mt-1">
-                  {donor.transactions.length} <span className="text-xs font-normal text-emerald-200/70">kali tercatat</span>
+                <div className="text-base sm:text-lg lg:text-xl font-bold text-white tabular-nums mt-1">
+                  {donor.transactions.length} <span className="text-xs font-normal text-emerald-200/80">kali tercatat</span>
                 </div>
               </div>
 
-              <div className="border-l border-emerald-400/20 pl-6 sm:pl-10">
+              <div className="border-l border-emerald-400/20 pl-6 sm:pl-8">
                 <span className="text-xs text-emerald-200/90 font-bold uppercase tracking-wider block">Rata-rata per Infaq</span>
-                <div className="text-xl sm:text-2xl font-bold text-white tabular-nums mt-1">
+                <div className="text-base sm:text-lg lg:text-xl font-bold text-white tabular-nums mt-1">
                   {formatRupiah(averagePerDonation)}
                 </div>
               </div>
@@ -171,24 +171,24 @@ export default async function DonorDetailPage({
           </div>
           {/* Riwayat Transaksi — Format Buku Besar */}
           <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 border-b border-outline-variant pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 border-b border-slate-200 pb-3">
               <div className="flex items-center gap-2">
-                <Receipt className="h-4 w-4 text-primary" />
-                <h2 className="text-lg font-bold text-on-surface font-sans">
+                <Receipt className="h-4 w-4 text-emerald-800" />
+                <h2 className="text-lg font-extrabold tracking-tight text-slate-900 font-sans">
                   Riwayat Infaq Terverifikasi ({donor.transactions.length})
                 </h2>
               </div>
-              <span className="text-xs text-on-surface-variant tabular-nums">
-                Rata-rata: <strong className="text-on-surface font-semibold">{formatRupiah(averagePerDonation)}</strong> per infaq
+              <span className="text-xs text-slate-500 tabular-nums">
+                Rata-rata: <strong className="text-slate-800 font-bold">{formatRupiah(averagePerDonation)}</strong> per infaq
               </span>
             </div>
 
             {donor.transactions.length === 0 ? (
-              <div className="py-12 text-center text-on-surface-variant rounded-xl border border-dashed border-outline-variant bg-surface-container/50">
-                <p className="text-sm">Belum ada riwayat transaksi terverifikasi untuk donatur ini.</p>
+              <div className="p-12 text-center text-slate-500 rounded-2xl border border-dashed border-slate-300 bg-white shadow-2xs">
+                <p className="text-sm font-semibold text-slate-700">Belum ada riwayat transaksi terverifikasi untuk donatur ini.</p>
               </div>
             ) : (
-              <div className="rounded-2xl border border-outline-variant bg-surface overflow-hidden shadow-xs divide-y divide-outline-variant">
+              <div className="rounded-2xl border border-slate-200/90 bg-white overflow-hidden shadow-2xs divide-y divide-slate-100">
                 {donor.transactions.map((tx) => {
                   const txDate = tx.transactionDate ?? tx.report.reportDate;
                   const dateStr = new Date(txDate).toLocaleDateString("id-ID", {
@@ -201,33 +201,33 @@ export default async function DonorDetailPage({
                   return (
                     <div
                       key={tx.id}
-                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 sm:p-5 gap-3 transition-colors hover:bg-surface-container-high/40"
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 sm:p-5 gap-3 transition-colors hover:bg-slate-50/70"
                     >
                       <div className="flex items-start gap-3.5">
-                        <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
-                          <Receipt size={15} />
+                        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
+                          <Receipt size={16} />
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-on-surface">
+                          <p className="text-sm font-bold text-slate-900">
                             {tx.description || "Infaq Kas Masjid"}
                           </p>
-                          <div className="flex items-center gap-1.5 text-xs text-on-surface-variant mt-1">
-                            <Calendar size={12} className="text-primary/70" />
+                          <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-1">
+                            <Calendar size={12} className="text-slate-400" />
                             <span>{dateStr}</span>
                           </div>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between sm:justify-end gap-4 ml-11 sm:ml-0">
-                        <span className="text-base sm:text-lg font-bold text-primary tabular-nums">
+                        <span className="text-base sm:text-lg font-bold text-emerald-800 tabular-nums">
                           +{formatRupiah(Number(tx.amount))}
                         </span>
 
                         <Link
                           href={`/laporan/${tx.reportId}`}
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-on-surface-variant hover:text-primary bg-surface-container hover:bg-surface-container-high border border-outline-variant px-2.5 py-1.5 rounded-lg transition-colors"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-emerald-800 bg-white hover:bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl transition-colors shadow-2xs"
                         >
-                          <FileText size={12} />
+                          <FileText size={13} />
                           <span>Laporan</span>
                           <ExternalLink size={10} className="opacity-70" />
                         </Link>

@@ -260,44 +260,44 @@ export function ExpensesClient({
           <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-            <div className="lg:col-span-6 space-y-3">
-              <div className="flex items-center gap-2.5 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
-                <div className="h-8 w-8 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
-                  <Receipt size={16} />
+            <div className="lg:col-span-5 space-y-2.5">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
+                <div className="h-7 w-7 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
+                  <Receipt size={14} />
                 </div>
                 <span>Total Akumulasi Pengeluaran</span>
               </div>
-              <div className="text-4xl sm:text-5xl lg:text-[54px] font-bold tracking-tight text-white tabular-nums leading-none font-sans">
+              <div className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold tracking-tight text-white tabular-nums leading-tight font-sans">
                 {formatRupiah(currentTotalAmount)}
               </div>
-              <div className="text-xs sm:text-sm text-emerald-100/80">
-                Akumulasi dana operasional, pemeliharaan & kegiatan ({activePeriodLabel})
+              <div className="text-xs text-emerald-100/80">
+                Akumulasi dana pengeluaran kas ({activePeriodLabel})
               </div>
             </div>
 
-            <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm">
-                <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider">
+            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex flex-col justify-between">
+                <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider truncate">
                   Jumlah Transaksi
                 </div>
-                <div className="text-xl sm:text-2xl font-bold text-white tabular-nums mt-1">
+                <div className="text-base sm:text-lg lg:text-xl font-bold text-white tabular-nums mt-1">
                   {currentTransactionCount} Transaksi
                 </div>
-                <div className="text-xs text-emerald-300/70 mt-0.5">
+                <div className="text-xs text-emerald-300/80 mt-0.5 truncate">
                   Rata-rata {currentTransactionCount > 0 ? formatRupiah(Math.round(currentTotalAmount / currentTransactionCount)) : "Rp 0"} / tx
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm">
-                <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider">
+              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex flex-col justify-between">
+                <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider truncate">
                   Alokasi Terbesar
                 </div>
-                <div className="text-xl sm:text-2xl font-bold text-white truncate mt-1">
+                <div className="text-base sm:text-lg lg:text-xl font-bold text-white truncate mt-1">
                   {topCategory ? topCategory.label : "-"}
                 </div>
-                <div className="text-xs text-emerald-300/70 mt-0.5 truncate">
+                <div className="text-xs text-emerald-300/80 mt-0.5 truncate">
                   {topCategory
-                    ? `${formatRupiah(topCategory.totalAmount)} (${((topCategory.totalAmount / (currentTotalAmount || 1)) * 100).toFixed(1)}%)`
+                    ? `${formatRupiah(topCategory.totalAmount)} • ${((topCategory.totalAmount / (currentTotalAmount || 1)) * 100).toFixed(1)}%`
                     : "Belum ada pengeluaran"}
                 </div>
               </div>
@@ -318,14 +318,14 @@ export function ExpensesClient({
         <div className={`space-y-6 transition-opacity duration-200 ${isPeriodLoading ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
 
           {/* 2. BREAKDOWN PER KATEGORI (DISTRIBUSI ALOKASI DANA) */}
-          <div className="rounded-2xl border border-outline-variant bg-surface-container/60 p-5 sm:p-6 shadow-xs space-y-5">
+          <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
-                <h2 className="text-base font-bold text-on-surface flex items-center gap-2">
-                  <PieChart className="size-4 text-primary" />
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <PieChart className="size-4 text-emerald-800" />
                   Distribusi Alokasi Pengeluaran
                 </h2>
-                <p className="text-xs text-on-surface-variant mt-0.5">
+                <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
                   Klik kartu kategori di bawah untuk langsung menyaring daftar rincian transaksi.
                 </p>
               </div>
@@ -334,7 +334,7 @@ export function ExpensesClient({
                   variant="ghost"
                   size="sm"
                   onClick={() => setSelectedCategory("all")}
-                  className="text-xs h-7 self-start sm:self-auto text-primary hover:text-primary hover:bg-primary/10"
+                  className="text-xs h-7 self-start sm:self-auto text-emerald-800 hover:text-emerald-900 hover:bg-emerald-50 font-medium"
                 >
                   Reset Filter Kategori
                 </Button>
@@ -343,7 +343,7 @@ export function ExpensesClient({
 
             {/* Visual Progress Bar Strip */}
             {currentTotalAmount > 0 && (
-              <div className="h-3 w-full rounded-full bg-surface-container-high overflow-hidden flex shadow-inner">
+              <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden flex shadow-inner border border-slate-200/50">
                 {currentBreakdown.map((item) => {
                   const pct =
                     item.percentage ??
@@ -380,7 +380,7 @@ export function ExpensesClient({
             )}
 
             {/* Kartu Grid Interaktif Kategori */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3">
               {currentBreakdown.map((item) => {
                 const isSelected =
                   (selectedCategory === "__null__" && item.category === null) ||
@@ -405,8 +405,8 @@ export function ExpensesClient({
                     }}
                     className={`text-left rounded-xl p-3 sm:p-3.5 border transition-all duration-150 flex flex-col justify-between gap-2 ${
                       isSelected
-                        ? "ring-2 ring-primary border-primary bg-primary/5 shadow-xs"
-                        : "border-outline-variant bg-surface hover:bg-surface-container hover:border-outline-variant/80"
+                        ? "ring-2 ring-emerald-600 border-emerald-600 bg-emerald-50/50 shadow-xs"
+                        : "border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 shadow-2xs"
                     }`}
                   >
                     <div className="flex items-center justify-between gap-1 w-full">
@@ -416,16 +416,16 @@ export function ExpensesClient({
                         <Tag size={10} className="shrink-0" />
                         <span className="truncate">{item.label}</span>
                       </span>
-                      <span className="text-[11px] font-bold text-on-surface-variant tabular-nums shrink-0">
+                      <span className="text-[11px] font-bold text-slate-500 tabular-nums shrink-0">
                         {pct.toFixed(1)}%
                       </span>
                     </div>
 
                     <div>
-                      <div className="text-sm font-bold text-on-surface tabular-nums truncate">
+                      <div className="text-sm font-bold text-slate-900 tabular-nums truncate">
                         {formatRupiah(item.totalAmount)}
                       </div>
-                      <div className="text-[11px] text-on-surface-variant mt-0.5">
+                      <div className="text-[11px] text-slate-500 mt-0.5">
                         {item.transactionCount} transaksi
                       </div>
                     </div>
@@ -439,14 +439,14 @@ export function ExpensesClient({
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-bold text-on-surface flex items-center gap-2">
-                  <Receipt className="size-4.5 text-primary" />
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <Receipt className="size-4.5 text-emerald-800" />
                   Rincian Transaksi Pengeluaran
                 </h2>
-                <p className="text-xs text-on-surface-variant mt-0.5">
+                <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
                   Menampilkan {filteredTransactions.length} dari {currentTransactions.length} transaksi
                   {selectedCategory !== "all" && (
-                    <span className="font-semibold text-primary ml-1">
+                    <span className="font-semibold text-emerald-800 ml-1">
                       (Subtotal: {formatRupiah(filteredTotal)})
                     </span>
                   )}
@@ -456,14 +456,14 @@ export function ExpensesClient({
               {/* Filter & Pengurutan */}
               <div className="flex items-center gap-2 flex-wrap">
                 {/* Search Bar */}
-                <div className="relative w-full sm:w-60">
-                  <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-on-surface-variant" />
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                   <Input
                     id="expense-search-input"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Cari uraian, tanggal..."
-                    className="h-8 pl-8 text-xs bg-surface border-outline-variant focus-visible:ring-primary"
+                    className="h-10 pl-9 text-xs sm:text-sm rounded-xl border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 shadow-2xs"
                   />
                 </div>
 
@@ -480,7 +480,7 @@ export function ExpensesClient({
                         | "amount-asc"
                     )
                   }
-                  className="h-8 text-xs rounded-md border border-outline-variant bg-surface px-2 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="h-10 text-xs sm:text-sm rounded-xl border border-slate-200 bg-white px-3 text-slate-900 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 shadow-2xs"
                 >
                   <option value="date-desc">Tanggal Terbaru</option>
                   <option value="date-asc">Tanggal Terlama</option>
@@ -495,10 +495,10 @@ export function ExpensesClient({
               <button
                 type="button"
                 onClick={() => setSelectedCategory("all")}
-                className={`px-3 py-1 rounded-full font-medium transition-colors shrink-0 ${
+                className={`px-3 py-1.5 rounded-full font-medium transition-colors shrink-0 ${
                   selectedCategory === "all"
-                    ? "bg-primary text-on-primary font-semibold shadow-xs"
-                    : "bg-surface-container border border-outline-variant text-on-surface-variant hover:text-on-surface"
+                    ? "bg-[#0e3824] text-white font-semibold shadow-xs"
+                    : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-2xs"
                 }`}
               >
                 Semua ({currentTransactions.length})
@@ -511,10 +511,10 @@ export function ExpensesClient({
                     key={catKey}
                     type="button"
                     onClick={() => setSelectedCategory(isSelected ? "all" : catKey)}
-                    className={`px-3 py-1 rounded-full font-medium transition-colors shrink-0 flex items-center gap-1 ${
+                    className={`px-3 py-1.5 rounded-full font-medium transition-colors shrink-0 flex items-center gap-1 ${
                       isSelected
-                        ? "bg-primary text-on-primary font-semibold shadow-xs"
-                        : "bg-surface-container border border-outline-variant text-on-surface-variant hover:text-on-surface"
+                        ? "bg-[#0e3824] text-white font-semibold shadow-xs"
+                        : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-2xs"
                     }`}
                   >
                     <span>{item.label}</span>
@@ -524,145 +524,145 @@ export function ExpensesClient({
               })}
             </div>
 
-          {/* Tabel Transaksi (Desktop) & Cards (Mobile) */}
-          {filteredTransactions.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-outline-variant p-10 text-center space-y-2 bg-surface-container/30">
-              <Receipt className="mx-auto size-8 text-on-surface-variant/60" />
-              <p className="text-sm font-semibold text-on-surface">Tidak ada transaksi ditemukan</p>
-              <p className="text-xs text-on-surface-variant max-w-sm mx-auto">
-                {search || selectedCategory !== "all"
-                  ? "Coba ubah kata kunci pencarian atau reset filter kategori."
-                  : "Belum ada data transaksi pengeluaran terverifikasi yang tercatat."}
-              </p>
-              {(search || selectedCategory !== "all") && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setSearch("");
-                    setSelectedCategory("all");
-                  }}
-                  className="mt-2 text-xs h-8 border-outline-variant"
-                >
-                  Reset Semua Filter
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-outline-variant bg-surface overflow-hidden shadow-xs">
-              {/* Desktop Table View */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-surface-container border-b border-outline-variant text-on-surface-variant font-semibold">
-                    <tr>
-                      <th className="py-3 px-4 w-32">Tanggal</th>
-                      <th className="py-3 px-4">Uraian / Keterangan</th>
-                      <th className="py-3 px-4 w-36">Kategori</th>
-                      <th className="py-3 px-4 w-44 text-right">Nominal</th>
-                      <th className="py-3 px-4 w-48 text-right">Laporan Asal</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-outline-variant/60">
-                    {paginatedTransactions.map((tx) => {
-                      const color = getCategoryColor(tx.category);
-                      return (
-                        <tr
-                          key={tx.id}
-                          className="hover:bg-surface-container-high/40 transition-colors"
-                        >
-                          <td className="py-3 px-4 font-medium text-on-surface tabular-nums">
+            {/* Tabel Transaksi (Desktop) & Cards (Mobile) */}
+            {filteredTransactions.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-slate-300 p-12 text-center space-y-2 bg-white shadow-2xs">
+                <Receipt className="mx-auto size-10 text-slate-400 mb-2" />
+                <p className="text-base font-bold text-slate-900">Tidak ada transaksi ditemukan</p>
+                <p className="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto">
+                  {search || selectedCategory !== "all"
+                    ? "Coba ubah kata kunci pencarian atau reset filter kategori."
+                    : "Belum ada data transaksi pengeluaran terverifikasi yang tercatat."}
+                </p>
+                {(search || selectedCategory !== "all") && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSearch("");
+                      setSelectedCategory("all");
+                    }}
+                    className="mt-3 text-xs h-9 rounded-xl border-slate-200 bg-white hover:bg-slate-50 shadow-2xs"
+                  >
+                    Reset Semua Filter
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-slate-200/90 bg-white overflow-hidden shadow-2xs">
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold">
+                      <tr>
+                        <th className="py-3 px-4 w-32">Tanggal</th>
+                        <th className="py-3 px-4">Uraian / Keterangan</th>
+                        <th className="py-3 px-4 w-36">Kategori</th>
+                        <th className="py-3 px-4 w-44 text-right">Nominal</th>
+                        <th className="py-3 px-4 w-48 text-right">Laporan Asal</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {paginatedTransactions.map((tx) => {
+                        const color = getCategoryColor(tx.category);
+                        return (
+                          <tr
+                            key={tx.id}
+                            className="hover:bg-slate-50/70 transition-colors"
+                          >
+                            <td className="py-3.5 px-4 font-medium text-slate-600 tabular-nums">
+                              {formatDateIndo(tx.transactionDate ?? tx.reportDate)}
+                            </td>
+                            <td className="py-3.5 px-4 text-slate-900">
+                              <span className="font-medium">
+                                {tx.description || "(Tanpa uraian)"}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-4">
+                              <span
+                                className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium border ${color.bg} ${color.border} ${color.text}`}
+                              >
+                                <Tag size={9} />
+                                {getCategoryLabel(tx.category)}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-4 text-right font-bold text-rose-700 tabular-nums">
+                              - {formatRupiah(tx.amount)}
+                            </td>
+                            <td className="py-3.5 px-4 text-right">
+                              <Link
+                                href={`/laporan/${tx.reportId}`}
+                                className="inline-flex items-center gap-1 text-[11px] text-emerald-800 hover:text-emerald-950 font-medium hover:underline transition-colors"
+                                title="Buka laporan pembukuan kas terkait"
+                              >
+                                <FileText size={11} className="shrink-0" />
+                                <span className="truncate max-w-[140px]">{tx.reportPeriod}</span>
+                                <ExternalLink size={10} className="shrink-0 opacity-70" />
+                              </Link>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Card List View */}
+                <div className="md:hidden divide-y divide-slate-100">
+                  {paginatedTransactions.map((tx) => {
+                    const color = getCategoryColor(tx.category);
+                    return (
+                      <div key={tx.id} className="p-4 space-y-2 hover:bg-slate-50/50 transition-colors">
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="text-[11px] font-semibold text-slate-500 tabular-nums">
                             {formatDateIndo(tx.transactionDate ?? tx.reportDate)}
-                          </td>
-                          <td className="py-3 px-4 text-on-surface">
-                            <span className="font-medium">
-                              {tx.description || "(Tanpa uraian)"}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            <span
-                              className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium border ${color.bg} ${color.border} ${color.text}`}
-                            >
-                              <Tag size={9} />
-                              {getCategoryLabel(tx.category)}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 text-right font-bold text-rose-700 tabular-nums">
+                          </span>
+                          <span className="text-sm font-bold text-rose-700 tabular-nums">
                             - {formatRupiah(tx.amount)}
-                          </td>
-                          <td className="py-3 px-4 text-right">
-                            <Link
-                              href={`/laporan/${tx.reportId}`}
-                              className="inline-flex items-center gap-1 text-[11px] text-primary hover:text-primary/80 font-medium hover:underline transition-colors"
-                              title="Buka laporan pembukuan kas terkait"
-                            >
-                              <FileText size={11} className="shrink-0" />
-                              <span className="truncate max-w-[140px]">{tx.reportPeriod}</span>
-                              <ExternalLink size={10} className="shrink-0 opacity-70" />
-                            </Link>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                          </span>
+                        </div>
 
-              {/* Mobile Card List View */}
-              <div className="md:hidden divide-y divide-outline-variant/60">
-                {paginatedTransactions.map((tx) => {
-                  const color = getCategoryColor(tx.category);
-                  return (
-                    <div key={tx.id} className="p-3.5 space-y-2">
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-[11px] font-semibold text-on-surface-variant tabular-nums">
-                          {formatDateIndo(tx.transactionDate ?? tx.reportDate)}
-                        </span>
-                        <span className="text-sm font-bold text-rose-700 tabular-nums">
-                          - {formatRupiah(tx.amount)}
-                        </span>
+                        <p className="text-xs font-medium text-slate-900">
+                          {tx.description || "(Tanpa uraian)"}
+                        </p>
+
+                        <div className="flex items-center justify-between gap-2 pt-1">
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium border ${color.bg} ${color.border} ${color.text}`}
+                          >
+                            <Tag size={9} />
+                            {getCategoryLabel(tx.category)}
+                          </span>
+
+                          <Link
+                            href={`/laporan/${tx.reportId}`}
+                            className="inline-flex items-center gap-1 text-[10px] text-emerald-800 font-medium hover:underline"
+                          >
+                            <FileText size={10} />
+                            <span>{tx.reportPeriod}</span>
+                            <ExternalLink size={9} className="opacity-70" />
+                          </Link>
+                        </div>
                       </div>
+                    );
+                  })}
+                </div>
 
-                      <p className="text-xs font-medium text-on-surface">
-                        {tx.description || "(Tanpa uraian)"}
-                      </p>
-
-                      <div className="flex items-center justify-between gap-2 pt-1">
-                        <span
-                          className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium border ${color.bg} ${color.border} ${color.text}`}
-                        >
-                          <Tag size={9} />
-                          {getCategoryLabel(tx.category)}
-                        </span>
-
-                        <Link
-                          href={`/laporan/${tx.reportId}`}
-                          className="inline-flex items-center gap-1 text-[10px] text-primary font-medium hover:underline"
-                        >
-                          <FileText size={10} />
-                          <span>{tx.reportPeriod}</span>
-                          <ExternalLink size={9} className="opacity-70" />
-                        </Link>
-                      </div>
-                    </div>
-                  );
-                })}
+                {/* Pagination Controls Footer */}
+                <div className="px-4 py-3 bg-slate-50/50 border-t border-slate-200">
+                  <PaginationControls
+                    currentPage={safePage}
+                    totalItems={filteredTransactions.length}
+                    pageSize={pageSize}
+                    onPageChange={setCurrentPage}
+                    onPageSizeChange={setPageSize}
+                    pageSizeOptions={[10, 25, 50, 100]}
+                    itemLabel="transaksi"
+                  />
+                </div>
               </div>
-
-              {/* Pagination Controls Footer */}
-              <div className="px-4 py-2.5 bg-surface-container/20 border-t border-outline-variant/60">
-                <PaginationControls
-                  currentPage={safePage}
-                  totalItems={filteredTransactions.length}
-                  pageSize={pageSize}
-                  onPageChange={setCurrentPage}
-                  onPageSizeChange={setPageSize}
-                  pageSizeOptions={[10, 25, 50, 100]}
-                  itemLabel="transaksi"
-                />
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
         </div>
       </div>
     </PageShell>

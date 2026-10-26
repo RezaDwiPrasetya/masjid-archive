@@ -244,7 +244,7 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
               <Users className="h-3.5 w-3.5 text-emerald-800" />
               <span>Daftar Donatur & Infaq Terverifikasi • DKM Masjid Al-Luqman</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-on-surface">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
               Donatur & Infaq Kas Masjid
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
@@ -258,55 +258,55 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
           <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-            <div className="lg:col-span-6 space-y-3">
-              <div className="flex items-center gap-2.5 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
-                <div className="h-8 w-8 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
-                  <Users size={16} />
+            <div className="lg:col-span-5 space-y-2.5">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
+                <div className="h-7 w-7 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
+                  <Users size={14} />
                 </div>
                 <span>Total Akumulasi Infaq Masuk</span>
               </div>
-              <div className="text-4xl sm:text-5xl lg:text-[54px] font-bold tracking-tight text-white tabular-nums leading-none font-sans">
+              <div className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold tracking-tight text-white tabular-nums leading-tight font-sans">
                 {formatRupiah(totalCombinedDonations)}
               </div>
-              <div className="text-xs sm:text-sm text-emerald-100/80">
+              <div className="text-xs text-emerald-100/80">
                 Akumulasi infaq terverifikasi ({activePeriodLabel})
               </div>
             </div>
 
-            <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm">
-                <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider">
+            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex flex-col justify-between">
+                <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider truncate">
                   Donatur Terdata ({currentDonors.length} Nama)
                 </div>
-                <div className="text-xl sm:text-2xl font-bold text-white tabular-nums mt-1">
+                <div className="text-base sm:text-lg lg:text-xl font-bold text-white tabular-nums mt-1">
                   {formatRupiah(totalNamedDonations)}
                 </div>
-                <div className="text-xs text-emerald-300/70 mt-0.5">
+                <div className="text-xs text-emerald-300/80 mt-0.5">
                   Tercatat per nama donatur tetap
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider">
-                    Infaq Tromol / Anonim
-                  </div>
-                  <div className="text-xl sm:text-2xl font-bold text-white tabular-nums mt-1">
-                    {formatRupiah(currentAnonymous.totalContribution)}
-                  </div>
-                  <div className="text-xs text-emerald-300/70 mt-0.5 truncate">
-                    {currentAnonymous.donationCount} kali infaq tromol & hamba Allah
-                  </div>
+              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex flex-col justify-between gap-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider truncate">
+                    Tromol / Anonim
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleOpenAnonModal}
+                    className="shrink-0 h-6 px-2 text-[10.5px] font-semibold rounded-lg bg-white/10 border-white/20 text-white hover:bg-white hover:text-[#0e3824] transition-colors"
+                  >
+                    <ListOrdered className="h-3 w-3 mr-1" />
+                    Rincian
+                  </Button>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleOpenAnonModal}
-                  className="shrink-0 h-8 text-xs font-semibold rounded-xl bg-white/10 border-white/20 text-white hover:bg-white hover:text-[#0e3824] transition-colors"
-                >
-                  <ListOrdered className="h-3.5 w-3.5 mr-1" />
-                  Rincian
-                </Button>
+                <div className="text-base sm:text-lg lg:text-xl font-bold text-white tabular-nums">
+                  {formatRupiah(currentAnonymous.totalContribution)}
+                </div>
+                <div className="text-xs text-emerald-300/80">
+                  {currentAnonymous.donationCount} kali infaq tanpa nama
+                </div>
               </div>
             </div>
           </div>
@@ -462,46 +462,46 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2.5">
-                <h2 className="text-xl font-bold tracking-tight text-on-surface">
+                <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
                   Daftar Profil Donatur
                 </h2>
-                <span className="rounded-full bg-surface-container-high px-2.5 py-0.5 text-xs font-semibold text-on-surface-variant border border-outline-variant">
+                <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 border border-slate-200">
                   {filteredDonors.length} Donatur
                 </span>
               </div>
-              <p className="text-xs text-on-surface-variant mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 Urutan berdasarkan kontribusi infaq tertinggi ke terendah
               </p>
             </div>
 
             <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
               <Input
                 type="text"
                 placeholder="Cari nama donatur..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-10 text-sm rounded-xl border-outline-variant bg-surface-container shadow-xs"
+                className="pl-9 h-10 text-sm rounded-xl border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 shadow-2xs"
               />
             </div>
           </div>
 
           {/* 3. DAFTAR KARTU LIST PROFIL DONATUR */}
           {filteredDonors.length === 0 ? (
-            <div className="p-12 text-center rounded-2xl border border-dashed border-outline-variant bg-surface/50">
-              <ShieldAlert className="h-10 w-10 text-on-surface-variant/40 mx-auto mb-3" />
-              <p className="text-base font-semibold text-on-surface">
+            <div className="p-12 text-center rounded-2xl border border-dashed border-slate-300 bg-white shadow-2xs">
+              <ShieldAlert className="h-10 w-10 text-slate-400 mx-auto mb-3" />
+              <p className="text-base font-bold text-slate-900">
                 {search ? "Donatur tidak ditemukan" : "Belum ada donatur terdata"}
               </p>
-              <p className="text-sm text-on-surface-variant mt-1">
+              <p className="text-sm text-slate-500 mt-1">
                 {search
                   ? `Tidak ada profil donatur yang cocok dengan kata kunci "${search}".`
                   : "Nama donatur yang diverifikasi oleh pengurus DKM akan otomatis muncul di sini."}
               </p>
             </div>
           ) : (
-            <div className="rounded-2xl border border-outline-variant bg-surface overflow-hidden shadow-xs">
-              <div className="divide-y divide-outline-variant">
+            <div className="rounded-2xl border border-slate-200/90 bg-white overflow-hidden shadow-2xs">
+              <div className="divide-y divide-slate-100">
                 {paginatedDonors.map((donor, idx) => {
                   const rank = (safePage - 1) * pageSize + idx + 1;
                   const isRankOne = rank === 1 && !search;
@@ -509,14 +509,14 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
                     <Link
                       key={donor.id}
                       href={`/donatur/${donor.id}`}
-                      className="group flex items-center justify-between gap-4 p-4 sm:p-5 hover:bg-surface-container-high transition-colors duration-150"
+                      className="group flex items-center justify-between gap-4 p-4 sm:p-5 hover:bg-slate-50/70 transition-colors duration-150"
                     >
                       <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
                         {/* Badge Nomor Urut */}
                         <div
                           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold transition-transform group-hover:scale-105 ${isRankOne
                             ? "border border-[#b8860b]/50 text-[#b8860b] bg-[#b8860b]/10 shadow-xs"
-                            : "border border-outline-variant text-on-surface-variant bg-surface"
+                            : "border border-slate-200 text-slate-600 bg-slate-50"
                             }`}
                         >
                           #{rank}
@@ -524,12 +524,12 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
 
                         {/* Nama Donatur */}
                         <div className="min-w-0">
-                          <div className="font-semibold text-sm sm:text-base text-on-surface group-hover:text-primary transition-colors leading-snug">
+                          <div className="font-bold text-sm sm:text-base text-slate-900 group-hover:text-emerald-800 transition-colors leading-snug">
                             {donor.name}
                           </div>
-                          <div className="text-xs text-on-surface-variant mt-1 flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2 py-0.5 border border-outline-variant text-[11px] font-medium">
-                              <UserCheck className="h-3 w-3 text-primary" />
+                          <div className="text-xs text-slate-500 mt-1 flex items-center gap-2">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 border border-emerald-200 text-[11px] font-semibold text-emerald-800">
+                              <UserCheck className="h-3 w-3 text-emerald-700" />
                               {donor.donationCount} infaq terverifikasi
                             </span>
                           </div>
@@ -538,10 +538,10 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
 
                       {/* Nominal Uang di Sisi Kanan (Tabular Nums) + Chevron */}
                       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                        <span className="text-sm sm:text-lg font-bold text-on-surface tabular-nums group-hover:text-primary transition-colors">
+                        <span className="text-sm sm:text-lg font-bold text-slate-900 tabular-nums group-hover:text-emerald-800 transition-colors">
                           {formatRupiah(donor.totalContribution)}
                         </span>
-                        <ChevronRight className="h-4 w-4 text-on-surface-variant/60 group-hover:text-primary group-hover:translate-x-1 transition-transform duration-150" />
+                        <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-emerald-800 group-hover:translate-x-1 transition-transform duration-150" />
                       </div>
                     </Link>
                   );

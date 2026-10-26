@@ -15,7 +15,6 @@ import {
   Sparkles,
   ArrowRight,
 } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PageShell } from "@/components/page-shell";
 import { CashflowTrendSection } from "@/components/cashflow-trend-section";
 
@@ -142,7 +141,7 @@ export function DashboardClient({
               <span>Saldo Kas Fisik Terverifikasi (Laporan Terakhir)</span>
             </div>
 
-            <div className="text-4xl sm:text-5xl lg:text-[54px] font-bold tracking-tight text-white tabular-nums leading-none font-sans">
+            <div className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold tracking-tight text-white tabular-nums leading-tight font-sans">
               {initialFinalBalance !== null
                 ? formatRupiah(animatedBalance)
                 : "Belum Ada"}
@@ -234,14 +233,14 @@ export function DashboardClient({
         )}
         {/* Banner Notifikasi Akses Ditolak (Issue #074) */}
         {showForbiddenAlert && (
-          <div className="rounded-xl border border-amber-300/80 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/40 p-4 text-amber-950 dark:text-amber-100 flex items-start justify-between gap-3 shadow-xs animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 sm:p-5 text-amber-950 flex items-start justify-between gap-3 shadow-2xs animate-in fade-in slide-in-from-top-2 duration-200">
             <div className="flex items-start gap-3 min-w-0">
-              <ShieldAlert className="h-5 w-5 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
+              <ShieldAlert className="h-5 w-5 text-amber-700 shrink-0 mt-0.5" />
               <div className="flex-1 text-xs space-y-1">
-                <div className="font-semibold text-sm text-amber-900 dark:text-amber-200">
+                <div className="font-bold text-sm text-amber-900">
                   Akses Ditolak — Fitur Khusus Staf Pengurus DKM
                 </div>
-                <p className="leading-relaxed text-amber-800 dark:text-amber-300">
+                <p className="leading-relaxed text-amber-800">
                   Anda dialihkan kembali ke Dashboard karena halaman yang dituju (seperti <strong>Unggah Laporan</strong> atau <strong>Manajemen Pengguna</strong>) memerlukan hak akses staf (<strong>Bendahara</strong> atau <strong>Administrator</strong>). Akun Anda saat ini memiliki hak akses sebagai <strong>Jemaah</strong>. Silakan hubungi Administrator DKM jika memerlukan peningkatan wewenang operasional.
                 </p>
               </div>
@@ -256,7 +255,7 @@ export function DashboardClient({
                   window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
                 }
               }}
-              className="p-1 rounded-md text-amber-700 hover:text-amber-900 hover:bg-amber-200/50 dark:text-amber-400 dark:hover:text-amber-200 dark:hover:bg-amber-900/40 transition-colors shrink-0"
+              className="p-1 rounded-lg text-amber-700 hover:text-amber-900 hover:bg-amber-100 transition-colors shrink-0"
               title="Tutup pemberitahuan"
             >
               <X size={16} />
@@ -265,15 +264,12 @@ export function DashboardClient({
         )}
 
         {/* Banner Status Pengumpulan Data */}
-        <Alert
-          variant="info"
-          className="flex items-center gap-2.5 py-2.5 px-4 text-xs rounded-lg shadow-none"
-        >
-          <Info className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-          <AlertDescription className="text-xs text-emerald-950 dark:text-emerald-100 font-medium leading-none">
+        <div className="flex items-center gap-2.5 py-3 px-4 text-xs rounded-2xl border border-slate-200/90 bg-white text-slate-600 shadow-2xs">
+          <Info className="h-4 w-4 shrink-0 text-emerald-800" />
+          <span className="text-xs text-slate-600 font-medium">
             Data masih dalam tahap pengumpulan awal — sebagian periode mungkin belum lengkap.
-          </AlertDescription>
-        </Alert>
+          </span>
+        </div>
 
         {/* Komponen Ringkasan Kas & Tren Terpadu */}
         <CashflowTrendSection

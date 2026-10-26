@@ -167,6 +167,24 @@ export default async function CariLaporanPage({
     sort === "tanggal_asc" ? a - b : b - a
   );
 
+  // Hitung akumulasi keuangan dari dokumen yang terfilter
+  let totalMasukSemua = 0;
+  let totalKeluarSemua = 0;
+  let totalTxTerverifikasi = 0;
+
+  for (const r of filteredReports) {
+    for (const t of r.transactions) {
+      if (t.isVerified) {
+        totalTxTerverifikasi++;
+        if (t.type === "pemasukan") {
+          totalMasukSemua += Number(t.amount);
+        } else if (t.type === "pengeluaran") {
+          totalKeluarSemua += Number(t.amount);
+        }
+      }
+    }
+  }
+
   return (
     <AppShell active="/cari">
       <PageShell>
@@ -193,26 +211,52 @@ export default async function CariLaporanPage({
           <div className="rounded-3xl bg-[#0e3824] text-white p-6 sm:p-8 lg:p-9 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-            <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2.5 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
-                  <div className="h-8 w-8 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
-                    <FileSearch size={16} />
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+              <div className="lg:col-span-5 space-y-2.5">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
+                  <div className="h-7 w-7 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
+                    <FileSearch size={14} />
                   </div>
-                  <span>Total Dokumen Ditemukan</span>
+                  <span>Total Arsip Ditemukan</span>
                 </div>
-                <div className="text-4xl sm:text-5xl lg:text-[54px] font-bold tracking-tight text-white tabular-nums leading-none font-sans">
+                <div className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold tracking-tight text-white tabular-nums leading-tight font-sans">
                   {filteredReports.length} Dokumen
                 </div>
-                <p className="text-xs sm:text-sm text-emerald-100/80">
-                  {keyword ? `Pencarian untuk kata kunci "${keyword}"` : "Semua berkas laporan fisik terarsip"}
-                </p>
+                <div className="text-xs text-emerald-100/80">
+                  {keyword ? `Pencarian kata kunci "${keyword}"` : "Pindaian kas mingguan & warta terverifikasi"}
+                </div>
+              </div>
+
+              <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex flex-col justify-between">
+                  <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider truncate">
+                    Total Pemasukan Kas
+                  </div>
+                  <div className="text-base sm:text-lg lg:text-xl font-bold text-emerald-300 tabular-nums mt-1">
+                    {formatRupiah(totalMasukSemua)}
+                  </div>
+                  <div className="text-xs text-emerald-300/80 mt-0.5">
+                    Dari {filteredReports.length} berkas terfilter
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex flex-col justify-between">
+                  <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider truncate">
+                    Total Pengeluaran Kas
+                  </div>
+                  <div className="text-base sm:text-lg lg:text-xl font-bold text-rose-300 tabular-nums mt-1">
+                    {formatRupiah(totalKeluarSemua)}
+                  </div>
+                  <div className="text-xs text-emerald-300/80 mt-0.5">
+                    {totalTxTerverifikasi} transaksi terverifikasi
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          <form className="grid gap-4 rounded-2xl border border-outline-variant bg-surface p-5 sm:p-6 shadow-xs grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_140px_140px_220px_auto] lg:items-end">
+          <form className="grid gap-4 rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_140px_140px_220px_auto] lg:items-end">
             <div>
-              <label htmlFor="keyword" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
+              <label htmlFor="keyword" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Kata Kunci
               </label>
               <Input
@@ -220,18 +264,18 @@ export default async function CariLaporanPage({
                 name="keyword"
                 defaultValue={keyword}
                 placeholder="Nama pengurus atau tanggal..."
-                className="bg-surface border-outline-variant h-9 text-sm"
+                className="rounded-xl border border-slate-200 bg-white h-10 text-sm text-slate-900 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
               />
             </div>
             <div>
-              <label htmlFor="year" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
+              <label htmlFor="year" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Tahun
               </label>
               <select
                 id="year"
                 name="year"
                 defaultValue={year}
-                className="h-9 w-full rounded-lg border border-outline-variant bg-surface px-3 text-sm text-on-surface outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30"
+                className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
               >
                 <option value="">Semua tahun</option>
                 {years.map((item) => (
@@ -242,14 +286,14 @@ export default async function CariLaporanPage({
               </select>
             </div>
             <div>
-              <label htmlFor="month" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
+              <label htmlFor="month" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Bulan
               </label>
               <select
                 id="month"
                 name="month"
                 defaultValue={month}
-                className="h-9 w-full rounded-lg border border-outline-variant bg-surface px-3 text-sm text-on-surface outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30"
+                className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
               >
                 <option value="">Semua bulan</option>
                 {MONTH_NAMES.map((item, index) => (
@@ -260,14 +304,14 @@ export default async function CariLaporanPage({
               </select>
             </div>
             <div>
-              <label htmlFor="sort" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
+              <label htmlFor="sort" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Urutkan
               </label>
               <select
                 id="sort"
                 name="sort"
                 defaultValue={sort}
-                className="h-9 w-full rounded-lg border border-outline-variant bg-surface px-3 text-sm text-on-surface outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30 font-medium"
+                className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 font-medium"
               >
                 <option value="terbaru_aktivitas">Terakhir Diubah / Ditambahkan</option>
                 <option value="tanggal_desc">Tanggal Laporan (Terbaru)</option>
@@ -275,31 +319,31 @@ export default async function CariLaporanPage({
               </select>
             </div>
             <div className="sm:col-span-2 lg:col-span-1">
-              <Button type="submit" variant="default" className="h-9 w-full lg:w-auto gap-2">
+              <Button type="submit" variant="default" className="h-10 w-full lg:w-auto px-5 gap-2 rounded-xl bg-[#0e3824] hover:bg-[#144731] text-white text-xs font-bold shadow-xs transition-colors">
                 <Search size={15} /> Cari
               </Button>
             </div>
           </form>
 
           {filteredReports.length === 0 ? (
-            <div className="flex flex-col items-center rounded-xl border border-dashed border-outline-variant bg-surface-container/60 p-12 text-center">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <div className="flex flex-col items-center rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center shadow-2xs">
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-800 border border-emerald-200">
                 <FileSearch size={28} />
               </div>
-              <h2 className="text-lg font-bold text-on-surface font-sans">
+              <h2 className="text-lg font-bold text-slate-900 font-sans">
                 Laporan tidak ditemukan
               </h2>
-              <p className="mt-1 text-xs text-on-surface-variant max-w-sm">
+              <p className="mt-1 text-xs text-slate-500 max-w-sm">
                 Tidak ada dokumen arsip yang cocok dengan kata kunci atau filter periode yang Anda pilih.
               </p>
             </div>
           ) : (
             <div className="space-y-8">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   Ditemukan {filteredReports.length} Laporan
                 </span>
-                <span className="text-xs text-on-surface-variant font-medium">
+                <span className="text-xs text-slate-500 font-medium">
                   {sort === "terbaru_aktivitas" && "Diurutkan: Terakhir Diubah / Ditambahkan"}
                   {sort === "tanggal_desc" && "Diurutkan: Tanggal Dokumen Terbaru"}
                   {sort === "tanggal_asc" && "Diurutkan: Tanggal Dokumen Terlama"}
@@ -316,13 +360,13 @@ export default async function CariLaporanPage({
                   <section key={yr} className="space-y-6">
                     {/* Year divider */}
                     <div className="flex items-center gap-3">
-                      <h2 className="text-2xl font-bold text-primary font-sans tracking-tight shrink-0">
+                      <h2 className="text-2xl font-extrabold text-slate-900 font-sans tracking-tight shrink-0">
                         {yr}
                       </h2>
-                      <span className="text-xs font-semibold text-on-surface-variant/70 shrink-0">
+                      <span className="text-xs font-semibold text-slate-500 shrink-0">
                         ({yearReportsCount} Laporan)
                       </span>
-                      <div className="h-px flex-1 bg-outline-variant" />
+                      <div className="h-px flex-1 bg-slate-200" />
                     </div>
 
                     {/* Monthly groups */}
@@ -358,19 +402,19 @@ export default async function CariLaporanPage({
                           return (
                             <div
                               key={mo}
-                              className="rounded-2xl border border-outline-variant bg-surface-container/40 overflow-hidden shadow-xs"
+                              className="rounded-2xl border border-slate-200/90 bg-white overflow-hidden shadow-2xs"
                             >
                               {/* Month Header with Financial Info at the Top */}
-                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 py-4 border-b border-outline-variant/60 bg-surface-container">
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 py-4 border-b border-slate-100 bg-slate-50/70">
                                 <div className="flex items-center gap-3">
-                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
                                     <CalendarDays size={16} />
                                   </div>
                                   <div>
-                                    <h3 className="text-sm font-bold text-on-surface font-sans">
+                                    <h3 className="text-sm font-bold text-slate-900 font-sans">
                                       {MONTH_NAMES[mo - 1] ?? mo} {yr}
                                     </h3>
-                                    <p className="text-xs text-on-surface-variant">
+                                    <p className="text-xs text-slate-500">
                                       {monthReports.length} laporan pekan &middot; {totalVerifiedTx} transaksi terverifikasi
                                     </p>
                                   </div>
@@ -378,30 +422,30 @@ export default async function CariLaporanPage({
 
                                 {hasFinancialData && (
                                   <div className="flex items-center gap-2 flex-wrap">
-                                    <div className="flex items-center gap-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5">
-                                      <TrendingUp size={12} className="text-emerald-700 dark:text-emerald-400 shrink-0" />
-                                      <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 tabular-nums">
+                                    <div className="flex items-center gap-1.5 rounded-lg bg-emerald-50 border border-emerald-200 px-2.5 py-1">
+                                      <TrendingUp size={12} className="text-emerald-700 shrink-0" />
+                                      <span className="text-xs font-bold text-emerald-800 tabular-nums">
                                         +{formatRupiah(monthMasuk)}
                                       </span>
                                     </div>
-                                    <div className="flex items-center gap-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 px-2.5 py-1.5">
-                                      <TrendingDown size={12} className="text-rose-700 dark:text-rose-400 shrink-0" />
-                                      <span className="text-xs font-semibold text-rose-800 dark:text-rose-300 tabular-nums">
+                                    <div className="flex items-center gap-1.5 rounded-lg bg-rose-50 border border-rose-200 px-2.5 py-1">
+                                      <TrendingDown size={12} className="text-rose-600 shrink-0" />
+                                      <span className="text-xs font-bold text-rose-700 tabular-nums">
                                         -{formatRupiah(monthKeluar)}
                                       </span>
                                     </div>
                                     <div
-                                      className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 border ${
+                                      className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 border ${
                                         monthNet >= 0
-                                          ? "bg-emerald-600/10 border-emerald-600/20"
-                                          : "bg-rose-500/10 border-rose-500/20"
+                                          ? "bg-emerald-50 border-emerald-300"
+                                          : "bg-rose-50 border-rose-300"
                                       }`}
                                     >
                                       <span
                                         className={`text-xs font-bold tabular-nums ${
                                           monthNet >= 0
-                                            ? "text-emerald-800 dark:text-emerald-300"
-                                            : "text-rose-800 dark:text-rose-300"
+                                            ? "text-emerald-800"
+                                            : "text-rose-800"
                                         }`}
                                       >
                                         Net {monthNet >= 0 ? "+" : ""}
@@ -447,10 +491,10 @@ export default async function CariLaporanPage({
                                       <Link
                                         key={report.id}
                                         href={`/laporan/${report.id}`}
-                                        className="group flex flex-col rounded-xl border border-outline-variant bg-surface overflow-hidden transition-all duration-200 hover:border-primary/50 hover:shadow-level-2 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                                        className="group flex flex-col rounded-xl border border-slate-200 bg-white overflow-hidden transition-all duration-200 hover:border-emerald-600/50 hover:shadow-2xs hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600/30"
                                       >
                                         {/* Thumbnail 16:10 */}
-                                        <div className="relative aspect-[16/10] w-full overflow-hidden bg-surface-container-high">
+                                        <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
                                           {thumb ? (
                                             // eslint-disable-next-line @next/next/no-img-element
                                             <img
@@ -459,8 +503,8 @@ export default async function CariLaporanPage({
                                               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                                             />
                                           ) : (
-                                            <div className="flex h-full w-full items-center justify-center bg-surface-container">
-                                              <FileText size={28} className="text-primary/40" />
+                                            <div className="flex h-full w-full items-center justify-center bg-slate-50">
+                                              <FileText size={28} className="text-slate-300" />
                                             </div>
                                           )}
 
@@ -470,7 +514,7 @@ export default async function CariLaporanPage({
 
                                           {/* Week badge top-left */}
                                           <div className="absolute top-2 left-2">
-                                            <span className="rounded-md bg-primary/90 px-1.5 py-0.5 text-[10px] font-bold text-on-primary shadow-xs backdrop-blur-sm">
+                                            <span className="rounded-md bg-[#0e3824]/90 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-xs backdrop-blur-sm">
                                               Pekan {report.weekOfMonth}
                                             </span>
                                           </div>
@@ -508,36 +552,36 @@ export default async function CariLaporanPage({
                                         <div className="flex flex-1 flex-col justify-between gap-1.5 p-3">
                                           <div>
                                             <div className="flex items-center justify-between gap-1.5">
-                                              <h4 className="text-xs font-bold text-on-surface group-hover:text-primary transition-colors line-clamp-1 leading-snug">
+                                              <h4 className="text-xs font-bold text-slate-900 group-hover:text-emerald-800 transition-colors line-clamp-1 leading-snug">
                                                 {dateFormatted}
                                               </h4>
                                               <ArrowRight
                                                 size={13}
-                                                className="shrink-0 text-on-surface-variant/40 transition-all group-hover:text-primary group-hover:translate-x-0.5"
+                                                className="shrink-0 text-slate-400 transition-all group-hover:text-emerald-800 group-hover:translate-x-0.5"
                                               />
                                             </div>
-                                            <p className="text-[11px] text-on-surface-variant truncate mt-0.5">
+                                            <p className="text-[11px] text-slate-500 truncate mt-0.5">
                                               Oleh: {report.uploadedBy.name}
                                             </p>
                                           </div>
 
                                           {/* Financial chips — single symmetrical row */}
                                           {hasReportFinancials ? (
-                                            <div className="flex items-center gap-1.5 pt-1.5 border-t border-outline-variant/40">
+                                            <div className="flex items-center gap-1.5 pt-1.5 border-t border-slate-100">
                                               {reportMasuk > 0 && (
-                                                <span className="flex-1 text-center rounded-md bg-emerald-500/10 border border-emerald-500/20 py-0.5 px-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 tabular-nums truncate">
+                                                <span className="flex-1 text-center rounded-md bg-emerald-50 border border-emerald-200 py-0.5 px-1 text-[11px] font-bold text-emerald-800 tabular-nums truncate">
                                                   +{formatRupiah(reportMasuk)}
                                                 </span>
                                               )}
                                               {reportKeluar > 0 && (
-                                                <span className="flex-1 text-center rounded-md bg-rose-500/10 border border-rose-500/20 py-0.5 px-1 text-[11px] font-bold text-rose-600 dark:text-rose-300 tabular-nums truncate">
+                                                <span className="flex-1 text-center rounded-md bg-rose-50 border border-rose-200 py-0.5 px-1 text-[11px] font-bold text-rose-700 tabular-nums truncate">
                                                   -{formatRupiah(reportKeluar)}
                                                 </span>
                                               )}
                                             </div>
                                           ) : (
-                                            <div className="pt-1.5 border-t border-outline-variant/40">
-                                              <span className="text-[10px] text-on-surface-variant/50 italic">
+                                            <div className="pt-1.5 border-t border-slate-100">
+                                              <span className="text-[10px] text-slate-400 italic">
                                                 Belum ada mutasi
                                               </span>
                                             </div>

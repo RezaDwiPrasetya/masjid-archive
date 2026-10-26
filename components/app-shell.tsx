@@ -41,53 +41,17 @@ function MasjidEmblem({ className = "h-8 w-8" }: { className?: string }) {
   );
 }
 
-/**
- * Siluet Arsitektur Kubah & Menara Masjid (Watermark Halus di Sidebar)
- * Dibuat berbasis vektor murni SVG yang ringan dan elegan sesuai referensi.
- */
-function MosqueSilhouette({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 300 130"
-      fill="currentColor"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-      preserveAspectRatio="none"
-      aria-hidden="true"
-    >
-      {/* Menara Kiri */}
-      <rect x="22" y="50" width="7" height="80" rx="1" />
-      <polygon points="25.5,24 20,50 31,50" />
-      <circle cx="25.5" cy="21" r="2.5" />
-      <line x1="25.5" y1="14" x2="25.5" y2="21" stroke="currentColor" strokeWidth="1" />
+function subscribeSidebarStorage(callback: () => void) {
+  window.addEventListener("storage", callback);
+  return () => window.removeEventListener("storage", callback);
+}
 
-      {/* Kubah Sekunder Kiri */}
-      <path d="M 45 130 L 45 80 Q 45 58 65 58 Q 85 58 85 80 L 85 130 Z" />
-      <polygon points="65,51 62,58 68,58" />
-      <circle cx="65" cy="48" r="1.5" />
+function getSidebarSnapshot() {
+  return typeof window !== "undefined" && localStorage.getItem("masjid_sidebar_collapsed") === "true";
+}
 
-      {/* Kubah Utama Megah Tengah */}
-      <path d="M 95 130 L 95 70 Q 95 32 150 26 Q 205 32 205 70 L 205 130 Z" />
-      <polygon points="150,16 145,26 155,26" />
-      <circle cx="150" cy="13" r="2.5" />
-      <line x1="150" y1="6" x2="150" y2="13" stroke="currentColor" strokeWidth="1.2" />
-
-      {/* Kubah Sekunder Kanan */}
-      <path d="M 215 130 L 215 80 Q 215 58 235 58 Q 255 58 255 80 L 255 130 Z" />
-      <polygon points="235,51 232,58 238,58" />
-      <circle cx="235" cy="48" r="1.5" />
-
-      {/* Menara Kanan */}
-      <rect x="271" y="50" width="7" height="80" rx="1" />
-      <polygon points="274.5,24 269,50 280,50" />
-      <circle cx="274.5" cy="21" r="2.5" />
-      <line x1="274.5" y1="14" x2="274.5" y2="21" stroke="currentColor" strokeWidth="1" />
-
-      {/* Lengkungan Jendela Berulang di Dasar Gedung */}
-      <path d="M 115 130 L 115 105 A 10 10 0 0 1 135 105 L 135 130 Z" opacity="0.3" />
-      <path d="M 165 130 L 165 105 A 10 10 0 0 1 185 105 L 185 130 Z" opacity="0.3" />
-    </svg>
-  );
+function getSidebarServerSnapshot() {
+  return false;
 }
 
 export function AppShell({
@@ -99,32 +63,28 @@ export function AppShell({
 }) {
   const router = useRouter();
   const { data: session } = useSession();
-  const [isCollapsed, setIsCollapsed] = React.useState(false);
-  const [mounted, setMounted] = React.useState(false);
+  const storedCollapsed = React.useSyncExternalStore(
+    subscribeSidebarStorage,
+    getSidebarSnapshot,
+    getSidebarServerSnapshot
+  );
+  const [manualCollapsed, setManualCollapsed] = React.useState<boolean | null>(null);
+  const isCollapsed = manualCollapsed ?? storedCollapsed;
+
   const [isProfileMenuOpen, setIsProfileMenuOpen] = React.useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [optimisticActive, setOptimisticActive] = React.useState<string | null>(null);
 
-  const profileMenuRef = React.useRef<HTMLDivElement>(null);
+  // Adjust optimistic active during render when prop changes (React recommended pattern)
+  const [prevActive, setPrevActive] = React.useState(active);
+  if (prevActive !== active) {
+    setPrevActive(active);
+    setOptimisticActive(null);
+  }
+
   const headerProfileRef = React.useRef<HTMLDivElement>(null);
   const notificationRef = React.useRef<HTMLDivElement>(null);
-
-  // Hydrate collapsed state from localStorage safely
-  React.useEffect(() => {
-    setMounted(true);
-    try {
-      const saved = localStorage.getItem("masjid_sidebar_collapsed");
-      if (saved !== null) {
-        setIsCollapsed(saved === "true");
-      }
-    } catch {}
-  }, []);
-
-  // Reset optimistic active whenever route active changes
-  React.useEffect(() => {
-    setOptimisticActive(null);
-  }, [active]);
 
   // Click outside listener for profile and notification popovers
   React.useEffect(() => {
@@ -142,13 +102,11 @@ export function AppShell({
   }, []);
 
   const toggleSidebar = () => {
-    setIsCollapsed((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem("masjid_sidebar_collapsed", String(next));
-      } catch {}
-      return next;
-    });
+    const next = !isCollapsed;
+    setManualCollapsed(next);
+    try {
+      localStorage.setItem("masjid_sidebar_collapsed", String(next));
+    } catch {}
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -189,7 +147,6 @@ export function AppShell({
 
   const role = session?.user?.role;
   const userName = session?.user?.name || "Reza Dwi";
-  const userFirstName = userName.split(" ")[0];
   const userEmail = session?.user?.email;
 
   const currentActive = optimisticActive ?? active;
@@ -317,76 +274,39 @@ export function AppShell({
           </nav>
         </div>
 
-        {/* BAGIAN BAWAH: Kartu Kutipan Amanah & Portal Publik (Tanpa profil duplikat) */}
-        <div className={`space-y-3 py-3.5 border-t border-white/10 relative z-10 ${isCollapsed ? "px-2" : "px-3"}`}>
-          {/* KARTU KUTIPAN AMANAH (Persis Referensi Gambar 1 & media_1792723264079) */}
-          {!isCollapsed && (
-            <div className="rounded-2xl bg-[#0f3b28]/80 border border-emerald-500/20 p-3.5 backdrop-blur-md text-white animate-in fade-in duration-200 shadow-sm">
-              <p className="text-xs font-semibold leading-relaxed tracking-wide text-white">
-                &ldquo;Transparansi adalah bagian dari amanah.&rdquo;
-              </p>
-              <p className="text-[10.5px] text-emerald-300/80 mt-1.5 font-medium">
-                &mdash; DKM Masjid Al-Luqman
-              </p>
-            </div>
-          )}
-
-          {/* KARTU AKSI CEPAT / PORTAL PUBLIK & LOGOUT */}
-          {isStaff(session) && (
-            !isCollapsed ? (
-              <div className="flex flex-col gap-1.5">
-                <Link
-                  href="/?view=public"
-                  className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-[#0f3b28]/80 border border-emerald-500/20 text-xs font-semibold text-white hover:bg-[#144731] hover:border-emerald-400/30 transition-all group shadow-sm"
-                  title="Buka tampilan transparansi publik untuk jemaah"
-                >
-                  <span className="flex items-center gap-2.5">
-                    <ExternalLink size={14} className="text-white" />
-                    <span>Lihat Portal Publik</span>
-                  </span>
-                  <ChevronRight size={13} className="text-white/40 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
-                </Link>
-
-                <button
-                  type="button"
-                  onClick={() => signOut({ callbackUrl: "/" })}
-                  className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-red-950/20 border border-red-500/20 text-xs font-medium text-rose-200 hover:bg-red-900/40 hover:text-white hover:border-red-400/40 transition-all group cursor-pointer"
-                  title="Keluar dari akun pengurus"
-                >
-                  <span className="flex items-center gap-2.5">
-                    <LogOut size={14} className="text-rose-300 group-hover:text-white transition-colors" />
-                    <span>Keluar Akun</span>
-                  </span>
-                </button>
-              </div>
+        {/* BAGIAN BAWAH: Tombol Keluar Akun Minimalis & Bersih */}
+        {session && (
+          <div className={`py-3 border-t border-white/10 relative z-10 ${isCollapsed ? "px-2" : "px-3"}`}>
+            {!isCollapsed ? (
+              <button
+                type="button"
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-rose-500/20 text-emerald-200/80 hover:text-rose-200 border border-white/5 hover:border-rose-500/30 text-xs font-semibold transition-all group cursor-pointer"
+                title="Keluar dari akun pengurus"
+              >
+                <span className="flex items-center gap-2.5">
+                  <LogOut size={15} className="text-emerald-300/80 group-hover:text-rose-300 transition-colors shrink-0" />
+                  <span>Keluar Akun</span>
+                </span>
+                <ChevronRight size={13} className="text-white/30 group-hover:text-rose-200 group-hover:translate-x-0.5 transition-all" />
+              </button>
             ) : (
-              <div className="w-10 mx-auto py-1 rounded-xl bg-[#0f3b28]/80 border border-emerald-500/20 flex flex-col items-center gap-1 animate-in fade-in duration-200">
-                <Link
-                  href="/?view=public"
-                  className="text-emerald-100/75 hover:text-white p-2 rounded-lg hover:bg-white/20 transition-colors group relative"
-                  title="Lihat Beranda Publik"
-                >
-                  <ExternalLink size={16} />
-                  <span className="absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-surface text-on-surface border border-outline-variant text-xs font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
-                    Portal Publik
-                  </span>
-                </Link>
-
+              <div className="w-10 mx-auto py-1 flex items-center justify-center">
                 <button
                   type="button"
                   onClick={() => signOut({ callbackUrl: "/" })}
-                  className="text-rose-300/80 hover:text-rose-100 p-2 rounded-lg hover:bg-rose-500/20 transition-colors group relative cursor-pointer"
+                  className="text-rose-300/80 hover:text-white p-2.5 rounded-xl bg-white/5 hover:bg-rose-600/30 border border-white/5 hover:border-rose-500/30 transition-colors group relative cursor-pointer"
                   title="Keluar Akun"
                 >
                   <LogOut size={16} />
-                  <span className="absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-surface text-rose-600 border border-outline-variant text-xs font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
+                  <span className="absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-slate-900 text-white border border-slate-700 text-xs font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
                     Keluar Akun
                   </span>
                 </button>
               </div>
-            )
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </aside>
 
       {/* ========================================================= */}

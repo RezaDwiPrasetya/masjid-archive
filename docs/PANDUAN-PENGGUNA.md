@@ -1,8 +1,8 @@
 # Panduan Pengguna — Masjid Archive
 ### Sistem Arsip & Manajemen Keuangan DKM Masjid Al-Luqman
 
-> **Versi Sistem**: V10.1 (Feature-Complete & Production-Grade)  
-> **Terakhir diperbarui**: 12 Oktober 2026  
+> **Versi Sistem**: V14.0 (Feature-Complete, Modern Collapsible Emerald UI & Production-Grade)  
+> **Terakhir diperbarui**: 26 Oktober 2026  
 > **Penyusun**: Pengurus DKM Masjid Al-Luqman & Tim Pengembang Masjid Archive
 
 ---
@@ -100,13 +100,24 @@ Login diperlukan untuk mengakses fitur operasional (unggah, ekstraksi, verifikas
 
 ### Cara Logout
 
-Klik nama/foto profil Anda di header, kemudian pilih **"Keluar"**.
+Pengguna dapat keluar dari akun dengan dua cara praktis:
+1. **Melalui Popover Profil di Header Topbar**: Klik avatar foto profil Google Anda di pojok kanan atas untuk membuka kartu popover interaktif akun, kemudian klik tombol **"Keluar Akun"**.
+2. **Melalui Tombol di Kaki Sidebar**: Klik tombol **"Keluar Akun"** di bagian paling bawah bilah navigasi samping (sidebar).
 
 > **Penting**: Jika setelah login Anda melihat status akun *"Menunggu Verifikasi Admin DKM"*, berarti role akun Google Anda belum disetel oleh Administrator. Hubungi Ketua DKM / Admin untuk mendapatkan akses Bendahara.
 
 ---
 
 ## 4. Navigasi Utama
+
+### Fitur Sidebar Desktop Menciut (Collapsible Floating Sidebar)
+
+Bilah navigasi samping (sidebar) berdesain *Deep Mosque Emerald* (`#0e3824`) dilengkapi mekanisme ciut/lebar:
+- **Tombol Ciutkan / Lebarkan**: Klik tombol panah di header samping logo masjid untuk beralih antara mode Lebar (260px) dan mode Ikon Ramping (72px).
+- **Ruang Kerja Lebih Lapang**: Mode ciut memberikan ruang visual maksimal untuk membaca tabel laporan, grafik keuangan, dan dokumen kas.
+- **Tooltip Melayang (*Floating Tooltips*)**: Saat mode ciut aktif, mengarahkan kursor (*hover*) ke salah satu ikon menu akan memunculkan label keterangan menu secara instan.
+- **Penyimpanan Status Otomatis**: Preferensi lebar sidebar Anda disimpan otomatis di memori peramban (*localStorage*), sehingga tidak perlu diatur ulang setiap kali membuka halaman baru.
+- **Watermark Masjid Autentik**: Bagian bawah sidebar dihiasi siluet ilustrasi masjid berkarakter otentik DKM yang menyatu anggun dengan latar belakang hijau zamrud.
 
 Sistem membedakan navigasi secara cerdas berdasarkan peran pengguna (*Role-Based Access Control*):
 
@@ -370,13 +381,14 @@ Memungkinkan pencarian arsip laporan berdasarkan kata kunci dan filter periode.
 
 ### Cara Mencari & Mengurutkan
 
-1. **Kata Kunci**: Ketik kata kunci pada kolom pencarian (misalnya: nama pengurus pengunggah atau tanggal laporan).
-2. **Filter Periode**: Gunakan filter **Tahun** dan **Bulan** untuk mempersempit arsip yang ditampilkan.
-3. **Pengurutan (Sort)**:
-   - **Terakhir Diubah / Ditambahkan** *(Default)*: Menampilkan laporan yang paling baru disentuh (baru diunggah, baru diekstrak AI, atau baru diverifikasi transaksinya) di urutan paling awal.
-   - **Tanggal Laporan (Terbaru)**: Mengurutkan secara kronologis kalender dari tanggal buku kas terbaru ke terlama.
-   - **Tanggal Laporan (Terlama)**: Mengurutkan secara kronologis kalender dari tanggal buku kas paling lampau ke terbaru.
-4. **Hasil Pencarian**: Ditampilkan dalam bentuk kartu visual foto dengan label pekan, nama pengunggah, serta tanggal aktivitas pembaruan terakhir.
+1. **Kata Kunci**: Ketik kata kunci pada kolom pencarian (misalnya: nama pengurus pengunggah, tanggal, atau nomor pekan).
+2. **Filter Periode**: Gunakan filter **Tahun** dan **Bulan** untuk memfokuskan arsip pada rentang kalender tertentu.
+3. **Pengelompokan Bulanan & Ringkasan Finansial**:
+   - Seluruh arsip dikelompokkan secara terstruktur per bulan kalender.
+   - Setiap header bulan menampilkan kartu ikhtisar finansial: **Total Pemasukan**, **Total Pengeluaran**, dan **Arus Kas Bersih (*Net Cash Flow*)** bulan tersebut.
+4. **Grid 4-Kolom Desktop & Pengurutan Kronologis**:
+   - Laporan disajikan dalam kartu kompak 4-kolom proporsional di layar desktop (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`).
+   - Pekan diurutkan secara kronologis dari pekan pertama menuju pekan penutup bulan.
 5. Klik kartu arsip untuk membuka halaman **Detail Laporan**.
 
 ---
@@ -386,7 +398,7 @@ Memungkinkan pencarian arsip laporan berdasarkan kata kunci dan filter periode.
 **Alamat**: `/unggah`  
 **Akses**: Bendahara & Administrator
 
-Halaman untuk mengunggah dokumen kas mingguan baru ke sistem arsip.
+Halaman untuk mengunggah dokumen kas mingguan baru ke sistem arsip. Pasca-unggah berhasil, sistem secara cerdas langsung mengarahkan Anda ke halaman **Detail Laporan** (`/laporan/[id]`) untuk memicu ekstraksi AI secara instan.
 
 ### Format File yang Didukung
 
