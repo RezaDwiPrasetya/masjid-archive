@@ -513,24 +513,22 @@ export function CashflowTrendSection({
                 size="sm"
                 variant={granularity === "weekly" ? "default" : "ghost"}
                 onClick={() => handleGranularityChange("weekly")}
-                className={`rounded-lg px-3 h-7 text-xs font-semibold transition-all ${
-                  granularity === "weekly"
+                className={`rounded-lg px-3 h-7 text-xs font-semibold transition-all ${granularity === "weekly"
                     ? "bg-[#0e3824] text-white shadow-2xs hover:bg-[#144731]"
                     : "text-slate-600 hover:text-slate-900"
-                }`}
+                  }`}
                 disabled={loading}
               >
-                Mingguan
+                Bulanan
               </Button>
               <Button
                 size="sm"
                 variant={granularity === "monthly" ? "default" : "ghost"}
                 onClick={() => handleGranularityChange("monthly")}
-                className={`rounded-lg px-3 h-7 text-xs font-semibold transition-all ${
-                  granularity === "monthly"
+                className={`rounded-lg px-3 h-7 text-xs font-semibold transition-all ${granularity === "monthly"
                     ? "bg-[#0e3824] text-white shadow-2xs hover:bg-[#144731]"
                     : "text-slate-600 hover:text-slate-900"
-                }`}
+                  }`}
                 disabled={loading}
               >
                 Tahunan
@@ -577,9 +575,8 @@ export function CashflowTrendSection({
                 size="sm"
                 variant={semester === "s1" ? "default" : "ghost"}
                 onClick={() => setSemester("s1")}
-                className={`rounded-lg px-2.5 h-6 text-[11px] font-semibold ${
-                  semester === "s1" ? "bg-[#0e3824] text-white" : "text-slate-600"
-                }`}
+                className={`rounded-lg px-2.5 h-6 text-[11px] font-semibold ${semester === "s1" ? "bg-[#0e3824] text-white" : "text-slate-600"
+                  }`}
               >
                 Jan - Jun
               </Button>
@@ -587,9 +584,8 @@ export function CashflowTrendSection({
                 size="sm"
                 variant={semester === "s2" ? "default" : "ghost"}
                 onClick={() => setSemester("s2")}
-                className={`rounded-lg px-2.5 h-6 text-[11px] font-semibold ${
-                  semester === "s2" ? "bg-[#0e3824] text-white" : "text-slate-600"
-                }`}
+                className={`rounded-lg px-2.5 h-6 text-[11px] font-semibold ${semester === "s2" ? "bg-[#0e3824] text-white" : "text-slate-600"
+                  }`}
               >
                 Jul - Des
               </Button>
@@ -651,9 +647,8 @@ export function CashflowTrendSection({
             <Skeleton className="h-8 w-32 mt-2 rounded-xl bg-slate-100" />
           ) : (
             <div
-              className={`mt-1 text-xl sm:text-2xl lg:text-[26px] font-extrabold tabular-nums tracking-tight ${
-                netChange >= 0 ? "text-emerald-700" : "text-rose-600"
-              }`}
+              className={`mt-1 text-xl sm:text-2xl lg:text-[26px] font-extrabold tabular-nums tracking-tight ${netChange >= 0 ? "text-emerald-700" : "text-rose-600"
+                }`}
             >
               {netChange >= 0 ? "+" : ""}
               {formatRupiah(netChange)}
