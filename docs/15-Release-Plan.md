@@ -161,9 +161,12 @@ Next: `1.0.0`
 - **Desain Hero Card Unified Header Modern**:
   - Baris atas kartu memuat judul halaman kontras putih di sisi kiri dan tombol aksi bergaya *glassmorphism* elegan (`bg-white/10 hover:bg-white/20 border border-white/15 text-white`) di sisi kanan.
   - Garis pembatas halus semi-transparan (`border-t border-white/10`) memisahkan identitas modul dengan metrik finansial utama (saldo kas riil, ringkasan mutasi, atau tanggal laporan).
-- **Pembersihan Top Bar Header (`components/app-shell.tsx`)**:
+- **Pembersihan & Penyelarasan Header (`components/app-shell.tsx` & `components/page-shell.tsx`)**:
   - Menghapus search input global dan hamburger toggle dari header atas untuk menjaga kesederhanaan dan fokus visual, sembari mempertahankan menu `/cari` di sidebar navigasi.
+  - Menyelaraskan padding horizontal header (`px-4 sm:px-6 md:px-8 lg:px-10`) dengan PageShell sehingga profil pengguna dan notifikasi sejajar lurus vertikal (*flush right*) dengan batas tepi kanan Hero Card.
+  - Mengurangi gap vertikal antara header dan Hero Card dari 40px menjadi 20px (`pt-3 sm:pt-4 md:pt-5`) untuk tampilan yang lebih rapat, terpadu, dan proporsional.
 - **Pengerasan Responsivitas Form & Grid**:
+  - Halaman Manajemen Pengguna (`app/pengguna/page.tsx`) resmi mengadopsi Dark Green Hero Card (`#0e3824`) dengan judul putih, metrik total akun aktif, dan 3 subcard peran interaktif (*Administrator*, *Bendahara*, *Jamaah*) berdesain emerald glassmorphism tanpa clipping.
   - Form filter `/cari` dirombak menjadi multi-row fluid grid (`grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-12`), mencegah input teks menyusut pada layar laptop 1024px saat sidebar 260px terbuka.
   - Subcard metrik perbendaharaan, donatur, dan pengeluaran diperbarui ke `xl:grid-cols-12` dengan teks multi-baris fleksibel `leading-tight` tanpa pemotongan `truncate`.
   - Halaman unggah (`/unggah`) kini menggabungkan Date Picker dan Tombol Aksi Simpan ke dalam satu kontainer terpadu yang proporsional.

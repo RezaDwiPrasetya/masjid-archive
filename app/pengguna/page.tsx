@@ -243,120 +243,171 @@ export default function PenggunaPage() {
     <AppShell active="/pengguna">
       <PageShell>
         <div className="space-y-6 sm:space-y-8 pb-12">
-          {/* HEADER ATAS & 3 KARTU ROLE KPI (PERSIS MOCKUP GAMBAR 2) */}
-          <div className="space-y-4">
+          {/* UNIFIED HERO HEADER CARD (F-039) */}
+          <div className="rounded-3xl bg-[#0e3824] text-white p-6 sm:p-8 lg:p-9 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-            {/* Row Judul Total & 3 Kartu Role KPI */}
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-center">
-              {/* Sisi Kiri: Headline Total Pengguna */}
-              <div className="xl:col-span-5 space-y-1">
-                <span className="text-[11px] uppercase tracking-wider text-emerald-800 font-bold block">
-                  Total Akun Pengguna Terdaftar
-                </span>
-                <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-                  {stats.total} Pengguna
-                </h1>
-                <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                  Hak akses dan akun terdaftar untuk staf pengurus DKM, bendahara, dan jemaah masjid.
-                </p>
+            <div className="relative z-10 space-y-5 sm:space-y-6">
+              {/* Baris Atas: Judul Halaman & Ringkasan */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+                    Manajemen Pengguna
+                  </h1>
+                  <p className="text-xs sm:text-sm text-emerald-100/80 mt-1 leading-relaxed">
+                    Pengaturan hak akses akun staf pengurus DKM, bendahara, dan jemaah masjid
+                  </p>
+                </div>
               </div>
 
-              {/* Sisi Kanan: 3 Kartu KPI Role */}
-              <div className="xl:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {/* Card 1: Administrator */}
-                <div
-                  onClick={() => {
-                    setRoleFilter(roleFilter === "ADMIN" ? "ALL" : "ADMIN");
-                    setPage(1);
-                  }}
-                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer shadow-2xs flex items-center justify-between gap-3 ${
-                    roleFilter === "ADMIN"
-                      ? "bg-emerald-50/60 border-emerald-600 ring-1 ring-emerald-600"
-                      : "bg-white border-slate-200/90 hover:border-emerald-300"
-                  }`}
-                  title="Klik untuk memfilter Administrator"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-10 w-10 rounded-full bg-[#0e3824] text-white flex items-center justify-center shrink-0">
-                      <ShieldCheck size={18} className="text-emerald-300" />
+              {/* Garis Pemisah Halus */}
+              <div className="border-t border-white/10" />
+
+              {/* Baris Bawah: Grid Metrik Akun & 3 Kartu Role KPI */}
+              <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-center">
+                {/* Sisi Kiri: Total Pengguna */}
+                <div className="xl:col-span-4 space-y-2.5">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
+                    <div className="h-7 w-7 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
+                      <Users size={14} />
                     </div>
-                    <div className="min-w-0">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block truncate">
-                        Administrator
-                      </span>
-                      <div className="text-xl font-bold text-slate-900 tabular-nums">
-                        {stats.admin}
-                      </div>
-                      <span className="text-[10px] text-slate-400 block truncate">
-                        Akses penuh ke semua fitur
-                      </span>
-                    </div>
+                    <span>Total Pengguna Terdaftar</span>
                   </div>
-                  <ChevronRight size={14} className="text-slate-300 shrink-0" />
+                  <div className="text-3xl sm:text-4xl lg:text-[40px] font-extrabold tracking-tight text-white tabular-nums leading-tight font-sans">
+                    {stats.total} Akun
+                  </div>
+                  <div className="text-xs text-emerald-100/80">
+                    Pengguna aktif dengan hak akses sistem terverifikasi
+                  </div>
                 </div>
 
-                {/* Card 2: Bendahara */}
-                <div
-                  onClick={() => {
-                    setRoleFilter(roleFilter === "BENDAHARA" ? "ALL" : "BENDAHARA");
-                    setPage(1);
-                  }}
-                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer shadow-2xs flex items-center justify-between gap-3 ${
-                    roleFilter === "BENDAHARA"
-                      ? "bg-emerald-50/60 border-emerald-600 ring-1 ring-emerald-600"
-                      : "bg-white border-slate-200/90 hover:border-emerald-300"
-                  }`}
-                  title="Klik untuk memfilter Bendahara"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-10 w-10 rounded-full bg-[#0e3824] text-white flex items-center justify-center shrink-0">
-                      <UserCheck size={18} className="text-emerald-300" />
-                    </div>
-                    <div className="min-w-0">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block truncate">
-                        Bendahara
-                      </span>
-                      <div className="text-xl font-bold text-slate-900 tabular-nums">
-                        {stats.bendahara}
+                {/* Sisi Kanan: 3 Kartu Role Interaktif Emerald Glassmorphism */}
+                <div className="xl:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* Card 1: Administrator */}
+                  <div
+                    onClick={() => {
+                      setRoleFilter(roleFilter === "ADMIN" ? "ALL" : "ADMIN");
+                      setPage(1);
+                    }}
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer backdrop-blur-sm flex items-center justify-between gap-3 ${
+                      roleFilter === "ADMIN"
+                        ? "bg-white text-slate-900 border-white shadow-md ring-2 ring-emerald-400"
+                        : "bg-[#144731]/80 border-emerald-400/20 text-white hover:bg-[#18533a]"
+                    }`}
+                    title="Klik untuk memfilter Administrator"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
+                        roleFilter === "ADMIN" ? "bg-[#0e3824] text-white" : "bg-white/10 text-emerald-300 border border-white/10"
+                      }`}>
+                        <ShieldCheck size={18} />
                       </div>
-                      <span className="text-[10px] text-slate-400 block truncate">
-                        Kelola keuangan & laporan
-                      </span>
+                      <div className="min-w-0">
+                        <span className={`text-[10.5px] font-bold uppercase tracking-wider block leading-tight ${
+                          roleFilter === "ADMIN" ? "text-emerald-900" : "text-emerald-200"
+                        }`}>
+                          Administrator
+                        </span>
+                        <div className={`text-xl font-bold tabular-nums mt-0.5 ${
+                          roleFilter === "ADMIN" ? "text-slate-900" : "text-white"
+                        }`}>
+                          {stats.admin}
+                        </div>
+                        <span className={`text-[10px] block leading-tight mt-0.5 truncate ${
+                          roleFilter === "ADMIN" ? "text-slate-500" : "text-emerald-300/80"
+                        }`}>
+                          Akses penuh sistem
+                        </span>
+                      </div>
                     </div>
+                    <ChevronRight size={14} className={`shrink-0 ${
+                      roleFilter === "ADMIN" ? "text-emerald-800" : "text-white/40"
+                    }`} />
                   </div>
-                  <ChevronRight size={14} className="text-slate-300 shrink-0" />
-                </div>
 
-                {/* Card 3: Jamaah / Publik */}
-                <div
-                  onClick={() => {
-                    setRoleFilter(roleFilter === "JAMAAH" ? "ALL" : "JAMAAH");
-                    setPage(1);
-                  }}
-                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer shadow-2xs flex items-center justify-between gap-3 ${
-                    roleFilter === "JAMAAH"
-                      ? "bg-emerald-50/60 border-emerald-600 ring-1 ring-emerald-600"
-                      : "bg-white border-slate-200/90 hover:border-emerald-300"
-                  }`}
-                  title="Klik untuk memfilter Jamaah"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-10 w-10 rounded-full bg-[#0e3824] text-white flex items-center justify-center shrink-0">
-                      <Users size={18} className="text-emerald-300" />
-                    </div>
-                    <div className="min-w-0">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block truncate">
-                        Jamaah / Publik
-                      </span>
-                      <div className="text-xl font-bold text-slate-900 tabular-nums">
-                        {stats.jamaah}
+                  {/* Card 2: Bendahara */}
+                  <div
+                    onClick={() => {
+                      setRoleFilter(roleFilter === "BENDAHARA" ? "ALL" : "BENDAHARA");
+                      setPage(1);
+                    }}
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer backdrop-blur-sm flex items-center justify-between gap-3 ${
+                      roleFilter === "BENDAHARA"
+                        ? "bg-white text-slate-900 border-white shadow-md ring-2 ring-emerald-400"
+                        : "bg-[#144731]/80 border-emerald-400/20 text-white hover:bg-[#18533a]"
+                    }`}
+                    title="Klik untuk memfilter Bendahara"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
+                        roleFilter === "BENDAHARA" ? "bg-[#0e3824] text-white" : "bg-white/10 text-emerald-300 border border-white/10"
+                      }`}>
+                        <UserCheck size={18} />
                       </div>
-                      <span className="text-[10px] text-slate-400 block truncate">
-                        Akses terbatas (read-only)
-                      </span>
+                      <div className="min-w-0">
+                        <span className={`text-[10.5px] font-bold uppercase tracking-wider block leading-tight ${
+                          roleFilter === "BENDAHARA" ? "text-emerald-900" : "text-emerald-200"
+                        }`}>
+                          Bendahara
+                        </span>
+                        <div className={`text-xl font-bold tabular-nums mt-0.5 ${
+                          roleFilter === "BENDAHARA" ? "text-slate-900" : "text-white"
+                        }`}>
+                          {stats.bendahara}
+                        </div>
+                        <span className={`text-[10px] block leading-tight mt-0.5 truncate ${
+                          roleFilter === "BENDAHARA" ? "text-slate-500" : "text-emerald-300/80"
+                        }`}>
+                          Kelola kas &amp; laporan
+                        </span>
+                      </div>
                     </div>
+                    <ChevronRight size={14} className={`shrink-0 ${
+                      roleFilter === "BENDAHARA" ? "text-emerald-800" : "text-white/40"
+                    }`} />
                   </div>
-                  <ChevronRight size={14} className="text-slate-300 shrink-0" />
+
+                  {/* Card 3: Jamaah / Publik */}
+                  <div
+                    onClick={() => {
+                      setRoleFilter(roleFilter === "JAMAAH" ? "ALL" : "JAMAAH");
+                      setPage(1);
+                    }}
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer backdrop-blur-sm flex items-center justify-between gap-3 ${
+                      roleFilter === "JAMAAH"
+                        ? "bg-white text-slate-900 border-white shadow-md ring-2 ring-emerald-400"
+                        : "bg-[#144731]/80 border-emerald-400/20 text-white hover:bg-[#18533a]"
+                    }`}
+                    title="Klik untuk memfilter Jamaah"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
+                        roleFilter === "JAMAAH" ? "bg-[#0e3824] text-white" : "bg-white/10 text-emerald-300 border border-white/10"
+                      }`}>
+                        <Users size={18} />
+                      </div>
+                      <div className="min-w-0">
+                        <span className={`text-[10.5px] font-bold uppercase tracking-wider block leading-tight ${
+                          roleFilter === "JAMAAH" ? "text-emerald-900" : "text-emerald-200"
+                        }`}>
+                          Jamaah / Publik
+                        </span>
+                        <div className={`text-xl font-bold tabular-nums mt-0.5 ${
+                          roleFilter === "JAMAAH" ? "text-slate-900" : "text-white"
+                        }`}>
+                          {stats.jamaah}
+                        </div>
+                        <span className={`text-[10px] block leading-tight mt-0.5 truncate ${
+                          roleFilter === "JAMAAH" ? "text-slate-500" : "text-emerald-300/80"
+                        }`}>
+                          Akses baca transparan
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronRight size={14} className={`shrink-0 ${
+                      roleFilter === "JAMAAH" ? "text-emerald-800" : "text-white/40"
+                    }`} />
+                  </div>
                 </div>
               </div>
             </div>

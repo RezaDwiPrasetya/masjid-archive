@@ -307,7 +307,7 @@ export function AppShell({
         }`}
       >
         {/* Structural Header (Tinggi h-16 Bersih & Minimalis Sesuai Permintaan) */}
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-emerald-950/8 bg-white/95 backdrop-blur-md px-4 lg:px-8 shadow-2xs">
+        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-emerald-950/8 bg-white/95 backdrop-blur-md px-4 sm:px-6 md:px-8 lg:px-10 shadow-2xs">
           {/* Sisi Kiri: Brand Title Pada Tampilan Mobile */}
           <div className="flex items-center gap-3">
             <div className="lg:hidden flex items-center gap-2 shrink-0">
