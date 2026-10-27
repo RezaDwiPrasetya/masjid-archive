@@ -984,18 +984,21 @@
   - **Popover Profil & Notifikasi Mengambang ke Atas**: Popover menu profil dan status kas membuka ke atas (*floating upward*) dari footer sidebar dengan penataan posisi X yang aman sehingga tidak terpotong tepi layar (*unclipped*).
   - **Mode Sidebar Ciut (72px)**: Menampilkan tombol lonceng notifikasi mandiri dan tombol avatar inisial bulat yang rapi. Saat diklik, popover profil dan notifikasi membuka ke arah kanan (*floating rightward*) di atas kanvas utama tanpa tertutup oleh batas sidebar (`overflow-visible`).
   - **State Tamu / Publik (Belum Login)**: Menampilkan tombol "Akses Pengurus" dengan ikon `LogIn` yang memandu pengurus masuk ke sistem.
-- **Pemulihan Warna Status Bar Mobile PWA**:
-  - Mengembalikan nilai `theme_color` pada `public/manifest.json` dari `#154212` ke `#ffffff`.
-  - Menambahkan konfigurasi `export const viewport: Viewport = { themeColor: "#ffffff" };` pada `app/layout.tsx`.
-  - Bilah status OS (jam, baterai, jaringan 4G/WiFi) pada perangkat mobile Android/Chrome kembali berlatar putih bersih selaras dengan header native ponsel.
+- **Penyelarasan Warna Status Bar Mobile PWA**:
+  - Mengatur nilai `theme_color` pada `public/manifest.json` dan `viewport` pada `app/layout.tsx` menjadi `#0e3824` selaras dengan warna hijau utama Deep Mosque Emerald aplikasi kita.
+  - Bilah status OS (jam, baterai, jaringan) pada perangkat mobile Android/Chrome menyatu secara imersif dan konsisten dengan tema utama aplikasi.
+- **Penyatuan Header Halaman Detail Laporan (`app/laporan/[id]/page.tsx`)**:
+  - Mengintegrasikan navigasi kembali (`<- Kembali ke Dashboard`), badge status terverifikasi, judul laporan pekan, dan tombol aksi (`Cetak Laporan` & `Unduh Excel`) langsung ke dalam **Dark Green Hero Card** (`#0e3824`).
+  - Mengeliminasi double header dan teks eyebrow abu-abu redundan di kanvas luar terang, menghasilkan konsistensi visual 100% di seluruh modul aplikasi.
 - **Pembersihan Next.js Dev Overlay**:
   - Menonaktifkan `devIndicators: false` pada `next.config.ts` agar indikator dev tidak menimpa tombol avatar profil sidebar pada mode ciut di localhost.
 **Acceptance Criteria:**
 - [x] Top header horizontal desktop disembunyikan sepenuhnya di layar desktop (1024px+).
 - [x] Kartu Dark Green Hero Card langsung tampil di bagian atas dengan jarak proporsional 32px (`lg:pt-8`).
+- [x] Halaman Detail Laporan (`/laporan/[id]`) menggunakan Unified Dark Green Hero Card (`#0e3824`) yang memuat seluruh identitas, navigasi kembali, tombol aksi, dan 4 metrik finansial.
 - [x] Profil pengguna dan lonceng notifikasi terintegrasi rapi pada footer sidebar desktop baik dalam mode mengembang (260px) maupun ciut (72px).
 - [x] Popover profil dan notifikasi membuka ke atas di mode mengembang dan ke kanan di mode ciut tanpa terpotong (*unclipped*).
 - [x] Header mobile (`< lg`) tetap utuh dengan logo brand, lonceng notifikasi, dan tombol avatar profil.
-- [x] PWA manifest dan Next.js viewport mengarahkan status bar mobile menjadi putih bersih (`#ffffff`).
+- [x] PWA manifest dan Next.js viewport menyelaraskan status bar mobile menjadi warna hijau masjid utama `#0e3824`.
 - [x] Seluruh test suite (responsivitas, navigasi, paginasi) dan pengecekan tipe TypeScript lulus 100%.
 

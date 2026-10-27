@@ -410,10 +410,11 @@ Shared logic di `lib/donor-matching.ts`, `lib/donor-service.ts`, dan `lib/expens
     - **Eliminasi Pemotongan Teks (Truncation)**: Subcard metrik perbendaharaan, donatur, dan pengeluaran diselaraskan ke `xl:grid-cols-12` dengan wrapping teks `leading-tight` tanpa elipsis.
     - **Integrasi Unggah Laporan**: Date Picker dan tombol submit diintegrasikan ke dalam satu kartu terpadu (*Card Action Footer*).
     - **Verifikasi Lintas Perangkat**: Teruji 100% responsif pada 375px (ponsel), 768px (tablet), 1024px (laptop), dan 1280px+ (desktop lebar).
-14. **F-040: Kanvas Desktop Seamless, Integrasi Profil/Notifikasi ke Sidebar Footer & Status Bar PWA Putih (Issue #084 — Selesai Penuh)**:
+14. **F-040: Kanvas Desktop Seamless, Integrasi Profil/Notifikasi Sidebar, Penyatuan Hero Detail Laporan & Penyelarasan Tema PWA (Issue #084 — Selesai Penuh)**:
     - **Eliminasi Top Header Desktop**: Menyembunyikan bar horizontal putih 64px di desktop (`lg:hidden`), memberikan tampilan kanvas yang lapang, elegan, dan fokus langsung pada Dark Green Hero Card (`lg:pt-8`).
+    - **Penyatuan Header Halaman Detail Laporan (`/laporan/[id]`)**: Navigasi kembali (`<- Kembali ke Dashboard`), badge terverifikasi, judul laporan pekan, dan tombol aksi (`Cetak Laporan` & `Unduh Excel`) diintegrasikan 100% ke dalam Dark Green Hero Card (`#0e3824`), menghapus double header luar.
     - **Integrasi Profil & Notifikasi di Sidebar Footer**: Profil staf (`Reza Dwi ADMIN`), popover navigasi, dan lonceng notifikasi status kas dipindahkan ke footer sidebar. Mendukung mode mengembang (260px) dengan popover mengambang ke atas, dan mode ciut (72px) dengan popover mengambang ke kanan tanpa terpotong batas container (`overflow-visible`).
-    - **Pemulihan Status Bar PWA**: Mengembalikan `theme_color` pada `public/manifest.json` dan `viewport` pada `app/layout.tsx` menjadi `#ffffff` sehingga status bar ponsel (jam, baterai, sinyal) kembali putih bersih native.
+    - **Penyelarasan Status Bar PWA**: Mengatur `theme_color` pada `public/manifest.json` dan `viewport` pada `app/layout.tsx` menjadi `#0e3824` selaras dengan warna hijau utama Deep Mosque Emerald aplikasi kita.
     - **Penonaktifan Next.js Dev Indicator**: Mengatur `devIndicators: false` pada `next.config.ts` untuk memastikan indikator dev Turbopack tidak menutupi avatar footer di lingkungan lokal.
 
 ---

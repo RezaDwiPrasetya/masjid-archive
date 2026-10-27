@@ -4,7 +4,7 @@ import { AuthProvider } from "@/components/auth-provider";
 import "./globals.css";
 
 export const viewport: Viewport = {
-  themeColor: "#ffffff",
+  themeColor: "#0e3824",
 };
 
 const outfit = Outfit({
