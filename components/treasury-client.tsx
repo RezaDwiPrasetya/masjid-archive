@@ -236,77 +236,56 @@ export function TreasuryClient({
   return (
     <PageShell>
       <div className="space-y-6 sm:space-y-8">
-        {/* HEADER ATAS: Breadcrumb, Judul Masjid, & Aksi Cepat (Persis Mockup Gambar 1) */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Arsip Digital Keuangan Masjid
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Masjid Al-Luqman
-            </h1>
-            <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
-              <span>Transparan</span>
-              <span className="text-slate-300">•</span>
-              <span>Amanah</span>
-              <span className="text-slate-300">•</span>
-              <span>Berkah</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex items-center gap-3 px-3.5 py-2 rounded-2xl bg-white border border-slate-200/90 shadow-2xs">
-              <div className="h-9 w-9 rounded-xl bg-[#0e3824] text-white flex items-center justify-center shrink-0">
-                <ShieldCheck size={18} className="text-emerald-300" />
-              </div>
-              <div className="flex flex-col text-left">
-                <span className="text-xs font-bold text-slate-900 leading-tight">
-                  Posisi Kas Riil & Perbendaharaan
-                </span>
-                <span className="text-[11px] text-slate-500 font-medium">
-                  DKM Masjid Al-Luqman
-                </span>
-              </div>
-            </div>
-
-            {isStaffUser && (
-              <Button
-                onClick={() => {
-                  setErrorMessage(null);
-                  setDialogOpen(true);
-                }}
-                className="h-10 px-4 rounded-xl bg-[#0e3824] hover:bg-[#144731] text-white text-xs font-bold gap-2 shadow-sm transition-all"
-              >
-                <span>Catat Mutasi Kas Internal</span>
-                <ArrowRight size={14} />
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* HERO CARD MELAYANG (PERSIS GAMBAR REFERENSI 1) */}
+        {/* UNIFIED HERO HEADER CARD (F-039) */}
         <div className="rounded-3xl bg-[#0e3824] text-white p-6 sm:p-8 lg:p-9 shadow-sm relative overflow-hidden">
           {/* Efek aksen radial halus */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-            {/* Sisi Kiri: Saldo Konsolidasi Utama */}
-            <div className="lg:col-span-7 space-y-4">
-              <div className="flex items-center gap-2.5 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
-                <div className="h-8 w-8 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
-                  <Wallet size={16} />
+          <div className="relative z-10 space-y-5 sm:space-y-6">
+            {/* Baris Atas: Judul Halaman & Tombol Aksi Mutasi */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                Posisi Kas &amp; Perbendaharaan
+              </h1>
+
+              {isStaffUser && (
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <Button
+                    onClick={() => {
+                      setErrorMessage(null);
+                      setDialogOpen(true);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-emerald-50 text-[#0e3824] text-xs font-bold shadow-xs transition-colors"
+                  >
+                    <ArrowRightLeft size={14} />
+                    <span>Catat Mutasi Kas Internal</span>
+                  </Button>
                 </div>
-                <span>Total Kas Terkonsolidasi (Fisik & Bank)</span>
-              </div>
-
-              <div className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold tracking-tight text-white tabular-nums leading-tight font-sans">
-                {formatRupiah(summary.totalBalance)}
-              </div>
-
-              <p className="text-xs sm:text-sm text-emerald-100/80 leading-relaxed max-w-xl">
-                Total likuiditas gabungan: kas fisik di brankas ({cashRatio}%) dan rekening bank / QRIS resmi ({bankRatio}%)
-              </p>
+              )}
             </div>
+
+            {/* Garis Pemisah Halus */}
+            <div className="border-t border-white/10" />
+
+            {/* Baris Bawah: Grid Saldo Konsolidasi & Sub-Kanal */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+              {/* Sisi Kiri: Saldo Konsolidasi Utama */}
+              <div className="lg:col-span-7 space-y-4">
+                <div className="flex items-center gap-2.5 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
+                  <div className="h-7 w-7 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
+                    <Wallet size={14} />
+                  </div>
+                  <span>Total Kas Terkonsolidasi (Fisik & Bank)</span>
+                </div>
+
+                <div className="text-2xl sm:text-3xl lg:text-[36px] font-extrabold tracking-tight text-white tabular-nums leading-tight font-sans">
+                  {formatRupiah(summary.totalBalance)}
+                </div>
+
+                <p className="text-xs sm:text-sm text-emerald-100/80 leading-relaxed max-w-xl">
+                  Total likuiditas gabungan: kas fisik di brankas ({cashRatio}%) dan rekening bank / QRIS resmi ({bankRatio}%)
+                </p>
+              </div>
 
             {/* Sisi Kanan: Kartu Sub-Kanal (Tunai & Digital) */}
             <div className="lg:col-span-5 space-y-3">
@@ -358,6 +337,7 @@ export function TreasuryClient({
             </div>
           </div>
         </div>
+      </div>
 
         {/* Banner Notifikasi Sukses / Error */}
         {successMessage && (
