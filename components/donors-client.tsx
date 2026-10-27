@@ -237,41 +237,42 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
   return (
     <PageShell>
       <div className="space-y-6 sm:space-y-8">
-        {/* HEADER ATAS DI KANVAS TERANG */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              <Users className="h-3.5 w-3.5 text-emerald-800" />
-              <span>Daftar Donatur & Infaq Terverifikasi • DKM Masjid Al-Luqman</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-              Donatur & Infaq Kas Masjid
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Akumulasi infaq masuk dari {totalCombinedCount} catatan terverifikasi ({activePeriodLabel})
-            </p>
-          </div>
-        </div>
-
-        {/* HERO CARD MELAYANG */}
+        {/* UNIFIED HERO HEADER CARD (F-039) */}
         <div className="rounded-3xl bg-[#0e3824] text-white p-6 sm:p-8 lg:p-9 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-            <div className="lg:col-span-5 space-y-2.5">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
-                <div className="h-7 w-7 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
-                  <Users size={14} />
-                </div>
-                <span>Total Akumulasi Infaq Masuk</span>
-              </div>
-              <div className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold tracking-tight text-white tabular-nums leading-tight font-sans">
-                {formatRupiah(totalCombinedDonations)}
-              </div>
-              <div className="text-xs text-emerald-100/80">
-                Akumulasi infaq terverifikasi ({activePeriodLabel})
+          <div className="relative z-10 space-y-5 sm:space-y-6">
+            {/* Baris Atas: Judul Halaman & Ringkasan Catatan */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+                  Donatur &amp; Infaq Kas Masjid
+                </h1>
+                <p className="text-xs sm:text-sm text-emerald-100/80 mt-1 leading-relaxed">
+                  Akumulasi infaq masuk dari {totalCombinedCount} catatan terverifikasi ({activePeriodLabel})
+                </p>
               </div>
             </div>
+
+            {/* Garis Pemisah Halus */}
+            <div className="border-t border-white/10" />
+
+            {/* Baris Bawah: Grid Metrik Finansial Infaq */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+              <div className="lg:col-span-5 space-y-2.5">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
+                  <div className="h-7 w-7 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
+                    <Users size={14} />
+                  </div>
+                  <span>Total Akumulasi Infaq Masuk</span>
+                </div>
+                <div className="text-2xl sm:text-3xl lg:text-[36px] font-extrabold tracking-tight text-white tabular-nums leading-tight font-sans">
+                  {formatRupiah(totalCombinedDonations)}
+                </div>
+                <div className="text-xs text-emerald-100/80">
+                  Akumulasi infaq terverifikasi ({activePeriodLabel})
+                </div>
+              </div>
 
             <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex flex-col justify-between">
@@ -311,6 +312,7 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
             </div>
           </div>
         </div>
+      </div>
 
         {/* TIME-RANGE PERIOD FILTER BAR (Issue #66 / Fase V8) */}
         <PeriodFilterBar
