@@ -99,77 +99,77 @@ export function DashboardClient({
   return (
     <PageShell>
       <div className="space-y-6 sm:space-y-8">
-        {/* HEADER ATAS DI KANVAS TERANG */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              <Wallet className="h-3.5 w-3.5 text-emerald-800" />
-              <span>Kokpit Analitik Kas Pengurus • DKM Al-Luqman</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Dashboard Kas Masjid
-            </h1>
-          </div>
-
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <Link
-              href="/unggah"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#0e3824] hover:bg-[#144731] text-white text-xs font-bold shadow-xs transition-colors"
-            >
-              <ImagePlus size={14} />
-              <span>+ Unggah Laporan Baru</span>
-            </Link>
-            <Link
-              href="/?view=public"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold shadow-2xs transition-colors"
-            >
-              <ExternalLink size={13} />
-              <span>Lihat Portal Publik</span>
-            </Link>
-          </div>
-        </div>
-
-        {/* HERO CARD MELAYANG (PERSIS KEBIJAKAN DESAIN BARU) */}
+        {/* UNIFIED HERO HEADER CARD (F-039) */}
         <div className="rounded-3xl bg-[#0e3824] text-white p-6 sm:p-8 lg:p-9 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="relative z-10 space-y-4">
-            <div className="flex items-center gap-2.5 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
-              <div className="h-8 w-8 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
-                <Wallet size={16} />
+          <div className="relative z-10 space-y-5 sm:space-y-6">
+            {/* Baris Atas: Judul Halaman & Tombol Aksi */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                Dashboard Kas Masjid
+              </h1>
+
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <Link
+                  href="/unggah"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-emerald-50 text-[#0e3824] text-xs font-bold shadow-xs transition-colors"
+                >
+                  <ImagePlus size={14} />
+                  <span>+ Unggah Laporan Baru</span>
+                </Link>
+                <Link
+                  href="/?view=public"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white border border-white/15 text-xs font-semibold backdrop-blur-xs transition-colors"
+                >
+                  <ExternalLink size={13} />
+                  <span>Lihat Portal Publik</span>
+                </Link>
               </div>
-              <span>Saldo Kas Fisik Terverifikasi (Laporan Terakhir)</span>
             </div>
 
-            <div className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold tracking-tight text-white tabular-nums leading-tight font-sans">
-              {initialFinalBalance !== null
-                ? formatRupiah(animatedBalance)
-                : "Belum Ada"}
-            </div>
+            {/* Garis Pemisah Halus */}
+            <div className="border-t border-white/10" />
 
-            <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-emerald-100/80">
-              {latestReportDate ? (
-                <>
-                  <Calendar className="h-3.5 w-3.5 shrink-0 text-emerald-300" />
-                  <span>
-                    Laporan terakhir:{" "}
-                    {new Date(latestReportDate).toLocaleDateString("id-ID", {
-                      dateStyle: "medium",
-                    })}
-                  </span>
-                  {latestReportId && (
-                    <Link
-                      href={`/laporan/${latestReportId}`}
-                      className="inline-flex items-center gap-1 text-emerald-200 hover:text-white underline ml-1"
-                    >
-                      <span>(Lihat Dokumen)</span>
-                      <FileText className="h-3 w-3" />
-                    </Link>
-                  )}
-                </>
-              ) : (
-                <span>Belum ada laporan dengan saldo kas terverifikasi.</span>
-              )}
+            {/* Baris Bawah: Metrik Saldo Kas & Informasi Tanggal Laporan */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2.5 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
+                <div className="h-7 w-7 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
+                  <Wallet size={14} />
+                </div>
+                <span>Saldo Kas Fisik Terverifikasi (Laporan Terakhir)</span>
+              </div>
+
+              <div className="text-2xl sm:text-3xl lg:text-[36px] font-extrabold tracking-tight text-white tabular-nums leading-tight font-sans">
+                {initialFinalBalance !== null
+                  ? formatRupiah(animatedBalance)
+                  : "Belum Ada"}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-emerald-100/80">
+                {latestReportDate ? (
+                  <>
+                    <Calendar className="h-3.5 w-3.5 shrink-0 text-emerald-300" />
+                    <span>
+                      Laporan terakhir:{" "}
+                      {new Date(latestReportDate).toLocaleDateString("id-ID", {
+                        dateStyle: "medium",
+                      })}
+                    </span>
+                    {latestReportId && (
+                      <Link
+                        href={`/laporan/${latestReportId}`}
+                        className="inline-flex items-center gap-1 text-emerald-200 hover:text-white underline ml-1"
+                      >
+                        <span>(Lihat Dokumen)</span>
+                        <FileText className="h-3 w-3" />
+                      </Link>
+                    )}
+                  </>
+                ) : (
+                  <span>Belum ada laporan dengan saldo kas terverifikasi.</span>
+                )}
+              </div>
             </div>
           </div>
         </div>

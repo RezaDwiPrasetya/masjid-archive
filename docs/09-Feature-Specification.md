@@ -932,3 +932,27 @@
 **Acceptance Criteria:**
 - [x] Mengunggah laporan kas secara otomatis mengalihkan pengguna ke halaman detail laporan terkait.
 - [x] Dashboard staf menampilkan seksi laporan tertunda jika ada berkas yang belum tuntas diproses.
+
+---
+
+### F-039 — Penyatuan Header Halaman ke dalam Hero Card & Eliminasi Teks Eyebrow Redundan (Issue #081 / F-039)
+
+**Objective:** Meningkatkan keanggunan, ketenangan visual, dan efisiensi ruang antarmuka dengan mengintegrasikan judul halaman dan tombol aksi utama langsung ke dalam *Dark Green Hero Card* (`#0e3824`) sebagai *Unified Page Header*, serta mengeliminasi teks *eyebrow* kapital kecil yang redundan di luar kartu.
+**User:** Seluruh pengguna (Publik / Jamaah dan Staf Pengurus DKM).
+**Process:**
+- **Pembersihan Header Kanvas Luar**:
+  - Menghilangkan blok teks *eyebrow* abu-abu (seperti *"Kokpit Analitik Kas Pengurus • DKM Al-Luqman"*) yang menambah beban kognitif dan redundansi informasi.
+  - Memindahkan judul halaman (`<h1>`) dan tombol aksi utama ke dalam container Hero Card hijau.
+- **Unified Hero Card Header**:
+  - Baris atas Hero Card memuat judul halaman kontras putih di sisi kiri, serta tombol aksi bergaya *glassmorphism* elegan (`bg-white/10 hover:bg-white/20 border border-white/15 text-white`) di sisi kanan.
+  - Separator border halus semi-transparan memisahkan identitas halaman dengan metrik finansial utama (saldo kas riil/akumulasi).
+  - Tampilan responsif di desktop maupun layar sentuh mobile.
+- **Implementasi Bertahap**:
+  - Tahap 1 (Pilot): Dashboard Kas Masjid (`components/dashboard-client.tsx`).
+  - Tahap 2: Modul Perbendaharaan (`components/treasury-client.tsx`), Donatur (`components/donors-client.tsx`), Pengeluaran (`components/expenses-client.tsx`), dan Cari Arsip (`app/cari/page.tsx`).
+**Acceptance Criteria:**
+- [ ] Header kanvas terang di luar card dihapus, tidak ada lagi teks eyebrow redundan.
+- [ ] Hero Card hijau memuat judul halaman, tombol aksi yang selaras, dan metrik keuangan utama secara harmonis.
+- [ ] Responsif di perangkat desktop maupun mobile.
+- [ ] Dilakukan secara bertahap dimulai dari Dashboard Kas Masjid untuk verifikasi visual pengguna.
+

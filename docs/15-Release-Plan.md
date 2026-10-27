@@ -144,6 +144,17 @@ Next: `1.0.0`
 
 ## Changelog
 
+### 0.15.0 (2026-10-27) — Fase V15: Penyatuan Header Halaman ke dalam Hero Card & Eliminasi Teks Eyebrow Redundan (Issue #081 / F-039)
+- **Eliminasi Teks Eyebrow Redundan & Double Header**:
+  - Menghapus label teks kapital kecil abu-abu di kanvas luar yang repetitif lintas halaman (seperti *"Kokpit Analitik Kas Pengurus • DKM Al-Luqman"*).
+  - Mengintegrasikan judul halaman (`<h1>`) dan tombol aksi utama langsung ke dalam *Dark Green Hero Card* (`#0e3824`) sebagai *Unified Page Header*.
+- **Desain Hero Card Unified Header Modern**:
+  - Baris atas kartu memuat judul halaman kontras putih di sisi kiri dan tombol aksi bergaya *glassmorphism* elegan (`bg-white/10 hover:bg-white/20 border border-white/15 text-white`) di sisi kanan.
+  - Garis pembatas halus semi-transparan (`border-t border-white/10`) memisahkan identitas modul dengan metrik finansial utama (saldo kas riil, ringkasan mutasi, atau tanggal laporan).
+- **Implementasi Bertahap**:
+  - Tahap 1 (Pilot): Dashboard Kas Masjid (`components/dashboard-client.tsx`).
+  - Tahap 2: Modul Perbendaharaan (`components/treasury-client.tsx`), Donatur (`components/donors-client.tsx`), Pengeluaran (`components/expenses-client.tsx`), dan Cari Arsip (`app/cari/page.tsx`).
+
 ### 0.14.0 (2026-10-26) — Fase V14: Modern Collapsible Sidebar, Redesain Pencarian 4-Kolom & Finalisasi Produksi TA (F-036, F-037, F-038)
 - **Modern Collapsible Floating Emerald Sidebar (`components/app-shell.tsx`)**:
   - Sidebar desktop kini mendukung dua mode: Melebar (260px) dan Menciut (72px) dengan animasi transisi mulus dan penyimpanan preferensi di `localStorage`.
