@@ -969,3 +969,33 @@
 - [x] Tidak ada teks atau angka finansial yang terpotong secara tidak semestinya oleh ellipsis.
 - [x] Lulus verifikasi automated test suite dan TypeScript check 100%.
 
+---
+
+### F-040 — Kanvas Desktop Seamless & Integrasi Profil/Notifikasi ke Sidebar Footer (Issue #084 / F-040)
+
+**Objective:** Menghilangkan bar header putih horizontal desktop yang redundan dan kosong (90% ruang putih tak terpakai setelah input pencarian global dihilangkan) demi menghadirkan pengalaman kanvas modern yang seamless (seperti Linear, Notion, Raycast), mengintegrasikan kartu profil pengguna dan lonceng notifikasi ke bagian bawah (*footer*) sidebar desktop, serta memulihkan warna status bar mobile/PWA kembali ke putih bersih (`#ffffff`).
+**User:** Seluruh pengguna desktop dan pengguna PWA / mobile.
+**Process:**
+- **Eliminasi Top Header Desktop (`lg:hidden`)**:
+  - Mengubah bar header atas di `components/app-shell.tsx` menjadi `lg:hidden` sehingga di layar desktop (>1024px) bar horizontal putih 64px ditiadakan sepenuhnya.
+  - Kartu Dark Green Hero Card (`#0e3824`) langsung menyapa pandangan pengguna di posisi paling atas kanvas dengan padding bernapas yang proporsional (`pt-4 sm:pt-6 md:pt-6 lg:pt-8` di `components/page-shell.tsx`).
+- **Integrasi Profil Pengguna & Notifikasi ke Sidebar Desktop Footer**:
+  - **Mode Sidebar Mengembang (260px)**: Kartu profil *glassmorphism* (`bg-white/10 hover:bg-white/15 border border-white/10`) menampilkan avatar inisial nama, nama lengkap pengguna (`Reza Dwi`), badge peran (`ADMIN`), dan ikon chevron. Di sampingnya terdapat tombol lonceng notifikasi interaktif dengan badge indikator merah.
+  - **Popover Profil & Notifikasi Mengambang ke Atas**: Popover menu profil dan status kas membuka ke atas (*floating upward*) dari footer sidebar dengan penataan posisi X yang aman sehingga tidak terpotong tepi layar (*unclipped*).
+  - **Mode Sidebar Ciut (72px)**: Menampilkan tombol lonceng notifikasi mandiri dan tombol avatar inisial bulat yang rapi. Saat diklik, popover profil dan notifikasi membuka ke arah kanan (*floating rightward*) di atas kanvas utama tanpa tertutup oleh batas sidebar (`overflow-visible`).
+  - **State Tamu / Publik (Belum Login)**: Menampilkan tombol "Akses Pengurus" dengan ikon `LogIn` yang memandu pengurus masuk ke sistem.
+- **Pemulihan Warna Status Bar Mobile PWA**:
+  - Mengembalikan nilai `theme_color` pada `public/manifest.json` dari `#154212` ke `#ffffff`.
+  - Menambahkan konfigurasi `export const viewport: Viewport = { themeColor: "#ffffff" };` pada `app/layout.tsx`.
+  - Bilah status OS (jam, baterai, jaringan 4G/WiFi) pada perangkat mobile Android/Chrome kembali berlatar putih bersih selaras dengan header native ponsel.
+- **Pembersihan Next.js Dev Overlay**:
+  - Menonaktifkan `devIndicators: false` pada `next.config.ts` agar indikator dev tidak menimpa tombol avatar profil sidebar pada mode ciut di localhost.
+**Acceptance Criteria:**
+- [x] Top header horizontal desktop disembunyikan sepenuhnya di layar desktop (1024px+).
+- [x] Kartu Dark Green Hero Card langsung tampil di bagian atas dengan jarak proporsional 32px (`lg:pt-8`).
+- [x] Profil pengguna dan lonceng notifikasi terintegrasi rapi pada footer sidebar desktop baik dalam mode mengembang (260px) maupun ciut (72px).
+- [x] Popover profil dan notifikasi membuka ke atas di mode mengembang dan ke kanan di mode ciut tanpa terpotong (*unclipped*).
+- [x] Header mobile (`< lg`) tetap utuh dengan logo brand, lonceng notifikasi, dan tombol avatar profil.
+- [x] PWA manifest dan Next.js viewport mengarahkan status bar mobile menjadi putih bersih (`#ffffff`).
+- [x] Seluruh test suite (responsivitas, navigasi, paginasi) dan pengecekan tipe TypeScript lulus 100%.
+

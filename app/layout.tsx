@@ -1,7 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Outfit } from "next/font/google";
 import { AuthProvider } from "@/components/auth-provider";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  themeColor: "#ffffff",
+};
 
 const outfit = Outfit({
   variable: "--font-sans",

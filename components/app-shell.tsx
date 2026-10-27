@@ -70,6 +70,8 @@ export function AppShell({
 
   const [isProfileMenuOpen, setIsProfileMenuOpen] = React.useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = React.useState(false);
+  const [isSidebarProfileOpen, setIsSidebarProfileOpen] = React.useState(false);
+  const [isSidebarNotificationOpen, setIsSidebarNotificationOpen] = React.useState(false);
   const [optimisticActive, setOptimisticActive] = React.useState<string | null>(null);
 
   // Adjust optimistic active during render when prop changes (React recommended pattern)
@@ -80,7 +82,9 @@ export function AppShell({
   }
 
   const headerProfileRef = React.useRef<HTMLDivElement>(null);
-  const notificationRef = React.useRef<HTMLDivElement>(null);
+  const headerNotificationRef = React.useRef<HTMLDivElement>(null);
+  const sidebarProfileRef = React.useRef<HTMLDivElement>(null);
+  const sidebarNotificationRef = React.useRef<HTMLDivElement>(null);
 
   // Click outside listener for profile and notification popovers
   React.useEffect(() => {
@@ -89,8 +93,14 @@ export function AppShell({
       if (headerProfileRef.current && !headerProfileRef.current.contains(target)) {
         setIsProfileMenuOpen(false);
       }
-      if (notificationRef.current && !notificationRef.current.contains(target)) {
+      if (headerNotificationRef.current && !headerNotificationRef.current.contains(target)) {
         setIsNotificationOpen(false);
+      }
+      if (sidebarProfileRef.current && !sidebarProfileRef.current.contains(target)) {
+        setIsSidebarProfileOpen(false);
+      }
+      if (sidebarNotificationRef.current && !sidebarNotificationRef.current.contains(target)) {
+        setIsSidebarNotificationOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -150,13 +160,13 @@ export function AppShell({
       {/* ========================================================= */}
       <aside
         aria-label="Navigasi Utama Desktop"
-        className={`hidden lg:flex fixed left-0 top-0 bottom-0 z-30 flex-col justify-between bg-primary text-white border-r border-emerald-950/40 select-none overflow-hidden transition-all duration-300 ease-in-out ${
+        className={`hidden lg:flex fixed left-0 top-0 bottom-0 z-30 flex-col justify-between bg-primary text-white border-r border-emerald-950/40 select-none transition-all duration-300 ease-in-out ${
           isCollapsed ? "w-[72px]" : "w-[260px]"
         }`}
       >
         {/* Ilustrasi Masjid Autentik Sesuai Referensi Pengguna (Persis media_1792723264079) */}
         {!isCollapsed && (
-          <div className="absolute bottom-[90px] left-0 right-0 h-48 pointer-events-none overflow-hidden select-none z-0">
+          <div className="absolute bottom-[72px] left-0 right-0 h-48 pointer-events-none overflow-hidden select-none z-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/images/sidebar-mosque-clean.png"
@@ -263,54 +273,305 @@ export function AppShell({
           </nav>
         </div>
 
-        {/* BAGIAN BAWAH: Tombol Keluar Akun Minimalis & Bersih */}
-        {session && (
-          <div className={`py-3 border-t border-white/10 relative z-10 ${isCollapsed ? "px-2" : "px-3"}`}>
-            {!isCollapsed ? (
-              <button
-                type="button"
-                onClick={() => signOut({ callbackUrl: "/" })}
-                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-rose-500/20 text-emerald-200/80 hover:text-rose-200 border border-white/5 hover:border-rose-500/30 text-xs font-semibold transition-all group cursor-pointer"
-                title="Keluar dari akun pengurus"
-              >
-                <span className="flex items-center gap-2.5">
-                  <LogOut size={15} className="text-emerald-300/80 group-hover:text-rose-300 transition-colors shrink-0" />
-                  <span>Keluar Akun</span>
-                </span>
-                <ChevronRight size={13} className="text-white/30 group-hover:text-rose-200 group-hover:translate-x-0.5 transition-all" />
-              </button>
-            ) : (
-              <div className="w-10 mx-auto py-1 flex items-center justify-center">
+        {/* BAGIAN BAWAH: Integrasi Profil Pengguna & Aksi Sesi Modern di Sidebar Desktop */}
+        {session ? (
+          !isCollapsed ? (
+            /* Mode Sidebar Lebar: Kartu Profil Lengkap + Lonceng Notifikasi */
+            <div className="p-3 border-t border-white/10 relative z-20 bg-primary">
+              <div className="flex items-center gap-2">
+                {/* Kartu Profil DKM Interaktif */}
+                <div ref={sidebarProfileRef} className="relative flex-1 min-w-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsSidebarProfileOpen((prev) => !prev);
+                      setIsSidebarNotificationOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-2.5 p-2 rounded-xl border transition-all text-left cursor-pointer group ${
+                      isSidebarProfileOpen
+                        ? "bg-white/20 border-white/20"
+                        : "bg-white/10 hover:bg-white/15 border-white/10"
+                    }`}
+                    aria-label="Menu Profil & Akun"
+                  >
+                    <div className="h-8 w-8 rounded-full bg-emerald-500/90 text-white flex items-center justify-center font-bold text-xs shrink-0 ring-2 ring-white/20 group-hover:scale-105 transition-transform">
+                      {userName.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-white leading-tight truncate">
+                        {userName}
+                      </p>
+                      <span className="text-[9.5px] uppercase font-bold tracking-wider text-emerald-200/90 bg-white/10 px-1.5 py-0.5 rounded-full inline-block mt-0.5">
+                        {role || "ADMIN"}
+                      </span>
+                    </div>
+                    <ChevronDown
+                      size={14}
+                      className={`text-white/60 group-hover:text-white transition-transform duration-200 shrink-0 ${
+                        isSidebarProfileOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {/* Popover Menu Profil (Membuka ke atas dari footer sidebar) */}
+                  {isSidebarProfileOpen && (
+                    <div className="absolute left-0 bottom-[calc(100%+8px)] w-60 rounded-2xl bg-white border border-slate-200 shadow-2xl p-2 z-50 text-slate-800 animate-in fade-in slide-in-from-bottom-2 duration-150">
+                      <div className="px-3 py-2.5 border-b border-slate-100">
+                        <p className="text-xs font-bold text-slate-900 truncate">{userName}</p>
+                        {userEmail && (
+                          <p className="text-[11px] text-slate-500 truncate mt-0.5">{userEmail}</p>
+                        )}
+                        <span className="mt-1.5 inline-block text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 uppercase tracking-wider">
+                          {role || "ADMIN"}
+                        </span>
+                      </div>
+
+                      <div className="py-1">
+                        {isAdmin(session) && (
+                          <Link
+                            href="/pengguna"
+                            onClick={() => setIsSidebarProfileOpen(false)}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-emerald-800 transition-colors"
+                          >
+                            <Users size={15} />
+                            <span>Kelola Pengguna</span>
+                          </Link>
+                        )}
+                        <Link
+                          href="/?view=public"
+                          onClick={() => setIsSidebarProfileOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-emerald-800 transition-colors"
+                        >
+                          <ExternalLink size={15} />
+                          <span>Lihat Portal Publik</span>
+                        </Link>
+                      </div>
+
+                      <div className="pt-1 border-t border-slate-100">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsSidebarProfileOpen(false);
+                            signOut({ callbackUrl: "/" });
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors text-left cursor-pointer"
+                        >
+                          <LogOut size={15} />
+                          <span>Keluar (Logout)</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Lonceng Notifikasi Sidebar */}
+                <div ref={sidebarNotificationRef} className="relative shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsSidebarNotificationOpen((prev) => !prev);
+                      setIsSidebarProfileOpen(false);
+                    }}
+                    className={`p-2.5 rounded-xl border transition-all cursor-pointer relative ${
+                      isSidebarNotificationOpen
+                        ? "bg-white/20 border-white/20 text-white"
+                        : "bg-white/10 hover:bg-white/15 border-white/10 text-emerald-100/90 hover:text-white"
+                    }`}
+                    title="Pemberitahuan Sistem"
+                  >
+                    <Bell size={16} />
+                    <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-primary" />
+                  </button>
+
+                  {/* Popover Notifikasi (Membuka ke atas dari footer sidebar) */}
+                  {isSidebarNotificationOpen && (
+                    <div className="absolute right-[-80px] bottom-[calc(100%+8px)] w-80 rounded-2xl bg-white border border-slate-200 shadow-2xl p-4 z-50 text-slate-800 animate-in fade-in slide-in-from-bottom-2 duration-150">
+                      <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
+                        <div className="flex items-center gap-2">
+                          <ShieldCheck size={16} className="text-emerald-700" />
+                          <span className="text-xs font-bold text-slate-800">Status Keuangan Masjid</span>
+                        </div>
+                        <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                          Aktif
+                        </span>
+                      </div>
+                      <div className="py-2.5 space-y-2.5">
+                        <div className="flex items-start gap-2.5 text-xs text-slate-600">
+                          <CheckCircle2 size={15} className="text-emerald-600 mt-0.5 shrink-0" />
+                          <div>
+                            <p className="font-semibold text-slate-800 leading-tight">Kas Fisik &amp; Bank Tersinkron</p>
+                            <p className="text-[11px] text-slate-500 mt-0.5">Saldo kas DKM Al-Luqman terverifikasi mutasi internal.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* Mode Sidebar Ciut (72px): Avatar & Lonceng Ringkas */
+            <div className="py-3 px-2 border-t border-white/10 relative z-20 flex flex-col items-center gap-2 bg-primary">
+              {/* Lonceng Notifikasi */}
+              <div ref={sidebarNotificationRef} className="relative">
                 <button
                   type="button"
-                  onClick={() => signOut({ callbackUrl: "/" })}
-                  className="text-rose-300/80 hover:text-white p-2.5 rounded-xl bg-white/5 hover:bg-rose-600/30 border border-white/5 hover:border-rose-500/30 transition-colors group relative cursor-pointer"
-                  title="Keluar Akun"
+                  onClick={() => {
+                    setIsSidebarNotificationOpen((prev) => !prev);
+                    setIsSidebarProfileOpen(false);
+                  }}
+                  className={`h-10 w-10 flex items-center justify-center rounded-xl border transition-all cursor-pointer relative ${
+                    isSidebarNotificationOpen
+                      ? "bg-white/20 border-white/20 text-white"
+                      : "bg-white/5 hover:bg-white/15 border-white/10 text-emerald-100/90 hover:text-white"
+                  }`}
+                  title="Pemberitahuan Sistem"
                 >
-                  <LogOut size={16} />
-                  <span className="absolute left-[calc(100%+14px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-slate-900 text-white border border-slate-700 text-xs font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
-                    Keluar Akun
-                  </span>
+                  <Bell size={17} />
+                  <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-primary" />
                 </button>
+
+                {/* Popover Notifikasi ke kanan di sidebar ciut */}
+                {isSidebarNotificationOpen && (
+                  <div className="absolute left-[calc(100%+12px)] bottom-0 w-80 rounded-2xl bg-white border border-slate-200 shadow-2xl p-4 z-50 text-slate-800 animate-in fade-in slide-in-from-left-2 duration-150">
+                    <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck size={16} className="text-emerald-700" />
+                        <span className="text-xs font-bold text-slate-800">Status Keuangan Masjid</span>
+                      </div>
+                      <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                        Aktif
+                      </span>
+                    </div>
+                    <div className="py-2.5 space-y-2.5">
+                      <div className="flex items-start gap-2.5 text-xs text-slate-600">
+                        <CheckCircle2 size={15} className="text-emerald-600 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="font-semibold text-slate-800 leading-tight">Kas Fisik &amp; Bank Tersinkron</p>
+                          <p className="text-[11px] text-slate-500 mt-0.5">Saldo kas DKM Al-Luqman terverifikasi mutasi internal.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+
+              {/* Avatar Profil */}
+              <div ref={sidebarProfileRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSidebarProfileOpen((prev) => !prev);
+                    setIsSidebarNotificationOpen(false);
+                  }}
+                  className={`h-10 w-10 flex items-center justify-center rounded-xl border transition-all cursor-pointer group ${
+                    isSidebarProfileOpen
+                      ? "bg-white/25 border-white/25 text-white scale-105"
+                      : "bg-white/10 hover:bg-white/20 border-white/15 text-white"
+                  }`}
+                  title={`${userName} (${role || "ADMIN"})`}
+                >
+                  <div className="h-7 w-7 rounded-full bg-emerald-500/90 text-white flex items-center justify-center font-bold text-xs ring-1 ring-white/30">
+                    {userName.charAt(0)}
+                  </div>
+                </button>
+
+                {/* Popover Profil ke kanan di sidebar ciut */}
+                {isSidebarProfileOpen && (
+                  <div className="absolute left-[calc(100%+12px)] bottom-0 w-60 rounded-2xl bg-white border border-slate-200 shadow-2xl p-2 z-50 text-slate-800 animate-in fade-in slide-in-from-left-2 duration-150">
+                    <div className="px-3 py-2.5 border-b border-slate-100">
+                      <p className="text-xs font-bold text-slate-900 truncate">{userName}</p>
+                      {userEmail && (
+                        <p className="text-[11px] text-slate-500 truncate mt-0.5">{userEmail}</p>
+                      )}
+                      <span className="mt-1.5 inline-block text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 uppercase tracking-wider">
+                        {role || "ADMIN"}
+                      </span>
+                    </div>
+
+                    <div className="py-1">
+                      {isAdmin(session) && (
+                        <Link
+                          href="/pengguna"
+                          onClick={() => setIsSidebarProfileOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-emerald-800 transition-colors"
+                        >
+                          <Users size={15} />
+                          <span>Kelola Pengguna</span>
+                        </Link>
+                      )}
+                      <Link
+                        href="/?view=public"
+                        onClick={() => setIsSidebarProfileOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-emerald-800 transition-colors"
+                      >
+                        <ExternalLink size={15} />
+                        <span>Lihat Portal Publik</span>
+                      </Link>
+                    </div>
+
+                    <div className="pt-1 border-t border-slate-100">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsSidebarProfileOpen(false);
+                          signOut({ callbackUrl: "/" });
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors text-left cursor-pointer"
+                      >
+                        <LogOut size={15} />
+                        <span>Keluar (Logout)</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        ) : (
+          /* Saat Belum Login: Tombol Masuk / Akses Pengurus */
+          !isCollapsed ? (
+            <div className="p-3 border-t border-white/10 relative z-20 bg-primary">
+              <button
+                type="button"
+                onClick={() => signIn("google", { callbackUrl: "/auth/post-login" })}
+                className="w-full flex items-center justify-center gap-2.5 px-3 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 text-xs font-semibold transition-all shadow-xs cursor-pointer group"
+              >
+                <LogIn size={15} className="text-emerald-200 group-hover:text-white transition-colors" />
+                <span>Akses Pengurus</span>
+              </button>
+            </div>
+          ) : (
+            <div className="py-3 px-2 border-t border-white/10 relative z-20 flex justify-center bg-primary">
+              <button
+                type="button"
+                onClick={() => signIn("google", { callbackUrl: "/auth/post-login" })}
+                className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-all group relative cursor-pointer"
+                title="Akses Pengurus"
+              >
+                <LogIn size={17} />
+                <span className="absolute left-[calc(100%+12px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-surface text-on-surface border border-outline-variant text-xs font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-xl z-50">
+                  Akses Pengurus
+                </span>
+              </button>
+            </div>
+          )
         )}
       </aside>
 
       {/* ========================================================= */}
-      {/* AREA KONTEN UTAMA DENGAN HEADER PENCARIAN MODERN           */}
+      {/* AREA KONTEN UTAMA DENGAN HEADER MOBILE                     */}
       {/* ========================================================= */}
       <div
         className={`flex-1 min-w-0 flex flex-col min-h-screen transition-all duration-300 ease-in-out ${
           isCollapsed ? "lg:pl-[72px]" : "lg:pl-[260px]"
         }`}
       >
-        {/* Structural Header (Tinggi h-16 Bersih & Minimalis Sesuai Permintaan) */}
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-emerald-950/8 bg-white/95 backdrop-blur-md px-4 sm:px-6 md:px-8 lg:px-10 shadow-2xs">
+        {/* Header Khusus Mobile & Tablet (< lg). Di Desktop Disembunyikan (lg:hidden) */}
+        <header className="lg:hidden sticky top-0 z-20 flex h-16 items-center justify-between border-b border-emerald-950/8 bg-white/95 backdrop-blur-md px-4 shadow-2xs">
           {/* Sisi Kiri: Brand Title Pada Tampilan Mobile */}
           <div className="flex items-center gap-3">
-            <div className="lg:hidden flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               <MasjidEmblem className="h-7 w-7" />
               <span className="text-sm font-bold tracking-tight text-slate-900 truncate">
                 Masjid<span className="text-emerald-800">Archive</span>
@@ -321,7 +582,7 @@ export function AppShell({
           {/* Sisi Kanan: Lonceng Notifikasi & Lencana Profil DKM */}
           <div className="flex items-center gap-3">
             {/* Lonceng Notifikasi Sistem Interaktif */}
-            <div ref={notificationRef} className="relative">
+            <div ref={headerNotificationRef} className="relative">
               <button
                 type="button"
                 onClick={() => setIsNotificationOpen((prev) => !prev)}

@@ -410,6 +410,11 @@ Shared logic di `lib/donor-matching.ts`, `lib/donor-service.ts`, dan `lib/expens
     - **Eliminasi Pemotongan Teks (Truncation)**: Subcard metrik perbendaharaan, donatur, dan pengeluaran diselaraskan ke `xl:grid-cols-12` dengan wrapping teks `leading-tight` tanpa elipsis.
     - **Integrasi Unggah Laporan**: Date Picker dan tombol submit diintegrasikan ke dalam satu kartu terpadu (*Card Action Footer*).
     - **Verifikasi Lintas Perangkat**: Teruji 100% responsif pada 375px (ponsel), 768px (tablet), 1024px (laptop), dan 1280px+ (desktop lebar).
+14. **F-040: Kanvas Desktop Seamless, Integrasi Profil/Notifikasi ke Sidebar Footer & Status Bar PWA Putih (Issue #084 — Selesai Penuh)**:
+    - **Eliminasi Top Header Desktop**: Menyembunyikan bar horizontal putih 64px di desktop (`lg:hidden`), memberikan tampilan kanvas yang lapang, elegan, dan fokus langsung pada Dark Green Hero Card (`lg:pt-8`).
+    - **Integrasi Profil & Notifikasi di Sidebar Footer**: Profil staf (`Reza Dwi ADMIN`), popover navigasi, dan lonceng notifikasi status kas dipindahkan ke footer sidebar. Mendukung mode mengembang (260px) dengan popover mengambang ke atas, dan mode ciut (72px) dengan popover mengambang ke kanan tanpa terpotong batas container (`overflow-visible`).
+    - **Pemulihan Status Bar PWA**: Mengembalikan `theme_color` pada `public/manifest.json` dan `viewport` pada `app/layout.tsx` menjadi `#ffffff` sehingga status bar ponsel (jam, baterai, sinyal) kembali putih bersih native.
+    - **Penonaktifan Next.js Dev Indicator**: Mengatur `devIndicators: false` pada `next.config.ts` untuk memastikan indikator dev Turbopack tidak menutupi avatar footer di lingkungan lokal.
 
 ---
 
