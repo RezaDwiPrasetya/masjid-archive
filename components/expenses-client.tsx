@@ -260,8 +260,8 @@ export function ExpensesClient({
             <div className="border-t border-white/10" />
 
             {/* Baris Bawah: Grid Metrik Finansial Pengeluaran */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-              <div className="lg:col-span-5 space-y-2.5">
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-center">
+              <div className="xl:col-span-5 space-y-2.5">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
                   <div className="h-7 w-7 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
                     <Receipt size={14} />
@@ -276,36 +276,36 @@ export function ExpensesClient({
                 </div>
               </div>
 
-            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex flex-col justify-between">
-                <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider truncate">
-                  Jumlah Transaksi
+              <div className="xl:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex flex-col justify-between">
+                  <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider leading-tight">
+                    Jumlah Transaksi
+                  </div>
+                  <div className="text-base sm:text-lg lg:text-xl font-bold text-white tabular-nums mt-1">
+                    {currentTransactionCount} Transaksi
+                  </div>
+                  <div className="text-xs text-emerald-300/80 mt-0.5 leading-tight">
+                    Rata-rata {currentTransactionCount > 0 ? formatRupiah(Math.round(currentTotalAmount / currentTransactionCount)) : "Rp 0"} / tx
+                  </div>
                 </div>
-                <div className="text-base sm:text-lg lg:text-xl font-bold text-white tabular-nums mt-1">
-                  {currentTransactionCount} Transaksi
-                </div>
-                <div className="text-xs text-emerald-300/80 mt-0.5 truncate">
-                  Rata-rata {currentTransactionCount > 0 ? formatRupiah(Math.round(currentTotalAmount / currentTransactionCount)) : "Rp 0"} / tx
-                </div>
-              </div>
 
-              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex flex-col justify-between">
-                <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider truncate">
-                  Alokasi Terbesar
-                </div>
-                <div className="text-base sm:text-lg lg:text-xl font-bold text-white truncate mt-1">
-                  {topCategory ? topCategory.label : "-"}
-                </div>
-                <div className="text-xs text-emerald-300/80 mt-0.5 truncate">
-                  {topCategory
-                    ? `${formatRupiah(topCategory.totalAmount)} • ${((topCategory.totalAmount / (currentTotalAmount || 1)) * 100).toFixed(1)}%`
-                    : "Belum ada pengeluaran"}
+                <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex flex-col justify-between">
+                  <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider leading-tight">
+                    Alokasi Terbesar
+                  </div>
+                  <div className="text-base sm:text-lg lg:text-xl font-bold text-white mt-1">
+                    {topCategory ? topCategory.label : "-"}
+                  </div>
+                  <div className="text-xs text-emerald-300/80 mt-0.5 leading-tight">
+                    {topCategory
+                      ? `${formatRupiah(topCategory.totalAmount)} • ${((topCategory.totalAmount / (currentTotalAmount || 1)) * 100).toFixed(1)}%`
+                      : "Belum ada pengeluaran"}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
         {/* TIME-RANGE PERIOD FILTER BAR (Issue #66 / Fase V8) */}
         <PeriodFilterBar

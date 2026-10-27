@@ -500,48 +500,50 @@ export default function UnggahLaporanPage() {
             </div>
           )}
 
-          {/* Detail laporan */}
-          <div className="space-y-4 rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-2.5">
-              Detail Laporan
-            </h3>
+          {/* Detail Laporan & Tombol Simpan Terpadu */}
+          <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-5">
+              <div className="flex-1 max-w-md">
+                <label
+                  htmlFor="report-date"
+                  className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-700"
+                >
+                  Tanggal Pembukuan Kas (Hari Jum&apos;at)
+                </label>
+                <Input
+                  id="report-date"
+                  type="date"
+                  value={reportDate}
+                  onChange={(e) => setReportDate(e.target.value)}
+                  required
+                  className="rounded-xl border-slate-200 bg-white text-slate-900 w-full h-10 text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 shadow-2xs"
+                />
+                <p className="mt-1.5 text-xs text-slate-500">
+                  Pilih tanggal laporan mingguan yang dibacakan di hadapan jamaah.
+                </p>
+              </div>
 
-            <div>
-              <label
-                htmlFor="report-date"
-                className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500"
-              >
-                Tanggal Laporan
-              </label>
-              <Input
-                id="report-date"
-                type="date"
-                value={reportDate}
-                onChange={(e) => setReportDate(e.target.value)}
-                required
-                className="rounded-xl border-slate-200 bg-white text-slate-900 max-w-sm h-10 text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
-              />
-              <p className="mt-1.5 text-xs text-slate-500">
-                Pilih tanggal laporan ini dibacakan di hadapan jamaah (biasanya hari Jumat)
-              </p>
+              <div className="w-full md:w-auto">
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full md:w-auto min-w-[220px] h-11 text-sm font-bold rounded-xl bg-[#0e3824] hover:bg-[#144731] text-white shadow-xs gap-2 transition-all disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                  disabled={loading || compressing || files.length === 0}
+                >
+                  <CloudUpload size={18} />
+                  <span>
+                    {loading
+                      ? "Mengunggah..."
+                      : compressing
+                        ? "Mengoptimalkan foto..."
+                        : files.length === 0
+                          ? "Pilih file terlebih dahulu"
+                          : `Simpan ke Arsip (${files.length} file)`}
+                  </span>
+                </Button>
+              </div>
             </div>
           </div>
-
-          <Button
-            type="submit"
-            size="lg"
-            className="w-full h-11 text-sm font-bold rounded-xl bg-[#0e3824] hover:bg-[#144731] text-white shadow-xs gap-2 transition-colors disabled:opacity-50"
-            disabled={loading || compressing || files.length === 0}
-          >
-            <CloudUpload size={18} />
-            {loading
-              ? "Mengunggah..."
-              : compressing
-                ? "Mengoptimalkan foto..."
-                : files.length === 0
-                  ? "Pilih file terlebih dahulu"
-                  : `Simpan ke Arsip (${files.length} file)`}
-          </Button>
         </form>
         </div>
       </PageShell>

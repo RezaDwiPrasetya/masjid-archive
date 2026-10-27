@@ -212,8 +212,8 @@ export default async function CariLaporanPage({
               <div className="border-t border-white/10" />
 
               {/* Baris Bawah: Grid Total Dokumen & Agregat Finansial */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-                <div className="lg:col-span-5 space-y-2.5">
+              <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-center">
+                <div className="xl:col-span-5 space-y-2.5">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
                     <div className="h-7 w-7 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
                       <FileSearch size={14} />
@@ -228,9 +228,9 @@ export default async function CariLaporanPage({
                   </div>
                 </div>
 
-                <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="xl:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex flex-col justify-between">
-                    <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider truncate">
+                    <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider leading-tight">
                       Total Pemasukan Kas
                     </div>
                     <div className="text-base sm:text-lg lg:text-xl font-bold text-emerald-300 tabular-nums mt-1">
@@ -242,7 +242,7 @@ export default async function CariLaporanPage({
                   </div>
 
                   <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex flex-col justify-between">
-                    <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider truncate">
+                    <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider leading-tight">
                       Total Pengeluaran Kas
                     </div>
                     <div className="text-base sm:text-lg lg:text-xl font-bold text-rose-300 tabular-nums mt-1">
@@ -256,74 +256,84 @@ export default async function CariLaporanPage({
               </div>
             </div>
           </div>
-          <form className="grid gap-4 rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_140px_140px_220px_auto] lg:items-end">
-            <div>
-              <label htmlFor="keyword" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Kata Kunci
-              </label>
-              <Input
-                id="keyword"
-                name="keyword"
-                defaultValue={keyword}
-                placeholder="Nama pengurus atau tanggal..."
-                className="rounded-xl border border-slate-200 bg-white h-10 text-sm text-slate-900 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
-              />
-            </div>
-            <div>
-              <label htmlFor="year" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Tahun
-              </label>
-              <select
-                id="year"
-                name="year"
-                defaultValue={year}
-                className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
-              >
-                <option value="">Semua tahun</option>
-                {years.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="month" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Bulan
-              </label>
-              <select
-                id="month"
-                name="month"
-                defaultValue={month}
-                className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
-              >
-                <option value="">Semua bulan</option>
-                {MONTH_NAMES.map((item, index) => (
-                  <option key={item} value={index + 1}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="sort" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Urutkan
-              </label>
-              <select
-                id="sort"
-                name="sort"
-                defaultValue={sort}
-                className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 font-medium"
-              >
-                <option value="terbaru_aktivitas">Terakhir Diubah / Ditambahkan</option>
-                <option value="tanggal_desc">Tanggal Laporan (Terbaru)</option>
-                <option value="tanggal_asc">Tanggal Laporan (Terlama)</option>
-              </select>
-            </div>
-            <div className="sm:col-span-2 lg:col-span-1">
-              <Button type="submit" variant="default" className="h-10 w-full lg:w-auto px-5 gap-2 rounded-xl bg-[#0e3824] hover:bg-[#144731] text-white text-xs font-bold shadow-xs transition-colors">
-                <Search size={15} /> Cari
-              </Button>
+          <form className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-12 gap-3 sm:gap-4 items-end">
+              <div className="sm:col-span-2 md:col-span-3 xl:col-span-4">
+                <label htmlFor="keyword" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Kata Kunci
+                </label>
+                <div className="relative">
+                  <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                  <Input
+                    id="keyword"
+                    name="keyword"
+                    defaultValue={keyword}
+                    placeholder="Nama pengurus, tanggal, atau pekan..."
+                    className="pl-9.5 rounded-xl border border-slate-200 bg-white h-10 text-sm text-slate-900 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
+                  />
+                </div>
+              </div>
+
+              <div className="sm:col-span-1 md:col-span-1 xl:col-span-2">
+                <label htmlFor="year" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Tahun
+                </label>
+                <select
+                  id="year"
+                  name="year"
+                  defaultValue={year}
+                  className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 font-medium"
+                >
+                  <option value="">Semua tahun</option>
+                  {years.map((item) => (
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="sm:col-span-1 md:col-span-1 xl:col-span-2">
+                <label htmlFor="month" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Bulan
+                </label>
+                <select
+                  id="month"
+                  name="month"
+                  defaultValue={month}
+                  className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 font-medium"
+                >
+                  <option value="">Semua bulan</option>
+                  {MONTH_NAMES.map((item, index) => (
+                    <option key={item} value={index + 1}>
+                      {item}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="sm:col-span-1 md:col-span-2 xl:col-span-3">
+                <label htmlFor="sort" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Urutkan
+                </label>
+                <select
+                  id="sort"
+                  name="sort"
+                  defaultValue={sort}
+                  className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 font-medium"
+                >
+                  <option value="terbaru_aktivitas">Terakhir Diubah / Ditambahkan</option>
+                  <option value="tanggal_desc">Tanggal Laporan (Terbaru)</option>
+                  <option value="tanggal_asc">Tanggal Laporan (Terlama)</option>
+                </select>
+              </div>
+
+              <div className="sm:col-span-1 md:col-span-1 xl:col-span-1">
+                <Button type="submit" variant="default" className="h-10 w-full px-4 gap-2 rounded-xl bg-[#0e3824] hover:bg-[#144731] text-white text-xs font-bold shadow-xs transition-colors">
+                  <Search size={15} />
+                  <span>Cari</span>
+                </Button>
+              </div>
             </div>
           </form>
 
@@ -458,9 +468,9 @@ export default async function CariLaporanPage({
                                 )}
                               </div>
 
-                              {/* Weekly report cards: Proporsional 4 laporan per baris */}
+                              {/* Weekly report cards: Responsif 2 kolom pada laptop hingga 4 kolom pada layar lebar */}
                               <div className="p-4 sm:p-5">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
                                   {monthReports
                                     .slice()
                                     .sort((a, b) => {
@@ -567,16 +577,16 @@ export default async function CariLaporanPage({
                                             </p>
                                           </div>
 
-                                          {/* Financial chips — single symmetrical row */}
+                                          {/* Financial chips — rapi tanpa truncate angka */}
                                           {hasReportFinancials ? (
-                                            <div className="flex items-center gap-1.5 pt-1.5 border-t border-slate-100">
+                                            <div className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 pt-1.5 border-t border-slate-100">
                                               {reportMasuk > 0 && (
-                                                <span className="flex-1 text-center rounded-md bg-emerald-50 border border-emerald-200 py-0.5 px-1 text-[11px] font-bold text-emerald-800 tabular-nums truncate">
+                                                <span className="flex-1 min-w-[70px] text-center rounded-md bg-emerald-50 border border-emerald-200 py-0.5 px-1 text-[10.5px] sm:text-[11px] font-bold text-emerald-800 tabular-nums">
                                                   +{formatRupiah(reportMasuk)}
                                                 </span>
                                               )}
                                               {reportKeluar > 0 && (
-                                                <span className="flex-1 text-center rounded-md bg-rose-50 border border-rose-200 py-0.5 px-1 text-[11px] font-bold text-rose-700 tabular-nums truncate">
+                                                <span className="flex-1 min-w-[70px] text-center rounded-md bg-rose-50 border border-rose-200 py-0.5 px-1 text-[10.5px] sm:text-[11px] font-bold text-rose-700 tabular-nums">
                                                   -{formatRupiah(reportKeluar)}
                                                 </span>
                                               )}

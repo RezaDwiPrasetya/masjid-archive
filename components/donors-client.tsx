@@ -258,8 +258,8 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
             <div className="border-t border-white/10" />
 
             {/* Baris Bawah: Grid Metrik Finansial Infaq */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-              <div className="lg:col-span-5 space-y-2.5">
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-center">
+              <div className="xl:col-span-5 space-y-2.5">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
                   <div className="h-7 w-7 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
                     <Users size={14} />
@@ -274,9 +274,9 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
                 </div>
               </div>
 
-            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="xl:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex flex-col justify-between">
-                <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider truncate">
+                <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider leading-tight">
                   Donatur Terdata ({currentDonors.length} Nama)
                 </div>
                 <div className="text-base sm:text-lg lg:text-xl font-bold text-white tabular-nums mt-1">
@@ -289,7 +289,7 @@ export function DonorsClient({ donors, anonymous, availableYears }: DonorsClient
 
               <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex flex-col justify-between gap-1.5">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider truncate">
+                  <span className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider leading-tight">
                     Tromol / Anonim
                   </span>
                   <Button

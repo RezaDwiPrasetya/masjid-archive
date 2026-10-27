@@ -247,9 +247,9 @@ export default function PenggunaPage() {
           <div className="space-y-4">
 
             {/* Row Judul Total & 3 Kartu Role KPI */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-center">
               {/* Sisi Kiri: Headline Total Pengguna */}
-              <div className="lg:col-span-5 space-y-1">
+              <div className="xl:col-span-5 space-y-1">
                 <span className="text-[11px] uppercase tracking-wider text-emerald-800 font-bold block">
                   Total Akun Pengguna Terdaftar
                 </span>
@@ -262,7 +262,7 @@ export default function PenggunaPage() {
               </div>
 
               {/* Sisi Kanan: 3 Kartu KPI Role */}
-              <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="xl:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {/* Card 1: Administrator */}
                 <div
                   onClick={() => {

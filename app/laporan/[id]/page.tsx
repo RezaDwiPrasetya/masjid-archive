@@ -273,29 +273,29 @@ export default async function DetailLaporanPage({
           <div className="rounded-3xl bg-[#0e3824] text-white p-6 sm:p-8 lg:p-9 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-            <div className="relative z-10 flex flex-wrap items-baseline gap-6 sm:gap-10">
+            <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-baseline">
               <div>
                 <span className="text-xs text-emerald-200/90 font-bold uppercase tracking-wider block">{displayHeroLabel}</span>
-                <div className="text-3xl sm:text-4xl md:text-[44px] font-bold text-white tabular-nums mt-1 leading-none font-sans">
+                <div className="text-2xl sm:text-3xl lg:text-[34px] font-bold text-white tabular-nums mt-1 leading-tight font-sans">
                   {fmtRupiah(displayHeroFigure)}
                 </div>
               </div>
 
-              <div className="border-l border-emerald-400/20 pl-6 sm:pl-10">
+              <div className="border-t sm:border-t-0 sm:border-l border-emerald-400/20 pt-4 sm:pt-0 sm:pl-6">
                 <span className="text-xs text-emerald-200/90 font-bold uppercase tracking-wider block">Pemasukan</span>
                 <div className="text-xl sm:text-2xl font-bold text-emerald-300 tabular-nums mt-1 font-sans">
                   + {fmtRupiah(totalMasuk)}
                 </div>
               </div>
 
-              <div className="border-l border-emerald-400/20 pl-6 sm:pl-10">
+              <div className="border-t sm:border-t-0 sm:border-l border-emerald-400/20 pt-4 sm:pt-0 sm:pl-6">
                 <span className="text-xs text-emerald-200/90 font-bold uppercase tracking-wider block">Pengeluaran</span>
                 <div className="text-xl sm:text-2xl font-bold text-rose-300 tabular-nums mt-1 font-sans">
                   - {fmtRupiah(totalKeluar)}
                 </div>
               </div>
 
-              <div className="border-l border-emerald-400/20 pl-6 sm:pl-10">
+              <div className="border-t sm:border-t-0 sm:border-l border-emerald-400/20 pt-4 sm:pt-0 sm:pl-6">
                 <span className="text-xs text-emerald-200/90 font-bold uppercase tracking-wider block">Arus Kas Bersih</span>
                 <div className="text-xl sm:text-2xl font-bold text-white tabular-nums mt-1 font-sans">
                   {netChange >= 0 ? `+ ${fmtRupiah(netChange)}` : fmtRupiah(netChange)}
@@ -303,7 +303,7 @@ export default async function DetailLaporanPage({
               </div>
             </div>
           </div>
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
             {/* Panel utama: daftar lampiran */}
             <div className="space-y-6">
               {report.attachments.length === 0 ? (

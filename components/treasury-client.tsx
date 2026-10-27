@@ -268,9 +268,9 @@ export function TreasuryClient({
             <div className="border-t border-white/10" />
 
             {/* Baris Bawah: Grid Saldo Konsolidasi & Sub-Kanal */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-center">
               {/* Sisi Kiri: Saldo Konsolidasi Utama */}
-              <div className="lg:col-span-7 space-y-4">
+              <div className="xl:col-span-7 space-y-4">
                 <div className="flex items-center gap-2.5 text-xs font-bold uppercase tracking-wider text-emerald-200/90">
                   <div className="h-7 w-7 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0">
                     <Wallet size={14} />
@@ -287,54 +287,54 @@ export function TreasuryClient({
                 </p>
               </div>
 
-            {/* Sisi Kanan: Kartu Sub-Kanal (Tunai & Digital) */}
-            <div className="lg:col-span-5 space-y-3">
-              {/* Sub-Card 1: Kas Fisik (Tunai / Brankas) */}
-              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center text-white shrink-0">
-                    <Banknote size={18} className="text-emerald-300" />
+              {/* Sisi Kanan: Kartu Sub-Kanal (Tunai & Digital) */}
+              <div className="xl:col-span-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-3">
+                {/* Sub-Card 1: Kas Fisik (Tunai / Brankas) */}
+                <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center text-white shrink-0">
+                      <Banknote size={18} className="text-emerald-300" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider leading-tight">
+                        Kas Fisik (Tunai / Brankas)
+                      </div>
+                      <div className="text-base sm:text-lg lg:text-xl font-bold text-white tabular-nums">
+                        {formatRupiah(summary.cash.balance)}
+                      </div>
+                      <div className="text-[11px] text-emerald-300/80 leading-tight mt-0.5">
+                        Uang tunai operasional harian DKM
+                      </div>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider truncate">
-                      Kas Fisik (Tunai / Brankas)
-                    </div>
-                    <div className="text-base sm:text-lg lg:text-xl font-bold text-white tabular-nums">
-                      {formatRupiah(summary.cash.balance)}
-                    </div>
-                    <div className="text-[11px] text-emerald-300/80 truncate">
-                      Uang tunai operasional harian DKM
-                    </div>
-                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-xs font-bold self-start ml-2 shrink-0">
+                    {cashRatio}%
+                  </span>
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-xs font-bold self-start ml-2 shrink-0">
-                  {cashRatio}%
-                </span>
-              </div>
 
-              {/* Sub-Card 2: Kas Bank / Digital (QRIS) */}
-              <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center text-white shrink-0">
-                    <Landmark size={18} className="text-emerald-300" />
+                {/* Sub-Card 2: Kas Bank / Digital (QRIS) */}
+                <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center text-white shrink-0">
+                      <Landmark size={18} className="text-emerald-300" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider leading-tight">
+                        Kas Bank / Digital (QRIS)
+                      </div>
+                      <div className="text-base sm:text-lg lg:text-xl font-bold text-white tabular-nums">
+                        {formatRupiah(summary.bank.balance)}
+                      </div>
+                      <div className="text-[11px] text-emerald-300/80 leading-tight mt-0.5">
+                        Saldo di rekening BSI, Muamalat &amp; QRIS
+                      </div>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider truncate">
-                      Kas Bank / Digital (QRIS)
-                    </div>
-                    <div className="text-base sm:text-lg lg:text-xl font-bold text-white tabular-nums">
-                      {formatRupiah(summary.bank.balance)}
-                    </div>
-                    <div className="text-[11px] text-emerald-300/80 truncate">
-                      Saldo di rekening BSI, Muamalat &amp; QRIS
-                    </div>
-                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-xs font-bold self-start ml-2 shrink-0">
+                    {bankRatio}%
+                  </span>
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-xs font-bold self-start ml-2 shrink-0">
-                  {bankRatio}%
-                </span>
               </div>
-            </div>
           </div>
         </div>
       </div>
