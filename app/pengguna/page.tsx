@@ -245,13 +245,6 @@ export default function PenggunaPage() {
         <div className="space-y-6 sm:space-y-8 pb-12">
           {/* HEADER ATAS & 3 KARTU ROLE KPI (PERSIS MOCKUP GAMBAR 2) */}
           <div className="space-y-4">
-            {/* Breadcrumb Label */}
-            <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
-              <Home className="h-3.5 w-3.5 text-emerald-800" />
-              <span>Manajemen Pengguna & Dewan Pengurus</span>
-              <span className="text-slate-300">•</span>
-              <span>DKM Masjid Al-Luqman</span>
-            </div>
 
             {/* Row Judul Total & 3 Kartu Role KPI */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">

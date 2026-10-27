@@ -253,10 +253,6 @@ export default function UnggahLaporanPage() {
         <div className="space-y-6 sm:space-y-8">
           {/* HEADER ATAS DI KANVAS TERANG */}
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              <UploadCloud className="h-3.5 w-3.5 text-emerald-800" />
-              <span>Ruang Kerja Pengurus DKM • Pembukuan Kas Digital</span>
-            </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               Unggah Berkas Laporan Kas
             </h1>
