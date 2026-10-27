@@ -3,7 +3,6 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   HeartHandshake,
   ImagePlus,
@@ -21,7 +20,6 @@ import {
   ChevronDown,
   Bell,
   LogIn,
-  Menu,
   ShieldCheck,
   CheckCircle2,
 } from "lucide-react";
@@ -61,7 +59,6 @@ export function AppShell({
   children: React.ReactNode;
   active: "/" | "/unggah" | "/cari" | "/pengguna" | "/dashboard" | "/donatur" | "/pengeluaran" | "/keuangan";
 }) {
-  const router = useRouter();
   const { data: session } = useSession();
   const storedCollapsed = React.useSyncExternalStore(
     subscribeSidebarStorage,
@@ -73,7 +70,6 @@ export function AppShell({
 
   const [isProfileMenuOpen, setIsProfileMenuOpen] = React.useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = React.useState(false);
-  const [searchQuery, setSearchQuery] = React.useState("");
   const [optimisticActive, setOptimisticActive] = React.useState<string | null>(null);
 
   // Adjust optimistic active during render when prop changes (React recommended pattern)
@@ -107,13 +103,6 @@ export function AppShell({
     try {
       localStorage.setItem("masjid_sidebar_collapsed", String(next));
     } catch {}
-  };
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/cari?q=${encodeURIComponent(searchQuery.trim())}`);
-    }
   };
 
   const navItems = [];
@@ -317,40 +306,16 @@ export function AppShell({
           isCollapsed ? "lg:pl-[72px]" : "lg:pl-[260px]"
         }`}
       >
-        {/* Structural Header (Tinggi h-16 dengan Search Bar Kapsul & Profil Sesuai Referensi) */}
+        {/* Structural Header (Tinggi h-16 Bersih & Minimalis Sesuai Permintaan) */}
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-emerald-950/8 bg-white/95 backdrop-blur-md px-4 lg:px-8 shadow-2xs">
-          {/* Sisi Kiri: Tombol Hamburger & Bilah Pencarian Kapsul Global */}
-          <div className="flex items-center gap-3 flex-1 max-w-xl">
-            {/* Tombol Toggle Sidebar untuk Mobile & Desktop */}
-            <button
-              type="button"
-              onClick={toggleSidebar}
-              className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-              title="Toggle Menu Navigasi"
-              aria-label="Toggle Menu Navigasi"
-            >
-              <Menu size={19} />
-            </button>
-
-            {/* Mobile Brand Title */}
-            <div className="lg:hidden flex items-center gap-2 mr-1 shrink-0">
+          {/* Sisi Kiri: Brand Title Pada Tampilan Mobile */}
+          <div className="flex items-center gap-3">
+            <div className="lg:hidden flex items-center gap-2 shrink-0">
               <MasjidEmblem className="h-7 w-7" />
               <span className="text-sm font-bold tracking-tight text-slate-900 truncate">
                 Masjid<span className="text-emerald-800">Archive</span>
               </span>
             </div>
-
-            {/* Global Search Bar (Fungsional Menuju /cari) */}
-            <form onSubmit={handleSearchSubmit} className="relative hidden sm:flex items-center w-full max-w-md">
-              <Search size={15} className="absolute left-3.5 text-slate-400 pointer-events-none" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari laporan, transaksi, atau kata kunci..."
-                className="w-full pl-9 pr-4 py-2 rounded-full bg-slate-50 border border-slate-200/90 text-xs text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-hidden focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 transition-all shadow-2xs"
-              />
-            </form>
           </div>
 
           {/* Sisi Kanan: Lonceng Notifikasi & Lencana Profil DKM */}
