@@ -937,22 +937,35 @@
 
 ### F-039 — Penyatuan Header Halaman ke dalam Hero Card & Eliminasi Teks Eyebrow Redundan (Issue #081 / F-039)
 
-**Objective:** Meningkatkan keanggunan, ketenangan visual, dan efisiensi ruang antarmuka dengan mengintegrasikan judul halaman dan tombol aksi utama langsung ke dalam *Dark Green Hero Card* (`#0e3824`) sebagai *Unified Page Header*, serta mengeliminasi teks *eyebrow* kapital kecil yang redundan di luar kartu.
+**Objective:** Meningkatkan keanggunan, ketenangan visual, dan efisiensi ruang antarmuka dengan mengintegrasikan judul halaman dan tombol aksi utama langsung ke dalam *Dark Green Hero Card* (`#0e3824`) sebagai *Unified Page Header*, mengeliminasi teks *eyebrow* kapital kecil yang redundan di luar kartu, serta memastikan seluruh elemen form, subcard, dan kartu laporan responsif di berbagai resolusi layar tanpa tabrakan atau pemotongan teks.
 **User:** Seluruh pengguna (Publik / Jamaah dan Staf Pengurus DKM).
 **Process:**
 - **Pembersihan Header Kanvas Luar**:
   - Menghilangkan blok teks *eyebrow* abu-abu (seperti *"Kokpit Analitik Kas Pengurus • DKM Al-Luqman"*) yang menambah beban kognitif dan redundansi informasi.
   - Memindahkan judul halaman (`<h1>`) dan tombol aksi utama ke dalam container Hero Card hijau.
+  - Menghapus input pencarian global yang redundan dari top bar header (`components/app-shell.tsx`) demi tampilan yang tenang dan fokus.
 - **Unified Hero Card Header**:
   - Baris atas Hero Card memuat judul halaman kontras putih di sisi kiri, serta tombol aksi bergaya *glassmorphism* elegan (`bg-white/10 hover:bg-white/20 border border-white/15 text-white`) di sisi kanan.
-  - Separator border halus semi-transparan memisahkan identitas halaman dengan metrik finansial utama (saldo kas riil/akumulasi).
+  - Separator border halus semi-transparan (`border-t border-white/10`) memisahkan identitas halaman dengan metrik finansial utama (saldo kas riil/akumulasi).
   - Tampilan responsif di desktop maupun layar sentuh mobile.
-- **Implementasi Bertahap**:
-  - Tahap 1 (Pilot): Dashboard Kas Masjid (`components/dashboard-client.tsx`).
-  - Tahap 2: Modul Perbendaharaan (`components/treasury-client.tsx`), Donatur (`components/donors-client.tsx`), Pengeluaran (`components/expenses-client.tsx`), dan Cari Arsip (`app/cari/page.tsx`).
+- **Pengerasan Responsivitas Form & Grid (Desktop & Mobile)**:
+  - **Form Filter `/cari`**: Menggantikan kolom kaku dengan sistem grid responsif bertingkat (`grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-12`) agar input Kata Kunci tidak terjepit saat sidebar 260px terbuka di layar 1024px–1280px.
+  - **Subcard Metrik**: Menghapus penggunaan `truncate` pada judul metrik finansial dan menyesuaikan layout subcard hero card (`xl:grid-cols-12`) pada modul Keuangan, Donatur, Pengeluaran, dan Pengguna.
+  - **Integrasi Tanggal & Tombol `/unggah`**: Mengintegrasikan Date Picker dan tombol submit ke dalam satu kartu terpadu (*Card Action Footer*) tanpa tombol floating yang terputus.
+  - **Kartu Arsip Laporan**: Penataan kartu mingguan adaptif (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4`) dengan badge nominal rupiah utuh tanpa elipsis.
+- **Implementasi Menyeluruh**:
+  - Dashboard Kas Masjid (`components/dashboard-client.tsx`).
+  - Modul Perbendaharaan (`components/treasury-client.tsx`).
+  - Modul Donatur (`components/donors-client.tsx`).
+  - Modul Pengeluaran (`components/expenses-client.tsx`).
+  - Modul Cari Arsip (`app/cari/page.tsx`).
+  - Modul Unggah Laporan (`app/unggah/page.tsx`).
+  - Modul Manajemen Pengguna (`app/pengguna/page.tsx`).
+  - Halaman Detail Laporan (`app/laporan/[id]/page.tsx`).
 **Acceptance Criteria:**
-- [ ] Header kanvas terang di luar card dihapus, tidak ada lagi teks eyebrow redundan.
-- [ ] Hero Card hijau memuat judul halaman, tombol aksi yang selaras, dan metrik keuangan utama secara harmonis.
-- [ ] Responsif di perangkat desktop maupun mobile.
-- [ ] Dilakukan secara bertahap dimulai dari Dashboard Kas Masjid untuk verifikasi visual pengguna.
+- [x] Header kanvas terang di luar card dihapus, tidak ada lagi teks eyebrow redundan.
+- [x] Hero Card hijau memuat judul halaman, tombol aksi yang selaras, dan metrik keuangan utama secara harmonis.
+- [x] Responsif di perangkat desktop maupun mobile (teruji di 375px, 768px, 1024px, dan 1280px).
+- [x] Tidak ada teks atau angka finansial yang terpotong secara tidak semestinya oleh ellipsis.
+- [x] Lulus verifikasi automated test suite dan TypeScript check 100%.
 

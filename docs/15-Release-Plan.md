@@ -137,9 +137,19 @@
 - [x] Modernisasi kartu KPI peran dan tabel Manajemen Pengguna (`app/pengguna/page.tsx`)
 - [x] Harmonisasi skema warna Deep Mosque Emerald (`#0e3824`) dan penataan estetika bersih di seluruh antarmuka
 
+### Milestone 15 — Unified Hero Card Header & Responsive Layout Hardening (V15, Issue #081 / F-039)
+- [x] Eliminasi teks eyebrow redundan abu-abu dan double header di luar card pada seluruh halaman
+- [x] Penyatuan judul halaman (`<h1>`), tombol aksi bergaya glassmorphism, dan metrik finansial utama ke dalam *Dark Green Hero Card* (`#0e3824`)
+- [x] Pembersihan top bar header (`components/app-shell.tsx`) dengan menghapus input pencarian dan hamburger menu redundan
+- [x] Rekonstruksi form filter pencarian arsip (`app/cari/page.tsx`) menjadi fluid grid responsif (`xl:grid-cols-12`) sehingga input Kata Kunci tidak terjepit pada resolusi laptop (1024px–1280px) dengan sidebar terbuka
+- [x] Penyelarasan subcard metrik hero card (`xl:grid-cols-12`) pada modul Keuangan, Donatur, dan Pengeluaran untuk mencegah pemotongan teks (*truncation*)
+- [x] Integrasi pemilih tanggal dan tombol submit pada halaman Unggah Laporan (`app/unggah/page.tsx`) ke dalam satu kartu terpadu (*Card Action Footer*)
+- [x] Penataan grid kartu arsip mingguan adaptif (1 kolom mobile, 2 kolom tablet/laptop, 3 kolom laptop lebar, 4 kolom monitor 2xl) dengan chip finansial rupiah utuh tanpa ellipsis
+- [x] Pengujian komprehensif lintas resolusi (375px, 768px, 1024px, 1280px) dengan hasil uji 100% responsif tanpa tabrakan elemen
+
 ## Version
 
-Current: `0.14.0` (Fase V14: Modern Collapsible Sidebar, Redesain Pencarian 4-Kolom & Finalisasi Produksi TA)
+Current: `0.15.0` (Fase V15: Penyatuan Header Hero Card, Eliminasi Eyebrow Redundan & Pengerasan Responsivitas)
 Next: `1.0.0`
 
 ## Changelog
@@ -151,9 +161,22 @@ Next: `1.0.0`
 - **Desain Hero Card Unified Header Modern**:
   - Baris atas kartu memuat judul halaman kontras putih di sisi kiri dan tombol aksi bergaya *glassmorphism* elegan (`bg-white/10 hover:bg-white/20 border border-white/15 text-white`) di sisi kanan.
   - Garis pembatas halus semi-transparan (`border-t border-white/10`) memisahkan identitas modul dengan metrik finansial utama (saldo kas riil, ringkasan mutasi, atau tanggal laporan).
-- **Implementasi Bertahap**:
-  - Tahap 1 (Pilot): Dashboard Kas Masjid (`components/dashboard-client.tsx`).
-  - Tahap 2: Modul Perbendaharaan (`components/treasury-client.tsx`), Donatur (`components/donors-client.tsx`), Pengeluaran (`components/expenses-client.tsx`), dan Cari Arsip (`app/cari/page.tsx`).
+- **Pembersihan Top Bar Header (`components/app-shell.tsx`)**:
+  - Menghapus search input global dan hamburger toggle dari header atas untuk menjaga kesederhanaan dan fokus visual, sembari mempertahankan menu `/cari` di sidebar navigasi.
+- **Pengerasan Responsivitas Form & Grid**:
+  - Form filter `/cari` dirombak menjadi multi-row fluid grid (`grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-12`), mencegah input teks menyusut pada layar laptop 1024px saat sidebar 260px terbuka.
+  - Subcard metrik perbendaharaan, donatur, dan pengeluaran diperbarui ke `xl:grid-cols-12` dengan teks multi-baris fleksibel `leading-tight` tanpa pemotongan `truncate`.
+  - Halaman unggah (`/unggah`) kini menggabungkan Date Picker dan Tombol Aksi Simpan ke dalam satu kontainer terpadu yang proporsional.
+  - Kartu laporan mingguan beradaptasi dari 1 kolom ponsel hingga 4 kolom monitor lebar dengan badge nominal utuh (`min-w-[70px]`).
+- **Cakupan Implementasi**:
+  - Dashboard Kas Masjid (`components/dashboard-client.tsx`).
+  - Perbendaharaan (`components/treasury-client.tsx`).
+  - Donatur (`components/donors-client.tsx`).
+  - Pengeluaran (`components/expenses-client.tsx`).
+  - Cari Arsip (`app/cari/page.tsx`).
+  - Unggah Laporan (`app/unggah/page.tsx`).
+  - Manajemen Pengguna (`app/pengguna/page.tsx`).
+  - Detail Laporan (`app/laporan/[id]/page.tsx`).
 
 ### 0.14.0 (2026-10-26) — Fase V14: Modern Collapsible Sidebar, Redesain Pencarian 4-Kolom & Finalisasi Produksi TA (F-036, F-037, F-038)
 - **Modern Collapsible Floating Emerald Sidebar (`components/app-shell.tsx`)**:

@@ -131,12 +131,21 @@ Unit dasar: 8px.
 ## Mobile Responsiveness & Touch Guidelines (Fase V7)
 
 ### 1. Viewport Breakpoints & Strategi Layar
-- **Mobile Compact (< 390px)**: Prioritas keringkasan konten, hilangkan redundansi visual, minimal margin 12px-16px.
+- **Mobile Compact (< 390px, mis. iPhone SE)**: Prioritas keringkasan konten, hilangkan redundansi visual, minimal margin 12px-16px, seluruh angka finansial tidak boleh terpotong oleh `truncate`.
 - **Mobile Standard (390px - 639px)**: Target utama jemaah & pengurus saat browsing via smartphone. Layout 1 kolom, vertical stack.
-- **Tablet (640px - 1023px)**: Grid 2 kolom, adaptasi sidebar/bottom bar.
-- **Desktop (≥ 1024px)**: Sidebar tetap 260px, grid 3-4 kolom, multi-panel review.
+- **Tablet (640px - 1023px)**: Grid 2 kolom, adaptasi bottom bar navigasi melengkung (*curved wave*).
+- **Laptop Ringkas (1024px - 1279px, `lg`)**: **CRITICAL RULE**: Dengan sidebar desktop 260px aktif mengembang, ruang konten bersih yang tersisa hanya ~764px. Jangan memaksakan grid 3 atau 4 kolom pada breakpoint `lg` karena akan memicu penyusutan input dan pemotongan teks (*truncation*). Perlakukan `lg` sebagai ruang 2-kolom.
+- **Desktop Lebar (≥ 1280px, `xl` & `2xl`)**: Ruang konten bersih ≥ 1020px; aman untuk grid 3–4 kolom kartu laporan dan multi-panel berdampingan.
 
-### 2. Standar Navigasi Bawah (Mobile Bottom Bar)
+### 2. Unified Dark Green Hero Card Header Pattern (F-039)
+- **Eliminasi Double Header & Eyebrow Redundan**: Tidak menggunakan label kapital kecil abu-abu di kanvas luar (seperti *"Kokpit Analitik Kas Pengurus"* atau *"Detail Laporan"* yang menumpuk).
+- **Struktur Kartu Hijau Tunggal (`#0e3824`)**:
+  - **Baris Atas**: Judul halaman `<h1>` kontras putih di sisi kiri + tombol aksi utama/sekunder bergaya *glassmorphism* (`bg-white/10 hover:bg-white/20 border border-white/15 text-white`) di sisi kanan.
+  - **Separator**: Garis tipis semi-transparan (`border-t border-white/10`).
+  - **Baris Bawah**: Metrik utama saldo kas atau indikator pencarian/pengeluaran terverifikasi yang lapang.
+- **Prinsip Bebas Truncate**: Label sub-metrik di dalam kartu tidak boleh memakai `truncate` yang memotong kata menjadi ellipsis (`...`). Gunakan `leading-tight` dan biarkan membungkus rapi.
+
+### 3. Standar Navigasi Bawah (Mobile Bottom Bar)
 - **Touch Target**: Setiap item navigasi harus memiliki tap area minimal 44×44px (standar aksesibilitas WCAG).
 - **Densitas Item (Hingga 7 Menu untuk Role Admin/Staf)**:
   - Pada layar HP sempit (≤ 380px), kontainer navigasi bawah mendukung tata letak adaptif atau horizontal scroll yang halus (`overflow-x-auto scrollbar-none`) dengan padding `px-2`, font label 10–11px demi mencegah teks terpotong (*truncate* berantakan) atau bertumpuk.

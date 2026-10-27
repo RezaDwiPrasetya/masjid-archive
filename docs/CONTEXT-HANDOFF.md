@@ -398,6 +398,19 @@ Shared logic di `lib/donor-matching.ts`, `lib/donor-service.ts`, dan `lib/expens
     - Penataan kartu 4 ringkasan saldo detail laporan kas menjadi `grid-cols-2 sm:grid-cols-4` agar seluruh nilai nominal angka tetap utuh dan terbaca.
     - Harmonisasi kartu pengeluaran, donatur, dan layout dashboard di perangkat mobile.
 
+12. **Fase V14: Modern Collapsible Sidebar, Redesain Pencarian 4-Kolom & Alur Unggah Cepat (Issue #081, #082, #083 / F-036, F-037, F-038 — Selesai Penuh)**:
+    - Sidebar desktop modern mengambang dengan mode Compact (72px) & Expanded (260px) beserta persistensi `localStorage`.
+    - Ilustrasi autentik siluet masjid di latar bawah sidebar dan bilah navigasi curved fluid wave mobile.
+    - Redesain pencarian arsip (`/cari`) berbasis pengelompokan bulanan dan grid 4-kolom proporsional.
+    - Smart redirect pasca-unggah berkas langsung ke detail laporan (`/laporan/[id]`) dan seksi laporan tertunda di dashboard pengurus.
+13. **F-039: Penyatuan Header Halaman ke dalam Hero Card, Eliminasi Eyebrow Redundan & Pengerasan Responsivitas (Issue #081 — Selesai Penuh)**:
+    - **Unified Hero Card Header**: Menghapus teks eyebrow abu-abu kecil dan double header di kanvas luar. Judul halaman `<h1>` dan tombol aksi utama dipindahkan ke dalam *Dark Green Hero Card* (`#0e3824`) berlatar hijau khas masjid dengan tombol aksi bergaya *glassmorphism*.
+    - **Pembersihan Top Bar Header**: Input pencarian global dan tombol hamburger redundan dihapus dari header atas, menyisakan identitas brand, lonceng status kas, dan avatar profil interaktif.
+    - **Pengerasan Responsivitas Form Filter `/cari`**: Form pencarian direkonstruksi menjadi fluid grid multi-baris (`xl:grid-cols-12`) sehingga input kata kunci tidak terjepit pada resolusi laptop (1024px–1280px) dengan sidebar mengembang 260px.
+    - **Eliminasi Pemotongan Teks (Truncation)**: Subcard metrik perbendaharaan, donatur, dan pengeluaran diselaraskan ke `xl:grid-cols-12` dengan wrapping teks `leading-tight` tanpa elipsis.
+    - **Integrasi Unggah Laporan**: Date Picker dan tombol submit diintegrasikan ke dalam satu kartu terpadu (*Card Action Footer*).
+    - **Verifikasi Lintas Perangkat**: Teruji 100% responsif pada 375px (ponsel), 768px (tablet), 1024px (laptop), dan 1280px+ (desktop lebar).
+
 ---
 
 ## 15. KONTEKS LAIN YANG PENTING
