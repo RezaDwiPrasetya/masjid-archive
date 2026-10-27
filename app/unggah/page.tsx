@@ -251,14 +251,73 @@ export default function UnggahLaporanPage() {
     <AppShell active="/unggah">
       <PageShell>
         <div className="space-y-6 sm:space-y-8">
-          {/* HEADER ATAS DI KANVAS TERANG */}
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Unggah Berkas Laporan Kas
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Digitalisasi warta Jum&apos;at, pindaian buku kas fisik, dokumen PDF, dan spreadsheet Excel ke arsip terverifikasi.
-            </p>
+          {/* UNIFIED HERO HEADER CARD (F-039) */}
+          <div className="rounded-3xl bg-[#0e3824] text-white p-6 sm:p-8 lg:p-9 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 space-y-5 sm:space-y-6">
+              {/* Baris Atas: Judul Halaman & Tombol Aksi */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+                    Unggah Berkas Laporan Kas
+                  </h1>
+                  <p className="text-xs sm:text-sm text-emerald-100/80 mt-1 leading-relaxed">
+                    Digitalisasi warta Jum&apos;at, pindaian buku kas fisik, dokumen PDF, dan spreadsheet Excel ke arsip terverifikasi.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <Link
+                    href="/cari"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white border border-white/15 text-xs font-semibold backdrop-blur-xs transition-colors shrink-0"
+                  >
+                    <FileText size={13} />
+                    <span>Lihat Arsip Tersimpan</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Garis Pemisah Halus */}
+              <div className="border-t border-white/10" />
+
+              {/* Baris Bawah: Dua Panduan Cepat Format & Alur Ekstraksi */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex items-start gap-3">
+                  <div className="h-8 w-8 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0 mt-0.5">
+                    <CloudUpload size={16} className="text-emerald-300" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider">
+                      Format Berkas Didukung
+                    </div>
+                    <div className="text-xs font-semibold text-white mt-0.5">
+                      Foto (JPG, PNG, WebP), PDF, &amp; Excel (XLSX)
+                    </div>
+                    <p className="text-[11px] text-emerald-300/80 mt-0.5">
+                      Kompresi otomatis client-side aktif sebelum diunggah
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-[#144731]/80 border border-emerald-400/20 backdrop-blur-sm flex items-start gap-3">
+                  <div className="h-8 w-8 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-white shrink-0 mt-0.5">
+                    <Sparkles size={16} className="text-emerald-300" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider">
+                      Ekstraksi Otomatis AI
+                    </div>
+                    <div className="text-xs font-semibold text-white mt-0.5">
+                      Didukung Vision-LLM Gemini
+                    </div>
+                    <p className="text-[11px] text-emerald-300/80 mt-0.5">
+                      Langsung diarahkan ke panel peninjauan transaksi
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
         {/* Banner sukses */}
