@@ -678,30 +678,34 @@ export function AppShell({
         {/* DESKTOP PUBLIC CENTERED TOP NAVBAR (KHUSUS MODE PUBLIK)   */}
         {/* ========================================================= */}
         {!showStaffSidebar && (
-          <header className="hidden lg:block sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-2xs">
-            <div className="w-full flex items-stretch justify-between" style={{minHeight: "4.5rem"}}>
-              {/* Sisi Kiri: Brand Masjid */}
-              <div className="flex-1 flex items-center justify-start min-w-0 px-4 sm:px-6 md:px-8 lg:px-10 shrink-0">
-                <Link href="/" className="flex items-center gap-3 shrink-0 group">
-                  <MasjidEmblem className="h-9 w-9 group-hover:scale-105 transition-transform shrink-0" />
-                  <div className="flex flex-col min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base font-extrabold text-slate-900 tracking-tight font-sans">
-                        DKM Masjid Al-Luqman
-                      </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold">
-                        Portal Transparansi
-                      </span>
-                    </div>
-                    <span className="text-[11px] text-slate-500 font-medium truncate">
-                      Kel. Soklat, Subang &bull; Akuntabilitas Terbuka
+          /* ─────────────────────────────────────────────────────────────── *
+           * FLOATING CARD NAVBAR — Desktop Public Portal                   *
+           * Sticky container with horizontal + top padding creates the     *
+           * "floating above content" card effect as per design reference.  *
+           * ─────────────────────────────────────────────────────────────── */
+          <header className="hidden lg:block sticky top-0 z-30 px-5 pt-3 pb-0">
+            <div className="bg-white rounded-2xl shadow-[0_2px_20px_rgba(0,0,0,0.08)] border border-slate-200/60 flex items-stretch overflow-hidden" style={{ minHeight: "64px" }}>
+
+              {/* ── LEFT: Brand identity ─────────────────────────────── */}
+              <div className="flex items-center gap-3 px-5 shrink-0 border-r border-slate-100">
+                <MasjidEmblem className="h-10 w-10 shrink-0" />
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[15px] font-bold text-slate-900 tracking-tight leading-tight whitespace-nowrap">
+                      DKM Masjid Al-Luqman
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/80 font-semibold whitespace-nowrap">
+                      Portal Transparansi
                     </span>
                   </div>
-                </Link>
+                  <span className="text-[11px] text-slate-400 font-normal mt-0.5 whitespace-nowrap">
+                    Kel. Soklat, Subang &middot; Akuntabilitas Terbuka
+                  </span>
+                </div>
               </div>
 
-              {/* Sisi Tengah: Navigasi Underline Full-Width — mengisi seluruh ruang kosong antar brand dan tombol */}
-              <nav className="flex-1 flex items-stretch self-stretch">
+              {/* ── CENTER: Navigation — fills all remaining space ───── */}
+              <nav className="flex-1 flex items-stretch" aria-label="Navigasi Portal Publik">
                 {(
                   [
                     { key: "beranda",          label: "Beranda",         href: "/" },
@@ -717,38 +721,38 @@ export function AppShell({
                       key={key}
                       href={href}
                       onClick={(e) => handlePublicNavClick(key, e)}
-                      className={`relative flex flex-1 items-center justify-center px-1 cursor-pointer select-none transition-colors duration-200 group
-                        ${isActive ? "text-primary" : "text-slate-500 hover:text-slate-800"}
+                      className={`relative flex flex-1 items-center justify-center cursor-pointer select-none transition-colors duration-200
+                        ${isActive
+                          ? "text-primary font-semibold"
+                          : "text-slate-500 hover:text-slate-800 font-medium"}
                       `}
                     >
-                      <span className={`text-sm transition-all duration-200 ${isActive ? "font-semibold" : "font-medium"}`}>
-                        {label}
-                      </span>
-                      {/* Garis bawah indikator aktif — animasi width smooth */}
+                      <span className="text-[13.5px] leading-none">{label}</span>
+                      {/* Active indicator: thick underline anchored to card bottom edge */}
                       <span
-                        className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2.5px] rounded-full bg-primary transition-all duration-300 ease-out"
-                        style={{ width: isActive ? "60%" : "0%", opacity: isActive ? 1 : 0 }}
+                        className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] rounded-t-full bg-primary transition-all duration-300 ease-out"
+                        style={{ width: isActive ? "56%" : "0%", opacity: isActive ? 1 : 0 }}
                       />
                     </a>
                   );
                 })}
               </nav>
 
-              {/* Sisi Kanan: Aksi Masuk / Profil Staf */}
-              <div className="flex-1 flex items-center justify-end px-4 sm:px-6 md:px-8 lg:px-10 shrink-0">
+              {/* ── RIGHT: CTA action ────────────────────────────────── */}
+              <div className="flex items-center px-5 shrink-0 border-l border-slate-100">
                 {session ? (
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-2">
                     <Link
                       href="/dashboard"
-                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white hover:bg-emerald-900 text-[13px] font-semibold shadow-sm transition-colors"
                     >
-                      <LayoutDashboard size={14} />
-                      <span>Dashboard Staf</span>
+                      <LayoutDashboard size={15} />
+                      <span>Dashboard</span>
                     </Link>
                     <button
                       type="button"
                       onClick={() => signOut({ callbackUrl: "/" })}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                      className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                       title="Keluar"
                     >
                       <LogOut size={15} />
@@ -758,9 +762,9 @@ export function AppShell({
                   <button
                     type="button"
                     onClick={() => signIn("google", { callbackUrl: "/auth/post-login" })}
-                    className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-primary text-white hover:bg-primary-container text-xs font-semibold shadow-xs transition-all cursor-pointer group"
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white hover:bg-emerald-900 text-[13px] font-semibold shadow-sm transition-colors cursor-pointer whitespace-nowrap"
                   >
-                    <LogIn size={15} className="text-emerald-200 group-hover:text-white transition-colors" />
+                    <LogIn size={15} />
                     <span>Akses Pengurus</span>
                   </button>
                 )}
