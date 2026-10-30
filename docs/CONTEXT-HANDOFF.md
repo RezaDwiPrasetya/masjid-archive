@@ -240,6 +240,15 @@ Model utama dalam `schema.prisma`:
 ## 8. MASALAH/BUG YANG SEDANG DIBAHAS
 Tidak ada bug fungsional aktif di codebase. Seluruh fase V1 s/d V15 (F-001 s/d F-040) telah tuntas 100%, teruji lolos typecheck & linter, serta live di Vercel Production.
 
+### 7j. FASE V16 — PUBLIC FULL-WIDTH PORTAL & CENTERED TOP NAVIGATION (F-041, ISSUE #085)
+- **Status**: Tahap Perencanaan & Dokumentasi Selesai (Siap Eksekusi).
+- **Latar Belakang & Masalah**: Pengunjung jemaah/donatur tanpa login sebelumnya melihat sidebar kiri desktop buka-tutup (collapsible) yang semestinya dikhususkan untuk admin/dashboard operasional, sehingga halaman terasa sempit dan menyerupai admin dashboard internal SaaS.
+- **Solusi Arsitektur**:
+  1. Menghilangkan sidebar desktop kiri pada sesi publik tanpa login (`lg:hidden` pada sidebar tamu, `lg:pl-0` pada kanvas konten) sehingga halaman menjadi *full-width* lapang dan megah.
+  2. Menghadirkan **Centered Top Navigation Bar** di bagian atas kanvas publik (Logo DKM di kiri, Menu Navigasi Utama di tengah, Tombol Akses Pengurus di kanan).
+  3. Mengeliminasi baris anchor bar ganda di atas kartu hero `app/page.tsx` agar navigasi terpusat dan tidak berulang.
+  4. Mempertahankan sidebar collapsible emerald (`#0e3824`) secara eksklusif bagi staf DKM yang login pada modul kerja operasional (`/dashboard`, `/keuangan`, `/unggah`, `/pengguna`).
+
 ---
 
 ## 9. PENYEBAB BUG YANG SUDAH DIKETAHUI (dicatat agar tidak diulang)

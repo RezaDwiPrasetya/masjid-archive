@@ -137,6 +137,14 @@
 - [x] Modernisasi kartu KPI peran dan tabel Manajemen Pengguna (`app/pengguna/page.tsx`)
 - [x] Harmonisasi skema warna Deep Mosque Emerald (`#0e3824`) dan penataan estetika bersih di seluruh antarmuka
 
+### Milestone 16 — Public Full-Width Portal & Centered Top Navigation (V16, Issue #085 / F-041)
+- [ ] Eliminasi sidebar desktop vertikal kiri (`<aside>`) pada sesi pengunjung publik tanpa login
+- [ ] Penerapan tata letak Full-Width tanpa margin offset kiri (`lg:pl-0`) pada seluruh halaman publik (`/`, `/donatur`, `/pengeluaran`, `/cari`)
+- [ ] Implementasi Centered Top Navigation Bar horizontal di bagian atas kanvas publik (Brand Logo di kiri, Menu Utama di tengah, Tombol Akses Pengurus di kanan)
+- [ ] Penyatuan anchor links navigasi portal ke Top Navbar dan eliminasi bar navigasi terpisah yang redundan di atas Hero Card `app/page.tsx`
+- [ ] Pemeliharaan dan isolasi sidebar desktop Dark Green Collapsible (`#0e3824`) khusus pada area kerja staf login (`/dashboard`, `/keuangan`, `/unggah`, `/pengguna`)
+- [ ] Pengujian fungsionalitas dan responsivitas lintas perangkat desktop, tablet, dan ponsel dengan hasil 100% lulus
+
 ### Milestone 15 — Unified Hero Card Header & Responsive Layout Hardening (V15, Issue #081 / F-039)
 - [x] Eliminasi teks eyebrow redundan abu-abu dan double header di luar card pada seluruh halaman
 - [x] Penyatuan judul halaman (`<h1>`), tombol aksi bergaya glassmorphism, dan metrik finansial utama ke dalam *Dark Green Hero Card* (`#0e3824`)
@@ -149,10 +157,21 @@
 
 ## Version
 
-Current: `0.15.0` (Fase V15: Penyatuan Header Hero Card, Eliminasi Eyebrow Redundan & Pengerasan Responsivitas)
-Next: `1.0.0`
+Current: `0.15.0` (Fase V15 Selesai 100%)
+Next: `0.16.0` (Fase V16: Portal Publik Full-Width, Centered Top Navigation & Isolasi Sidebar Khusus Staf DKM — Issue #085 / F-041)
 
 ## Changelog
+
+### 0.16.0 (Dalam Pengerjaan) — Fase V16: Portal Publik Full-Width, Centered Top Navigation & Isolasi Sidebar Khusus Staf DKM (Issue #085 / F-041)
+- **Eliminasi Sidebar Desktop pada Sesi Tamu / Publik**:
+  - Menghilangkan sidebar vertikal kiri pada tampilan publik tanpa login (`lg:pl-0`), memberikan pengalaman portal landing page yang lapang, terbuka, dan elegan bagi jemaah dan donatur.
+- **Implementasi Centered Top Navigation Bar**:
+  - Menempatkan navigasi utama di bagian atas kanvas publik secara terpusat (*center-aligned*) dengan menu: Beranda, Alokasi Belanja, Cek Infaq, Salurkan Infaq, dan Arsip Laporan.
+  - Memadukan identitas resmi DKM Masjid Al-Luqman di sisi kiri dan tombol kapsul *Akses Pengurus* di sisi kanan.
+- **Konsolidasi Anchor Menu**:
+  - Mengeliminasi menu navigasi anchor ganda yang sebelumnya berada di atas kartu hero `app/page.tsx` untuk menghadirkan hirarki visual yang bersih dan fokus.
+- **Isolasi Penuh Ruang Kerja Staf**:
+  - Menjaga modul operasional pengurus (`/dashboard`, `/keuangan`, `/unggah`, `/pengguna`) tetap memiliki akses penuh ke Sidebar Collapsible Emerald (`#0e3824`).
 
 ### 0.15.0 (2026-10-27) — Fase V15: Penyatuan Header Halaman ke dalam Hero Card & Eliminasi Teks Eyebrow Redundan (Issue #081 / F-039)
 - **Eliminasi Teks Eyebrow Redundan & Double Header**:

@@ -1002,3 +1002,38 @@
 - [x] PWA manifest dan Next.js viewport menyelaraskan status bar mobile menjadi warna hijau masjid utama `#0e3824`.
 - [x] Seluruh test suite (responsivitas, navigasi, paginasi) dan pengecekan tipe TypeScript lulus 100%.
 
+---
+
+### F-041 — Portal Publik Full-Width dengan Centered Top Navigation & Isolasi Sidebar Khusus Staf DKM (Issue #085 / F-041)
+
+**Objective:** Mengeliminasi sidebar desktop kiri pada mode publik (pengunjung/jemaah tanpa login) untuk mewujudkan portal web transparansi kas yang lapang (*full-width*), ramah, dan tidak terasa seperti dashboard admin internal SaaS. Menghadirkan *Centered Top Navigation Bar* horizontal di bagian atas kanvas publik yang menyatukan identitas brand masjid, tautan menu utama di tengah, dan tombol akses login pengurus di sisi kanan secara harmonis tanpa duplikasi navigasi.
+**User:** Pengunjung umum, jemaah masjid, donatur publik, dan staf DKM (bendahara/admin).
+**Process:**
+- **Diferensiasi Layout Publik vs Dashboard Staf DKM (`components/app-shell.tsx`)**:
+  - **Sesi Publik / Tamu (Tanpa Login)**:
+    - Sidebar desktop kiri (`<aside>`) ditiadakan sepenuhnya (`hidden`), sehingga area konten utama tidak lagi memiliki margin/padding offset kiri (`lg:pl-0`).
+    - Halaman publik (`/`, `/donatur`, `/pengeluaran`, `/cari` bagi pengunjung belum login) mengadopsi tata letak *Full-Width* yang luas dan nyaman dibaca.
+  - **Sesi Staf DKM (Setelah Login Google SSO)**:
+    - Sidebar desktop *Dark Green Collapsible* (`#0e3824`) tetap dipertahankan untuk ruang kerja operasional pengurus (`/dashboard`, `/keuangan`, `/unggah`, `/pengguna`).
+- **Centered Top Navigation Bar untuk Publik**:
+  - **Sisi Kiri**: Identitas visual resmi DKM (Logo Vektor Kubah Masjid + "DKM Masjid Al-Luqman" & lencana hijau *"Portal Transparansi Kas Umat"*).
+  - **Sisi Tengah**: Menu navigasi horizontal berpusat (*center-aligned*) dengan interaksi ramah:
+    - `Beranda` (Ringkasan Saldo Kas & Distribusi Penyaluran di `/`)
+    - `Alokasi Belanja` (Anchor/link ke rincian pos pengeluaran kas)
+    - `Cek Infaq` (Anchor/link ke pencarian mandiri donasi)
+    - `Salurkan Infaq` (Anchor/link ke rekening resmi & QRIS DKM)
+    - `Arsip Laporan` (Anchor/link ke arsip buku kas fisik)
+  - **Sisi Kanan**: Tombol kapsul *glassmorphism/pill* elegan: **"Akses Pengurus"** untuk memicu autentikasi staf DKM.
+- **Konsolidasi & Eliminasi Redundansi Anchor Menu**:
+  - Menghapus anchor menu terpisah yang sebelumnya berada di atas kartu hero `app/page.tsx`, menyatukannya ke dalam Top Navbar utama untuk mencegah redundansi navigasi ganda.
+- **Pengalaman Mobile yang Bersih & Adaptif**:
+  - Pada perangkat mobile/tablet (<1024px), header atas publik menyajikan logo masjid, tombol akses menu, serta drawer/hamburger atau bottom bar navigasi yang ringkas dan ramah sentuhan tanpa benturan visual.
+**Acceptance Criteria:**
+- [ ] Pengunjung tanpa login tidak melihat sidebar vertikal kiri pada resolusi desktop mana pun (1024px+).
+- [ ] Kanvas konten publik melebar penuh (*full-width*) dengan margin dan padding proporsional.
+- [ ] Navbar atas publik horizontal memuat logo di kiri, menu navigasi di tengah, dan tombol "Akses Pengurus" di kanan.
+- [ ] Redundansi anchor links di atas hero card `app/page.tsx` telah dieliminasi dan disatukan ke top navigation.
+- [ ] Pengurus DKM yang telah login tetap memiliki akses penuh ke Sidebar Operasional pada modul kerja (`/dashboard`, `/keuangan`, dll.).
+- [ ] Seluruh pengujian otomatis dan typecheck TypeScript lulus 100%.
+
+

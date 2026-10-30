@@ -225,9 +225,23 @@ Berdasarkan audit desain dan integrasi skill `frontend-design`, desain antarmuka
 | **Empty State Generik:** Lingkaran bulat abu-abu di tengah dengan ikon Lucide besar ukuran 32 dan background `bg-primary/10`. | **Empty State Berkonteks:** Ilustrasi / kartu panduan informatif yang relevan dengan aksi nyata jamaah/pengurus. |
 | **Monospace Berlebihan:** Memaksa font koding (monospace) untuk seluruh teks data kecil. | **Tabular-Nums untuk Keuangan:** Font utama sans-serif modern dipadukan dengan `tabular-nums` untuk nominal rupiah agar angka sejajar rapi saat diaudit. |
 
-### 2. Pemisahan Karakter Antarmuka (Dua Dunia)
-- **Lobi Publik (`/`):** Dirancang tenang, mengayomi, transparan, dan tidak intimidating bagi jemaah awam. Menyajikan ringkasan 3 pilar kas (Operasional, Pembangunan, Sosial), widget pencarian infaq, dan info rekening/QRIS resmi.
-- **Ruang Kerja Staf (`/unggah`, `/keuangan`, `/pengguna`):** Dirancang presisi, fokus pada efisiensi kerja bendahara (review nota AI, paginasi mutasi bank, rekonsiliasi kas, dan administrasi akun).
+### 2. Pemisahan Karakter Antarmuka & Arsitektur Navigasi (Dua Dunia)
+
+Berdasarkan perbedaan persona dan kebutuhan psikologis pengguna, antarmuka Masjid Archive secara tegas memisahkan arsitektur navigasi ke dalam dua paradigma layout:
+
+#### A. Lobi Publik Jemaah & Donatur (`/`, `/donatur`, `/pengeluaran`, `/cari` saat sesi publik)
+- **Arsitektur Layout**: **Full-Width Canvas (Tanpa Sidebar Kiri)**.
+- **Navigasi Utama**: **Centered Top Navigation Bar**.
+  - **Sisi Kiri**: Identitas resmi masjid (Logo Vektor Kubah Masjid + nama DKM Masjid Al-Luqman & badge *"Portal Transparansi Kas Umat"*).
+  - **Sisi Tengah**: Menu navigasi horizontal berpusat (*center-aligned*) dengan tipografi bersahaja (*Beranda, Alokasi Belanja, Cek Infaq, Salurkan Infaq, Arsip Laporan*).
+  - **Sisi Kanan**: Tombol pill elegan *"Akses Pengurus"* (untuk login pengurus).
+- **Nuansa & Psikologi**: Terbuka, tenang, mengayomi, transparan, dan tidak intimidating bagi jemaah awam. Menghilangkan kesan teknis/admin SaaS internal, memberikan ruang baca lebar maksimal bagi tabel dan ringkasan transparansi kas.
+- **Konsolidasi**: Tidak ada double-navigation/anchor ganda. Navigasi atas menyatu sebagai pusat kontrol penjelajahan portal.
+
+#### B. Ruang Kerja Operasional Staf DKM (`/dashboard`, `/keuangan`, `/unggah`, `/pengguna`)
+- **Arsitektur Layout**: **Desktop Collapsible Sidebar (72px / 260px)** dengan latar *Deep Mosque Emerald* (`#0e3824`).
+- **Navigasi Utama**: Sidebar vertikal kiri yang terintegrasi dengan profil pengurus, indikator status sinkronisasi kas, dan aksi keluar (*logout*).
+- **Nuansa & Psikologi**: Presisi, terfokus pada efisiensi kerja bendahara (review nota AI, paginasi mutasi bank, rekonsiliasi kas, dan administrasi akun pengguna).
 
 
 
