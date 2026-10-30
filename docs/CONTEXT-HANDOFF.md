@@ -249,6 +249,19 @@ Tidak ada bug fungsional aktif di codebase. Seluruh fase V1 s/d V15 (F-001 s/d F
   3. Mengeliminasi baris anchor bar ganda di atas kartu hero `app/page.tsx` agar navigasi terpusat dan tidak berulang.
   4. Mempertahankan sidebar collapsible emerald (`#0e3824`) secara eksklusif bagi staf DKM yang login pada modul kerja operasional (`/dashboard`, `/keuangan`, `/unggah`, `/pengguna`).
 
+### 7k. FASE V17 — SOLID TOP NAVBAR, REPORT SUBPAGE NAVIGATION & 3-MONTH ARCHIVE GRID (F-042, ISSUE #086)
+- **Status**: Selesai Penuh 100% & Terverifikasi Bebas Galat (TypeScript Clean).
+- **Latar Belakang & Masalah**:
+  1. Top navbar publik sebelumnya memiliki container floating card yang mengambang dan garis pemisah vertikal abu-abu yang membuat tampilan terasa terkotak-kotak, serta nav item tidak mengisi kekosongan ruang horizontal.
+  2. Saat pengunjung membuka sub-halaman detail laporan kas (`/laporan/[id]`), event klik pada top navbar tertahan oleh `e.preventDefault()` sehingga pengunjung terjebak (*navigation trap*).
+  3. Seksi arsip buku kas fisik memuat seluruh dokumen sekaligus sehingga terlalu panjang dan berat. Pengguna menginginkan 1 kolom merepresentasikan 1 bulan penuh dan hanya menampilkan 3 bulan terbaru yang diunggah pengurus per halaman.
+- **Solusi Arsitektur**:
+  1. **Solid Edge-to-Edge Top Navbar**: Mengubah navbar publik menjadi full-width solid (`bg-white/95 backdrop-blur-md border-b`) tanpa floating card dan tanpa garis pemisah vertikal. Nav item dikonfigurasi `flex-1` sehingga merata mengisi seluruh ruang horizontal dengan indikator aktif underline hijau grounded (`h-[3px] rounded-t-full`).
+  2. **ScrollSpy Locking**: Menerapkan `isNavClickingRef` lock selama 850ms saat klik menu untuk mencegah miss-kalkulasi atau loncatan acak selama animasi smooth scrolling.
+  3. **Pembebasan Navigasi Sub-Halaman**: Menggunakan hook `usePathname()` pada `components/app-shell.tsx`. Jika `pathname !== "/"`, klik menu langsung bernavigasi ke anchor tujuan (`/#alokasi-belanja`, `/#cek-infaq`, `/#arsip-laporan`). Tombol kembali di detail laporan diarahkan ke `/#arsip-laporan`.
+  4. **Tata Letak Arsip Kas 3 Kolom Bulan & Paginasi Cerdas**: Komponen baru `components/public-portal/archive-reports-list.tsx` mengelompokkan laporan per bulan kalender. Setiap kolom mewakili 1 bulan penuh dengan pekan-pekan tersusun vertikal ke bawah. Menampilkan 3 bulan terbaru secara default pada halaman 1, didukung paginasi periode dan filter cepat tahun.
+
+
 ---
 
 ## 9. PENYEBAB BUG YANG SUDAH DIKETAHUI (dicatat agar tidak diulang)

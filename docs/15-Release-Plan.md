@@ -137,6 +137,15 @@
 - [x] Modernisasi kartu KPI peran dan tabel Manajemen Pengguna (`app/pengguna/page.tsx`)
 - [x] Harmonisasi skema warna Deep Mosque Emerald (`#0e3824`) dan penataan estetika bersih di seluruh antarmuka
 
+### Milestone 17 — Solid Top Navbar, Subpage Navigation & 3-Month Archive Grid (V17, Issue #086 / F-042)
+- [x] Redesain Top Navbar publik menjadi full-width solid edge-to-edge tanpa floating card dan tanpa garis pemisah vertikal abu-abu
+- [x] Distribusi item navigasi fluida merata mengisi ruang horizontal dengan indikator aktif underline hijau di bibir bawah bar
+- [x] Scrollspy locking (`isNavClickingRef`) selama 850ms pasca-klik untuk mengeliminasi loncatan acak antar-seksi saat smooth scrolling
+- [x] Pembebasan navigasi sub-halaman publik (`/laporan/[id]`) menggunakan hook `usePathname()`, memulihkan akses kembali ke anchor portal
+- [x] Restrukturisasi seksi Arsip Buku Kas Fisik menjadi tata letak 3 Kolom Bulan (1 kolom = 1 bulan penuh dengan pekan-pekan tersusun vertikal)
+- [x] Paginasi dinamis per 3 bulan dengan default menyajikan 3 bulan terbaru yang diunggah pengurus
+- [x] Filter navigasi cepat tahunan dan status periode aktif pada header arsip laporan kas
+
 ### Milestone 16 — Public Full-Width Portal & Centered Top Navigation (V16, Issue #085 / F-041)
 - [x] Eliminasi sidebar desktop vertikal kiri (`<aside>`) pada sesi pengunjung publik tanpa login
 - [x] Penerapan tata letak Full-Width tanpa margin offset kiri (`lg:pl-0`) pada seluruh halaman publik (`/`, `/donatur`, `/pengeluaran`, `/cari`)
@@ -157,10 +166,23 @@
 
 ## Version
 
-Current: `0.16.0` (Fase V16: Portal Publik Full-Width, Centered Top Navigation & Isolasi Sidebar Khusus Staf DKM — Selesai 100%)
+Current: `0.17.0` (Fase V17: Solid Top Navbar, Subpage Navigation & 3-Month Archive Grid — Selesai 100%)
 Next: `1.0.0`
 
 ## Changelog
+
+### 0.17.0 (2026-10-30) — Fase V17: Solid Top Navbar, Subpage Navigation & 3-Month Archive Grid (Issue #086 / F-042)
+- **Redesain Top Navbar Solid Edge-to-Edge**:
+  - Mengubah navbar publik menjadi full-width solid (`bg-white/95 backdrop-blur-md border-b shadow-xs`) terinspirasi dari kesederhanaan ASUS navbar, tanpa floating container dan tanpa garis pemisah vertikal abu-abu.
+  - Item menu navigasi horizontal beradaptasi proporsional (`flex-1`) mengisi seluruh ruang horizontal kanvas dengan indikator aktif berupa garis bawah hijau (`h-[3px] rounded-t-full`) di bibir bawah bar.
+  - Implementasi *scrollspy locking* (`isNavClickingRef`) selama 850ms saat klik menu untuk mencegah loncatan glitch selama animasi smooth scrolling.
+- **Pembebasan Navigasi Sub-Halaman Detail Laporan (`usePathname`)**:
+  - Mengintegrasikan hook `usePathname()` pada layout `AppShell` sehingga tautan navigasi publik dapat bernavigasi mulus keluar dari sub-halaman (`/laporan/[id]`) kembali ke anchor portal beranda.
+  - Memperbarui tautan tombol kembali pada halaman detail laporan menjadi `/#arsip-laporan`.
+- **Tata Letak Arsip Buku Kas Fisik 3-Kolom Bulan**:
+  - Merekonstruksi penyajian dokumen pindaian buku kas: 1 kolom merepresentasikan 1 bulan kalender penuh, dengan kartu-kartu pekan tersusun vertikal ke bawah di dalamnya.
+  - Menampilkan 3 bulan terbaru yang diunggah pengurus secara default pada halaman 1 (misal Februari 2026, Januari 2026, Desember 2025).
+  - Paginasi periode dinamis per 3 bulan (`Bulan Sebelumnya` dan `Bulan Selanjutnya`) serta filter cepat tahunan.
 
 ### 0.16.0 (2026-10-30) — Fase V16: Portal Publik Full-Width, Centered Top Navigation & Isolasi Sidebar Khusus Staf DKM (Issue #085 / F-041)
 - **Eliminasi Sidebar Desktop pada Sesi Tamu / Publik**:

@@ -1036,4 +1036,41 @@
 - [x] Pengurus DKM yang telah login tetap memiliki akses penuh ke Sidebar Operasional pada modul kerja (`/dashboard`, `/keuangan`, dll.).
 - [x] Seluruh pengujian otomatis dan typecheck TypeScript lulus 100%.
 
+---
 
+### F-042 — Redesain Top Navbar Solid, Navigasi Sub-Halaman & Paginasi Arsip Kas 3-Kolom Bulan (Issue #086 / F-042)
+
+**Objective:** Menyempurnakan antarmuka publik portal transparansi kas masjid dengan:
+1. Merapikan Top Navbar publik menjadi *full-width solid edge-to-edge* yang bersih tanpa pembungkus floating card dan tanpa garis pemisah vertikal abu-abu, dengan ruang navigasi proporsional dan indikator aktif garis bawah hijau (*grounded underline*) di bibir bawah bar.
+2. Mengatasi bug navigasi di halaman sub-detail laporan kas fisik (`/laporan/[id]`) agar pengunjung tidak terjebak (*navigation trap*) dan dapat langsung bernavigasi kembali ke bagian portal yang dituju.
+3. Merombak sajian dokumen pindaian buku kas fisik menjadi tata letak **3 Kolom Bulan** (setiap kolom mewakili 1 bulan kalender penuh dengan pekan-pekan tersusun vertikal) yang secara default menampilkan 3 bulan terbaru yang diunggah pengurus (misal: Februari 2026, Januari 2026, Desember 2025) disertai sistem paginasi periode dinamis.
+
+**User:** Pengunjung jemaah masjid, donatur publik, dan staf DKM.
+
+**Process:**
+- **Penyelarasan Desain Navbar Solid & Fluid Space Filling (`components/app-shell.tsx`)**:
+  - Menghilangkan *floating card* (`rounded-2xl`, `shadow`, padding luar), menggantinya dengan header solid edge-to-edge (`sticky top-0 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs`).
+  - Menghapus garis batas vertikal abu-abu (`border-r` dan `border-l`) antara identitas brand, menu navigasi, dan tombol aksi login.
+  - Item menu navigasi horizontal beroperasi dalam mode fluid flexbox (`flex-1`) sehingga mengisi seluruh ruang kosong secara seimbang dan proporsional sesuai lebar monitor pengguna.
+  - Indikator seksi aktif berupa garis bawah hijau tegas (`h-[3px] rounded-t-full bg-primary`) yang menempel rapi pada batas bawah navbar dengan transisi lebar dan opasitas halus.
+- **ScrollSpy Locking & Presisi Interaksi Klik**:
+  - Menerapkan mekanisme penguncian status scrollspy (`isNavClickingRef` & `navClickTimeoutRef`) selama 850ms saat tautan menu diklik, mencegah konflik antara animasi smooth scroll peramban dengan event listener scroll.
+- **Pembebasan Navigasi Sub-Halaman Publik (`usePathname`)**:
+  - Mengintegrasikan hook `usePathname()` pada `components/app-shell.tsx` untuk mendeteksi rute aktif secara dinamis.
+  - Saat pengguna berada di luar halaman utama (seperti di `/laporan/[id]`), event klik pada top navbar tidak lagi dicegat `e.preventDefault()`, melainkan langsung bernavigasi ke anchor tujuan di halaman beranda (`/#alokasi-belanja`, `/#cek-infaq`, `/#rekening-resmi`, `/#arsip-laporan`).
+  - Memperbarui tautan tombol kembali pada halaman detail laporan kas (`app/laporan/[id]/page.tsx`) menjadi `/#arsip-laporan` bagi pengunjung publik.
+- **Seksi Arsip Kas 3 Kolom Bulan & Paginasi Cerdas (`components/public-portal/archive-reports-list.tsx`)**:
+  - Mengelompokkan seluruh dokumen pindaian buku kas berdasarkan pasangan `{year, month}`.
+  - Menampilkan grid responsif 3 kolom pada layar laptop/desktop, di mana masing-masing kolom merepresentasikan 1 bulan kalender penuh lengkap dengan header nama bulan, tahun, dan badge jumlah pekan.
+  - Kartu pindaian pekan mingguan tersusun rapi secara kronologis vertikal ke bawah di dalam kolom bulannya masing-masing.
+  - Menerapkan paginasi berbasis periode bulan: 3 bulan per halaman (halaman 1 default menyajikan 3 bulan terbaru, halaman 2 menyajikan 3 bulan sebelumnya, dst.).
+  - Menyediakan tombol filter cepat tahunan dan status periode bulan aktif yang informatif.
+
+**Acceptance Criteria:**
+- [x] Top navbar publik tampil solid edge-to-edge tanpa efek floating card dan tanpa garis sekat vertikal abu-abu.
+- [x] Menu navigasi terdistribusi proporsional mengisi ruang kosong horizontal dengan indikator aktif underline hijau di bibir bawah bar.
+- [x] Klik pada menu navigasi tidak mengalami glitch atau loncatan acak ke seksi lain selama smooth scrolling.
+- [x] Pengunjung pada halaman `/laporan/[id]` dapat bernavigasi keluar dengan lancar melalui klik top navbar maupun tombol "Kembali ke Arsip Laporan".
+- [x] Arsip buku kas fisik disajikan dalam format 3 kolom bulan per halaman dengan pekan-pekan tersusun vertikal di dalam kolomnya.
+- [x] Default tampilan menyajikan 3 bulan terbaru yang diunggah pengurus ke sistem dan didukung navigasi paginasi periode bulan.
+- [x] Pengujian otomatis TypeScript dan linter lulus 100% tanpa galat.

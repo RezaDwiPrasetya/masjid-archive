@@ -231,10 +231,14 @@ Berdasarkan perbedaan persona dan kebutuhan psikologis pengguna, antarmuka Masji
 
 #### A. Lobi Publik Jemaah & Donatur (`/`, `/donatur`, `/pengeluaran`, `/cari` saat sesi publik)
 - **Arsitektur Layout**: **Full-Width Canvas (Tanpa Sidebar Kiri)**.
-- **Navigasi Utama**: **Centered Top Navigation Bar**.
+- **Navigasi Utama**: **Solid Edge-to-Edge Top Navigation Bar**.
+  - **Tampilan Bersih & Minimalis**: Mengadopsi bar solid horizontal penuh (`bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs`) tanpa pembungkus floating card dan tanpa garis sekat pemisah vertikal abu-abu.
   - **Sisi Kiri**: Identitas resmi masjid (Logo Vektor Kubah Masjid + nama DKM Masjid Al-Luqman & badge *"Portal Transparansi Kas Umat"*).
-  - **Sisi Tengah**: Menu navigasi horizontal berpusat (*center-aligned*) dengan tipografi bersahaja (*Beranda, Alokasi Belanja, Cek Infaq, Salurkan Infaq, Arsip Laporan*).
-  - **Sisi Kanan**: Tombol pill elegan *"Akses Pengurus"* (untuk login pengurus).
+  - **Sisi Tengah**: Menu navigasi horizontal fluid space-filling (`flex-1`) yang terdistribusi seimbang mengisi ruang kosong, dilengkapi indikator seksi aktif garis bawah hijau tegas (`h-[3px] rounded-t-full bg-primary`) yang menempel rapi pada bibir bawah navbar.
+  - **Sisi Kanan**: Tombol pill solid *"Akses Pengurus"* (`bg-primary text-white rounded-xl`) untuk autentikasi staf DKM.
+- **Arsitektur Seksi Arsip Kas (3-Kolom Bulan)**:
+  - Mengorganisasikan pindaian buku kas fisik mingguan ke dalam format **3 Kolom Bulan**: 1 kolom mewakili 1 bulan kalender penuh, dengan kartu-kartu pekan tersusun rapi vertikal ke bawah di dalamnya.
+  - Default tampilan menyajikan 3 bulan kalender terbaru yang diunggah pengurus ke sistem, didukung kontrol navigasi paginasi periode 3 bulan dan filter cepat tahun.
 - **Nuansa & Psikologi**: Terbuka, tenang, mengayomi, transparan, dan tidak intimidating bagi jemaah awam. Menghilangkan kesan teknis/admin SaaS internal, memberikan ruang baca lebar maksimal bagi tabel dan ringkasan transparansi kas.
 - **Konsolidasi**: Tidak ada double-navigation/anchor ganda. Navigasi atas menyatu sebagai pusat kontrol penjelajahan portal.
 
