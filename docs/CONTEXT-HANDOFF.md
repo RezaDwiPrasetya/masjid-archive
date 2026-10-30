@@ -1,7 +1,7 @@
 # CONTEXT HANDOFF — Proyek "Masjid Archive"
 > **Terakhir diperbarui**: 27 Oktober 2026  
 > **Status**: **PRODUKSI / FEATURE-COMPLETE — FASE V15.0 (Branch: main)**  
-> **Versi Rilis**: `0.15.0` (40 Fitur F-001 s/d F-040 Selesai Penuh 100%)
+> **Versi Rilis**: `0.16.0` (41 Fitur F-001 s/d F-041 Selesai Penuh 100%)
 
 ---
 
@@ -38,7 +38,7 @@ Aplikasi web arsip & manajemen keuangan digital untuk **DKM Masjid Al-Luqman** (
     - Navigasi Staf DKM di sidebar: `Dashboard` (`/dashboard`), `Unggah` (`/unggah`), `Keuangan` (`/keuangan`), `Donatur` (`/donatur`), `Pengeluaran` (`/pengeluaran`), `Cari` (`/cari`), dan `Pengguna` (`/pengguna` khusus Admin).
     - Navigasi Publik: `Beranda` (`/`), `Donatur` (`/donatur`), `Pengeluaran` (`/pengeluaran`), dan `Cari` (`/cari`).
 
-- **SELURUH FITUR V1–V15 SELESAI 100% (40 FITUR F-001 s/d F-040 TUNTAS)**:
+- **SELURUH FITUR V1–V16 SELESAI 100% (41 FITUR F-001 s/d F-041 TUNTAS)**:
   - **V1–V2**: Multi-format upload (JPG, PNG, PDF, Excel) & arsip berjenjang tahun/bulan/pekan.
   - **V3**: Google SSO NextAuth & Role-based Access Control 3-Tier (Admin, Bendahara, Jamaah).
   - **V4**: Pipeline ekstraksi multimodal vision-LLM (Gemini API) + fallback model cadangan + review & konfirmasi transaksi manual + rekonsiliasi kas.
@@ -241,7 +241,7 @@ Model utama dalam `schema.prisma`:
 Tidak ada bug fungsional aktif di codebase. Seluruh fase V1 s/d V15 (F-001 s/d F-040) telah tuntas 100%, teruji lolos typecheck & linter, serta live di Vercel Production.
 
 ### 7j. FASE V16 — PUBLIC FULL-WIDTH PORTAL & CENTERED TOP NAVIGATION (F-041, ISSUE #085)
-- **Status**: Tahap Perencanaan & Dokumentasi Selesai (Siap Eksekusi).
+- **Status**: Selesai Penuh 100% & Terverifikasi Bebas Galat (TypeScript Clean).
 - **Latar Belakang & Masalah**: Pengunjung jemaah/donatur tanpa login sebelumnya melihat sidebar kiri desktop buka-tutup (collapsible) yang semestinya dikhususkan untuk admin/dashboard operasional, sehingga halaman terasa sempit dan menyerupai admin dashboard internal SaaS.
 - **Solusi Arsitektur**:
   1. Menghilangkan sidebar desktop kiri pada sesi publik tanpa login (`lg:hidden` pada sidebar tamu, `lg:pl-0` pada kanvas konten) sehingga halaman menjadi *full-width* lapang dan megah.

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { isStaff } from "@/lib/auth-guard";
@@ -331,61 +330,6 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
             </div>
           )}
 
-          {/* HEADER ATAS DI KANVAS TERANG */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <Image
-                src="/favicon.svg"
-                alt="Logo DKM Masjid Al-Luqman"
-                width={48}
-                height={48}
-                priority
-                className="h-11 w-11 sm:h-12 sm:w-12 drop-shadow-sm select-none shrink-0"
-              />
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight font-sans">
-                    DKM Masjid Al-Luqman
-                  </span>
-                  <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold">
-                    Portal Transparansi Kas Umat
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">
-                  Kel. Soklat, Kec. Subang, Kab. Subang &bull; Akuntabilitas Terbuka &amp; Terpercaya
-                </p>
-              </div>
-            </div>
-
-            {/* Akses Cepat Anchor Menu */}
-            <div className="flex items-center gap-2 flex-wrap text-xs font-semibold">
-              <a
-                href="#alokasi-belanja"
-                className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition-colors"
-              >
-                Alokasi Belanja
-              </a>
-              <a
-                href="#cek-infaq"
-                className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition-colors"
-              >
-                Cek Infaq Anda
-              </a>
-              <a
-                href="#rekening-resmi"
-                className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition-colors"
-              >
-                Salurkan Infaq
-              </a>
-              <a
-                href="#arsip-laporan"
-                className="px-3 py-1.5 rounded-xl bg-[#0e3824] hover:bg-[#144731] text-white font-bold shadow-xs transition-colors"
-              >
-                Arsip Laporan
-              </a>
-            </div>
-          </div>
-
           {/* HERO CARD MELAYANG */}
           <div className="rounded-3xl bg-[#0e3824] text-white p-6 sm:p-8 lg:p-9 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -437,7 +381,7 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
           <AuthErrorBanner authError={authError} />
 
           {/* SECTION 1: Alokasi Belanja Umat Bulan Berjalan (Human-Centric & Ramah Jemaah) */}
-          <section id="alokasi-belanja" className="space-y-5 sm:space-y-6">
+          <section id="alokasi-belanja" className="scroll-mt-24 space-y-5 sm:space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-200 pb-3.5">
               <div>
                 <div className="flex items-center gap-2">
@@ -530,7 +474,7 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
           </section>
 
           {/* SECTION 2: Widget Interaktif Cek Riwayat Infaq */}
-          <section id="cek-infaq" className="space-y-5 sm:space-y-6">
+          <section id="cek-infaq" className="scroll-mt-24 space-y-5 sm:space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-200 pb-3.5">
               <div>
                 <div className="flex items-center gap-2">
@@ -556,7 +500,7 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
           </section>
 
           {/* SECTION 3: Kanal Rekening Resmi & QRIS Masjid */}
-          <section id="rekening-resmi" className="space-y-5 sm:space-y-6">
+          <section id="rekening-resmi" className="scroll-mt-24 space-y-5 sm:space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-200 pb-3.5">
               <div>
                 <div className="flex items-center gap-2">
@@ -575,7 +519,7 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
           </section>
 
           {/* SECTION 4: Arsip Buku Kas Fisik & Laporan Berkala */}
-          <section id="arsip-laporan" className="space-y-5 sm:space-y-6">
+          <section id="arsip-laporan" className="scroll-mt-24 space-y-5 sm:space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-200 pb-3.5">
               <div>
                 <div className="flex items-center gap-2.5 mb-1">

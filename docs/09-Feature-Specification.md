@@ -1029,11 +1029,11 @@
 - **Pengalaman Mobile yang Bersih & Adaptif**:
   - Pada perangkat mobile/tablet (<1024px), header atas publik menyajikan logo masjid, tombol akses menu, serta drawer/hamburger atau bottom bar navigasi yang ringkas dan ramah sentuhan tanpa benturan visual.
 **Acceptance Criteria:**
-- [ ] Pengunjung tanpa login tidak melihat sidebar vertikal kiri pada resolusi desktop mana pun (1024px+).
-- [ ] Kanvas konten publik melebar penuh (*full-width*) dengan margin dan padding proporsional.
-- [ ] Navbar atas publik horizontal memuat logo di kiri, menu navigasi di tengah, dan tombol "Akses Pengurus" di kanan.
-- [ ] Redundansi anchor links di atas hero card `app/page.tsx` telah dieliminasi dan disatukan ke top navigation.
-- [ ] Pengurus DKM yang telah login tetap memiliki akses penuh ke Sidebar Operasional pada modul kerja (`/dashboard`, `/keuangan`, dll.).
-- [ ] Seluruh pengujian otomatis dan typecheck TypeScript lulus 100%.
+- [x] Pengunjung tanpa login tidak melihat sidebar vertikal kiri pada resolusi desktop mana pun (1024px+).
+- [x] Kanvas konten publik melebar penuh (*full-width*) dengan margin dan padding proporsional.
+- [x] Navbar atas publik horizontal memuat logo di kiri, menu navigasi di tengah, dan tombol "Akses Pengurus" di kanan.
+- [x] Redundansi anchor links di atas hero card `app/page.tsx` telah dieliminasi dan disatukan ke top navigation.
+- [x] Pengurus DKM yang telah login tetap memiliki akses penuh ke Sidebar Operasional pada modul kerja (`/dashboard`, `/keuangan`, dll.).
+- [x] Seluruh pengujian otomatis dan typecheck TypeScript lulus 100%.
 
 

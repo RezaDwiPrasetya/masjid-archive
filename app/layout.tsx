@@ -31,9 +31,9 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" className={`${outfit.variable} h-full antialiased`}>
+    <html lang="id" className={`${outfit.variable} h-full antialiased scroll-smooth`}>
       <body className="min-h-full flex flex-col">
         <AuthProvider>{children}</AuthProvider>
       </body>

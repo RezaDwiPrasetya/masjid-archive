@@ -153,17 +153,26 @@ export function AppShell({
   const safeActiveIndex = activeIndex >= 0 ? activeIndex : 0;
   const ActiveNavIcon = navItems[safeActiveIndex]?.icon ?? Landmark;
 
+  // Penentuan mode tampilan:
+  // 1. Sesi Staf Operasional: Pengguna yang login dengan peran ADMIN/BENDAHARA menggunakan Sidebar
+  //    Desktop Emerald (kecuali saat berada di beranda publik active === "/").
+  // 2. Portal Publik Jemaah: Pengguna tamu/jemaah tanpa login (di seluruh rute) atau staf yang sedang
+  //    membuka beranda publik menggunakan Top Navbar Terpusat Full-Width tanpa sidebar samping.
+  const isStaffUser = isStaff(session);
+  const showStaffSidebar = isStaffUser && active !== "/";
+
   return (
     <div className="min-h-screen bg-surface text-on-surface antialiased flex flex-col font-sans">
       {/* ========================================================= */}
-      {/* DESKTOP MODERN DOCKED COLLAPSIBLE SIDEBAR                 */}
+      {/* DESKTOP MODERN DOCKED COLLAPSIBLE SIDEBAR (KHUSUS STAF)   */}
       {/* ========================================================= */}
-      <aside
-        aria-label="Navigasi Utama Desktop"
-        className={`hidden lg:flex fixed left-0 top-0 bottom-0 z-30 flex-col justify-between bg-primary text-white border-r border-emerald-950/40 select-none transition-all duration-300 ease-in-out ${
-          isCollapsed ? "w-[72px]" : "w-[260px]"
-        }`}
-      >
+      {showStaffSidebar && (
+        <aside
+          aria-label="Navigasi Utama Desktop"
+          className={`hidden lg:flex fixed left-0 top-0 bottom-0 z-30 flex-col justify-between bg-primary text-white border-r border-emerald-950/40 select-none transition-all duration-300 ease-in-out ${
+            isCollapsed ? "w-[72px]" : "w-[260px]"
+          }`}
+        >
         {/* Ilustrasi Masjid Autentik Sesuai Referensi Pengguna (Persis media_1792723264079) */}
         {!isCollapsed && (
           <div className="absolute bottom-[72px] left-0 right-0 h-48 pointer-events-none overflow-hidden select-none z-0">
@@ -557,16 +566,125 @@ export function AppShell({
             </div>
           )
         )}
-      </aside>
+        </aside>
+      )}
 
       {/* ========================================================= */}
-      {/* AREA KONTEN UTAMA DENGAN HEADER MOBILE                     */}
+      {/* AREA KONTEN UTAMA DENGAN HEADER MOBILE & TOP NAVBAR PUBLIK */}
       {/* ========================================================= */}
       <div
         className={`flex-1 min-w-0 flex flex-col min-h-screen transition-all duration-300 ease-in-out ${
-          isCollapsed ? "lg:pl-[72px]" : "lg:pl-[260px]"
+          showStaffSidebar ? (isCollapsed ? "lg:pl-[72px]" : "lg:pl-[260px]") : "lg:pl-0"
         }`}
       >
+        {/* ========================================================= */}
+        {/* DESKTOP PUBLIC CENTERED TOP NAVBAR (KHUSUS MODE PUBLIK)   */}
+        {/* ========================================================= */}
+        {!showStaffSidebar && (
+          <header className="hidden lg:block sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-2xs">
+            <div className="w-full px-4 sm:px-6 md:px-8 lg:px-10 h-18 flex items-center justify-between gap-4">
+              {/* Sisi Kiri: Logo & Identitas Masjid */}
+              <Link href="/" className="flex items-center gap-3 shrink-0 group">
+                <MasjidEmblem className="h-9 w-9 group-hover:scale-105 transition-transform shrink-0" />
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base font-extrabold text-slate-900 tracking-tight font-sans">
+                      DKM Masjid Al-Luqman
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold">
+                      Portal Transparansi
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-500 font-medium truncate">
+                    Kel. Soklat, Subang &bull; Akuntabilitas Kas Terbuka &amp; Terpercaya
+                  </span>
+                </div>
+              </Link>
+
+              {/* Sisi Tengah: Navigasi Menu Publik Terpusat */}
+              <nav className="flex items-center gap-1.5 text-xs font-semibold">
+                <Link
+                  href="/"
+                  className={`px-3.5 py-2 rounded-xl transition-all ${
+                    active === "/"
+                      ? "bg-primary text-white font-bold shadow-xs"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  }`}
+                >
+                  Beranda
+                </Link>
+                <a
+                  href={active === "/" ? "#alokasi-belanja" : "/#alokasi-belanja"}
+                  className={`px-3.5 py-2 rounded-xl transition-all ${
+                    active === "/pengeluaran"
+                      ? "bg-primary text-white font-bold shadow-xs"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  }`}
+                >
+                  Alokasi Belanja
+                </a>
+                <a
+                  href={active === "/" ? "#cek-infaq" : "/#cek-infaq"}
+                  className={`px-3.5 py-2 rounded-xl transition-all ${
+                    active === "/donatur"
+                      ? "bg-primary text-white font-bold shadow-xs"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  }`}
+                >
+                  Cek Infaq Anda
+                </a>
+                <a
+                  href={active === "/" ? "#rekening-resmi" : "/#rekening-resmi"}
+                  className="px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all cursor-pointer"
+                >
+                  Salurkan Infaq
+                </a>
+                <a
+                  href={active === "/" ? "#arsip-laporan" : "/#arsip-laporan"}
+                  className={`px-3.5 py-2 rounded-xl transition-all ${
+                    active === "/cari"
+                      ? "bg-primary text-white font-bold shadow-xs"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  }`}
+                >
+                  Arsip Laporan
+                </a>
+              </nav>
+
+              {/* Sisi Kanan: Aksi Masuk / Profil Staf */}
+              <div className="flex items-center gap-3 shrink-0">
+                {session ? (
+                  <div className="flex items-center gap-2.5">
+                    <Link
+                      href="/dashboard"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold transition-colors"
+                    >
+                      <LayoutDashboard size={14} />
+                      <span>Dashboard Staf</span>
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => signOut({ callbackUrl: "/" })}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                      title="Keluar"
+                    >
+                      <LogOut size={15} />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => signIn("google", { callbackUrl: "/auth/post-login" })}
+                    className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-primary text-white hover:bg-primary-container text-xs font-semibold shadow-xs transition-all cursor-pointer group"
+                  >
+                    <LogIn size={15} className="text-emerald-200 group-hover:text-white transition-colors" />
+                    <span>Akses Pengurus</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </header>
+        )}
         {/* Header Khusus Mobile & Tablet (< lg). Di Desktop Disembunyikan (lg:hidden) */}
         <header className="lg:hidden sticky top-0 z-20 flex h-16 items-center justify-between border-b border-emerald-950/8 bg-white/95 backdrop-blur-md px-4 shadow-2xs">
           {/* Sisi Kiri: Brand Title Pada Tampilan Mobile */}
