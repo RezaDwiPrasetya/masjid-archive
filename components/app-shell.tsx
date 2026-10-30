@@ -81,7 +81,7 @@ export function AppShell({
     setOptimisticActive(null);
   }
 
-  // State untuk penanda aktif menu navigasi publik (mendukung klik langsung & scrollspy)
+  // State untuk penanda aktif menu navigasi publik (mendukung klik langsung & scrollspy presisi)
   const [activePublicNav, setActivePublicNav] = React.useState<string>(() => {
     if (active === "/pengeluaran") return "#alokasi-belanja";
     if (active === "/donatur") return "#cek-infaq";
@@ -89,7 +89,45 @@ export function AppShell({
     return "beranda";
   });
 
-  // Sinkronisasi ScrollSpy pada Beranda Publik
+  // Ref untuk mengunci scrollspy saat tombol sedang diklik (mencegah flickering/miss kalkulasi)
+  const isNavClickingRef = React.useRef(false);
+  const navClickTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const handlePublicNavClick = (
+    target: "beranda" | "#alokasi-belanja" | "#cek-infaq" | "#rekening-resmi" | "#arsip-laporan",
+    e: React.MouseEvent
+  ) => {
+    // Jika berada di halaman sub-detail selain "/", biarkan browser navigasi ke rute yang dituju
+    if (active !== "/") {
+      setActivePublicNav(target);
+      return;
+    }
+
+    e.preventDefault();
+    isNavClickingRef.current = true;
+    setActivePublicNav(target);
+
+    if (target === "beranda") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (window.location.hash) {
+        window.history.replaceState(null, "", window.location.pathname);
+      }
+    } else {
+      const el = document.getElementById(target.replace("#", ""));
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        window.history.replaceState(null, "", target);
+      }
+    }
+
+    // Kunci scroll listener selama 850ms agar animasi smooth scroll selesai tanpa interupsi
+    if (navClickTimeoutRef.current) clearTimeout(navClickTimeoutRef.current);
+    navClickTimeoutRef.current = setTimeout(() => {
+      isNavClickingRef.current = false;
+    }, 850);
+  };
+
+  // Sinkronisasi ScrollSpy Akurat pada Beranda Publik
   React.useEffect(() => {
     if (active !== "/" || typeof window === "undefined") {
       if (active === "/pengeluaran") setActivePublicNav("#alokasi-belanja");
@@ -102,8 +140,11 @@ export function AppShell({
     const sectionIds = ["alokasi-belanja", "cek-infaq", "rekening-resmi", "arsip-laporan"];
 
     const handleScroll = () => {
-      // Jika posisi scroll masih di bagian paling atas (Hero Card / Beranda)
-      if (window.scrollY < 260) {
+      // Jika pengguna baru saja mengklik menu, abaikan event scroll agar tidak melompat
+      if (isNavClickingRef.current) return;
+
+      // Beranda / Hero Card: Jika scroll dekat dengan bagian atas halaman (< 180px)
+      if (window.scrollY < 180) {
         setActivePublicNav("beranda");
         return;
       }
@@ -114,22 +155,27 @@ export function AppShell({
         const el = document.getElementById(id);
         if (el) {
           const rect = el.getBoundingClientRect();
-          if (rect.top <= 140) {
+          // Offset 160px di bawah navbar sticky memberikan ambang batas baca ideal
+          if (rect.top <= 160) {
             setActivePublicNav(`#${id}`);
             return;
           }
         }
       }
+
+      setActivePublicNav("beranda");
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
 
-    // Cek hash URL awal jika dibuka langsung dengan anchor
     if (window.location.hash) {
       setActivePublicNav(window.location.hash);
     }
 
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (navClickTimeoutRef.current) clearTimeout(navClickTimeoutRef.current);
+    };
   }, [active]);
 
   const headerProfileRef = React.useRef<HTMLDivElement>(null);
@@ -633,91 +679,95 @@ export function AppShell({
         {/* ========================================================= */}
         {!showStaffSidebar && (
           <header className="hidden lg:block sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-2xs">
-            <div className="w-full px-4 sm:px-6 md:px-8 lg:px-10 h-18 flex items-center justify-between gap-4">
-              {/* Sisi Kiri: Logo & Identitas Masjid */}
-              <Link href="/" className="flex items-center gap-3 shrink-0 group">
-                <MasjidEmblem className="h-9 w-9 group-hover:scale-105 transition-transform shrink-0" />
-                <div className="flex flex-col min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base font-extrabold text-slate-900 tracking-tight font-sans">
-                      DKM Masjid Al-Luqman
-                    </span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold">
-                      Portal Transparansi
+            <div className="w-full px-4 sm:px-6 md:px-8 lg:px-10 h-18 flex items-center justify-between gap-6">
+              {/* Sisi Kiri: Brand Masjid (flex-1 agar seimbang secara simetris dengan sisi kanan) */}
+              <div className="flex-1 flex items-center justify-start min-w-0">
+                <Link href="/" className="flex items-center gap-3 shrink-0 group">
+                  <MasjidEmblem className="h-9 w-9 group-hover:scale-105 transition-transform shrink-0" />
+                  <div className="flex flex-col min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base font-extrabold text-slate-900 tracking-tight font-sans">
+                        DKM Masjid Al-Luqman
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold">
+                        Portal Transparansi
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-slate-500 font-medium truncate">
+                      Kel. Soklat, Subang &bull; Akuntabilitas Terbuka
                     </span>
                   </div>
-                  <span className="text-[11px] text-slate-500 font-medium truncate">
-                    Kel. Soklat, Subang &bull; Akuntabilitas Kas Terbuka &amp; Terpercaya
-                  </span>
-                </div>
-              </Link>
-
-              {/* Sisi Tengah: Navigasi Menu Publik Terpusat (Reaktif Click & ScrollSpy) */}
-              <nav className="flex items-center gap-1.5 text-xs font-semibold">
-                <Link
-                  href="/"
-                  onClick={() => setActivePublicNav("beranda")}
-                  className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
-                    activePublicNav === "beranda"
-                      ? "bg-primary text-white font-bold shadow-xs"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                  }`}
-                >
-                  Beranda
                 </Link>
-                <a
-                  href={active === "/" ? "#alokasi-belanja" : "/#alokasi-belanja"}
-                  onClick={() => setActivePublicNav("#alokasi-belanja")}
-                  className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
-                    activePublicNav === "#alokasi-belanja"
-                      ? "bg-primary text-white font-bold shadow-xs"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                  }`}
-                >
-                  Alokasi Belanja
-                </a>
-                <a
-                  href={active === "/" ? "#cek-infaq" : "/#cek-infaq"}
-                  onClick={() => setActivePublicNav("#cek-infaq")}
-                  className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
-                    activePublicNav === "#cek-infaq"
-                      ? "bg-primary text-white font-bold shadow-xs"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                  }`}
-                >
-                  Cek Infaq Anda
-                </a>
-                <a
-                  href={active === "/" ? "#rekening-resmi" : "/#rekening-resmi"}
-                  onClick={() => setActivePublicNav("#rekening-resmi")}
-                  className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
-                    activePublicNav === "#rekening-resmi"
-                      ? "bg-primary text-white font-bold shadow-xs"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                  }`}
-                >
-                  Salurkan Infaq
-                </a>
-                <a
-                  href={active === "/" ? "#arsip-laporan" : "/#arsip-laporan"}
-                  onClick={() => setActivePublicNav("#arsip-laporan")}
-                  className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
-                    activePublicNav === "#arsip-laporan"
-                      ? "bg-primary text-white font-bold shadow-xs"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                  }`}
-                >
-                  Arsip Laporan
-                </a>
-              </nav>
+              </div>
 
-              {/* Sisi Kanan: Aksi Masuk / Profil Staf */}
-              <div className="flex items-center gap-3 shrink-0">
+              {/* Sisi Tengah: Navigasi Segmented Capsule Berada Persis di Titik Tengah (True Symmetrical Center) */}
+              <div className="flex-initial flex items-center justify-center">
+                <nav className="flex items-center gap-1 p-1 rounded-2xl bg-slate-100/85 border border-slate-200/70 shadow-2xs text-xs font-semibold">
+                  <a
+                    href="/"
+                    onClick={(e) => handlePublicNavClick("beranda", e)}
+                    className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
+                      activePublicNav === "beranda"
+                        ? "bg-primary text-white font-bold shadow-xs"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
+                    }`}
+                  >
+                    Beranda
+                  </a>
+                  <a
+                    href={active === "/" ? "#alokasi-belanja" : "/#alokasi-belanja"}
+                    onClick={(e) => handlePublicNavClick("#alokasi-belanja", e)}
+                    className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
+                      activePublicNav === "#alokasi-belanja"
+                        ? "bg-primary text-white font-bold shadow-xs"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
+                    }`}
+                  >
+                    Alokasi Belanja
+                  </a>
+                  <a
+                    href={active === "/" ? "#cek-infaq" : "/#cek-infaq"}
+                    onClick={(e) => handlePublicNavClick("#cek-infaq", e)}
+                    className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
+                      activePublicNav === "#cek-infaq"
+                        ? "bg-primary text-white font-bold shadow-xs"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
+                    }`}
+                  >
+                    Cek Infaq Anda
+                  </a>
+                  <a
+                    href={active === "/" ? "#rekening-resmi" : "/#rekening-resmi"}
+                    onClick={(e) => handlePublicNavClick("#rekening-resmi", e)}
+                    className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
+                      activePublicNav === "#rekening-resmi"
+                        ? "bg-primary text-white font-bold shadow-xs"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
+                    }`}
+                  >
+                    Salurkan Infaq
+                  </a>
+                  <a
+                    href={active === "/" ? "#arsip-laporan" : "/#arsip-laporan"}
+                    onClick={(e) => handlePublicNavClick("#arsip-laporan", e)}
+                    className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
+                      activePublicNav === "#arsip-laporan"
+                        ? "bg-primary text-white font-bold shadow-xs"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
+                    }`}
+                  >
+                    Arsip Laporan
+                  </a>
+                </nav>
+              </div>
+
+              {/* Sisi Kanan: Aksi Masuk / Profil Staf (flex-1 agar seimbang secara simetris) */}
+              <div className="flex-1 flex items-center justify-end">
                 {session ? (
                   <div className="flex items-center gap-2.5">
                     <Link
                       href="/dashboard"
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold transition-colors"
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold transition-colors"
                     >
                       <LayoutDashboard size={14} />
                       <span>Dashboard Staf</span>
