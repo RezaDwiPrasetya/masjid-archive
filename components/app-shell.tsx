@@ -679,15 +679,15 @@ export function AppShell({
         {/* ========================================================= */}
         {!showStaffSidebar && (
           /* ─────────────────────────────────────────────────────────────── *
-           * FLOATING CARD NAVBAR — Desktop Public Portal                   *
-           * Sticky container with horizontal + top padding creates the     *
-           * "floating above content" card effect as per design reference.  *
+           * FULL SOLID NAVBAR — Desktop Public Portal                      *
+           * Full-width sticky solid header (like ASUS reference) without   *
+           * floating cards or vertical border dividers.                    *
            * ─────────────────────────────────────────────────────────────── */
-          <header className="hidden lg:block sticky top-0 z-30 px-5 pt-3 pb-0">
-            <div className="bg-white rounded-2xl shadow-[0_2px_20px_rgba(0,0,0,0.08)] border border-slate-200/60 flex items-stretch overflow-hidden" style={{ minHeight: "64px" }}>
+          <header className="hidden lg:block sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
+            <div className="w-full flex items-stretch px-6 lg:px-10" style={{ minHeight: "64px" }}>
 
-              {/* ── LEFT: Brand identity ─────────────────────────────── */}
-              <div className="flex items-center gap-3 px-5 shrink-0 border-r border-slate-100">
+              {/* ── LEFT: Brand identity (clean, no vertical divider) ── */}
+              <div className="flex items-center gap-3 pr-6 shrink-0">
                 <MasjidEmblem className="h-10 w-10 shrink-0" />
                 <div className="flex flex-col min-w-0">
                   <div className="flex items-center gap-2">
@@ -704,7 +704,7 @@ export function AppShell({
                 </div>
               </div>
 
-              {/* ── CENTER: Navigation — fills all remaining space ───── */}
+              {/* ── CENTER: Navigation — fills remaining space, clean underline indicator ───── */}
               <nav className="flex-1 flex items-stretch" aria-label="Navigasi Portal Publik">
                 {(
                   [
@@ -728,7 +728,7 @@ export function AppShell({
                       `}
                     >
                       <span className="text-[13.5px] leading-none">{label}</span>
-                      {/* Active indicator: thick underline anchored to card bottom edge */}
+                      {/* Active indicator: clean green underline anchored to bottom edge */}
                       <span
                         className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] rounded-t-full bg-primary transition-all duration-300 ease-out"
                         style={{ width: isActive ? "56%" : "0%", opacity: isActive ? 1 : 0 }}
@@ -738,8 +738,8 @@ export function AppShell({
                 })}
               </nav>
 
-              {/* ── RIGHT: CTA action ────────────────────────────────── */}
-              <div className="flex items-center px-5 shrink-0 border-l border-slate-100">
+              {/* ── RIGHT: CTA action (clean, no vertical divider) ──── */}
+              <div className="flex items-center pl-6 shrink-0">
                 {session ? (
                   <div className="flex items-center gap-2">
                     <Link
