@@ -679,9 +679,9 @@ export function AppShell({
         {/* ========================================================= */}
         {!showStaffSidebar && (
           <header className="hidden lg:block sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-2xs">
-            <div className="w-full px-4 sm:px-6 md:px-8 lg:px-10 h-18 flex items-center justify-between gap-6">
-              {/* Sisi Kiri: Brand Masjid (flex-1 agar seimbang secara simetris dengan sisi kanan) */}
-              <div className="flex-1 flex items-center justify-start min-w-0">
+            <div className="w-full flex items-stretch justify-between" style={{minHeight: "4.5rem"}}>
+              {/* Sisi Kiri: Brand Masjid */}
+              <div className="flex-1 flex items-center justify-start min-w-0 px-4 sm:px-6 md:px-8 lg:px-10 shrink-0">
                 <Link href="/" className="flex items-center gap-3 shrink-0 group">
                   <MasjidEmblem className="h-9 w-9 group-hover:scale-105 transition-transform shrink-0" />
                   <div className="flex flex-col min-w-0">
@@ -700,69 +700,42 @@ export function AppShell({
                 </Link>
               </div>
 
-              {/* Sisi Tengah: Navigasi Segmented Capsule Berada Persis di Titik Tengah (True Symmetrical Center) */}
-              <div className="flex-initial flex items-center justify-center">
-                <nav className="flex items-center gap-1 p-1 rounded-2xl bg-slate-100/85 border border-slate-200/70 shadow-2xs text-xs font-semibold">
-                  <a
-                    href="/"
-                    onClick={(e) => handlePublicNavClick("beranda", e)}
-                    className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
-                      activePublicNav === "beranda"
-                        ? "bg-primary text-white font-bold shadow-xs"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
-                    }`}
-                  >
-                    Beranda
-                  </a>
-                  <a
-                    href={active === "/" ? "#alokasi-belanja" : "/#alokasi-belanja"}
-                    onClick={(e) => handlePublicNavClick("#alokasi-belanja", e)}
-                    className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
-                      activePublicNav === "#alokasi-belanja"
-                        ? "bg-primary text-white font-bold shadow-xs"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
-                    }`}
-                  >
-                    Alokasi Belanja
-                  </a>
-                  <a
-                    href={active === "/" ? "#cek-infaq" : "/#cek-infaq"}
-                    onClick={(e) => handlePublicNavClick("#cek-infaq", e)}
-                    className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
-                      activePublicNav === "#cek-infaq"
-                        ? "bg-primary text-white font-bold shadow-xs"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
-                    }`}
-                  >
-                    Cek Infaq Anda
-                  </a>
-                  <a
-                    href={active === "/" ? "#rekening-resmi" : "/#rekening-resmi"}
-                    onClick={(e) => handlePublicNavClick("#rekening-resmi", e)}
-                    className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
-                      activePublicNav === "#rekening-resmi"
-                        ? "bg-primary text-white font-bold shadow-xs"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
-                    }`}
-                  >
-                    Salurkan Infaq
-                  </a>
-                  <a
-                    href={active === "/" ? "#arsip-laporan" : "/#arsip-laporan"}
-                    onClick={(e) => handlePublicNavClick("#arsip-laporan", e)}
-                    className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
-                      activePublicNav === "#arsip-laporan"
-                        ? "bg-primary text-white font-bold shadow-xs"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
-                    }`}
-                  >
-                    Arsip Laporan
-                  </a>
-                </nav>
-              </div>
+              {/* Sisi Tengah: Navigasi Underline Full-Width — mengisi seluruh ruang kosong antar brand dan tombol */}
+              <nav className="flex-1 flex items-stretch self-stretch">
+                {(
+                  [
+                    { key: "beranda",          label: "Beranda",         href: "/" },
+                    { key: "#alokasi-belanja", label: "Alokasi Belanja", href: active === "/" ? "#alokasi-belanja" : "/#alokasi-belanja" },
+                    { key: "#cek-infaq",       label: "Cek Infaq Anda",  href: active === "/" ? "#cek-infaq"       : "/#cek-infaq" },
+                    { key: "#rekening-resmi",  label: "Salurkan Infaq",  href: active === "/" ? "#rekening-resmi"  : "/#rekening-resmi" },
+                    { key: "#arsip-laporan",   label: "Arsip Laporan",   href: active === "/" ? "#arsip-laporan"   : "/#arsip-laporan" },
+                  ] as { key: "beranda" | "#alokasi-belanja" | "#cek-infaq" | "#rekening-resmi" | "#arsip-laporan"; label: string; href: string }[]
+                ).map(({ key, label, href }) => {
+                  const isActive = activePublicNav === key;
+                  return (
+                    <a
+                      key={key}
+                      href={href}
+                      onClick={(e) => handlePublicNavClick(key, e)}
+                      className={`relative flex flex-1 items-center justify-center px-1 cursor-pointer select-none transition-colors duration-200 group
+                        ${isActive ? "text-primary" : "text-slate-500 hover:text-slate-800"}
+                      `}
+                    >
+                      <span className={`text-sm transition-all duration-200 ${isActive ? "font-semibold" : "font-medium"}`}>
+                        {label}
+                      </span>
+                      {/* Garis bawah indikator aktif — animasi width smooth */}
+                      <span
+                        className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2.5px] rounded-full bg-primary transition-all duration-300 ease-out"
+                        style={{ width: isActive ? "60%" : "0%", opacity: isActive ? 1 : 0 }}
+                      />
+                    </a>
+                  );
+                })}
+              </nav>
 
-              {/* Sisi Kanan: Aksi Masuk / Profil Staf (flex-1 agar seimbang secara simetris) */}
-              <div className="flex-1 flex items-center justify-end">
+              {/* Sisi Kanan: Aksi Masuk / Profil Staf */}
+              <div className="flex-1 flex items-center justify-end px-4 sm:px-6 md:px-8 lg:px-10 shrink-0">
                 {session ? (
                   <div className="flex items-center gap-2.5">
                     <Link
