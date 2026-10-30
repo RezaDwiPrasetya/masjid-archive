@@ -81,6 +81,57 @@ export function AppShell({
     setOptimisticActive(null);
   }
 
+  // State untuk penanda aktif menu navigasi publik (mendukung klik langsung & scrollspy)
+  const [activePublicNav, setActivePublicNav] = React.useState<string>(() => {
+    if (active === "/pengeluaran") return "#alokasi-belanja";
+    if (active === "/donatur") return "#cek-infaq";
+    if (active === "/cari") return "#arsip-laporan";
+    return "beranda";
+  });
+
+  // Sinkronisasi ScrollSpy pada Beranda Publik
+  React.useEffect(() => {
+    if (active !== "/" || typeof window === "undefined") {
+      if (active === "/pengeluaran") setActivePublicNav("#alokasi-belanja");
+      else if (active === "/donatur") setActivePublicNav("#cek-infaq");
+      else if (active === "/cari") setActivePublicNav("#arsip-laporan");
+      else setActivePublicNav("beranda");
+      return;
+    }
+
+    const sectionIds = ["alokasi-belanja", "cek-infaq", "rekening-resmi", "arsip-laporan"];
+
+    const handleScroll = () => {
+      // Jika posisi scroll masih di bagian paling atas (Hero Card / Beranda)
+      if (window.scrollY < 260) {
+        setActivePublicNav("beranda");
+        return;
+      }
+
+      // Deteksi seksi yang posisinya paling relevan di viewport
+      for (let i = sectionIds.length - 1; i >= 0; i--) {
+        const id = sectionIds[i];
+        const el = document.getElementById(id);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= 140) {
+            setActivePublicNav(`#${id}`);
+            return;
+          }
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    // Cek hash URL awal jika dibuka langsung dengan anchor
+    if (window.location.hash) {
+      setActivePublicNav(window.location.hash);
+    }
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [active]);
+
   const headerProfileRef = React.useRef<HTMLDivElement>(null);
   const headerNotificationRef = React.useRef<HTMLDivElement>(null);
   const sidebarProfileRef = React.useRef<HTMLDivElement>(null);
@@ -601,12 +652,13 @@ export function AppShell({
                 </div>
               </Link>
 
-              {/* Sisi Tengah: Navigasi Menu Publik Terpusat */}
+              {/* Sisi Tengah: Navigasi Menu Publik Terpusat (Reaktif Click & ScrollSpy) */}
               <nav className="flex items-center gap-1.5 text-xs font-semibold">
                 <Link
                   href="/"
-                  className={`px-3.5 py-2 rounded-xl transition-all ${
-                    active === "/"
+                  onClick={() => setActivePublicNav("beranda")}
+                  className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
+                    activePublicNav === "beranda"
                       ? "bg-primary text-white font-bold shadow-xs"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                   }`}
@@ -615,8 +667,9 @@ export function AppShell({
                 </Link>
                 <a
                   href={active === "/" ? "#alokasi-belanja" : "/#alokasi-belanja"}
-                  className={`px-3.5 py-2 rounded-xl transition-all ${
-                    active === "/pengeluaran"
+                  onClick={() => setActivePublicNav("#alokasi-belanja")}
+                  className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
+                    activePublicNav === "#alokasi-belanja"
                       ? "bg-primary text-white font-bold shadow-xs"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                   }`}
@@ -625,8 +678,9 @@ export function AppShell({
                 </a>
                 <a
                   href={active === "/" ? "#cek-infaq" : "/#cek-infaq"}
-                  className={`px-3.5 py-2 rounded-xl transition-all ${
-                    active === "/donatur"
+                  onClick={() => setActivePublicNav("#cek-infaq")}
+                  className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
+                    activePublicNav === "#cek-infaq"
                       ? "bg-primary text-white font-bold shadow-xs"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                   }`}
@@ -635,14 +689,20 @@ export function AppShell({
                 </a>
                 <a
                   href={active === "/" ? "#rekening-resmi" : "/#rekening-resmi"}
-                  className="px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all cursor-pointer"
+                  onClick={() => setActivePublicNav("#rekening-resmi")}
+                  className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
+                    activePublicNav === "#rekening-resmi"
+                      ? "bg-primary text-white font-bold shadow-xs"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  }`}
                 >
                   Salurkan Infaq
                 </a>
                 <a
                   href={active === "/" ? "#arsip-laporan" : "/#arsip-laporan"}
-                  className={`px-3.5 py-2 rounded-xl transition-all ${
-                    active === "/cari"
+                  onClick={() => setActivePublicNav("#arsip-laporan")}
+                  className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
+                    activePublicNav === "#arsip-laporan"
                       ? "bg-primary text-white font-bold shadow-xs"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                   }`}
