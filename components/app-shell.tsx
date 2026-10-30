@@ -3,6 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   HeartHandshake,
   ImagePlus,
@@ -60,6 +61,7 @@ export function AppShell({
   active: "/" | "/unggah" | "/cari" | "/pengguna" | "/dashboard" | "/donatur" | "/pengeluaran" | "/keuangan";
 }) {
   const { data: session } = useSession();
+  const pathname = usePathname();
   const storedCollapsed = React.useSyncExternalStore(
     subscribeSidebarStorage,
     getSidebarSnapshot,
@@ -83,9 +85,9 @@ export function AppShell({
 
   // State untuk penanda aktif menu navigasi publik (mendukung klik langsung & scrollspy presisi)
   const [activePublicNav, setActivePublicNav] = React.useState<string>(() => {
+    if (pathname.startsWith("/laporan") || active === "/cari") return "#arsip-laporan";
     if (active === "/pengeluaran") return "#alokasi-belanja";
     if (active === "/donatur") return "#cek-infaq";
-    if (active === "/cari") return "#arsip-laporan";
     return "beranda";
   });
 
@@ -97,8 +99,8 @@ export function AppShell({
     target: "beranda" | "#alokasi-belanja" | "#cek-infaq" | "#rekening-resmi" | "#arsip-laporan",
     e: React.MouseEvent
   ) => {
-    // Jika berada di halaman sub-detail selain "/", biarkan browser navigasi ke rute yang dituju
-    if (active !== "/") {
+    // Jika berada di luar beranda utama "/", biarkan browser bernavigasi normal ke rute target
+    if (pathname !== "/") {
       setActivePublicNav(target);
       return;
     }
@@ -129,10 +131,10 @@ export function AppShell({
 
   // Sinkronisasi ScrollSpy Akurat pada Beranda Publik
   React.useEffect(() => {
-    if (active !== "/" || typeof window === "undefined") {
-      if (active === "/pengeluaran") setActivePublicNav("#alokasi-belanja");
+    if (pathname !== "/" || typeof window === "undefined") {
+      if (pathname.startsWith("/laporan") || active === "/cari") setActivePublicNav("#arsip-laporan");
+      else if (active === "/pengeluaran") setActivePublicNav("#alokasi-belanja");
       else if (active === "/donatur") setActivePublicNav("#cek-infaq");
-      else if (active === "/cari") setActivePublicNav("#arsip-laporan");
       else setActivePublicNav("beranda");
       return;
     }
@@ -709,10 +711,10 @@ export function AppShell({
                 {(
                   [
                     { key: "beranda",          label: "Beranda",         href: "/" },
-                    { key: "#alokasi-belanja", label: "Alokasi Belanja", href: active === "/" ? "#alokasi-belanja" : "/#alokasi-belanja" },
-                    { key: "#cek-infaq",       label: "Cek Infaq Anda",  href: active === "/" ? "#cek-infaq"       : "/#cek-infaq" },
-                    { key: "#rekening-resmi",  label: "Salurkan Infaq",  href: active === "/" ? "#rekening-resmi"  : "/#rekening-resmi" },
-                    { key: "#arsip-laporan",   label: "Arsip Laporan",   href: active === "/" ? "#arsip-laporan"   : "/#arsip-laporan" },
+                    { key: "#alokasi-belanja", label: "Alokasi Belanja", href: pathname === "/" ? "#alokasi-belanja" : "/#alokasi-belanja" },
+                    { key: "#cek-infaq",       label: "Cek Infaq Anda",  href: pathname === "/" ? "#cek-infaq"       : "/#cek-infaq" },
+                    { key: "#rekening-resmi",  label: "Salurkan Infaq",  href: pathname === "/" ? "#rekening-resmi"  : "/#rekening-resmi" },
+                    { key: "#arsip-laporan",   label: "Arsip Laporan",   href: pathname === "/" ? "#arsip-laporan"   : "/#arsip-laporan" },
                   ] as { key: "beranda" | "#alokasi-belanja" | "#cek-infaq" | "#rekening-resmi" | "#arsip-laporan"; label: string; href: string }[]
                 ).map(({ key, label, href }) => {
                   const isActive = activePublicNav === key;

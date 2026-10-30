@@ -10,6 +10,7 @@ import { PageShell } from "@/components/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { QuickInfaqSearch, type VerifiedDonation } from "@/components/public-portal/quick-infaq-search";
+import { ArchiveReportsList, type SerializedReport } from "@/components/public-portal/archive-reports-list";
 import { OfficialBankAccounts } from "@/components/public-portal/official-bank-accounts";
 import { AuthErrorBanner } from "@/components/auth-error-banner";
 import {
@@ -263,6 +264,17 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
       };
     })
     .sort((a, b) => b.totalAmount - a.totalAmount);
+
+  // Serialisasi data laporan untuk komponen arsip terpaginasi
+  const serializedReports: SerializedReport[] = reports.map((r) => ({
+    id: r.id,
+    reportDate: r.reportDate instanceof Date ? r.reportDate.toISOString() : String(r.reportDate),
+    year: r.year,
+    month: r.month,
+    weekOfMonth: r.weekOfMonth,
+    attachmentsCount: r.attachments.length,
+    verifiedTxCount: r.transactions.length,
+  }));
 
   // 6. Daftar infaq untuk widget pencarian cepat (50 transaksi pemasukan terverifikasi terbaru)
   const recentDonations: VerifiedDonation[] = verifiedTransactions
@@ -535,79 +547,10 @@ export default async function BerandaPortalPublikPage({ searchParams }: BerandaP
                   Dokumentasi otentik pindaian buku kas mingguan yang diunggah dan diverifikasi oleh DKM.
                 </p>
               </div>
-
-              {/* Filter Arsip */}
-              <div className="flex items-center gap-2 flex-wrap">
-                {availableYears.map((year) => (
-                  <Link
-                    key={year}
-                    href={filterYear === year ? "/" : `/?year=${year}#arsip-laporan`}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-colors shadow-2xs ${
-                      filterYear === year
-                        ? "bg-[#0e3824] text-white border-[#0e3824] shadow-xs"
-                        : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200"
-                    }`}
-                  >
-                    Tahun {year}
-                  </Link>
-                ))}
-              </div>
             </div>
 
-            {/* Grid Kartu Laporan */}
-            {filteredReports.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center shadow-2xs">
-                <FolderOpen className="h-10 w-10 text-slate-400 mx-auto mb-3" />
-                <p className="text-base font-bold text-slate-900">Belum ada dokumen laporan kas</p>
-                <p className="text-xs text-slate-500 mt-1">
-                  Dokumen pindaian buku kas akan tampil setelah pengurus mengunggah arsip mingguan.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredReports.map((report) => {
-                  const date = new Date(report.reportDate);
-                  const formattedDate = date.toLocaleDateString("id-ID", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  });
-                  const verifiedCount = report.transactions.length;
-
-                  return (
-                    <Link
-                      key={report.id}
-                      href={`/laporan/${report.id}`}
-                      className="group block rounded-2xl border border-slate-200/90 bg-white hover:bg-slate-50/70 p-5 transition-all duration-150 shadow-2xs hover:border-emerald-600/40 space-y-4"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="space-y-1">
-                          <span className="text-[11px] font-bold text-emerald-800 block uppercase tracking-wider">
-                            Pekan {report.weekOfMonth ?? 1} &bull; {MONTH_NAMES[report.month]} {report.year}
-                          </span>
-                          <h4 className="text-base font-bold text-slate-900 group-hover:text-emerald-800 transition-colors">
-                            {formattedDate}
-                          </h4>
-                        </div>
-                        <span className="p-2 rounded-xl bg-slate-100 group-hover:bg-emerald-50 text-slate-500 group-hover:text-emerald-800 transition-colors">
-                          <ChevronRight size={16} />
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-3 pt-3 border-t border-slate-100 text-xs text-slate-500">
-                        <span className="flex items-center gap-1.5 font-medium">
-                          <CheckCircle2 size={13} className="text-emerald-600" />
-                          <span>{verifiedCount} mutasi kas</span>
-                        </span>
-                        <span>&bull;</span>
-                        <span>{report.attachments.length} berkas fisik</span>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </section>
+            {/* Komponen Daftar Arsip Terpaginasi & Filter Cepat 3 Bulan Terakhir */}
+            <ArchiveReportsList reports={serializedReports} />          </section>
         </div>
       </PageShell>
     </AppShell>

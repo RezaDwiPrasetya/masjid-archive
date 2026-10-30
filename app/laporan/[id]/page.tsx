@@ -199,7 +199,7 @@ export default async function DetailLaporanPage({
     }).format(n);
 
   return (
-    <AppShell active="/">
+    <AppShell active="/cari">
       <PageShell>
         <div className="space-y-6 sm:space-y-8">
           {/* UNIFIED HERO HEADER CARD (F-039 / F-040) */}
@@ -211,7 +211,7 @@ export default async function DetailLaporanPage({
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div className="flex items-center gap-2 text-xs">
                   <Link
-                    href={staff ? "/dashboard" : "/"}
+                    href={staff ? "/dashboard" : "/#arsip-laporan"}
                     className="inline-flex items-center gap-1.5 font-semibold text-emerald-200/90 hover:text-white transition-colors"
                   >
                     <ArrowLeft size={14} /> Kembali ke {staff ? "Dashboard" : "Arsip Laporan"}
