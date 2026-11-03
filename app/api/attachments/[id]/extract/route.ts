@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import { extractTransactionsFromFile } from "@/lib/extract-transactions";
 import { parseTransactionsFromExcel } from "@/lib/parse-excel-transactions";
 import { isStaff } from "@/lib/auth-guard";
+import { suggestExpenseCategory, EXPENSE_CATEGORIES } from "@/lib/expense-categories";
 
 // Beri batas waktu hingga 60 detik untuk Vercel Serverless Function (default Vercel hanya 10 detik)
 export const maxDuration = 60;
@@ -110,23 +111,37 @@ export async function POST(
           ...(replaceVerified ? {} : { isVerified: false, isManual: false }),
         },
       }),
-      // Insert baris transaksi baru dari hasil ekstraksi
+      // Insert baris transaksi baru dari hasil ekstraksi dengan smart auto-categorization (F-043)
       prisma.transaction.createMany({
-        data: transactions.map((txn) => ({
-          attachmentId: id,
-          reportId: attachment.reportId,
-          type: txn.type,
-          amount: txn.amount,
-          description: txn.description,
-          transactionDate: txn.transactionDate
-            ? new Date(txn.transactionDate)
-            : null,
-          donorNameRaw:
-            txn.type === "pemasukan" && txn.donorName
-              ? txn.donorName.trim() || null
+        data: transactions.map((txn) => {
+          let resolvedCategory: string | null = null;
+          if (txn.type === "pengeluaran") {
+            const validCategory =
+              txn.category &&
+              EXPENSE_CATEGORIES.some((c) => c.value === txn.category)
+                ? txn.category
+                : null;
+            resolvedCategory =
+              validCategory ?? suggestExpenseCategory(txn.description);
+          }
+
+          return {
+            attachmentId: id,
+            reportId: attachment.reportId,
+            type: txn.type,
+            amount: txn.amount,
+            description: txn.description,
+            category: resolvedCategory,
+            transactionDate: txn.transactionDate
+              ? new Date(txn.transactionDate)
               : null,
-          isVerified: false,
-        })),
+            donorNameRaw:
+              txn.type === "pemasukan" && txn.donorName
+                ? txn.donorName.trim() || null
+                : null,
+            isVerified: false,
+          };
+        }),
       }),
       // Update metadata attachment (status, model, rawResponse, dll)
       prisma.attachment.update({

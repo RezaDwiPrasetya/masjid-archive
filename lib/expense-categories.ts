@@ -1,5 +1,5 @@
 /**
- * Konstanta kategori pengeluaran kas masjid (V7 — F-023)
+ * Konstanta kategori pengeluaran kas masjid (V7 — F-023 & V18 — F-043)
  *
  * Set kategori bersifat tetap (enum di aplikasi, bukan tabel database).
  * Nilai null = "Tidak Dikategorikan" — transaksi lama tanpa kategori tetap valid.
@@ -92,4 +92,89 @@ export function getCategoryColor(
       text: "text-on-surface-variant",
     }
   );
+}
+
+/**
+ * Kamus kata kunci untuk auto-kategorisasi pengeluaran kas masjid (F-043).
+ * Dikelompokkan per kategori pengeluaran baku untuk pencocokan cepat dan akurat.
+ */
+export const CATEGORY_KEYWORDS: Record<Exclude<ExpenseCategoryValue, null>, string[]> = {
+  konsumsi: [
+    "konsumsi", "makan", "nasi box", "nasi kotak", "snack", "kue", "air minum",
+    "aqua", "air mineral", "galon", "teh", "kopi", "gula", "sarapan", "makan siang",
+    "buka puasa", "takjil", "sahur", "gorengan", "buah", "catering"
+  ],
+  honor: [
+    "honor", "khotib", "khatib", "penceramah", "khutbah", "imam", "muadzin",
+    "marbot", "bilal", "ustadz", "ustadzah", "kultum", "ceramah",
+    "guru ngaji", "tpa", "pembicara", "insentif", "bisyarah"
+  ],
+  administrasi: [
+    "kertas", "hvs", "fotokopi", "foto copy", "cetak", "print", "spidol", "whiteboard",
+    "map", "amplop", "stempel", "tinta", "kwitansi", "nota", "binder", "atk",
+    "buku kas", "buku agenda", "pulpen", "surat", "legalisir", "materai"
+  ],
+  sosial: [
+    "santunan", "anak yatim", "yatim piatu", "dhuafa", "fakir", "takziah",
+    "uang duka", "bantuan", "sembako", "beras", "warga sakit", "kematian",
+    "bencana", "kaum dhuafa", "sedekah sosial", "peduli"
+  ],
+  operasional: [
+    "listrik", "pln", "token", "pdam", "air pam", "wifi", "indihome", "internet",
+    "kebersihan", "sapu", "alat pel", "sabun", "pembersih", "wpc", "soklin", "karbol",
+    "genset", "solar", "bensin", "oli genset", "lampu", "bohlam", "led", "philips",
+    "sampah", "retribusi sampah", "sedot wc", "taman", "rumput", "mesin rumput",
+    "operasional"
+  ],
+  pembangunan: [
+    "semen", "pasir", "cat", "keramik", "renovasi", "perbaikan ac", "servis ac", "service ac",
+    "cuci ac", "tukang", "ongkos tukang", "batu", "bata", "besi", "pipa", "paralon",
+    "talang", "genteng", "kusen", "pintu", "jendela", "kubah", "menara",
+    "sound system", "mic", "microphone", "speaker", "kabel", "instalasi",
+    "rehab", "pembangunan", "material", "toko bangunan", "baut", "mur", "lem"
+  ],
+  lainnya: [
+    "administrasi bank", "pajak", "biaya transfer", "bunga bank", "tak terduga", "lain-lain"
+  ],
+};
+
+/**
+ * Merekomendasikan kategori pengeluaran kas masjid secara cerdas berdasarkan deskripsi transaksi (F-043).
+ * Menggunakan normalisasi teks dan pencocokan kata batas kata (word boundary) untuk mencegah false positive.
+ */
+export function suggestExpenseCategory(description: string | null | undefined): ExpenseCategoryValue | null {
+  if (!description || typeof description !== "string") return null;
+
+  const clean = description
+    .toLowerCase()
+    .replace(/[^\w\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!clean) return null;
+
+  // Cek kata kunci per kategori sesuai urutan prioritas spesifik
+  const priorityOrder: Exclude<ExpenseCategoryValue, null>[] = [
+    "konsumsi",
+    "honor",
+    "administrasi",
+    "sosial",
+    "operasional",
+    "pembangunan",
+    "lainnya",
+  ];
+
+  for (const cat of priorityOrder) {
+    const keywords = CATEGORY_KEYWORDS[cat];
+    for (const kw of keywords) {
+      // Gunakan regex batas kata (word boundary) agar tidak match substring keliru (mis. 'cat' tidak match 'catatan')
+      const escapedKw = kw.replace(/\s+/g, "\\s+");
+      const pattern = new RegExp(`(^|\\s)${escapedKw}($|\\s)`, "i");
+      if (pattern.test(clean)) {
+        return cat;
+      }
+    }
+  }
+
+  return null;
 }

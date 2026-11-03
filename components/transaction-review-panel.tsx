@@ -48,6 +48,7 @@ import {
   EXPENSE_CATEGORIES,
   getCategoryLabel,
   getCategoryColor,
+  suggestExpenseCategory,
 } from "@/lib/expense-categories";
 
 interface Transaction {
@@ -315,7 +316,14 @@ function TransactionRow({
             </label>
             <Input
               value={editDesc}
-              onChange={(e) => setEditDesc(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                setEditDesc(val);
+                if (editType === "pengeluaran" && (!editCategory || editCategory === "__null__")) {
+                  const suggested = suggestExpenseCategory(val);
+                  if (suggested) setEditCategory(suggested);
+                }
+              }}
               placeholder="Keterangan transaksi"
             />
           </div>
@@ -1608,7 +1616,15 @@ export function TransactionReviewPanel({
                 <label className="text-xs text-muted-foreground font-medium">Tipe</label>
                 <Select
                   value={addType}
-                  onValueChange={(v) => { if (v !== null) setAddType(v); }}
+                  onValueChange={(v) => {
+                    if (v !== null) {
+                      setAddType(v);
+                      if (v === "pengeluaran" && (!addCategory || addCategory === "__null__")) {
+                        const suggested = suggestExpenseCategory(addDesc);
+                        if (suggested) setAddCategory(suggested);
+                      }
+                    }
+                  }}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue />
@@ -1639,7 +1655,14 @@ export function TransactionReviewPanel({
                 </label>
                 <Input
                   value={addDesc}
-                  onChange={(e) => setAddDesc(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setAddDesc(val);
+                    if (addType === "pengeluaran" && (!addCategory || addCategory === "__null__")) {
+                      const suggested = suggestExpenseCategory(val);
+                      if (suggested) setAddCategory(suggested);
+                    }
+                  }}
                   placeholder="Keterangan transaksi"
                 />
               </div>

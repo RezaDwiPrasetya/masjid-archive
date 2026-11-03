@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isStaff } from "@/lib/auth-guard";
-import { EXPENSE_CATEGORIES } from "@/lib/expense-categories";
+import { EXPENSE_CATEGORIES, suggestExpenseCategory } from "@/lib/expense-categories";
 
 const MAX_DESCRIPTION_LENGTH = 500;
 
@@ -147,6 +147,11 @@ export async function POST(
       }
       validatedCategory = trimmedCat;
     }
+  }
+
+  // Auto-suggest category jika pengeluaran dan belum dipilih secara eksplisit (F-043)
+  if (body.type === "pengeluaran" && !validatedCategory) {
+    validatedCategory = suggestExpenseCategory(trimmedDesc);
   }
 
   // category pada pemasukan harus null

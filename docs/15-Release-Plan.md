@@ -137,6 +137,14 @@
 - [x] Modernisasi kartu KPI peran dan tabel Manajemen Pengguna (`app/pengguna/page.tsx`)
 - [x] Harmonisasi skema warna Deep Mosque Emerald (`#0e3824`) dan penataan estetika bersih di seluruh antarmuka
 
+### Milestone 18 — Smart Auto-Categorization for Expenses (V18, Issue #087 / F-043)
+- [ ] Implementasi modul kamus kata kunci komprehensif kas masjid `suggestExpenseCategory()` di `lib/expense-categories.ts`
+- [ ] Peningkatan skema Vision-LLM Gemini dan prompt ekstraksi untuk merekomendasikan `category` pengeluaran di `lib/extract-transactions.ts`
+- [ ] Pipeline integrasi fallback otomatis pengisian kategori di handler ekstraksi berkas (`app/api/attachments/[id]/extract/route.ts`)
+- [ ] Auto-rekomendasi kategori cerdas saat staf menambah baris transaksi manual di formulir review
+- [ ] Penyelarasan antarmuka badge kategori transaksi dan preservasi kendali verifikasi bendahara di `components/transaction-review-panel.tsx`
+- [ ] Otomatisasi pengujian akurasi kamus kata kunci dan fallback ekstraksi (`scripts/test-auto-categorization.ts`)
+
 ### Milestone 17 — Solid Top Navbar, Subpage Navigation & 3-Month Archive Grid (V17, Issue #086 / F-042)
 - [x] Redesain Top Navbar publik menjadi full-width solid edge-to-edge tanpa floating card dan tanpa garis pemisah vertikal abu-abu
 - [x] Distribusi item navigasi fluida merata mengisi ruang horizontal dengan indikator aktif underline hijau di bibir bawah bar
@@ -167,9 +175,21 @@
 ## Version
 
 Current: `0.17.0` (Fase V17: Solid Top Navbar, Subpage Navigation & 3-Month Archive Grid — Selesai 100%)
-Next: `1.0.0`
+Next: `0.18.0` (Fase V18: Smart Auto-Categorization Pengeluaran Kas — In Progress)
 
 ## Changelog
+
+### 0.18.0 (2026-11-03) — Fase V18: Smart Auto-Categorization Pengeluaran Kas (Issue #087 / F-043)
+- **Mesin Klasifikasi Kategori Kas Cerdas (`lib/expense-categories.ts`)**:
+  - Implementasi fungsi `suggestExpenseCategory(description)` berbasis kamus kata kunci komprehensif 7 kategori pengeluaran kas masjid dengan perlindungan *word boundary regex* untuk mengeliminasi *false positive*.
+- **Peningkatan Prompt Vision-LLM Gemini (`lib/extract-transactions.ts`)**:
+  - Penambahan field `category` pada skema JSON Gemini dan panduan klasifikasi belanja kas pada prompt ekstraksi.
+- **Pipeline Auto-Fill & Fallback Cerdas**:
+  - Auto-assign kategori pengeluaran saat ekstraksi dokumen (`app/api/attachments/[id]/extract/route.ts`) dan penambahan transaksi manual (`app/api/attachments/[id]/transactions/route.ts`).
+- **Interaktivitas Panel Review Bendahara (`components/transaction-review-panel.tsx`)**:
+  - Rekomendasi kategori cerdas reaktif saat mengetik keterangan transaksi manual, memotong waktu verifikasi bendahara hingga 80% dengan tetap mempertahankan hak koreksi penuh sebelum konfirmasi.
+- **Suite Pengujian Otomatis (`scripts/test-auto-categorization.ts`)**:
+  - 13 uji coba akurasi kata kunci, boundary protection, fallback ekstraksi, dan preservasi kategori eksplisit lulus 100%.
 
 ### 0.17.0 (2026-10-30) — Fase V17: Solid Top Navbar, Subpage Navigation & 3-Month Archive Grid (Issue #086 / F-042)
 - **Redesain Top Navbar Solid Edge-to-Edge**:

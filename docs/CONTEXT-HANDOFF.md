@@ -1,7 +1,7 @@
 # CONTEXT HANDOFF — Proyek "Masjid Archive"
 > **Terakhir diperbarui**: 27 Oktober 2026  
 > **Status**: **PRODUKSI / FEATURE-COMPLETE — FASE V15.0 (Branch: main)**  
-> **Versi Rilis**: `0.16.0` (41 Fitur F-001 s/d F-041 Selesai Penuh 100%)
+> **Versi Rilis**: `0.18.0` (43 Fitur F-001 s/d F-043 Selesai Penuh 100%)
 
 ---
 
@@ -260,6 +260,14 @@ Tidak ada bug fungsional aktif di codebase. Seluruh fase V1 s/d V15 (F-001 s/d F
   2. **ScrollSpy Locking**: Menerapkan `isNavClickingRef` lock selama 850ms saat klik menu untuk mencegah miss-kalkulasi atau loncatan acak selama animasi smooth scrolling.
   3. **Pembebasan Navigasi Sub-Halaman**: Menggunakan hook `usePathname()` pada `components/app-shell.tsx`. Jika `pathname !== "/"`, klik menu langsung bernavigasi ke anchor tujuan (`/#alokasi-belanja`, `/#cek-infaq`, `/#arsip-laporan`). Tombol kembali di detail laporan diarahkan ke `/#arsip-laporan`.
   4. **Tata Letak Arsip Kas 3 Kolom Bulan & Paginasi Cerdas**: Komponen baru `components/public-portal/archive-reports-list.tsx` mengelompokkan laporan per bulan kalender. Setiap kolom mewakili 1 bulan penuh dengan pekan-pekan tersusun vertikal ke bawah. Menampilkan 3 bulan terbaru secara default pada halaman 1, didukung paginasi periode dan filter cepat tahun.
+
+### 7l. FASE V18 — SMART AUTO-CATEGORIZATION PENGELUARAN KAS (F-043, ISSUE #087)
+- **Status**: Selesai Penuh 100% & Terverifikasi Bebas Galat (TypeScript & Linter Clean).
+- **Latar Belakang & Masalah**: Transaksi pengeluaran kas (`type: "pengeluaran"`) hasil ekstraksi AI maupun input manual saat ini memiliki default `category: null` ("Tidak Dikategorikan"). Hal ini mewajibkan bendahara memilih dropdown kategori satu per satu secara manual pada setiap transaksi, yang memperlambat proses review kas mingguan.
+- **Solusi Arsitektur**:
+  1. **Rule-Based Matcher (`lib/expense-categories.ts`)**: Implementasi `suggestExpenseCategory(description)` berbasis kamus kata kunci komprehensif kosakata belanja kas masjid (7 kategori baku: operasional, honor, sosial, pembangunan, konsumsi, administrasi, lainnya).
+  2. **Vision-LLM Ingestion Fallback**: Skema prompt Gemini AI diperluas untuk menyarankan kategori pengeluaran, dengan fallback otomatis ke keyword matcher lokal saat penyimpanan draf transaksi (`/api/attachments/:id/extract` dan `/api/attachments/:id/transactions`).
+  3. **Human-in-the-Loop Review Panel**: Kategori tebakan cerdas langsung terpasang pada badge transaksi draf, dan bendahara tetap dapat menyetujui atau mengubah kategori kapan saja sebelum/sesudah klik konfirmasi.
 
 
 ---

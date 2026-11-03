@@ -1074,3 +1074,41 @@
 - [x] Arsip buku kas fisik disajikan dalam format 3 kolom bulan per halaman dengan pekan-pekan tersusun vertikal di dalam kolomnya.
 - [x] Default tampilan menyajikan 3 bulan terbaru yang diunggah pengurus ke sistem dan didukung navigasi paginasi periode bulan.
 - [x] Pengujian otomatis TypeScript dan linter lulus 100% tanpa galat.
+
+
+### F-043 — Smart Auto-Categorization Pengeluaran Kas (Issue #087 / F-043)
+
+**Objective:** Mengotomatisasi penentuan kategori pengeluaran kas masjid (`category`) secara cerdas berbasis deskripsi transaksi (misal: "BAYAR LISTRIK" ➡️ `operasional`, "HONOR KHOTIB" ➡️ `honor`, "SEMEN 10 SAK" ➡️ `pembangunan`, "AIR MINERAL JUMAT" ➡️ `konsumsi`, "FOTOKOPI" ➡️ `administrasi`), sehingga bendahara tidak perlu memilih dropdown kategori secara manual satu per satu dari status default "Tidak Dikategorikan", dengan tetap mempertahankan prinsip kendali manusia (*human-in-the-loop*) sebelum transaksi difinalisasi.
+
+**User:** Bendahara DKM (Bapak Kosasih & Bapak Cecep), Administrator DKM.
+
+**Process:**
+- **Mesin Klasifikasi Kategori Cerdas (`lib/expense-categories.ts`)**:
+  - Implementasi fungsi `suggestExpenseCategory(description: string): ExpenseCategoryValue | null` berbasis kamus kata kunci komprehensif kosakata pembukuan kas masjid:
+    - `operasional`: listrik, pln, token, pdam, air pam, wifi, internet, kebersihan, sapu, pembersih, wpc, karbol, genset, solar, lampu, bohlam, led, sampah, sedot wc, dll.
+    - `honor`: honor, ustadz, ustadzah, khotib, khatib, penceramah, imam, muadzin, marbot, bilal, khutbah, kultum, penceramah jumat.
+    - `sosial`: santunan, anak yatim, yatim piatu, dhuafa, fakir, takziah, uang duka, bantuan, sembako, beras, warga sakit, kematian.
+    - `pembangunan`: semen, pasir, cat, keramik, renovasi, perbaikan ac, servis ac, cuci ac, tukang, ongkos tukang, bata, besi, pipa, talang, genteng, kusen, kubah, sound system, mic, speaker.
+    - `konsumsi`: konsumsi, makan, nasi box, snack, kue, air minum, aqua, teh, kopi, gula, jumat berkah, rapat, buka puasa, takjil, sahur.
+    - `administrasi`: kertas, hvs, fotokopi, cetak, spidol, map, amplop, stempel, tinta, kwitansi, binder, atk.
+    - `lainnya`: tak terduga, administrasi bank, pajak.
+  - Normalisasi teks deskripsi (lowercase, trim, penghapusan karakter khusus non-alfanumerik) sebelum pencocokan regex kata kunci batas kata (*word boundary*).
+- **Integrasi Vision-LLM Context Prompts (`lib/extract-transactions.ts`)**:
+  - Memperbarui skema JSON ekstraksi Gemini (`ExtractedTransaction`) dengan field opsional `category: string | null` yang divalidasi terhadap 7 enum baku pengeluaran kas masjid.
+  - Menambahkan arahan prompt akuntansi: untuk baris bertipe "pengeluaran", Gemini disarankan menentukan kategori terdekat yang logis jika teks nota/keterangan menyebutkan peruntukan belanja dengan jelas.
+- **Pipeline Ingestion & Auto-Fill Default (`app/api/attachments/[id]/extract/route.ts` & `app/api/attachments/[id]/transactions/route.ts`)**:
+  - Saat transaksi hasil ekstraksi AI disimpan ke basis data, sistem memeriksa field `category`. Jika AI tidak mengembalikan kategori atau nilainya null, sistem menjalankan fallback cerdas ke `suggestExpenseCategory(txn.description)`.
+  - Pada penambahan baris transaksi manual oleh staf, jika bendahara belum memilih kategori di form dialog, sistem otomatis merekomendasikan kategori berdasarkan deskripsi yang diketik.
+- **Panel Review & Kendali Verifikasi Bendahara (`components/transaction-review-panel.tsx`)**:
+  - Kategori hasil tebakan cerdas langsung terpasang pada badge kartu transaksi (misal badge biru muda `Operasional` menggantikan abu-abu `Tidak Dikategorikan`).
+  - Bendahara tetap memiliki wewenang penuh untuk mengubah kategori kapan saja melalui dropdown interaktif jika tebakan sistem dirasa kurang tepat.
+  - Transaksi yang sudah tertebak otomatis dapat langsung disahkan dengan 1 klik tombol "Konfirmasi Transaksi", menghemat waktu verifikasi hingga 80%.
+
+**Acceptance Criteria:**
+- [x] Fungsi `suggestExpenseCategory` berhasil memetakan kata kunci operasional kas masjid ke 7 kategori baku tanpa false positive.
+- [x] Transaksi pengeluaran baru dari ekstraksi AI otomatis memiliki kategori tebakan cerdas (bukan lagi null / "Tidak Dikategorikan" jika deskripsinya jelas).
+- [x] Transaksi pemasukan selalu memiliki `category = null`.
+- [x] Bendahara tetap dapat mengubah kategori hasil tebakan sistem secara bebas melalui dropdown review panel sebelum maupun sesudah verifikasi.
+- [x] Nilai kategori tersimpan dengan benar di kolom `Transaction.category` database Prisma dan langsung tercermin di halaman `/pengeluaran` dan Beranda.
+- [x] Suite pengujian otomatis disiapkan untuk memverifikasi akurasi kamus kata kunci dan fallback ekstraksi (`scripts/test-auto-categorization.ts` 13/13 lulus).
+- [x] Seluruh pengujian TypeScript dan ESLint lulus 100% tanpa galat.

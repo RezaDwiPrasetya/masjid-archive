@@ -46,6 +46,21 @@ const transactionSchema = {
             description:
               "Nama pemberi donasi jika tertulis jelas di baris pemasukan ini — bisa berupa nama perorangan (contoh: 'Bapak Kosasih', 'H. Ahmad') MAUPUN nama usaha/institusi (contoh: 'Toko Berkah', 'Laundry Niji', 'PT Sejahtera'). Selalu null untuk pengeluaran. Kembalikan null jika tidak ada identitas pemberi yang spesifik (misal deskripsi generik: 'Kotak Amal', 'Infaq Jumat'). Jangan mengarang nama.",
           },
+          category: {
+            type: SchemaType.STRING,
+            nullable: true,
+            enum: [
+              "operasional",
+              "honor",
+              "sosial",
+              "pembangunan",
+              "konsumsi",
+              "administrasi",
+              "lainnya",
+            ],
+            description:
+              "Kategori pos belanja jika transaksi bertipe 'pengeluaran'. Pilih salah satu dari: 'operasional', 'honor', 'sosial', 'pembangunan', 'konsumsi', 'administrasi', 'lainnya'. Selalu null untuk transaksi 'pemasukan'. Isi null jika ragu atau tidak ada keterangan yang jelas.",
+          },
         },
         required: ["type", "amount", "description"],
       },
@@ -86,6 +101,7 @@ export type ExtractedTransaction = {
   description: string;
   transactionDate: string | null;
   donorName?: string | null;
+  category?: string | null;
 };
 
 export type ExtractionResult = {
