@@ -17,7 +17,6 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   LogOut,
-  ChevronRight,
   ChevronDown,
   Bell,
   LogIn,
@@ -85,9 +84,7 @@ export function AppShell({
 
   // State untuk penanda aktif menu navigasi publik (mendukung klik langsung & scrollspy presisi)
   const [activePublicNav, setActivePublicNav] = React.useState<string>(() => {
-    if (pathname.startsWith("/laporan") || active === "/cari") return "#arsip-laporan";
-    if (active === "/pengeluaran") return "#alokasi-belanja";
-    if (active === "/donatur") return "#cek-infaq";
+    if (typeof window !== "undefined" && window.location.hash) return window.location.hash;
     return "beranda";
   });
 
@@ -129,13 +126,22 @@ export function AppShell({
     }, 850);
   };
 
+  // Penentuan menu publik aktif:
+  // - Di luar beranda ("/"), aktif ditentukan secara deterministik dari pathname/active prop
+  // - Di beranda ("/"), aktif dikontrol oleh scrollspy atau klik pengguna
+  const effectivePublicNav = pathname !== "/"
+    ? (pathname.startsWith("/laporan") || active === "/cari"
+        ? "#arsip-laporan"
+        : active === "/pengeluaran"
+        ? "#alokasi-belanja"
+        : active === "/donatur"
+        ? "#cek-infaq"
+        : "beranda")
+    : activePublicNav;
+
   // Sinkronisasi ScrollSpy Akurat pada Beranda Publik
   React.useEffect(() => {
     if (pathname !== "/" || typeof window === "undefined") {
-      if (pathname.startsWith("/laporan") || active === "/cari") setActivePublicNav("#arsip-laporan");
-      else if (active === "/pengeluaran") setActivePublicNav("#alokasi-belanja");
-      else if (active === "/donatur") setActivePublicNav("#cek-infaq");
-      else setActivePublicNav("beranda");
       return;
     }
 
@@ -168,17 +174,21 @@ export function AppShell({
       setActivePublicNav("beranda");
     };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    const handleHashChange = () => {
+      if (window.location.hash) {
+        setActivePublicNav(window.location.hash);
+      }
+    };
 
-    if (window.location.hash) {
-      setActivePublicNav(window.location.hash);
-    }
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("hashchange", handleHashChange);
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("hashchange", handleHashChange);
       if (navClickTimeoutRef.current) clearTimeout(navClickTimeoutRef.current);
     };
-  }, [active]);
+  }, [pathname]);
 
   const headerProfileRef = React.useRef<HTMLDivElement>(null);
   const headerNotificationRef = React.useRef<HTMLDivElement>(null);
@@ -717,7 +727,7 @@ export function AppShell({
                     { key: "#arsip-laporan",   label: "Arsip Laporan",   href: pathname === "/" ? "#arsip-laporan"   : "/#arsip-laporan" },
                   ] as { key: "beranda" | "#alokasi-belanja" | "#cek-infaq" | "#rekening-resmi" | "#arsip-laporan"; label: string; href: string }[]
                 ).map(({ key, label, href }) => {
-                  const isActive = activePublicNav === key;
+                  const isActive = effectivePublicNav === key;
                   return (
                     <a
                       key={key}
