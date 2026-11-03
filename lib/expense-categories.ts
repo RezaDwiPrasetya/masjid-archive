@@ -106,7 +106,7 @@ export const CATEGORY_KEYWORDS: Record<Exclude<ExpenseCategoryValue, null>, stri
   ],
   honor: [
     "honor", "khotib", "khatib", "penceramah", "khutbah", "imam", "muadzin",
-    "marbot", "bilal", "ustadz", "ustadzah", "kultum", "ceramah",
+    "bilal", "ustadz", "ustadzah", "kiai", "kyai", "kultum", "ceramah",
     "guru ngaji", "tpa", "pembicara", "insentif", "bisyarah"
   ],
   administrasi: [
@@ -122,6 +122,7 @@ export const CATEGORY_KEYWORDS: Record<Exclude<ExpenseCategoryValue, null>, stri
   operasional: [
     "listrik", "pln", "token", "pdam", "air pam", "wifi", "indihome", "internet",
     "kebersihan", "sapu", "alat pel", "sabun", "pembersih", "wpc", "soklin", "karbol",
+    "marbot", "penjaga masjid",
     "genset", "solar", "bensin", "oli genset", "lampu", "bohlam", "led", "philips",
     "sampah", "retribusi sampah", "sedot wc", "taman", "rumput", "mesin rumput",
     "operasional"

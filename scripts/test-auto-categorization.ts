@@ -27,19 +27,22 @@ async function runAutoCategorizationTests() {
     assert.strictEqual(suggestExpenseCategory("Beli token listrik 200rb"), "operasional");
   });
 
-  test("Kebersihan, PDAM & Genset -> operasional", () => {
+  test("Kebersihan, PDAM, Genset & Marbot -> operasional", () => {
     assert.strictEqual(suggestExpenseCategory("Tagihan PDAM air"), "operasional");
     assert.strictEqual(suggestExpenseCategory("Beli sapu dan pembersih lantai soklin"), "operasional");
+    assert.strictEqual(suggestExpenseCategory("Bayar marbot masjid"), "operasional");
+    assert.strictEqual(suggestExpenseCategory("Uang operasional marbot"), "operasional");
     assert.strictEqual(suggestExpenseCategory("Solar untuk genset"), "operasional");
     assert.strictEqual(suggestExpenseCategory("Ganti lampu bohlam led philips"), "operasional");
     assert.strictEqual(suggestExpenseCategory("Iuran retribusi sampah"), "operasional");
   });
 
   console.log("\n[2] Pengujian Kamus Kata Kunci Honor:");
-  test("Honor Khotib, Imam, Marbot -> honor", () => {
+  test("Honor Khotib, Imam, Kiai, Ustadz -> honor", () => {
     assert.strictEqual(suggestExpenseCategory("Honor khotib jumat"), "honor");
+    assert.strictEqual(suggestExpenseCategory("Bisyarah kiai pengisi pengajian"), "honor");
     assert.strictEqual(suggestExpenseCategory("Bisyarah ustadz penceramah"), "honor");
-    assert.strictEqual(suggestExpenseCategory("Insentif imam dan marbot"), "honor");
+    assert.strictEqual(suggestExpenseCategory("Insentif imam rawatib"), "honor");
     assert.strictEqual(suggestExpenseCategory("Khatib sholat jumat"), "honor");
     assert.strictEqual(suggestExpenseCategory("Kultum subuh"), "honor");
   });
