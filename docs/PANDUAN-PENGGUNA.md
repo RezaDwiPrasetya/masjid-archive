@@ -1,7 +1,7 @@
 # Panduan Pengguna — Masjid Archive
 ### Sistem Arsip & Manajemen Keuangan DKM Masjid Al-Luqman
 
-> **Versi Sistem**: V14.0 (Feature-Complete, Modern Collapsible Emerald UI & Production-Grade)  
+> **Versi Sistem**: V16.0 (Feature-Complete, Smart Auto-Categorization & Production-Grade)
 > **Terakhir diperbarui**: 26 Oktober 2026  
 > **Penyusun**: Pengurus DKM Masjid Al-Luqman & Tim Pengembang Masjid Archive
 
@@ -551,7 +551,7 @@ Di bagian **"Menunggu Verifikasi"** pada panel review, setiap baris transaksi me
 - Keterangan / deskripsi
 - Tanggal transaksi
 - Nama donatur (untuk pemasukan)
-- **Kategori Pengeluaran** (khusus untuk pengeluaran, default: *Tidak Dikategorikan*)
+- **Kategori Pengeluaran** (khusus untuk pengeluaran, otomatis disarankan oleh AI & kamus kata kunci cerdas F-043 berdasarkan deskripsi transaksi)
 
 Bandingkan dengan buku kas fisik untuk memastikan keakuratan.
 

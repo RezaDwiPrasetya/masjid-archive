@@ -2,14 +2,14 @@
 
 > **Sistem Arsip & Transparansi Keuangan Digital DKM Masjid Al-Luqman**  
 > Kelurahan Soklat, Kecamatan Subang, Kabupaten Subang, Jawa Barat  
-> *Versi Rilis: **V14.0 (Modern Collapsible Emerald Sidebar, Intelligent Search Grid & Production Release)***
+> *Versi Rilis: **V16.0 (Enterprise Modular Testing, Smart Auto-Categorization & Production Finalization)***
 
 [![Next.js](https://img.shields.io/badge/Next.js-16_App_Router-black?logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-5.22.0-2D3748?logo=prisma)](https://www.prisma.io/)
 [![Google Gemini](https://img.shields.io/badge/AI-Gemini_Vision_Multimodal-4285F4?logo=google)](https://ai.google.dev/)
 [![PWA Ready](https://img.shields.io/badge/PWA-Installable_Mobile_App-154212)](https://web.dev/progressive-web-apps/)
-[![Automated Tests](https://img.shields.io/badge/Tests-194_Passed_100%25-success)](scripts/)
+[![Automated Tests](https://img.shields.io/badge/Tests-285+_Passed_100%25-success)](docs/TESTING.md)
 
 Aplikasi web modern dan Progressive Web App (PWA) untuk mengarsipkan, mendigitalkan, dan mempublikasikan laporan pembukuan keuangan mingguan kas masjid secara transparan, akuntabel, dan mudah diakses oleh seluruh jemaah tanpa memerlukan login.
 
@@ -63,35 +63,41 @@ Pencatatan keuangan mingguan DKM Masjid Al-Luqman sebelumnya bertumpu pada lemba
 - **Deteksi Batas Saldo Penutup (*Closing Balance Boundary*)**: AI secara cerdas mengenali garis penutup saldo (misal: `TOTAL KAS MESJID TGL 25-7-2025 Rp 850.000`) dan otomatis memisahkan catatan transaksi lanjutan di bawahnya yang merupakan milik pekan berikutnya (halaman fisik bersambung).
 - **Parsing Spreadsheet Deterministik**: Berkas Excel (`.xlsx`, `.xls`) diproses langsung via parser tabular server-side tanpa konsumsi token OCR.
 
-### 7. ✍️ Panel Tinjau Ekstraksi & Baris Transaksi Manual (F-028 / V10.5)
+### 7. 🏷️ Smart Auto-Categorization Pengeluaran Kas (F-043 / V16.0)
+- **Kategorisasi Otomatis Cerdas**: Mengotomatisasi penentuan kategori pengeluaran kas masjid ke dalam 7 pos resmi DKM (Operasional, Honorarium, Pembangunan Fisik, Sosial & Santunan, Konsumsi Kajian, Administrasi, dan Pos Lainnya) berbasis analisis kata kunci deskripsi transaksi.
+- **Integrasi Vision-LLM Gemini**: Model AI Gemini langsung memprediksi kategori transaksi saat ekstraksi foto/dokumen kas berlangsung dengan fallback kamus deterministik lokal (`lib/expense-categories.ts`).
+- **Saran Kategori Reaktif pada Input Manual**: Saat bendahara mengetik deskripsi pada penambahan transaksi manual, sistem secara reaktif menyarankan kategori yang paling sesuai secara real-time.
+- **Human-in-the-Loop**: Seluruh saran kategori tetap dapat ditinjau dan diubah oleh bendahara sebelum verifikasi difinalisasi.
+
+### 8. ✍️ Panel Tinjau Ekstraksi & Baris Transaksi Manual (F-028 / V10.5)
 - **Penambahan Transaksi Manual**: Pengurus dapat menambahkan baris transaksi kas secara manual langsung dari panel peninjauan untuk mencatat mutasi yang terlewat oleh dokumen atau AI tanpa perlu melakukan ekstraksi ulang dari awal.
 - **Identifikasi Visual Transparan**: Penanda khusus berupa badge `Manual` berwarna biru muda pada transaksi inputan pengurus serta badge `Draf` / `Belum Diverifikasi`.
 - **Preservasi Data Cerdas**: Proses ekstraksi ulang cerdas mempertahankan baris transaksi manual yang telah dibuat pengurus dan hanya menyegarkan data draf hasil AI.
 
-### 8. 👛 Posisi Kas & Perbendaharaan: Kas Fisik vs Kas Bank / Digital (F-033 / V11.0)
+### 9. 👛 Posisi Kas & Perbendaharaan: Kas Fisik vs Kas Bank / Digital (F-033 / V11.0)
 - **Tripartit Pemantauan Saldo Kas**: Halaman analitik khusus `/keuangan` yang menyajikan perbandingan real-time antara **Total Kas Keseluruhan**, **Kas Fisik (Tunai / Brankas)**, dan **Kas Bank / Digital (QRIS)**.
 - **Rasio Likuiditas Real-Time**: Bilah kemajuan visual dwi-warna yang memperlihatkan proporsi persentase uang kontan di brankas masjid vs dana mengendap di rekening giro/tabungan resmi BSI.
 - **Pencatatan Mutasi Kas Internal**: Antarmuka modal interaktif bagi staf DKM (Admin/Bendahara) untuk mencatat **Setor Tunai ke Bank** (`CASH_TO_BANK`) dan **Tarik Tunai dari Bank** (`BANK_TO_CASH`) dengan jaminan konservasi total saldo kas.
 - **Pemisahan Kanal Transaksi**: Setiap transaksi kas ditandai dengan badge `Kas Tunai` atau `Bank / QRIS` dan dapat diubah secara instan oleh staf melalui tombol satu-klik `Ubah` pada panel review ekstraksi.
 - **Alokasi Belanja per Kanal**: Analisis komparatif yang memperlihatkan pos kategori pengeluaran mana yang dibayarkan tunai dan mana yang ditransfer melalui perbankan.
 
-### 9. 📊 Dasbor Analitik & Financial Intelligence Publik
+### 10. 📊 Dasbor Analitik & Financial Intelligence Publik
 - **Visualisasi Saldo & Tren Kas**: Grafik interaktif Recharts yang menyajikan pergerakan kas mingguan dan bulanan dengan penanganan responsif pada layar ponsel.
 - **Filter Periode Waktu Cerdas**: Preset cepat (*Semua Waktu* dan *Tahun Ini*) serta pemilih kustom tahun dan bulan yang tertata rapi tanpa perlu geser horizontal di mobile.
 - **Transparansi Pos Pengeluaran**: Pengelompokan mutasi kas keluar ke dalam kategori resmi DKM: Operasional, Honorarium, Pembangunan Fisik, Sosial & Santunan, Konsumsi Kajian, Administrasi, dan Pos Lainnya (`/pengeluaran`).
 - **Pencatatan Donatur & Infaq Anonim**: Agregasi infaq donatur terdaftar disertai modal audit riwayat infaq tanpa nama / kotak amal tromol Jumat (`/donatur`).
 - **Paginasi Tabel & Kontrol Skalabilitas (F-034 / V12.0)**: Navigasi tabel cerdas (`PaginationControls`) dengan smart ellipsis, pemilih ukuran baris (10, 25, 50, 100), continuous ranking `#rank` donatur, dan perlindungan performa DOM di halaman Pengeluaran, Donatur, dan Keuangan.
 
-### 10. 🏛️ Portal Transparansi Publik & Saldo Terkonsolidasi (F-035 / V13.0)
+### 11. 🏛️ Portal Transparansi Publik & Saldo Terkonsolidasi (F-035 / V13.0)
 - **Portal Transparansi Kas Terpadu**: Halaman muka (`/`) menyajikan narasi amanah, pembagian Kas Fisik vs Bank resmi, alokasi pos pengeluaran, cek infaq jemaah mandiri, dan arsip dokumen mingguan.
 - **Konsolidasi Arsitektur Satu Pintu**: Mengeliminasi menu `/dashboard` duplikat menjadi satu landing page seragam dan ramah bagi publik maupun staf.
 
-### 11. 🖨️ Ekspor & Pratinjau Cetak Formal A4 (Mading DKM)
+### 12. 🖨️ Ekspor & Pratinjau Cetak Formal A4 (Mading DKM)
 - **Format Resmi Mading DKM**: Menghasilkan lembar laporan formal A4 lengkap dengan Kop Resmi DKM Masjid Al-Luqman, 4 kartu ikhtisar kas, tabel mutasi transaksi, dan kolom tanda tangan basah Ketua DKM serta Bendahara.
 - **Dukungan Rekapitulasi Tahunan Penuh**: Mode pencetakan 12 bulan penuh yang dilengkapi lampiran multi-halaman buku besar kas (`drawLedgerTable`) beresolusi tinggi via `pdf-lib`.
 - **Unduh Spreadsheet Excel**: Format `.xlsx` siap olah untuk arsip laporan kas mingguan, bulanan, maupun tahunan.
 
-### 12. 🛡️ Keamanan Sistem & Otorisasi RBAC 3-Tier
+### 13. 🛡️ Keamanan Sistem & Otorisasi RBAC 3-Tier
 - **Tiga Tingkatan Hak Akses**:
   - **Jemaah / Tamu Publik (`role: null`)**: Akses membaca seluruh data keuangan terverifikasi, grafik, pencarian arsip, dan ekspor dokumen tanpa perlu mendaftar/login.
   - **Bendahara (`BENDAHARA`)**: Wewenang operasional untuk mengunggah dokumen, memicu ekstraksi AI, menambah transaksi manual, dan memverifikasi data kas.
@@ -185,35 +191,26 @@ Pencatatan keuangan mingguan DKM Masjid Al-Luqman sebelumnya bertumpu pada lemba
 
 ## 🧪 Validasi Kualitas & Pengujian Otomatis
 
-Seluruh logika bisnis, otorisasi, kompresi berkas, ekstraksi AI, dan layout antarmuka diuji melalui suite pengujian otomatis komprehensif (**147 pengujian lulus 100%**):
+Seluruh logika bisnis, otorisasi, kompresi berkas, ekstraksi AI, dan layout antarmuka diuji melalui suite pengujian otomatis komprehensif (**285+ checks lulus 100%** di 7 suite pengujian modular, lihat panduan lengkap di [`docs/TESTING.md`](docs/TESTING.md)):
 
 ```bash
-# 1. Pemeriksaan Tipe TypeScript (0 error)
+# 1. Pemeriksaan Tipe TypeScript & Linter (0 error)
 npx tsc --noEmit
-
-# 2. Pemeriksaan Linter ESLint (0 error)
 npm run lint
 
-# 3. Uji Responsivitas & Simetri Mobile PWA (F-032 / Issue #75)
-npx tsx scripts/test-mobile-responsiveness.ts
+# 2. Uji Modular per Pilar Sistem:
+npm run test:auth      # Otorisasi RBAC 3-Tier & Security Hardening (79 checks)
+npm run test:files     # Validasi Sanitasi Berkas & Kompresi WebP (27 checks)
+npm run test:ai        # Vision-LLM Context-Aware & Auto-Categorization F-043 (27 checks)
+npm run test:finance   # Donatur Matching, Transaksi Manual F-025 & Treasury F-033 (52 checks)
+npm run test:ui        # Paginasi Tabel F-034, Navigasi Menu & Mobile Responsiveness (61 checks)
+npm run test:v5        # Integritas Endpoint API V5 (Trend & Donatur)
 
-# 4. Uji Guard Otorisasi Keamanan RBAC 3-Tier (55 pengujian)
-npx tsx scripts/test-auth-guards.ts
+# 3. Master Audit Komprehensif Sistem (39 checks E2E)
+npm run test:audit
 
-# 5. Uji Pengerasan Audit & Validasi Mutasi Server (15 pengujian)
-npx tsx scripts/test-audit-hardening.ts
-
-# 6. Uji Validasi Sanitasi Berkas & Upload (10 pengujian)
-npx tsx scripts/test-file-validation.ts
-
-# 7. Uji Baris Transaksi Kas Manual (F-028 / Issue #073) (21 pengujian)
-npx tsx scripts/test-manual-transaction.ts
-
-# 8. Uji Kompresi Gambar Client-Side WebP (F-030 / Issue #075) (17 pengujian)
-npx tsx scripts/test-image-compression.ts
-
-# 9. Uji Ekstraksi Vision-LLM Context-Aware (F-031 / Issue #076) (14 pengujian)
-npx tsx scripts/test-context-aware-extraction.ts
+# 4. Jalankan Seluruh Pengujian Sekaligus (CI / Pre-Deploy)
+npm run test:all
 ```
 
 ---

@@ -10,8 +10,8 @@ Membantu DKM Masjid Al-Luqman (dan pengurus masjid sejenis) menjaga arsip lapora
 
 ### Current Status
 
-- Phase: Fase V15.0 (Penyatuan Header Hero Card, Eliminasi Eyebrow Redundan & Pengerasan Responsivitas) Selesai
-- Version: 0.15.0 (Feature-Complete & Production-Grade)
+- Phase: Fase V16.0 (Finalisasi PKL / Feature-Complete, Smart Auto-Categorization & Enterprise Modular Testing) Selesai
+- Version: 0.16.0 (Feature-Complete & Production-Grade)
 - Last Updated: 2026-10-27 (Fase V15.0: Penyatuan Header Halaman ke dalam Hero Card, Kanvas Desktop Seamless, dan Penyelarasan Tema PWA)
 
 ### Daftar Isi
@@ -35,6 +35,7 @@ Ini adalah salinan lokal dari [GitHub Wiki](https://github.com/RezaDwiPrasetya/m
 15. [Release Plan](./15-Release-Plan.md)
 16. [Panduan Pengguna](./PANDUAN-PENGGUNA.md)
 17. [Diagram UML Sistem](./diagrams/README.md)
+18. [Panduan & Matriks Pengujian](./TESTING.md)
 
 
 ### Tim & Pengelola
