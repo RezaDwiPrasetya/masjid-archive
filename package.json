@@ -8,7 +8,15 @@
     "vercel-build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "test:auth": "tsx scripts/test-auth-guards.ts && tsx scripts/test-audit-hardening.ts",
+    "test:files": "tsx scripts/test-file-validation.ts && tsx scripts/test-image-compression.ts",
+    "test:ai": "tsx scripts/test-context-aware-extraction.ts && tsx scripts/test-auto-categorization.ts",
+    "test:finance": "tsx scripts/test-donor-matching.ts && tsx scripts/test-manual-transaction.ts && tsx scripts/test-treasury-cash-bank.ts",
+    "test:ui": "tsx scripts/test-pagination.ts && tsx scripts/test-navigation-and-redirect.ts && tsx scripts/test-mobile-responsiveness.ts",
+    "test:v5": "tsx scripts/test-v5-functional.ts",
+    "test:audit": "tsx scripts/audit-full-system.ts",
+    "test:all": "npm run test:auth && npm run test:files && npm run test:ai && npm run test:finance && npm run test:ui && npm run test:v5 && npm run test:audit"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",

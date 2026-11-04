@@ -18,7 +18,7 @@ Aplikasi web arsip & manajemen keuangan digital untuk **DKM Masjid Al-Luqman** (
 - **STATUS REPOSITORI & DEPLOYMENT**:
   - Branch aktif: `main` (sinkron 100% lokal dengan GitHub `RezaDwiPrasetya/masjid-archive`).
   - Live di Vercel Production dengan domain terhubung resmi.
-  - Typecheck (`tsc --noEmit`) 0 error, Linter (`npm run lint`) 0 error, dan 150+ automated unit & simulation tests passed.
+  - Typecheck (`npx tsc --noEmit`) 0 error, Linter (`npm run lint`) 0 error, dan 285+ automated checks passed di 7 suite testing modular (lihat `docs/TESTING.md`).
   - Status migrasi Prisma: 7 migrasi resmi tersinkronisasi bersih di tabel `_prisma_migrations`.
 
 - **ARSITEKTUR DUA DUNIA: PORTAL BERANDA PUBLIK VS COCKPIT DASHBOARD PENGURUS**:
@@ -345,3 +345,19 @@ generator client {
 - Reza selalu melakukan review manual sebelum commit/push.
 - Scope tetap fokus pada Masjid Al-Luqman (bukan aplikasi multi-tenant).
 - Pola kerja bertahap: 1 issue dalam satu waktu, laporkan dengan bukti konkret.
+
+---
+
+## 16. PANDUAN PENGUJIAN MODULAR (TESTING COMMANDS)
+Sistem memiliki 7 rangkaian test modular yang dapat dijalankan secara terpisah maupun sekaligus (lihat dokumentasi lengkap di `docs/TESTING.md`):
+
+```bash
+npm run test:auth     # Auth & RBAC (79 checks)
+npm run test:files    # File Upload & Kompresi WebP (27 checks)
+npm run test:ai       # Vision-LLM Context-Aware & Auto-Categorization F-043 (27 checks)
+npm run test:finance  # Donatur, Transaksi Manual F-025 & Kas Fisik vs Bank F-033 (52 checks)
+npm run test:ui       # Paginasi F-034, Navigasi Dinamis & Responsivitas Mobile (61 checks)
+npm run test:v5       # Fungsional Integritas API V5 (Trend Mingguan/Bulanan & Donatur)
+npm run test:audit    # Master Audit End-to-End Sistem (39 checks)
+npm run test:all      # Menjalankan seluruh 7 rangkaian tes berurutan
+```
