@@ -36,6 +36,7 @@ interface DashboardClientProps {
   latestReportId: string | null;
   pendingReports?: PendingReportItem[];
   authError?: string | null;
+  availableYears?: number[];
 }
 
 function formatRupiah(amount: number): string {
@@ -79,6 +80,7 @@ export function DashboardClient({
   latestReportId,
   pendingReports = [],
   authError,
+  availableYears = [],
 }: DashboardClientProps) {
   const searchParams = useSearchParams();
   const isForbidden = authError === "forbidden" || searchParams?.get("error") === "forbidden";
@@ -275,6 +277,7 @@ export function DashboardClient({
         <CashflowTrendSection
           initialYear={initialDate.getUTCFullYear()}
           initialMonth={initialDate.getUTCMonth() + 1}
+          availableYears={availableYears}
         />
       </div>
     </PageShell>

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { prisma } from "@/lib/prisma";
 import { DashboardClient } from "@/components/dashboard-client";
+import { getAvailableYears } from "@/lib/period-filter";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,7 @@ interface DashboardPageProps {
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const { error } = await searchParams;
   const session = await getServerSession(authOptions);
+  const availableYears = await getAvailableYears();
 
   // Akses eksklusif khusus staf pengurus DKM (Bendahara & Admin)
   if (!isStaff(session)) {
@@ -115,6 +117,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         latestReportId={latestReportId}
         pendingReports={pendingReports}
         authError={error}
+        availableYears={availableYears}
       />
     </AppShell>
   );
